@@ -1,0 +1,35 @@
+<!-- This brings in the CSS-->
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <!--Get the various stylesheets I need like my fonts and CSS-->
+    <head>
+        <title>GetYour: Connexion</title>
+        <link href="{% static 'application/styles_app.css' %}" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&display=swap" rel="stylesheet">
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+
+    <body>
+        <div class=nav>
+            <a class="row" href="">
+                <img src="{% static 'application/images/BackArrow-white.svg' %}" alt="back" style="width:8vw; margin-right: 5px;">
+                <p style = "color:white; font-weight: 700;">BACK</p>
+            </a>
+            <img src="{% static 'application/images/X_white.svg' %}" alt="back" style="width:4.5vw; margin-right: 5px;">
+        </div>
+        <div class="content ">
+            <!--NOTE: For the future have numbers change based on database-->
+            <p style="color:var(--lightblue);font-weight: 700;"> STEP 1 OF 5 </p>
+                <!--Whatever I need in the other pages, I can enter it here-->
+            {% block body %}
+            {% endblock %}
+        </div>
+        <div class="footer">
+            <button onclick="location.href='{% url 'application:available' %}'"> CONTINUE </button>
+        </div>
+    </body>
+</html>

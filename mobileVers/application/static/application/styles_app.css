@@ -1,0 +1,165 @@
+/*Style sheet for the application pagess*/
+/*This may not work for internet explorer, the colors*/
+:root {
+    --darkblue: #13467D;
+    --lightblue: #55A1D3;
+    --orange: #F27B1F;
+    --yellow: #F9B316;
+    --gray: #999999;
+}
+
+
+html,body {
+    font-family: Montserrat;
+    font-style: normal;
+    overflow-x: hidden; 
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+    background-color: var(--darkblue);
+    margin:0;
+    padding:0;
+    
+}
+/*Keep floating contents inside respective parents*/
+div{
+    position: relative;
+    overflow: hidden;
+}
+/*Set up font sizes*/
+h1 {
+    font-size: max(5.9vw, 30px);
+    margin-bottom:1px;
+    margin-top: 0px;
+    font-family: Montserrat;
+    font-weight: 400
+}
+.yellow{
+    color: var(--yellow)
+}
+h2 {
+    font-size: max(5vw, 24px);
+}
+h3 {
+    font-size: max(4vw, 16px);
+}
+h4 {
+    font-size: 25px;
+}
+h5 {
+    font-size: 20px;
+}
+
+p {
+    font-size: max(3.8vw, 16px);
+    padding:0;
+    margin:0;
+}
+
+/*Keep things in rows*/
+.row{
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+    padding: 0;
+    align-items: center;
+    
+}
+
+.nav{
+    
+    display:flex;
+    justify-content: space-between;
+    width: 90%;
+    padding: 5% 5%;
+
+}
+.content {
+    margin:5vw;
+    height:70vh;
+}
+button {
+    background-color: var(--lightblue);
+    border-radius: 3vh;
+    padding: 5px 40px;
+    border:none;
+    outline: none;
+    box-shadow: none;
+    color:white;
+    height: 6vh;
+    font-size: max(3.8vw, 16px);
+    font-weight: 700;
+    width:85%;
+}
+
+.buttonClick{
+    width:100%;
+    background-color:rgba(255,255,255,0.1);
+    font-weight: 200;
+    font-size: 3.5vh;
+    height: 10vh;
+    margin-top: 2vh;
+    border-radius: 3vh;
+}
+.footer{
+    display: flex;
+    justify-content: center;
+    /*These two lines made the button stick to the bottom*/
+    position: fixed;
+    bottom: 0;
+
+    width:100%;
+    height:12vh;
+}
+/*TODO: Do we want to make the link highlights disappear?*/
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+       -khtml-user-select: none; /* Konqueror HTML */
+         -moz-user-select: none; /* Old versions of Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Edge, Opera and Firefox */
+  }
+
+
+/*ALL THINGS BELOW ARE FOR INPUTS*/
+.input{
+    position: relative;
+    padding: 20px 0px;
+    /*need height to be 100%*/
+}
+input{
+    font-size: 16px;
+    padding:5px;
+    font-weight: 700;
+    display:block;
+    border:none;
+    color:var(--yellow);
+    background-color: var(--darkblue);
+    border-bottom:1px solid white;
+}
+input:focus { outline:none; }
+label{
+    /*This pushed the words away*/
+    position:absolute;
+    color:white;
+    font-size: 12px;
+    left:5px;
+    top:20px;
+    pointer-events: none;
+    transition:0.2s ease-in-out; 
+    -moz-transition:0.2s ease all; 
+    -webkit-transition:0.2s ease all;
+    
+}
+  
+input:focus ~ label, input:valid ~ label {
+    transform:translateY(-20px);
+  }
+
+.spaceAround{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+}
