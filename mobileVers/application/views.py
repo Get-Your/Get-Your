@@ -17,7 +17,7 @@ def address(request):
         # print(form.data)
         # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
         if form.is_valid():
-            # Check if they are neighbor to neighbor here! and redirect to DE available!
+            # NOTE FOR ANDREW: Check if they are neighbor to neighbor here! and redirect to DE available!
             form.n2n = True;
             print(form)
             form.save()
@@ -57,15 +57,14 @@ def finances(request):
             # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
             # Make sure password isn't getting saved twice
             form.save()
-            return redirect(reverse("application:finances"))
+            return redirect(reverse("application:programs"))
     else:
         form = EligibilityForm()
-    return render(request, 'application/page3.html', {
+    return render(request, 'application/finances.html', {
         'form':form,
         'step':3,
         'formPageNum':formPageNum,
     })
-    return render(request, 'application/page3.html',)
 
 def programs(request):
     return render(request, 'application/page4.html',)
@@ -75,3 +74,4 @@ def available(request):
 
 def notAvailable(request):
     return render(request, 'application/de_notavailable.html',)
+

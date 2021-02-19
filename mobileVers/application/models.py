@@ -32,7 +32,7 @@ class Addresses(TimeStampedModel):
     city = models.CharField(max_length=64, default="Fort Collins")
     state = models.CharField(max_length=2, default="CO")
 
-    zipCode = models.DecimalField(max_digits=5, decimal_places=0, default="")
+    zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
     n2n = models.BooleanField()
 
 class Eligibility(TimeStampedModel):
