@@ -15,21 +15,17 @@
 
     <body>
         <div class=nav>
-            <a class="row" href="">
+            <a class="row" onClick="window.history.back();return false;">
                 <img src="{% static 'application/images/BackArrow-white.svg' %}" alt="back" style="width:8vw; margin-right: 5px;">
                 <p style = "color:white; font-weight: 700;">BACK</p>
             </a>
             <img src="{% static 'application/images/X_white.svg' %}" alt="back" style="width:4.5vw; margin-right: 5px;">
         </div>
         <div class="content ">
-            <!--NOTE: For the future have numbers change based on database-->
-            <p style="color:var(--lightblue);font-weight: 700;"> STEP 1 OF 5 </p>
+            <p style="color:var(--lightblue);font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
                 <!--Whatever I need in the other pages, I can enter it here-->
             {% block body %}
             {% endblock %}
-        </div>
-        <div class="footer">
-            <button onclick="location.href='{% url 'application:available' %}'"> CONTINUE </button>
         </div>
     </body>
 </html>

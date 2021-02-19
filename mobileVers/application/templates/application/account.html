@@ -1,0 +1,71 @@
+{% extends "application/layout.html" %}
+
+{% block body %}
+
+<h2 style="font-weight: 700;color:white; margin:5vh 0"> Create an Account </h2>
+
+<form action="{% url 'application:account' %}" method="post" autocomplete="false">
+{% csrf_token %}
+{% for field in form %}
+    {% if form.errors %}
+    {% for error in field.errors %}
+    <div class="alert alert-danger">
+        <strong>{{ error|escape }}</strong>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% if field.label == "First Name" %}
+        <div class ="row">
+            <div class="input">
+                <!--TODO: Save input-->
+                <input name="{{ field.name }}"
+                    id="{{ field.id_for_label }}"
+                    maxlength="{{ field.max_length }}"
+                    type="text" 
+                    style="width:80%;" 
+                    required  
+                    autocomplete="off">
+                <label>{{field.label}}</label>    
+            </div>
+            <div class="input">
+                <!--TODO: change this to dropdown menu with data-->
+                <input name="{{ form.lastName.name }}"
+                id="{{ form.lastName.id_for_label }}"
+                maxlength="{{ form.lastName.max_length }}"
+                type="text" 
+                style="width:100%;" 
+                required  
+                autocomplete="off">
+                <label>{{ form.lastName.label }}</label>    
+            </div>
+        </div>
+
+    <!--Probably not the best way, but I needed to get rid of the last name-->
+    {% elif field.label == "Last Name" %}
+    
+    {% else %}
+    <div class="input">
+        <!--Have styling that I like on the forms-->        
+        <input name="{{ field.name }}"
+        id="{{ field.id_for_label }}"
+        maxlength="{{ field.max_length }}"
+        type="text" 
+        style="width:100%;" 
+        required  
+        autocomplete="off">
+        <label>{{field.label}}</label>    
+    </div>
+    {% endif %}
+{% endfor %}
+<div class="input">
+    <!--TODO: Save input, and change this to dropdown menu with data-->
+    <input type="text" style="width:100%;" required>
+    
+    <label>Confirm Password</label>    
+</div>
+<div class="footer">
+    <button type ="submit" onclick="location.href='{% url 'application:finances' %}'"> CONTINUE </button>
+</div>
+
+</form>
+{% endblock %}

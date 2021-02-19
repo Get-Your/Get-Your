@@ -1,27 +1,75 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, reverse
 
-# Create your views here.
+
+from .forms import UserForm, AddressForm, EligibilityForm
+
+# TODO: Create FBV views that take into account error messages so we can show custom pages
+
+formPageNum = 5
 
 # first index page we come into
 def index(request):
     return render(request, 'application/index.html',)
 
-def page1(request):
-    return render(request, 'application/page1.html',)
+def address(request):
+    if request.method == "POST": 
+        form = AddressForm(request.POST or None)
+        # print(form.data)
+        # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
+        if form.is_valid():
+            # Check if they are neighbor to neighbor here! and redirect to DE available!
+            form.n2n = True;
+            print(form)
+            form.save()
+            return redirect(reverse("application:account"))
+    else:
+        form = AddressForm()
+    return render(request, 'application/address.html', {
+        'form':form,
+        'step':1,
+        'formPageNum':formPageNum,
+    })
 
-def page2(request):
-    return render(request, 'application/page2.html',)
+def account(request):
+    if request.method == "POST": 
+        # Check password with Confirm Password field, 
+        # maybe also do some password requirements here too
+        form = UserForm(request.POST)
+        if form.is_valid():
+            # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
+            # Make sure password isn't getting saved twice
+            form.save()
+            return redirect(reverse("application:finances"))
+    else:
+        form = UserForm()
+    return render(request, 'application/account.html', {
+        'form':form,
+        'step':2,
+        'formPageNum':formPageNum,
+    })
 
-def page3(request):
+def finances(request):
+    if request.method == "POST": 
+        # Check password with Confirm Password field, 
+        # maybe also do some password requirements here too
+        form = EligibilityForm(request.POST)
+        if form.is_valid():
+            # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
+            # Make sure password isn't getting saved twice
+            form.save()
+            return redirect(reverse("application:finances"))
+    else:
+        form = EligibilityForm()
+    return render(request, 'application/page3.html', {
+        'form':form,
+        'step':3,
+        'formPageNum':formPageNum,
+    })
     return render(request, 'application/page3.html',)
 
-def page4(request):
+def programs(request):
     return render(request, 'application/page4.html',)
 
-def page5(request):
-    return render(request, 'application/page5.html',)
-
-    
 def available(request):
     return render(request, 'application/de_available.html',)
 

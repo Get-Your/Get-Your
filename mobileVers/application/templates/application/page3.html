@@ -1,7 +1,35 @@
 {% extends "application/layout.html" %}
 
 {% block body %}
+
 <h2 style="font-weight: 700;color:white; margin:5vh 0"> Enter some basic information on your income </h2>
+
+
+<form action="{% url 'application:address' %}" method="post" autocomplete="false" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in form %}
+    
+    <div class="input">
+        {% if field.label == "Rent" %}
+            <input class="checkbox" type="checkbox" name="{{ field.name }}" id="{{ field.id_for_label}}">
+            <label>Do you rent your home?</label> 
+        {% elif field.label == 'Number of Dependents' %}
+            <input type="text" name="{{ field.name }}" id="{{ field.id_for_label}}" value ="0">
+            <label>How many dependents are in your household?</label> 
+        {% else %}
+            <select name="{{ field.name }}" id="{{ field.id_for_label}}">
+            {% for option in field %}
+                <option style="background-color: var(--darkblue);" value="{{ option }}"> {{ option.name }} </option>
+            {% endfor %}
+            <label>How much is your gross annual household income?</label> 
+        {% endif %}
+    </div>
+    {% endfor %}
+    <div class="footer">
+        <button type="submit"> CONTINUE </button>
+    </div>
+    </form>
+{% endblock %}
 
 <p style="color:white; font-weight:700;"> What is your marital status? </p>
 <div class = row style="margin-top: 2vh;">
@@ -26,4 +54,3 @@
     
     <label>Salary Range</label>    
 </div>
-{% endblock %}

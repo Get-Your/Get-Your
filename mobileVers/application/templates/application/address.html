@@ -1,0 +1,67 @@
+{% extends "application/layout.html" %}
+
+{% block body %}
+
+<h2 style="font-weight: 700;color:white; margin:5vh 0"> What is your address? </h2>
+
+<form action="{% url 'application:address' %}" method="post" autocomplete="false" enctype="multipart/form-data">
+{% csrf_token %}
+{% for field in form %}
+    {% if form.errors %}
+        {% for error in field.errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+        {% endfor %}
+    {% endif %}
+    {% if field.label == "State" %}
+        <div class ="row" style = "width:100%">
+            <div class="input" style = "width:100%">
+                <!--TODO: Save input-->
+                <input value = "{{ field.initial }}" 
+                        name="{{ field.name }}"
+                        id="{{ field.id_for_label }}"
+                        maxlength="{{ field.max_length }}"
+                        type="text" 
+                        style="width:80%;" 
+                        required  
+                        autocomplete="off">
+                <label>{{field.label}}</label>    
+            </div>
+            <div class="input" style = "width:100%">
+                <!--TODO: change this to dropdown menu with data-->
+                <input value = "{{ form.zipCode.initial }}" 
+                    name="{{ form.zipCode.name }}"
+                    id="{{ form.zipCode.id_for_label }}"
+                    maxlength="{{ form.zipCode.max_length }}"
+                    type="text" 
+                    style="width:100%;" 
+                    required  
+                    autocomplete="off">
+                <label>{{ form.zipCode.label }}</label>    
+            </div>
+        </div>
+
+    <!--Probably not the best way, but I needed to get rid of the zip code at the very end-->
+    {% elif field.label == "Zip Code" or field.label == "N2n" %}
+    
+    {% else %}
+    <div class="input">
+        <!--Have styling that I like on the forms-->        
+        <input value = "{{ field.initial }}" 
+            name="{{ field.name }}"
+            id="{{ field.id_for_label }}"
+            maxlength="{{ field.max_length }}"
+            type="text" 
+            style="width:100%;" 
+            required  
+            autocomplete="off">    
+        <label>{{field.label}}</label>    
+    </div>
+    {% endif %}
+{% endfor %}
+<div class="footer">
+    <button type="submit"> CONTINUE </button>
+</div>
+</form>
+{% endblock %}
