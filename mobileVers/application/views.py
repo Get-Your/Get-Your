@@ -3,9 +3,13 @@ from django.shortcuts import render, redirect, reverse
 
 from .forms import UserForm, AddressForm, EligibilityForm
 
-# TODO: Create FBV views that take into account error messages so we can show custom pages
-
 formPageNum = 5
+
+# TODO: Grace - possibly make a function that automatically returns next step of the page?
+# Should all of these view functions look up at this one function and figure out where they need to go next
+# based on which page they are on?
+
+# TODO: Grace - add user authorization for next pages
 
 # first index page we come into
 def index(request):
@@ -15,9 +19,9 @@ def address(request):
     if request.method == "POST": 
         form = AddressForm(request.POST or None)
         # print(form.data)
-        # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
         if form.is_valid():
-            # NOTE FOR ANDREW: Check if they are neighbor to neighbor here! and redirect to DE available!
+            # TODO: Andrew - Check if they are neighbor to neighbor here! and redirect to page DE available!
+            # you can redirect to page DE available with: return redirect(reverse("application:available"))
             form.n2n = True;
             print(form)
             form.save()
@@ -50,12 +54,8 @@ def account(request):
 
 def finances(request):
     if request.method == "POST": 
-        # Check password with Confirm Password field, 
-        # maybe also do some password requirements here too
         form = EligibilityForm(request.POST)
         if form.is_valid():
-            # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
-            # Make sure password isn't getting saved twice
             form.save()
             return redirect(reverse("application:programs"))
     else:

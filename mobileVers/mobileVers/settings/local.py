@@ -41,7 +41,7 @@ SECRET_KEY = get_secret('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# Make sure to change this later!
+# ANDREW: Make sure to change this later!
 ALLOWED_HOSTS = ["*", "192.168.0.15"]
 
 
@@ -94,6 +94,7 @@ WSGI_APPLICATION = 'mobileVers.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+# ANDREW: Add Azure stuff here
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',

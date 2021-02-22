@@ -3,6 +3,7 @@ from django import forms
 
 from .models import User, Addresses, Eligibility, programs
 
+# form for user account creation
 class UserForm(forms.ModelForm):
     class Meta:
         model = User
@@ -14,6 +15,7 @@ class UserForm(forms.ModelForm):
             'email':'Email',
         }
 
+# form for addresses
 class AddressForm(forms.ModelForm):
     class Meta:
         model = Addresses
@@ -26,6 +28,7 @@ class AddressForm(forms.ModelForm):
             'zipCode':'Zip Code',
         }
 
+# form for basic finance eligibility
 class EligibilityForm(forms.ModelForm):
     class Meta:
         model = Eligibility
@@ -36,6 +39,7 @@ class EligibilityForm(forms.ModelForm):
             'grossAnnualHouseholdIncome':'Gross Annual Household Income',
         } 
 
+# programs they are available for
 class programForm(forms.ModelForm):
     class Meta:
         model = programs
