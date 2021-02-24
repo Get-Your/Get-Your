@@ -13,6 +13,8 @@ class UserForm(forms.ModelForm):
             'lastName':'Last Name', 
             'password':'Password', 
             'email':'Email',
+            # TODO:@Grace check this and implement? 
+            # 'phone':'Phone',
         }
 
 # form for addresses

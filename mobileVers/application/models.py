@@ -3,6 +3,11 @@ from django.db import models
 # TODO: Andrew - Can you tell Grace if these model databases are saved in the same format on Postgre?
 # I want to see if they save the time made too for reach of the models; also would like to see how the id is made 
 # Within postgre
+# 2/23/2021 @Grace - yes they do! When we setup the database engine to Postgre SQL when we re-migrate and whatnot, the models are
+# automatically formatted in the Postgre SQL format, we need to set timezone in settings.py however! Using your old code as an
+# example, IDs were automatically generated, they were created incrementally. I actually want to ask you about ID's since we're
+# on the topic - should we set clients and their IDs based on when the account was created (i.e. sequentially)? Or do we want
+# some kind of numbering system? Perhaps for now, for simplicities sake maybe we can just give ID's out sequentially?
 
 
 # Class to automatically save date data was entered into postgre
@@ -23,6 +28,8 @@ class User(TimeStampedModel):
     lastName = models.CharField(max_length=200)
     password = models.CharField(max_length=200)
     email = models.EmailField(unique=True)
+    # TODO:@Grace check this and implement? 
+    # phone = models.DecimalField(max_digits=10, decimal_places=0)
 
 # Addresses model attached to user (will delete as user account is deleted too)
 class Addresses(TimeStampedModel):

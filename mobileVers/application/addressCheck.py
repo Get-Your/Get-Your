@@ -1,9 +1,7 @@
-from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
-from django.template import loader
-from django.urls import reverse
-
-
+# Andrew backend code for address check
+# 2/23/2021 TODO:
+# Streamline logic for going through CSV file - priority: medium
+# Using USPS-API, incorporate returned address to clients' view via drop-down bar - priority: high
 
 import csv
 from usps import USPSApi, Address
@@ -17,19 +15,12 @@ def addressCheck(address1, phone_Number):
         for lines in csv_reader:
             column = lines[0] + " " + lines[1] + " " + lines[2]
             if address1 == column:
-                print("street address match found")
-                print(column)
-                print(phone_Number)
                 broadcast_sms(phone_Number)
-                return HttpResponseRedirect(reverse("application:addressFound"))
+                return True
             else:
                 counter = counter + 1
-                print("searching...")
-                print(counter)
                 if counter == 68:
-                    print("street address not found")
-                    print(phone_Number)
                     broadcast_sms(phone_Number)
-                    return HttpResponseRedirect(reverse("application:addressNotFound"))
+                    return False
                 else:
                     continue

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, reverse
 
 
 from .forms import UserForm, AddressForm, EligibilityForm
+from .addressCheck import addressCheck
 
 formPageNum = 5
 
@@ -22,7 +23,12 @@ def address(request):
         if form.is_valid():
             # TODO: Andrew - Check if they are neighbor to neighbor here! and redirect to page DE available!
             # you can redirect to page DE available with: return redirect(reverse("application:available"))
-            form.n2n = True;
+            # TODO: Grace - do we have a "not available" page? Also phone numbers are needed haha check forms
+            # and models, I included them but I think you and I need to review how to implement one last time
+            addressResult = addressCheck(address, "123456789")
+            if addressResult == True:
+                form.n2n = True;
+                return redirect(reverse("application:available"))
             print(form)
             form.save()
             return redirect(reverse("application:account"))
