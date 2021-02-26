@@ -25,7 +25,7 @@ def address(request):
             # you can redirect to page DE available with: return redirect(reverse("application:available"))
             # TODO: Grace - do we have a "not available" page? Also phone numbers are needed haha check forms
             # and models, I included them but I think you and I need to review how to implement one last time
-            validateUSPS(form['address'].value())
+            dict = validateUSPS(form)
             addressResult = addressCheck(form['address'].value())
             #validate address here with USPS
             if addressResult == True:
