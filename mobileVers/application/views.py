@@ -21,16 +21,10 @@ def address(request):
         form = AddressForm(request.POST or None)
         # print(form.data)
         if form.is_valid():
-            # TODO: Andrew - Check if they are neighbor to neighbor here! and redirect to page DE available!
-            # you can redirect to page DE available with: return redirect(reverse("application:available"))
-            # TODO: Grace - do we have a "not available" page? Also phone numbers are needed haha check forms
-            # and models, I included them but I think you and I need to review how to implement one last time
             dict = validateUSPS(form)
-            addressResult = addressCheck(form['address'].value())
-            #validate address here with USPS
+            addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'])
             if addressResult == True:
-                print("you are now in addressResult")
-                form.n2n = True;
+                form.n2n = True
                 return redirect(reverse("application:available"))
             print(form)
             form.save()
