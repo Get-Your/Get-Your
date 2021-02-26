@@ -49,7 +49,7 @@ def validateUSPS(form):
     validation = usps.validate_address(address)
     dict = validation.result
     try:
-        #verifiedAddress2 = dict['AddressValidateResponse']['Address']['Address2']
+        print(dict['AddressValidateResponse']['Address']['Address2'])
         return dict
         
     except KeyError:
