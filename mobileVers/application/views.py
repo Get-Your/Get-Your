@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, reverse
 
 
 from .forms import UserForm, AddressForm, EligibilityForm
-from .addressCheck import addressCheck
+from .backend import addressCheck, validateUSPS
 
 formPageNum = 5
 
@@ -25,7 +25,9 @@ def address(request):
             # you can redirect to page DE available with: return redirect(reverse("application:available"))
             # TODO: Grace - do we have a "not available" page? Also phone numbers are needed haha check forms
             # and models, I included them but I think you and I need to review how to implement one last time
+            validateUSPS(form['address'].value())
             addressResult = addressCheck(form['address'].value())
+            #validate address here with USPS
             if addressResult == True:
                 print("you are now in addressResult")
                 form.n2n = True;

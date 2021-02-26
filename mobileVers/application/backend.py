@@ -34,3 +34,8 @@ def addressCheck(address1):
                     return False
                 else:
                     continue
+
+def validateUSPS(address):
+    usps = USPSApi(settings.USPS_SID, test=True) #reminder update USPSAPI account
+    validation = usps.validate_address(address)
+    print(validation.result)
