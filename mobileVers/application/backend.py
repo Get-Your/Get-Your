@@ -30,7 +30,7 @@ def addressCheck(address1):
                 return True
             else:
                 counter = counter + 1
-                if counter == 68:
+                if counter == 78:
                     #broadcast_sms(phone_Number)
                     return False
                 else:
@@ -45,13 +45,13 @@ def validateUSPS(form):
         state = form['state'].value(),
         zipcode = form['zipCode'].value() 
     )
-    usps = USPSApi(settings.USPS_SID, test=True) #reminder update USPSAPI account
+    usps = USPSApi(settings.USPS_SID, test=True)
     validation = usps.validate_address(address)
     dict = validation.result
     try:
-        print(dict['AddressValidateResponse']['Address']['Address2'])
+        #print(dict['AddressValidateResponse']['Address']['Address2'])
+        print(dict)
         return dict
-        
     except KeyError:
         print("Wrong address info added")
 

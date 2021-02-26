@@ -22,7 +22,10 @@ def address(request):
         # print(form.data)
         if form.is_valid():
             dict = validateUSPS(form)
-            addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'])
+            try:
+                addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'])
+            except KeyError:
+                pass
             if addressResult == True:
                 form.n2n = True
                 return redirect(reverse("application:available"))
