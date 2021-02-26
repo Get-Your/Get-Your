@@ -25,8 +25,9 @@ def address(request):
             # you can redirect to page DE available with: return redirect(reverse("application:available"))
             # TODO: Grace - do we have a "not available" page? Also phone numbers are needed haha check forms
             # and models, I included them but I think you and I need to review how to implement one last time
-            addressResult = addressCheck(address)
+            addressResult = addressCheck(form['address'].value())
             if addressResult == True:
+                print("you are now in addressResult")
                 form.n2n = True;
                 return redirect(reverse("application:available"))
             print(form)
