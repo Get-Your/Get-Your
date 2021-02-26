@@ -5,6 +5,7 @@
 
 import csv
 from usps import USPSApi, Address
+import json
 
 #Andrew backend code for Twilio
 from twilio.rest import Client
@@ -35,7 +36,37 @@ def addressCheck(address1):
                 else:
                     continue
 
-def validateUSPS(address):
+def validateUSPS(form):
+    address = Address(
+        name = " ",
+        address_1 = form['address'].value(),
+        address_2 = form['address2'].value(),
+        city = form['city'].value(),
+        state = form['state'].value(),
+        zipcode = form['zipCode'].value() 
+    )
     usps = USPSApi(settings.USPS_SID, test=True) #reminder update USPSAPI account
     validation = usps.validate_address(address)
-    print(validation.result)
+    dict = validation.result
+    try:
+        #verifiedAddress2 = dict['AddressValidateResponse']['Address']['Address2']
+        return dict
+        
+    except KeyError:
+        print("Wrong address info added")
+
+'''
+{'AddressValidateResponse': 
+    {'Address': 
+        {
+        '@ID': '0', 
+        'Address1': 'APT A', 
+        'Address2': '1620 AZALEA DR',
+        'City': 'FORT COLLINS', 
+        'State': 'CO', 
+        'Zip5': '80526', 
+        'Zip4': '5705'
+        }
+    }
+} '''
+
