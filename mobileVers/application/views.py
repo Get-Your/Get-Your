@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, reverse
 
 
 from .forms import UserForm, AddressForm, EligibilityForm
-from .addressCheck import addressCheck
+from .backend import addressCheck, validateUSPS
 
 formPageNum = 5
 
@@ -21,13 +21,13 @@ def address(request):
         form = AddressForm(request.POST or None)
         # print(form.data)
         if form.is_valid():
-            # TODO: Andrew - Check if they are neighbor to neighbor here! and redirect to page DE available!
-            # you can redirect to page DE available with: return redirect(reverse("application:available"))
-            # TODO: Grace - do we have a "not available" page? Also phone numbers are needed haha check forms
-            # and models, I included them but I think you and I need to review how to implement one last time
-            addressResult = addressCheck(address, "123456789")
+            dict = validateUSPS(form)
+            try:
+                addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'])
+            except KeyError:
+                pass
             if addressResult == True:
-                form.n2n = True;
+                form.n2n = True
                 return redirect(reverse("application:available"))
             print(form)
             form.save()
