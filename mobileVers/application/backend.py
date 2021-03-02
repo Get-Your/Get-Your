@@ -10,6 +10,8 @@ import json
 #Andrew backend code for Twilio
 from twilio.rest import Client
 from django.conf import settings    
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 def broadcast_sms(phone_Number):
     message_to_broadcast = ("We have received your application for GetYourConnection! We'll keep in touch")
@@ -54,6 +56,24 @@ def validateUSPS(form):
         return dict
     except KeyError:
         print("Wrong address info added")
+
+
+def email(email):
+    TEMPLATE_ID = settings.TEMPLATE_ID
+    message = Mail(
+        from_email='ahernandez@codeforamerica.org',
+        to_emails=email)
+    
+    message.template_id = TEMPLATE_ID
+    
+    try:
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        response = sg.send(message)
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+    except Exception as e:
+        print(e.message)
 
 '''
 {'AddressValidateResponse': 

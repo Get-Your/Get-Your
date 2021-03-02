@@ -44,6 +44,8 @@ TWILIO_AUTH_TOKEN = get_secret('TWILIO_AUTH_TOKEN') #os.getenv("TWILIO_AUTH_TOKE
 TWILIO_NUMBER = get_secret('TWILIO_NUMBER') #os.getenv("TWILIO_NUMBER")
 USPS_SID = get_secret('USPS_SID') #os.getenv("USPS_ACCOUNT_SID") 
 POSTGRESQLPW = get_secret('POSTGRESQLPW') #os.getenv("POSTGRESQLPW")
+SENDGRID_API_KEY = get_secret('SENDGRID_API_KEY')
+TEMPLATE_ID = get_secret("TEMPLATE_ID")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

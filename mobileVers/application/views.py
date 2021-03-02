@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, reverse
 
 
 from .forms import UserForm, AddressForm, EligibilityForm
-from .backend import addressCheck, validateUSPS
+from .backend import addressCheck, validateUSPS, email
 
 formPageNum = 5
 
@@ -25,7 +25,7 @@ def address(request):
             try:
                 addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'])
             except KeyError:
-                pass
+                print("Wrong address info added")
             if addressResult == True:
                 form.n2n = True
                 return redirect(reverse("application:available"))
@@ -48,6 +48,7 @@ def account(request):
         if form.is_valid():
             # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
             # Make sure password isn't getting saved twice
+            email(form['email'].value(),)
             form.save()
             return redirect(reverse("application:finances"))
     else:
