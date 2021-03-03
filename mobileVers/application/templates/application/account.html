@@ -25,7 +25,7 @@
                     style="width:80%;" 
                     required  
                     autocomplete="off">
-                <label>{{field.label}}</label>    
+                <label class="label">{{field.label}}</label>    
             </div>
             <div class="input">
                 <!--TODO: change this to dropdown menu with data-->
@@ -36,7 +36,7 @@
                 style="width:100%;" 
                 required  
                 autocomplete="off">
-                <label>{{ form.lastName.label }}</label>    
+                <label class="label">{{ form.lastName.label }}</label>    
             </div>
         </div>
 
@@ -53,15 +53,10 @@
         style="width:100%;" 
         required  
         autocomplete="off">
-        <label>{{field.label}}</label>    
+        <label class="label">{{field.label}}</label>    
     </div>
     {% endif %}
 {% endfor %}
-<div class="input">
-    <input type="text" style="width:100%;" required>
-    
-    <label>Confirm Password</label>    
-</div>
 <div class="footer">
     <button type ="submit" > CONTINUE </button>
 </div>

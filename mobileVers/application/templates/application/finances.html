@@ -5,20 +5,28 @@
 <h2 style="font-weight: 700;color:white; margin:5vh 0"> Enter some basic information on your income </h2>
 
 
-<form action="{% url 'application:address' %}" method="post" autocomplete="false" enctype="multipart/form-data">
+<form action="{% url 'application:finances' %}" method="post" autocomplete="false" enctype="multipart/form-data">
     {% csrf_token %}
+    <!-- TODO: Make it yes or no not checkbox-->
+    <div class="input" style="padding-top:0">
+        <label class="labelword">Do you currently rent or own your home?</label>
+        <div class="row" style="justify-content:right; padding-top:5%">
+            {% for choice in form.rent %}
+                <label for="{{choice.id_for_label}}" class="row" style="padding-right: 5%;">
+                    <span class="radio">{{ choice.tag }}</span>
+                    <p style="color: white;">{{ choice.choice_label }}</p>
+                </label>
+            {% endfor %}
+        </div> 
+    </div>
     {% for field in form %}
-    
     <div class="input">
         {% if field.label == "Rent" %}
-        <!-- TODO: Make it yes or no not checkbox-->
-            <input class="checkbox" type="checkbox" name="{{ field.name }}" id="{{ field.id_for_label}}">
-            <label>Do you rent your home?</label> 
         {% elif field.label == 'Number of Dependents' %}
             <input type="text" name="{{ field.name }}" id="{{ field.id_for_label}}" value ="0">
-            <label>How many dependents are in your household?</label> 
+            <label class="label">How many dependents are in your household?</label> 
         {% else %}
-            <label style="position:relative; top:-5px">How much is your gross annual household income?</label> 
+            <label class="label" style="position:relative; top:-5px">How much is your gross annual household income?</label> 
             <select name="{{ field.name }}" id="{{ field.id_for_label}}">
             {% for option in field %}
                 <option style="background-color: var(--darkblue);" value="{{ option }}"> {{ option.name }} </option>
