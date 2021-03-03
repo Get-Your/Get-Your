@@ -1,0 +1,36 @@
+{% extends "application/layout.html" %}
+
+{% block body %}
+<h2 style="font-weight: 700;color:white; margin:5vh 0"> Are you currently enrolled in any of the following programs? </h2>
+
+<p style="color: white;"> Choose all that apply: </p>
+
+<div class="upload-btn-wrapper">
+    <button class=buttonClick>Food Assistance (SNAP)</button>
+    <input type="file" name ="SNAP" id="SNAP"/>
+</div>
+<div class="upload-btn-wrapper">
+    <button class=buttonClick>Free/Reduced Lunch</button>
+    <input type="file" name ="FRL" id="FRL"/>
+</div>
+
+
+<style>
+.upload-btn-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+  }
+    
+  .upload-btn-wrapper input[type=file] {
+    font-size: 100px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+  }
+
+</style>
+{% endblock %}
+
+
