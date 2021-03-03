@@ -48,7 +48,7 @@ class programForm(forms.ModelForm):
         model = programs
         fields = ['snap', 'freeReducedLunch',]
         labels  = { 
-            'snap':'SNAP',
+            'snap':'Food Assistance (SNAP)',
             'freeReducedLunch':'Free and Reduced Lunch', 
         } 
         

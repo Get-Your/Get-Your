@@ -18,7 +18,7 @@
         <div class ="row" style = "width:100%">
             <div class="input" style = "width:100%">
                 <!--TODO: Save input-->
-                <input value = "{{ field.initial }}" 
+                <input class="fill" value = "{{ field.initial }}" 
                         name="{{ field.name }}"
                         id="{{ field.id_for_label }}"
                         maxlength="{{ field.max_length }}"
@@ -30,7 +30,7 @@
             </div>
             <div class="input" style = "width:100%">
                 <!--TODO: change this to dropdown menu with data-->
-                <input name="{{ form.zipCode.name }}"
+                <input class="fill" name="{{ form.zipCode.name }}"
                     id="{{ form.zipCode.id_for_label }}"
                     maxlength="{{ form.zipCode.max_length }}"
                     type="text" 
@@ -47,7 +47,7 @@
     {% else %}
     <div class="input">
         <!--Have styling that I like on the forms-->        
-        <input name="{{ field.name }}"
+        <input class="fill" name="{{ field.name }}"
             id="{{ field.id_for_label }}"
             maxlength="{{ field.max_length }}"
             type="text" 

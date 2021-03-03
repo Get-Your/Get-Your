@@ -1,5 +1,8 @@
 from django.shortcuts import render, redirect, reverse
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.forms import UserCreationForm
 
+from django.db import IntegrityError
 
 from .forms import UserForm, AddressForm, EligibilityForm, programForm
 from .backend import addressCheck, validateUSPS, email
@@ -31,32 +34,44 @@ def address(request):
                 return redirect(reverse("application:available"))
             print(form)
             form.save()
-            return redirect(reverse("application:account"))
+            return redirect(reverse("application:finances"))
     else:
         form = AddressForm()
     return render(request, 'application/address.html', {
         'form':form,
-        'step':1,
+        'step':2,
         'formPageNum':formPageNum,
     })
 
 def account(request):
     if request.method == "POST": 
-        # Check password with Confirm Password field, 
         # maybe also do some password requirements here too
         form = UserForm(request.POST)
         if form.is_valid():
             # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
             # Make sure password isn't getting saved twice
-            email(form['email'].value(),)
+            #email(form['email'].value(),)
             print(form.data)
-            form.save()
-            return redirect(reverse("application:finances"))
+            try:                
+                form.save()
+                email = form.cleaned_data.get("email")
+                # Check that password matches the confirmation
+                password = form.cleaned_data.get("password")
+                user = authenticate(email=email, password=password)
+                login(request,user)
+                print("userloggedin")
+            # TODO: GRACE - check if this error actually works
+            except IntegrityError:
+                return render(request, "application/account.html", {
+                    "message": "Username already taken."
+                })
+            return redirect(reverse("dashboard:index"))
+            return redirect(reverse("application:address"))
     else:
         form = UserForm()
     return render(request, 'application/account.html', {
         'form':form,
-        'step':2,
+        'step':1,
         'formPageNum':formPageNum,
     })
 
@@ -67,6 +82,8 @@ def finances(request):
             print(form.data)
             form.save()
             return redirect(reverse("application:programs"))
+        else:
+            print(form.data)
     else:
         form = EligibilityForm()
     return render(request, 'application/finances.html', {
@@ -80,8 +97,10 @@ def programs(request):
         form = programForm(request.POST)
         if form.is_valid():
             print(form.data)
+            return redirect(reverse("dashboard:snap"))
+            
             form.save()
-            return redirect(reverse("application:address"))
+            return redirect(reverse("application:available"))
     else:
         form = programForm()
     return render(request, 'application/programs.html', {

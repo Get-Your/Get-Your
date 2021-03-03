@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 from application import views
+from dashboard import views
 
 
 urlpatterns = [
@@ -25,4 +26,6 @@ urlpatterns = [
     path('', views.index, name='index'),
     # Add one of these every time I make a new app
     path('application/', include(('application.urls', 'application'),namespace='application')),
+    path('dashboard/', include(('dashboard.urls', 'dashboard'),namespace='dashboard')),
+
 ]

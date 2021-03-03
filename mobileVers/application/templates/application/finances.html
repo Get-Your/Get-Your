@@ -5,7 +5,7 @@
 <h2 style="font-weight: 700;color:white; margin:5vh 0"> Enter some basic information on your income </h2>
 
 
-<form action="{% url 'application:finances' %}" method="post" autocomplete="false" enctype="multipart/form-data">
+<form action="{% url 'application:finances' %}" method="post" autocomplete="false">
     {% csrf_token %}
     <!-- TODO: Make it yes or no not checkbox-->
     <div class="input" style="padding-top:0">
@@ -23,13 +23,13 @@
     <div class="input">
         {% if field.label == "Rent" %}
         {% elif field.label == 'Number of Dependents' %}
-            <input type="text" name="{{ field.name }}" id="{{ field.id_for_label}}" value ="0">
+            <input class="fill" type="text" name="{{ field.name }}" id="{{ field.id_for_label}}" value ="0">
             <label class="label">How many dependents are in your household?</label> 
         {% else %}
             <label class="label" style="position:relative; top:-5px">How much is your gross annual household income?</label> 
             <select name="{{ field.name }}" id="{{ field.id_for_label}}">
             {% for option in field %}
-                <option style="background-color: var(--darkblue);" value="{{ option }}"> {{ option.name }} </option>
+                <option style="background-color: var(--darkblue);" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
             {% endfor %}
             </select>
         {% endif %}
@@ -38,35 +38,5 @@
     <div class="footer">
         <button type="submit"> CONTINUE </button>
     </div>
-    </form>
+</form>
 {% endblock %}
-
-
-
-
-
-
-
-<p style="color:white; font-weight:700;"> What is your marital status? </p>
-<div class = row style="margin-top: 2vh;">
-    <!-- Make bullet points-->
-    <p> TODOOO </p>
-</div>
-
-<p style="color:white; font-weight:700;"> How many total individuals live in your household, including dependents? </p>
-
-<div class="input" style="margin-top: 2vh;">
-    <!--TODO: Save input-->
-    <input type="text" style="width:100%;" required>
-    
-    <label>Number of Dependents</label>    
-</div>
-
-<p style="color:white; font-weight:700;"> What is your gross household income for the year? </p>
-
-<div class="input" style="margin-top: 2vh;">
-    <!--TODO: Save input-->
-    <input type="text" style="width:100%;" required>
-    
-    <label>Salary Range</label>    
-</div>
