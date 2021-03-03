@@ -74,19 +74,3 @@ def email(email):
         print(response.headers)
     except Exception as e:
         print(e.message)
-
-'''
-{'AddressValidateResponse': 
-    {'Address': 
-        {
-        '@ID': '0', 
-        'Address1': 'APT A', 
-        'Address2': '1620 AZALEA DR',
-        'City': 'FORT COLLINS', 
-        'State': 'CO', 
-        'Zip5': '80526', 
-        'Zip4': '5705'
-        }
-    }
-} '''
-

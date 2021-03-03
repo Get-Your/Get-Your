@@ -151,3 +151,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 # CSS files
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+#added media path for file uploads
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
