@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, reverse
 
 
-from .forms import UserForm, AddressForm, EligibilityForm
-from .backend import addressCheck, validateUSPS
+from .forms import UserForm, AddressForm, EligibilityForm, programForm
+from .backend import addressCheck, validateUSPS, email
 
 formPageNum = 5
 
@@ -19,13 +19,13 @@ def index(request):
 def address(request):
     if request.method == "POST": 
         form = AddressForm(request.POST or None)
-        # print(form.data)
+        print(form.data)
         if form.is_valid():
             dict = validateUSPS(form)
             try:
                 addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'])
             except KeyError:
-                pass
+                print("Wrong address info added")
             if addressResult == True:
                 form.n2n = True
                 return redirect(reverse("application:available"))
@@ -48,6 +48,8 @@ def account(request):
         if form.is_valid():
             # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
             # Make sure password isn't getting saved twice
+            email(form['email'].value(),)
+            print(form.data)
             form.save()
             return redirect(reverse("application:finances"))
     else:
@@ -62,6 +64,7 @@ def finances(request):
     if request.method == "POST": 
         form = EligibilityForm(request.POST)
         if form.is_valid():
+            print(form.data)
             form.save()
             return redirect(reverse("application:programs"))
     else:
@@ -73,7 +76,20 @@ def finances(request):
     })
 
 def programs(request):
-    return render(request, 'application/page4.html',)
+    if request.method == "POST": 
+        form = programForm(request.POST)
+        if form.is_valid():
+            print(form.data)
+            form.save()
+            return redirect(reverse("application:address"))
+    else:
+        form = programForm()
+    return render(request, 'application/programs.html', {
+        'form':form,
+        'step':4,
+        'formPageNum':formPageNum,
+    })
+    #return render(request, 'application/programs.html',)
 
 def available(request):
     return render(request, 'application/de_available.html',)
