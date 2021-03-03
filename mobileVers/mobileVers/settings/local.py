@@ -37,6 +37,11 @@ def get_secret(setting, secrets=secrets):
         raise ImproperlyConfigured(error_msg)
 
 SECRET_KEY = get_secret('SECRET_KEY')
+TWILIO_ACCOUNT_SID = get_secret('TWILIO_ACCOUNT_SID') #os.getenv("TWILIO_ACCOUNT_SID") 
+TWILIO_AUTH_TOKEN = get_secret('TWILIO_AUTH_TOKEN') #os.getenv("TWILIO_AUTH_TOKEN") 
+TWILIO_NUMBER = get_secret('TWILIO_NUMBER') #os.getenv("TWILIO_NUMBER")
+USPS_SID = get_secret('USPS_SID') #os.getenv("USPS_ACCOUNT_SID") 
+POSTGRESQLPW = get_secret('POSTGRESQLPW') #os.getenv("POSTGRESQLPW")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
