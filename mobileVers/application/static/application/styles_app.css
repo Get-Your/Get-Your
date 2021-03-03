@@ -148,7 +148,11 @@ input{
     border-bottom:1px solid white;
 }
 input:focus { outline:none; }
-label{
+.labelword{
+    color:white;
+    font-size: 12px;
+}
+.label{
     /*This pushed the words away*/
     position:absolute;
     color:white;

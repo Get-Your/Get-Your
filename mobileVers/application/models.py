@@ -1,4 +1,5 @@
 from django.db import models
+from phonenumber_field.modelfields import PhoneNumberField
 
 # TODO: Andrew - Can you tell Grace if these model databases are saved in the same format on Postgre?
 # I want to see if they save the time made too for reach of the models; also would like to see how the id is made 
@@ -28,6 +29,7 @@ class User(TimeStampedModel):
     lastName = models.CharField(max_length=200)
     password = models.CharField(max_length=200)
     email = models.EmailField(unique=True)
+    phone_number = PhoneNumberField()
     # TODO:@Grace check this and implement? 
     # phone = models.DecimalField(max_digits=10, decimal_places=0)
 
@@ -48,6 +50,10 @@ class Addresses(TimeStampedModel):
     zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
     n2n = models.BooleanField()
 
+choices = (
+    ('Rent', 'Rent'),
+    ('Own', 'Own')
+)
 # Eligibility model class attached to user (will delete as user account is deleted too)
 class Eligibility(TimeStampedModel):
     user_id = models.OneToOneField(
@@ -56,7 +62,8 @@ class Eligibility(TimeStampedModel):
         primary_key=True,
     )
 
-    rent = models.BooleanField()
+    rent = models.CharField(choices=choices, max_length=10)
+
     # TODO: possibly add field for how many total individuals are in the household
     dependents = models.IntegerField(100)
 

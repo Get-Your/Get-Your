@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'dashboard',
     'application',
+    'phonenumber_field',
 ]
 
 MIDDLEWARE = [
@@ -135,6 +136,8 @@ USE_L10N = True
 
 USE_TZ = True
 
+# For phone number default region setting:
+PHONENUMBER_DEFAULT_REGION = 'US'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
