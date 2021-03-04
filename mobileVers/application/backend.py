@@ -28,12 +28,10 @@ def addressCheck(address1):
         for lines in csv_reader:
             column = lines[0] + " " + lines[1] + " " + lines[2]
             if address1 == column:
-                #broadcast_sms(phone_Number)
                 return True
             else:
                 counter = counter + 1
                 if counter == 78:
-                    #broadcast_sms(phone_Number)
                     return False
                 else:
                     continue
@@ -58,7 +56,7 @@ def validateUSPS(form):
         print("Wrong address info added")
 
 
-def email(email):
+def broadcast_email(email):
     TEMPLATE_ID = settings.TEMPLATE_ID
     message = Mail(
         from_email='ahernandez@codeforamerica.org',

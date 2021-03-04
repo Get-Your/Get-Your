@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.db import IntegrityError
 
 from .forms import UserForm, AddressForm, EligibilityForm, programForm
-from .backend import addressCheck, validateUSPS, email
+from .backend import addressCheck, validateUSPS, broadcast_email, broadcast_sms
 
 formPageNum = 5
 
@@ -26,7 +26,7 @@ def address(request):
         if form.is_valid():
             dict = validateUSPS(form)
             try:
-                addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'])
+                addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'], )
             except KeyError:
                 print("Wrong address info added")
             if addressResult == True:
@@ -50,7 +50,9 @@ def account(request):
         if form.is_valid():
             # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
             # Make sure password isn't getting saved twice
-            #email(form['email'].value(),)
+            #Andrew Twilio functions found below!
+            #broadcast_email(form['email'].value(),)
+            #broadcast_sms(form['phone_number'].value())
             print(form.data)
             try:                
                 form.save()
