@@ -63,26 +63,8 @@ def account(request):
             #broadcast_sms(form['phone_number'].value())
             print(form.data)
             try:                
-<<<<<<< HEAD
                 user = form.save()
                 login(request,user)
-=======
-                form.save()
-                email = form.cleaned_data.get("email")
-                # Check that password matches the confirmation
-                password = form.cleaned_data.get("password")
-                user = User.objects.create_user(username = form.cleaned_data.get('email'), email = form.cleaned_data.get('email'), password = form.cleaned_data.get('password'),first_name = form.cleaned_data.get('firstName'),last_name = form.cleaned_data.get('lastName'))
-                user = authenticate(username=email, password=password)
-                print("email is " + email)
-                print("password is " + password)
-                print("user is " + str(user))
-                try:
-                    login(request,user)
-                    print("userloggedin")
-                except AttributeError:
-                    print("user error, login not saved, user is: " + str(user))
-
->>>>>>> fe7b6053a6cb1273be6aa3adbc80dc581f9ddf11
             # TODO: GRACE - check if this error actually works
             except IntegrityError:
                 return render(request, "application/account.html", {
@@ -125,13 +107,7 @@ def programs(request):
             instance.user = request.user
             instance.save()
             return redirect(reverse("dashboard:snap"))
-<<<<<<< HEAD
             
-=======
-            #enter upload code here for client to upload images
-            form.save()
-            return redirect(reverse("application:available"))
->>>>>>> fe7b6053a6cb1273be6aa3adbc80dc581f9ddf11
     else:
         form = programForm()
     return render(request, 'application/programs.html', {
