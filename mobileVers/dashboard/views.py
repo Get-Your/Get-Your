@@ -8,7 +8,8 @@ def index(request):
         user = request.user
         print(user)
         return render(request, "dashboard/index.html", {"user" : user})
-    print("notautnehticated")
+    else:
+        print("notautnehticated")
 
     return render(request, 'dashboard/layout.html',)
 
