@@ -2,11 +2,16 @@
 
 {% block body %}
 {{form}}
-<button class=buttonClick>Food Assistance (SNAP)</button>
-<button class=buttonClick>Free / Reduced Lunch</button>
+<div class="upload-btn-wrapper">
+  <button class=buttonClick>Food Assistance (SNAP)</button>
+  <input type="file" name ="SNAP" id="SNAP"/>
+</div>
 
-<input type="file" name ="SNAP" id="SNAP"/>
-<input type="file" name ="FRL" id="FRL"/>
+<div class="upload-btn-wrapper">
+  <button class=buttonClick>Free / Reduced Lunch</button>
+  
+  <input type="file" name ="FRL" id="FRL"/>
+</div>
 
 <style>
 .upload-btn-wrapper {

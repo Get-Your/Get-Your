@@ -5,11 +5,10 @@ from django.shortcuts import render, redirect, reverse
 # first index page we come into
 def index(request):
     if request.user.is_authenticated:
-        user = request.user
+        user = request.user.addresses
         print(user)
         return render(request, "dashboard/index.html", {"user" : user})
     print("notautnehticated")
-
     return render(request, 'dashboard/layout.html',)
 
 def snap(request):

@@ -3,14 +3,15 @@ from django import forms
 
 from .models import User, Addresses, Eligibility, programs, choices
 
+
 # form for user account creation
 class UserForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['firstName','lastName', 'email', 'password','phone_number']
+        fields = ['first_name','last_name', 'email', 'password','phone_number']
         labels  = { 
-            'firstName':'First Name', 
-            'lastName':'Last Name', 
+            'first_name':'First Name', 
+            'last_name':'Last Name', 
             'password':'Password', 
             'email':'Email',
             'phone_number':'Phone Number',
@@ -24,6 +25,7 @@ class AddressForm(forms.ModelForm):
         model = Addresses
         fields = ['address', 'address2', 'city', 'state', 'zipCode', 'n2n']
         labels  = { 
+            'user_id': 'user_id',
             'address':'Address',
             'address2':'Apt, Suite, etc', 
             'city':'City', 

@@ -1,14 +1,50 @@
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.base_user import BaseUserManager
+from django.utils.translation import ugettext_lazy as _
 
-# TODO: Andrew - Can you tell Grace if these model databases are saved in the same format on Postgre?
-# I want to see if they save the time made too for reach of the models; also would like to see how the id is made 
-# Within postgre
+
 # 2/23/2021 @Grace - yes they do! When we setup the database engine to Postgre SQL when we re-migrate and whatnot, the models are
 # automatically formatted in the Postgre SQL format, we need to set timezone in settings.py however! Using your old code as an
 # example, IDs were automatically generated, they were created incrementally. I actually want to ask you about ID's since we're
 # on the topic - should we set clients and their IDs based on when the account was created (i.e. sequentially)? Or do we want
 # some kind of numbering system? Perhaps for now, for simplicities sake maybe we can just give ID's out sequentially?
+
+# 3/3/2021 @Andrew - yes that would be good to implement in the future! Just not sure what the best method is to do that; but 
+# definitely feel like this is something we should discuss later
+
+# Create custom user manager class (because django only likes to use usernames as usernames not email)
+class CustomUserManager(BaseUserManager):
+    """
+    Custom user model manager where email is the unique identifiers
+    for authentication instead of usernames.
+    """
+    def create_user(self, email, password, **extra_fields):
+        """
+        Create and save a User with the given email and password.
+        """
+        if not email:
+            raise ValueError(_('The Email must be set'))
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save()
+        return user
+
+    def create_superuser(self, email, password, **extra_fields):
+        
+        #Create and save a SuperUser with the given email and password.
+        
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError(_('Superuser must have is_staff=True.'))
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError(_('Superuser must have is_superuser=True.'))
+        return self.create_user(email, password, **extra_fields)
 
 
 # Class to automatically save date data was entered into postgre
@@ -23,13 +59,21 @@ class TimeStampedModel(models.Model):
         abstract = True
 
 # User model class
-class User(TimeStampedModel):
-    id = models.AutoField(primary_key=True)
-    firstName = models.CharField(max_length=200)
-    lastName = models.CharField(max_length=200)
-    password = models.CharField(max_length=200)
-    email = models.EmailField(unique=True)
+class User(TimeStampedModel,AbstractUser):
+    username = None
+    email = models.EmailField(_('email address'), unique=True)
+    first_name = models.CharField(max_length=200)
+    last_name = models.CharField(max_length=200)
     phone_number = PhoneNumberField()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    objects = CustomUserManager()
+
+    def __str__(self):
+        return self.email
+    #id = models.AutoField(primary_key=True)    
     # TODO:@Grace check this and implement? 
     # phone = models.DecimalField(max_digits=10, decimal_places=0)
 
