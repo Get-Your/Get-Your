@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 from django.db import IntegrityError
 
 from .forms import UserForm, AddressForm, EligibilityForm, programForm
 from .backend import addressCheck, validateUSPS, broadcast_email, broadcast_sms
+
 
 formPageNum = 5
 
@@ -59,15 +61,22 @@ def account(request):
                 email = form.cleaned_data.get("email")
                 # Check that password matches the confirmation
                 password = form.cleaned_data.get("password")
-                user = authenticate(email=email, password=password)
-                login(request,user)
-                print("userloggedin")
+                user = User.objects.create_user(username = form.cleaned_data.get('email'), email = form.cleaned_data.get('email'), password = form.cleaned_data.get('password'),first_name = form.cleaned_data.get('firstName'),last_name = form.cleaned_data.get('lastName'))
+                user = authenticate(username=email, password=password)
+                print("email is " + email)
+                print("password is " + password)
+                print("user is " + str(user))
+                try:
+                    login(request,user)
+                    print("userloggedin")
+                except AttributeError:
+                    print("user error, login not saved, user is: " + str(user))
+
             # TODO: GRACE - check if this error actually works
             except IntegrityError:
                 return render(request, "application/account.html", {
                     "message": "Username already taken."
                 })
-            return redirect(reverse("dashboard:index"))
             return redirect(reverse("application:address"))
     else:
         form = UserForm()
