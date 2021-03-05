@@ -26,6 +26,7 @@ def address(request):
         form = AddressForm(request.POST or None)
         print(form.data)
         if form.is_valid():
+            form.save()
             dict = validateUSPS(form)
             try:
                 addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'], )
@@ -109,7 +110,7 @@ def programs(request):
         if form.is_valid():
             print(form.data)
             return redirect(reverse("dashboard:snap"))
-            
+            #enter upload code here for client to upload images
             form.save()
             return redirect(reverse("application:available"))
     else:
