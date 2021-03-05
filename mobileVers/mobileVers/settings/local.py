@@ -95,7 +95,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'mobileVers.wsgi.application'
-
+AUTH_USER_MODEL = "application.User" 
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases

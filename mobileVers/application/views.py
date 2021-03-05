@@ -9,6 +9,9 @@ from .backend import addressCheck, validateUSPS, email
 
 formPageNum = 5
 
+# Notes: autofill in empty rows for users who don't fill out all of their info?
+
+
 # TODO: Grace - possibly make a function that automatically returns next step of the page?
 # Should all of these view functions look up at this one function and figure out where they need to go next
 # based on which page they are on?
@@ -17,6 +20,8 @@ formPageNum = 5
 
 # first index page we come into
 def index(request):
+    logout(request)
+    print(request.user)
     return render(request, 'application/index.html',)
 
 def address(request):
@@ -27,19 +32,23 @@ def address(request):
             dict = validateUSPS(form)
             try:
                 addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'])
+                if addressResult == True:
+                    form.n2n = True
+                # TODO: Grace/Andrew - Make sure this goes to the correct page if its not hte right address
+                return redirect(reverse("application:available"))
             except KeyError:
                 print("Wrong address info added")
-            if addressResult == True:
-                form.n2n = True
-                return redirect(reverse("application:available"))
-            print(form)
-            form.save()
+            print(request.user)
+            instance = form.save(commit=False)
+            instance.user = request.user
+            instance.save()
             return redirect(reverse("application:finances"))
     else:
         form = AddressForm()
     return render(request, 'application/address.html', {
         'form':form,
         'step':2,
+        'request.user':request.user,
         'formPageNum':formPageNum,
     })
 
@@ -53,19 +62,13 @@ def account(request):
             #email(form['email'].value(),)
             print(form.data)
             try:                
-                form.save()
-                email = form.cleaned_data.get("email")
-                # Check that password matches the confirmation
-                password = form.cleaned_data.get("password")
-                user = authenticate(email=email, password=password)
+                user = form.save()
                 login(request,user)
-                print("userloggedin")
             # TODO: GRACE - check if this error actually works
             except IntegrityError:
                 return render(request, "application/account.html", {
-                    "message": "Username already taken."
+                    "message": "Email already taken."
                 })
-            return redirect(reverse("dashboard:index"))
             return redirect(reverse("application:address"))
     else:
         form = UserForm()
@@ -80,7 +83,9 @@ def finances(request):
         form = EligibilityForm(request.POST)
         if form.is_valid():
             print(form.data)
-            form.save()
+            instance = form.save(commit=False)
+            instance.user = request.user
+            instance.save()
             return redirect(reverse("application:programs"))
         else:
             print(form.data)
@@ -97,10 +102,11 @@ def programs(request):
         form = programForm(request.POST)
         if form.is_valid():
             print(form.data)
+            instance = form.save(commit=False)
+            instance.user = request.user
+            instance.save()
             return redirect(reverse("dashboard:snap"))
             
-            form.save()
-            return redirect(reverse("application:available"))
     else:
         form = programForm()
     return render(request, 'application/programs.html', {
