@@ -8,8 +8,9 @@ def index(request):
         user = request.user.addresses
         print(user)
         return render(request, "dashboard/index.html", {"user" : user})
-    print("notautnehticated")
-    return render(request, 'dashboard/layout.html',)
+    else:
+        print("notautnehticated")
+        return render(request, 'dashboard/layout.html',)
 
 def snap(request):
     return render(request, 'dashboard/SNAP.html',)

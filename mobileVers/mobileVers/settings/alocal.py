@@ -97,6 +97,10 @@ TEMPLATES = [
         },
     },
 ]
+#TODO @Grace is this what we're looking for?
+#AUTHENTICATION_BACKENDS = (
+#        'django.contrib.auth.backends.ModelBackend',
+#    )
 
 WSGI_APPLICATION = 'mobileVers.wsgi.application'
 
