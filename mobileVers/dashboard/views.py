@@ -10,8 +10,7 @@ def index(request):
         return render(request, "dashboard/index.html", {"user" : user})
     else:
         print("notautnehticated")
-
-    return render(request, 'dashboard/layout.html',)
+        return render(request, 'dashboard/layout.html',)
 
 def snap(request):
     return render(request, 'dashboard/SNAP.html',)
