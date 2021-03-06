@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
+#from django.contrib.auth.forms import UserCreationForm
+#from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+from.models import User
 
 from django.db import IntegrityError
 
@@ -9,7 +12,7 @@ from .forms import UserForm, AddressForm, EligibilityForm, programForm
 from .backend import addressCheck, validateUSPS, broadcast_email, broadcast_sms
 
 
-formPageNum = 5
+formPageNum = 6
 
 # Notes: autofill in empty rows for users who don't fill out all of their info?
 
@@ -31,16 +34,17 @@ def address(request):
         form = AddressForm(request.POST or None)
         print(form.data)
         if form.is_valid():
-            form.save()
             dict = validateUSPS(form)
             try:
                 addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'], )
             except KeyError:
                 print("Wrong address info added")
-            print(request.user)
-            instance = form.save(commit=False)
-            instance.user = request.user
-            instance.save()
+            try:
+                instance = form.save(commit=False)
+                instance.user_id = request.user
+                instance.save()
+            except IntegrityError:
+                print("User already has information filled out for this section")
             return redirect(reverse("application:finances"))
     else:
         form = AddressForm()
@@ -62,32 +66,12 @@ def account(request):
             #broadcast_email(form['email'].value(),)
             #broadcast_sms(form['phone_number'].value())
             print(form.data)
-            try:                
-<<<<<<< HEAD
+            try:
                 user = form.save()
                 login(request,user)
-=======
-                form.save()
-                email = form.cleaned_data.get("email")
-                # Check that password matches the confirmation
-                password = form.cleaned_data.get("password")
-                user = User.objects.create_user(username = form.cleaned_data.get('email'), email = form.cleaned_data.get('email'), password = form.cleaned_data.get('password'),first_name = form.cleaned_data.get('firstName'),last_name = form.cleaned_data.get('lastName'))
-                user = authenticate(username=email, password=password)
-                print("email is " + email)
-                print("password is " + password)
-                print("user is " + str(user))
-                try:
-                    login(request,user)
-                    print("userloggedin")
-                except AttributeError:
-                    print("user error, login not saved, user is: " + str(user))
-
->>>>>>> fe7b6053a6cb1273be6aa3adbc80dc581f9ddf11
-            # TODO: GRACE - check if this error actually works
-            except IntegrityError:
-                return render(request, "application/account.html", {
-                    "message": "Email already taken."
-                })
+                print("userloggedin")
+            except AttributeError:
+                print("user error, login not saved, user is: " + str(user))
             return redirect(reverse("application:address"))
     else:
         form = UserForm()
@@ -102,10 +86,14 @@ def finances(request):
         form = EligibilityForm(request.POST)
         if form.is_valid():
             print(form.data)
-            instance = form.save(commit=False)
-            instance.user = request.user
-            instance.save()
-            return redirect(reverse("application:programs"))
+            try:
+                instance = form.save(commit=False)
+                # NOTE FOR ANDREW: This was that stupid line that caused user auth to not work 
+                instance.user_id = request.user
+                instance.save()
+                return redirect(reverse("application:programs"))
+            except IntegrityError:
+                print("User already has information filled out for this section")
         else:
             print(form.data)
     else:
@@ -119,19 +107,22 @@ def finances(request):
 def programs(request):
     if request.method == "POST": 
         form = programForm(request.POST)
+
+##                current_user = request.user
+ #       record_data = programs.objects.get(user_id = current_user)
+ #       form = programForm(request.POST, instance = record_data)
         if form.is_valid():
             print(form.data)
-            instance = form.save(commit=False)
-            instance.user = request.user
-            instance.save()
-            return redirect(reverse("dashboard:snap"))
-<<<<<<< HEAD
-            
-=======
+            print(request.session)
+            try:
+                instance = form.save(commit=False)
+                instance.user_id = request.user
+                instance.save()          
+                return redirect(reverse("dashboard:files"))
+            except IntegrityError:
+                print("User already has information filled out for this section")
             #enter upload code here for client to upload images
-            form.save()
             return redirect(reverse("application:available"))
->>>>>>> fe7b6053a6cb1273be6aa3adbc80dc581f9ddf11
     else:
         form = programForm()
     return render(request, 'application/programs.html', {
@@ -146,4 +137,5 @@ def available(request):
 
 def notAvailable(request):
     return render(request, 'application/de_notavailable.html',)
+
 

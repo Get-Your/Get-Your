@@ -14,6 +14,8 @@ from django.utils.translation import ugettext_lazy as _
 # 3/3/2021 @Andrew - yes that would be good to implement in the future! Just not sure what the best method is to do that; but 
 # definitely feel like this is something we should discuss later
 
+
+
 # Create custom user manager class (because django only likes to use usernames as usernames not email)
 class CustomUserManager(BaseUserManager):
     """
@@ -65,6 +67,7 @@ class User(TimeStampedModel,AbstractUser):
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     phone_number = PhoneNumberField()
+    files = models.ManyToManyField('dashboard.Form', related_name="forms")
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

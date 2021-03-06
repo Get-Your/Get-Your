@@ -13,6 +13,7 @@ from django.conf import settings
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
+
 def broadcast_sms(phone_Number):
     message_to_broadcast = ("We have received your application for GetYourConnection! We'll keep in touch")
     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
