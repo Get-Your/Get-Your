@@ -18,6 +18,12 @@ class UserForm(forms.ModelForm):
             # TODO:@Grace check this and implement? 
             # 'phone':'Phone',
         }
+    def save(self, commit=True):
+        user = super(UserForm, self).save(commit=False)
+        user.set_password(user.password) # set password properly before commit
+        if commit:
+            user.save()
+        return user
 
 # form for addresses
 class AddressForm(forms.ModelForm):
@@ -38,8 +44,9 @@ class EligibilityForm(forms.ModelForm):
     rent = forms.ChoiceField(choices=choices,widget=forms.RadioSelect(),label="Rent")
     class Meta:
         model = Eligibility
-        fields = ['dependents', 'grossAnnualHouseholdIncome']
+        fields = ['rent','dependents', 'grossAnnualHouseholdIncome']
         labels  = {
+            'rent':'Rent',
             'dependents':'Number of Dependents', 
             'grossAnnualHouseholdIncome':'Gross Annual Household Income',
         } 

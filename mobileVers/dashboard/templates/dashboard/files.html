@@ -1,0 +1,55 @@
+{% extends "dashboard/layout.html" %}
+{% load static %}
+
+{% block body %}
+<p style="color:var(--lightblue);font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
+            
+<div style="margin-top: 3vh;">
+    <p style="color:white;">To get qualified, please upload your</p>
+    <h3 style="color:white"> {{program_string}} </h3>
+    <p style="color:white;font-size: max(3.3vw, 12px);">Uploaded documents are secure & not shared with anyone outside of digital equity.</p>
+    
+</div>
+
+<h6 style="color:white"> Upload Files Below:</h6>
+
+<form action="{% url 'dashboard:files' %}" method="post" autocomplete="false" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in form %}
+        {% if form.errors %}
+        {% for error in field.errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% if field.label == "Program" %}
+            <div class="row" style="justify-content: space-between;">
+                <p style="color:white;font-weight: 800;">Programs: </p> 
+                <select name="{{ field.name }}" id="{{ field.id_for_label}}">
+                {% for option in field %}
+                    <option style="background-color: var(--darkblue);" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
+                {% endfor %}
+                </select>
+            </div>
+        {% else %}
+            <div class="upload-btn-wrapper" style ="width:100%; align-items: center; margin-top: 3vh;">
+                <button class="buttonFileUpload">
+                    <div class="row" style="justify-content: space-between;">
+                        <img src="{% static 'dashboard/images/upload.svg' %}" alt="back" style="width:15vw; margin-right: 5vw">
+                        <div style="display:flex; flex-direction:column;align-items:flex-start;">
+                            <p style = "color:white; font-weight: 400;text-align: left; margin-bottom: 5px;">Select the document from your photo library.</p>
+                            <p style = "color:white;font-weight: 200;">PDF, PNG or JPEG</p>
+                        </div>
+                    </div>
+                </button>
+                <input type="file" name ="{{field.name}}" id="{{ field.id_for_label }}" required/>
+            </div>
+        {% endif %}
+    {% endfor %}
+    <div class="footer">
+        <button type ="submit" > CONTINUE </button>
+    </div>
+</form>
+
+{% endblock %}

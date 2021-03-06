@@ -5,6 +5,7 @@
     --orange: #F27B1F;
     --yellow: #F9B316;
     --gray: #999999;
+
 }
 
 .column {
@@ -40,12 +41,13 @@ html,body {
     width: 100%;
     box-sizing: border-box;
     position: relative;
+    margin:0;
+    padding:0;
 }
 
 /*Keep floating contents inside respective parents*/
 div{
     position: relative;
-    overflow: hidden;
 }
 /*Set up font sizes*/
 h1 {
@@ -60,9 +62,10 @@ h1 {
 }
 h2 {
     font-size: max(5vw, 24px);
+    margin:0;
 }
 h3 {
-    font-size: max(4vw, 16px);
+    font-size: max(4.vw, 20px);
 }
 h4 {
     font-size: 25px;
@@ -119,114 +122,173 @@ button {
     justify-content: center;
     margin:0;
 }
+
+.content{
+    width:100%;
+    height:100vh;
+}
 /*Every styling feature below is for the navigation bar --------------------------*/
-
-/*the ul that holds the navbar links list*/
-.navUl {
-    margin:0;
-    padding: 6% 0% 3% 3%;
-    vertical-align: middle;
-    /*make list horizontal*/
-    display: flex;
-    flex-direction: row;
-    height: 7vh;
-
-}
-#full-nav {
-    margin: 0;
-    background-color: var(--darkblue);
-    width: 100%;
-    height: 100%;
-    border-color: var(--darkblue);
-}
-
-/*Need this to not have the bullet point on the lists*/
-.nav {
-    display: inline;
-    padding: 10px 0px;
-}
-
-/*styles for the links on navbar*/
-.link{
-    font-size: max(3.8vw, 16px);
-    display: block;
-    color: white;
-    text-align: center;
-    text-decoration: none;
-    margin-right: 20px;
-}
 
 /*whenever i need to make a row*/
 .row{
-    margin-right: 15px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     flex-direction: row;
-    margin-left: auto;
+    width: 90%;
     padding: 0;
+    margin: 0 5%;
     
 }
 
-/*ALL THINGS BELOW ARE FOR INPUTS*/
-.input{
-    position: relative;
-    padding: 20px 0px;
-    /*need height to be 100%*/
-}
-input{
-    font-size: 16px;
-    padding:5px;
-    font-weight: 700;
-    display:block;
-    border:none;
-    color:var(--yellow);
-    background-color: var(--lightblue);
-    border-bottom:1px solid white;
-}
-input:focus { outline:none; }
-label{
-    /*This pushed the words away*/
-    position:absolute;
-    color:white;
-    font-size: 12px;
-    left:5px;
-    top:20px;
-    pointer-events: none;
-    transition:0.2s ease-in-out; 
-    -moz-transition:0.2s ease all; 
-    -webkit-transition:0.2s ease all;
-    
-}
-  
-input:focus ~ label, input:valid ~ label {
-    transform:translateY(-20px);
-  }
-
-/*POPUP MODAL --------------------------------*/
-
-#popup-1 {
-	display: none;
-/*	background-color: rgba(0,0,0,0.5);*/
-	position: absolute;
-	height: 100vh;
-    width: 100%;
-    bottom: 0px;
-    z-index:1;
-    transition: bottom 1s;
-}
-.popup-content {
-	position: relative;
-    padding: 15vh 20px 5vh 20px;
-    flex-direction: columnn;
-	margin: auto;
-    background-color: white;
-    vertical-align: center;
-    width: 80%;
-    height: 50%;
+nav{
+    margin:0;
+    flex-direction: column;
+    display:flex;
     justify-content: space-around;
-    align-items: center;
-    top: 5vh;
-    -webkit-box-shadow: 0px 0px 10px 5px #888;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
-    -moz-box-shadow:    0px 0px 10px 5px #888;  /* Firefox 3.5 - 3.6 */
-    box-shadow:         0px 0px 10px 5px #888; 
+}
+
+#menuToggle
+{
+  display: block;
+  position: relative;
+  
+  z-index: 1;
+  
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#menuToggle a
+{
+  text-decoration: none;
+  color: #232323;
+  
+  transition: color 0.3s ease;
+}
+
+
+#menuToggle input
+{
+  display: block;
+  width: 6vw;
+  height: 6vw;
+  position: absolute;
+  top: -7px;
+  left: -5px;
+  
+  cursor: pointer;
+  
+  opacity: 0; /* hide this */
+  z-index: 2; /* and place it over the hamburger */
+  
+  -webkit-touch-callout: none;
+}
+
+/*
+ * Just a quick hamburger
+ */
+#menuToggle span
+{
+  display: block;
+  width: 6vw;
+  height: 0.35vh;
+  margin-bottom: 0.35vh;
+  position: relative;
+  
+  background: var(--darkblue);
+  border-radius: 3px;
+  
+  z-index: 1;
+  
+  transform-origin: 4px 0px;
+  
+  transition: transform 0.5s cubic-bezier(0.77,0.2,0.05,1.0),
+              background 0.5s cubic-bezier(0.77,0.2,0.05,1.0),
+              opacity 0.55s ease;
+}
+
+#menuToggle span:first-child
+{
+  transform-origin: 0% 0%;
+}
+
+#menuToggle span:nth-last-child(2)
+{
+  transform-origin: 0% 100%;
+}
+
+/* 
+ * Transform all the slices of hamburger
+ * into a crossmark.
+ */
+#menuToggle input:checked ~ span
+{
+  opacity: 1;
+  transform: rotate(45deg) translate(0, 0);
+  width: 3vh;
+  background: white;
+}
+
+/*
+ * But let's hide the middle one.
+ */
+#menuToggle input:checked ~ span:nth-last-child(3)
+{
+  opacity: 0;
+  width:  3vh;
+  transform: rotate(0deg) scale(0.2, 0.2);
+}
+
+/*
+ * Ohyeah and the last one should go the other direction
+ */
+#menuToggle input:checked ~ span:nth-last-child(2)
+{
+  transform: rotate(-45deg) translate(0,0.175vh);
+}
+
+/*
+ * Make this absolute positioned
+ * at the top left of the screen
+ */
+#menu
+{
+  position: absolute;
+  width: 60vw;
+  height:100vh;
+  margin: -8vw 0 0 -8vw;
+  padding: 5vw;
+  border-radius: 3vw;
+  padding-top: 125px;
+  color:white;
+  background: var(--darkblue);
+  list-style-type: none;
+  -webkit-font-smoothing: antialiased;
+  /* to stop flickering of text in safari */
+  
+  transform-origin: 0% 0%;
+  transform: translate(-100%, 0);
+  
+  transition: transform 0.5s cubic-bezier(0.77,0.2,0.05,1.0);
+}
+
+#menu li
+{
+  padding: 10px 0;
+  font-size: 22px;
+}
+
+/*
+ * And let's slide it in from the left
+ */
+#menuToggle input:checked ~ ul
+{
+  transform: none;
+}
+
+.module {
+    margin: 5vw;
+    padding: 0 5vw ;
+    border: 2px solid rgba(99,99,99,0.25);
+    border-radius: 3vw;
 }

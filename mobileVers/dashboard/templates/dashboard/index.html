@@ -1,6 +1,55 @@
-{% extends "dashboard/layout.html" %}
+<!-- This brings in the CSS-->
+{% load static %}
 
-{% block body %}
-<h2 style="color:#14477E"><span style="color:#FBA66B;outline-color: #14477E;">{{user}}</span>'s Dashboard</h2>
+<!DOCTYPE html>
+<html lang="en">
+    <!--Get the various stylesheets I need like my fonts and CSS-->
+    <head>
+        <title>GetYour: Connexion</title>
+        <link href="{% static 'dashboard/styles.css' %}" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&display=swap" rel="stylesheet">
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
 
-{% endblock %}
+    <body>
+        <div class="row" style="text-align: center;">
+          <nav role="navigation" style="width: 3vh;">
+            <div id="menuToggle" class="icon" style="position: absolute;">
+              <input type="checkbox" />
+              
+              <!--Some spans to act as a hamburger.-->
+              <span></span>
+              <span></span>
+              <span></span>
+              
+              <ul id="menu">
+                <a style="color:var(--yellow); font-weight: 800;" href="#"><li>Dashboard</li></a>
+                <a style="color:var(--white); font-weight: 800;" href="#"><li>FAQ</li></a>
+              </ul>
+            </div>
+          </nav>
+            <p style="font-weight: 700; color:var(--darkblue);">GetYour: Connexion</p>
+            <img src="{% static 'dashboard/images/AlertBell.svg' %}" alt="back" style="width:4.5vw;" onclick="location.href='{% url 'application:index' %}'">
+        </div>
+        
+        <div class="content ">
+            <div class="module" >
+              <p>Application Status </p>
+              <h3 style="color:#137D13; font-weight: 800;"><span style="font-size:max(5.9vw, 30px);margin-right: 4vw;">01</span>In Progress</h3>
+              <div class="row" style="margin:0; width:100%;">
+                <img src="{% static 'dashboard/images/iconRise.svg' %}" alt="back" style="width:23vw;margin-right: 3vw;" onclick="location.href='{% url 'application:index' %}'">
+                <p>The office is experiencing busier than normal application rates. </p>
+            </div>
+            <div class="row" style="width:100%; margin:0; justify-content: flex-start;">
+                <img src="{% static 'dashboard/images/clock.svg' %}" alt="back" style="width:10vw; margin-right:5vw;" onclick="location.href='{% url 'application:index' %}'">
+                <div>
+                  <p style="margin-bottom: 0;">Estimated processing time:</p>
+                  <p style="font-weight: 800; margin-top: 5px;">~5 bussiness days</p>
+                </div>
+              </div>
+            </div>
+        </div>
+    </body>
+</html>

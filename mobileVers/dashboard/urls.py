@@ -7,8 +7,8 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),
     # Pages for forms
-    path('snap', views.snap, name='snap'),
-    path('freeReduced', views.freeReduced, name='freeReduced'),
+    path('files', views.files, name='files'),
+    path('login', views.login_user, name='login'),
 
     # Available/NotAvailable Digital equity in your area
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #this is needed to get file uploads to work! 
