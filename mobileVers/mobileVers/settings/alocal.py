@@ -79,6 +79,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'mobileVers.urls'
+AUTH_USER_MODEL = "application.User" 
 
 TEMPLATES = [
     {
