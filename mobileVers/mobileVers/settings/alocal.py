@@ -26,26 +26,35 @@ from django.core.exceptions import ImproperlyConfigured
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # JSON-based secrets module
-with open('secrets.json') as f:
+'''with open('secrets.json') as f:
     secrets = json.loads(f.read())
 def get_secret(setting, secrets=secrets):
-    '''Get the secret variable or return explicit exception.'''
     try:
         return secrets[setting]
     except KeyError:
         error_msg = 'Set the {0} environment variable'.format(setting)
-        raise ImproperlyConfigured(error_msg)
+        raise ImproperlyConfigured(error_msg)'''
 
 
 #Keys
-SECRET_KEY = get_secret('SECRET_KEY')
-TWILIO_ACCOUNT_SID = get_secret('TWILIO_ACCOUNT_SID') #os.getenv("TWILIO_ACCOUNT_SID") 
-TWILIO_AUTH_TOKEN = get_secret('TWILIO_AUTH_TOKEN') #os.getenv("TWILIO_AUTH_TOKEN") 
-TWILIO_NUMBER = get_secret('TWILIO_NUMBER') #os.getenv("TWILIO_NUMBER")
-USPS_SID = get_secret('USPS_SID') #os.getenv("USPS_ACCOUNT_SID") 
-POSTGRESQLPW = get_secret('POSTGRESQLPW') #os.getenv("POSTGRESQLPW")
-SENDGRID_API_KEY = get_secret('SENDGRID_API_KEY')
-TEMPLATE_ID = get_secret("TEMPLATE_ID")
+#SECRET_KEY = get_secret('SECRET_KEY')
+#TWILIO_ACCOUNT_SID = get_secret('TWILIO_ACCOUNT_SID') #os.getenv("TWILIO_ACCOUNT_SID") 
+#TWILIO_AUTH_TOKEN = get_secret('TWILIO_AUTH_TOKEN') #os.getenv("TWILIO_AUTH_TOKEN") 
+#TWILIO_NUMBER = get_secret('TWILIO_NUMBER') #os.getenv("TWILIO_NUMBER")
+#USPS_SID = get_secret('USPS_SID') #os.getenv("USPS_ACCOUNT_SID") 
+#POSTGRESQLPW = get_secret('POSTGRESQLPW') #os.getenv("POSTGRESQLPW")
+#SENDGRID_API_KEY = get_secret('SENDGRID_API_KEY')
+#TEMPLATE_ID = get_secret("TEMPLATE_ID")
+
+
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID") 
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN") 
+TWILIO_NUMBER = os.getenv("TWILIO_NUMBER") 
+USPS_SID = os.getenv("USPS_ACCOUNT_SID")
+POSTGRESQLPW = os.getenv("POSTGRESQLPW")
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+TEMPLATE_ID = os.getenv("TEMPLATE_ID")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
