@@ -11,6 +11,7 @@ urlpatterns = [
     path('account', views.account, name='account'),
     path('finances', views.finances, name='finances'),
     path('programs', views.programs, name='programs'),
+    
 
     # Available/NotAvailable Digital equity in your area
     path('available', views.available, name='available'),
