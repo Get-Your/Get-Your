@@ -11,12 +11,15 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+from environ import Env
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = Env()
 
+env.read_env(env_file='.env') 
 import json
 
 from django.core.exceptions import ImproperlyConfigured
@@ -46,21 +49,21 @@ def get_secret(setting, secrets=secrets):
 #SENDGRID_API_KEY = get_secret('SENDGRID_API_KEY')
 #TEMPLATE_ID = get_secret("TEMPLATE_ID")
 
-SECRET_KEY = os.getenv("SECRET_KEY") 
+SECRET_KEY = env("SECRET_KEY") 
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID") 
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN") 
 TWILIO_NUMBER = os.getenv("TWILIO_NUMBER")
-USPS_SID = os.getenv("USPS_ACCOUNT_SID") 
+USPS_SID = os.getenv("USPS_SID") 
 POSTGRESQLPW = os.getenv("POSTGRESQLPW")
 SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
 TEMPLATE_ID = os.getenv("TEMPLATE_ID")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # ANDREW: Make sure to change this later!
-ALLOWED_HOSTS = ["*", "192.168.0.15"]
+ALLOWED_HOSTS = ["*", "192.168.0.15","localhost"]
 
 
 # Application definition
