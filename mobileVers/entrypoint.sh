@@ -4,9 +4,9 @@ mkdir -p /code/logs
 touch /code/logs/gunicorn.log
 touch /code/logs/gunicorn-access.log
 tail -n 0 -f /code/logs/gunicorn*.log &
-export DJANGO_SETTINGS_MODULE=django_docker_azure.settings
-exec gunicorn django_docker_azure.wsgi:application \
-     --name django_docker_azure \
+export DJANGO_SETTINGS_MODULE=mobileVers.settings.alocal
+exec gunicorn mobileVers.wsgi:application \
+     --name mobileVers \
      --bind 0.0.0.0:8002 \
      --workers 5 \
      --log-level=info \
