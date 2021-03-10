@@ -62,9 +62,6 @@ def account(request):
         if form.is_valid():
             # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
             # Make sure password isn't getting saved twice
-            #Andrew Twilio functions found below!
-            #broadcast_email(form['email'].value(),)
-            #broadcast_sms(form['phone_number'].value())
             print(form.data)
             try:
                 user = form.save()
@@ -117,7 +114,7 @@ def programs(request):
             try:
                 instance = form.save(commit=False)
                 instance.user_id = request.user
-                instance.save()          
+                instance.save() 
                 return redirect(reverse("dashboard:files"))
             except IntegrityError:
                 print("User already has information filled out for this section")
