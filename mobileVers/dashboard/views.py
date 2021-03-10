@@ -5,6 +5,7 @@ from .models import User, Form
 
 from .backend import authenticate, files_to_string
 from django.contrib.auth import get_user_model, login, authenticate, logout
+from application.backend import broadcast_email, broadcast_sms
 # Create your views here.
 
 # first index page we come into
@@ -25,6 +26,12 @@ def files(request):
                 instance.user_id = request.user
                 instance.save()
                 print("File Saved")
+
+                current_user = request.user
+                #Andrew Twilio functions found below!
+                broadcast_email(current_user.email)
+                phone = str(current_user.phone_number)
+                broadcast_sms(phone)      
 
                 # Check if the user needs to upload another form
                 Forms = Form.objects.filter(user_id = request.user)
