@@ -6,20 +6,26 @@
 
 <!--Get the various stylesheets I need like my fonts and CSS-->
 
-<div class="content spaceAround">
+<div class="margin-top: 2vh;">
     <!--NOTE: For the future have numbers change based on database-->
+    <br>
+    <br>
+    
     <h1 style="color:white"><b>We sent you an email!</b></h1>
     <br>
-    <p style="color:white">Please verify your email by clicking the link sent to: fakeemail@gmail.com </p>
+    <br>
+    <p style="color:white">Check the email at {{program_string}}.</p>
+    <p style="color:white">Be sure to check your spam folder!</p>
     <br>
     <p style="color:white">Didn't get an email from us?</p>
+    
     <br>
 
-    <u class=yellow style=>Resend verification link</u></b>
+    <u class=yellow style=>Well, too bad!</u></b>
         <!--Whatever I need in the other pages, I can enter it here-->
 
-        <div class="footer">
-            <button type="submit"> Verify later </button>
+    <div class="footer">
+        <button onclick="location.href='{% url 'dashboard:index' %}'"> CONTINUE </button>
 
 
 </div>
