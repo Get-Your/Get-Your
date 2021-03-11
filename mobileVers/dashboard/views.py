@@ -91,7 +91,8 @@ def login_user(request):
         # Check if the authentication was successful
         if user is not None:
             login(request, user)
-            return redirect(reverse("dashboard:files"))
+            #TODO logic needed here to check if client has completed application or not!
+            return redirect(reverse("dashboard:index"))
         else:
             return render(request, "dashboard/login.html", {
                 "message": "Invalid username and/or password"
