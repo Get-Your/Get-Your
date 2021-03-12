@@ -49,6 +49,7 @@ def get_secret(setting, secrets=secrets):
 #SENDGRID_API_KEY = get_secret('SENDGRID_API_KEY')
 #TEMPLATE_ID = get_secret("TEMPLATE_ID")
 
+
 SECRET_KEY = env("SECRET_KEY") 
 TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID") 
 TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN") 
