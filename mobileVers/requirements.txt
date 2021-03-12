@@ -1,3 +1,4 @@
+django==3.1.7
 sendgrid==6.6.0
 numpy==1.19.5
 django-formwizard~=1.0
@@ -7,4 +8,6 @@ matplotlib~=3.3.3
 mpld3~=0.5.2
 usps-api
 twilio
-phonenumbers==8.12.19
+django-phonenumber-field[phonenumbers]
+django-environ
+psycopg2-binary
