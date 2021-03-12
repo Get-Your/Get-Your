@@ -11,12 +11,15 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+from environ import Env
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = Env()
 
+env.read_env(env_file='.env') 
 import json
 
 from django.core.exceptions import ImproperlyConfigured
@@ -47,20 +50,21 @@ def get_secret(setting, secrets=secrets):
 #TEMPLATE_ID = get_secret("TEMPLATE_ID")
 
 
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID") 
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN") 
-TWILIO_NUMBER = os.getenv("TWILIO_NUMBER") 
-USPS_SID = os.getenv("USPS_ACCOUNT_SID")
-POSTGRESQLPW = os.getenv("POSTGRESQLPW")
-SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
-TEMPLATE_ID = os.getenv("TEMPLATE_ID")
+SECRET_KEY = env("SECRET_KEY") 
+TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID") 
+TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN") 
+TWILIO_NUMBER = env("TWILIO_NUMBER")
+USPS_SID = env("USPS_SID") 
+POSTGRESQLPW = env("POSTGRESQLPW")
+SENDGRID_API_KEY = env('SENDGRID_API_KEY')
+TEMPLATE_ID = env("TEMPLATE_ID")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 # ANDREW: Make sure to change this later!
-ALLOWED_HOSTS = ["*", "192.168.0.15"]
+ALLOWED_HOSTS = ["*", "192.168.0.15","localhost"]
 
 
 # Application definition
@@ -85,6 +89,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', #add whitenoise
 ]
 
 ROOT_URLCONF = 'mobileVers.urls'
@@ -119,12 +124,23 @@ WSGI_APPLICATION = 'mobileVers.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 # ANDREW: Add Azure stuff here
-DATABASES = {
+'''DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
     }
-}
+}'''
+
+DATABASES = {
+     'default': {
+         'ENGINE': 'django.db.backends.postgresql',
+         'NAME': 'getyours_connexion',
+         'USER': 'gycpcdriver@gyc1.postgres.database.azure.com',
+         'PASSWORD': POSTGRESQLPW,
+         'HOST': 'gyc1.postgres.database.azure.com'
+         }
+ }
+
 
 
 # Password validation
@@ -169,6 +185,7 @@ PHONENUMBER_DEFAULT_REGION = 'US'
 STATIC_URL = '/static/'
 # CSS files
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 
 #added media path for file uploads
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

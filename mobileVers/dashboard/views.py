@@ -5,9 +5,12 @@ from .models import User, Form
 
 from .backend import authenticate, files_to_string
 from django.contrib.auth import get_user_model, login, authenticate, logout
+from application.backend import broadcast_email, broadcast_sms
 # Create your views here.
 
 # first index page we come into
+
+
 def files(request):
     # TODO: Grace Add something that checks if user logged in
     file_list = {"SNAP Card": request.user.programs.snap,
@@ -45,8 +48,7 @@ def files(request):
                             'step':5,
                             'formPageNum':6,
                         })
-
-                return redirect(reverse("dashboard:index"))
+                return redirect(reverse("dashboard:broadcast"))
             else:
                 print("notautnehticated")
                 # TODO: Change this link
@@ -62,6 +64,20 @@ def files(request):
         'formPageNum':6,
     })
 
+
+def broadcast(request):
+    current_user = request.user
+    #Andrew Twilio functions found below!
+    broadcast_email(current_user.email)
+    phone = str(current_user.phone_number)
+    broadcast_sms(phone)      
+    return render(request, 'dashboard/broadcast.html', {
+            'program_string': current_user.email,
+            'step':6,
+            'formPageNum':6,
+        })
+    
+
 def index(request):
     return render(request, 'dashboard/index.html',)
 
@@ -75,7 +91,8 @@ def login_user(request):
         # Check if the authentication was successful
         if user is not None:
             login(request, user)
-            return redirect(reverse("dashboard:files"))
+            #TODO logic needed here to check if client has completed application or not!
+            return redirect(reverse("dashboard:index"))
         else:
             return render(request, "dashboard/login.html", {
                 "message": "Invalid username and/or password"

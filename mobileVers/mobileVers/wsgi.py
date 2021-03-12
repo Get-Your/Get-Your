@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobileVers.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobileVers.settings') #.alocal when we start doing production, MUST BE 'mobileVers.settings.alocal'
 
 application = get_wsgi_application()
