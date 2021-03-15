@@ -60,6 +60,8 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
 
+
+
 # User model class
 class User(TimeStampedModel,AbstractUser):
     username = None
