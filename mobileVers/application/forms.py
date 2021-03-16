@@ -63,3 +63,14 @@ class programForm(forms.ModelForm):
         
 
 
+'''need to complete below , tie this and models.py to index.html stars rating
+class FeedbackForm(forms.ModelForm):
+    starRating = forms.ChoiceField(choices=choices,widget=forms.RadioSelect(),label="Rating")
+    class Meta:
+        model = Feedback
+        fields = ['starRating', 'feedbackComments',]
+        labels  = { 
+            'starRating':'Rating in Stars',
+            'feedbackComments':'Feedback and Comments by Clients', 
+        } 
+        '''
