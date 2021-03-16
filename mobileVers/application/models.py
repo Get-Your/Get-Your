@@ -142,3 +142,15 @@ class programs(TimeStampedModel):
     snap = models.BooleanField()
     freeReducedLunch = models.BooleanField()
     
+'''need to complete this, tie this and models.py to index.html stars rating
+stars = (
+    ('1'),
+    ('2'),
+    ('3'),
+    ('4'),
+    ('5')
+)
+class Feedback(TimeStampedModel):
+    starRating = 1
+    feedbackComments = 2
+    '''
