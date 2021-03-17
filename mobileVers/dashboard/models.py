@@ -24,3 +24,15 @@ class Form(TimeStampedModel):
         choices=form_titles,
     )
     document = models.FileField()
+
+
+
+
+class Feedback(TimeStampedModel):
+    starRating = models.CharField(
+        max_length = 1
+    )
+    feedbackComments = models.TextField(
+        max_length=500
+    )
+    
