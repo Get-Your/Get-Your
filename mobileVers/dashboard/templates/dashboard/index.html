@@ -51,49 +51,44 @@
               </div>
             </div>
             <div class="module" >
-              <p>Feedback</p>
-              <div class="column" style="margin:0; width:100%;">
-                <p style="font-weight: 800;">How would you rate your experience so far using the Connexion portal? </p>
-                <div class="column" style="margin:0; width:100%;">
-                  <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star1" value=1 alt="star1" style="width:10vw;margin-right: 3vw;" onclick="fillStar(1)">
-                  <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star2" value=2 alt="star2" style="width:10vw;margin-right: 3vw;" onclick="fillStar(2)">
-                  <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star3" value=3 alt="star3" style="width:10vw;margin-right: 3vw;" onclick="fillStar(3)">
-                  <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star4" value=4 alt="star4" style="width:10vw;margin-right: 3vw;" onclick="fillStar(4)">
-                  <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star5" value=5 alt="star5" style="width:10vw;margin-right: 3vw;" onclick="fillStar(5)">
+              <form action="{% url 'dashboard:index' %}" method="post">
+                {% csrf_token %}
+                  <p>Feedback</p>
+                  <div class="column" style="margin:0; width:100%;">
+                    <p style="font-weight: 800;">How would you rate your experience so far using the Connexion portal? </p>
+                    <div class="column" style="margin:0; width:100%;">
+                      <clearButton name="starRating" value="1" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star1" style="width:10vw;margin-right: 3vw;" onclick="fillStar(1)"> </clearButton>
+                      <clearButton name="starRating" value="2" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star2" style="width:10vw;margin-right: 3vw;" onclick="fillStar(2)"> </clearButton>
+                      <clearButton name="starRating" value="3" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star3" style="width:10vw;margin-right: 3vw;" onclick="fillStar(3)"> </clearButton>
+                      <clearButton name="starRating" value="4" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star4" style="width:10vw;margin-right: 3vw;" onclick="fillStar(4)"> </clearButton>
+                      <clearButton name="starRating" value="5" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star5" style="width:10vw;margin-right: 3vw;" onclick="fillStar(5)"> </clearButton>>
+                      </div>
+                </div>
+                <div class="column" style="width:100%; margin:0; justify-content: flex-start;">
+                      <p style="font-weight: 800; margin-top: 50px;">How can we do better?</p> 
+                      <textarea class="feedback" placeholder="Tell us how we're doing!"id="" name="feedbackComments" maxlength="500"></textarea>
+                    <button name="starRating" value = "777" id="submit" style="width:100%; padding:0; justify-content: flex-start;"> <b>SHARE FEEDBACK</b> </button>
                   </div>
-            </div>
-            <div class="column" style="width:100%; margin:0; justify-content: flex-start;">
-                  <p style="font-weight: 800; margin-top: 50px;">How can we do better?</p>
-                  <textarea class="feedback" placeholder="Tell us how we're doing!"id="feedback" name="feedback" ></textarea>
-                <button type="submit"style="width:100%; padding:0; justify-content: flex-start;"> <b>SHARE FEEDBACK</b> </button>
-                <br>
-                <br>
-                <br>
-              </div>
+              </form>
             </div>
         </div>
 
-
-
-
-
-
-        
         <script>
           var image1 =  document.getElementById("star1");
           var image2 =  document.getElementById("star2");
           var image3 =  document.getElementById("star3");
           var image4 =  document.getElementById("star4");
           var image5 =  document.getElementById("star5");
-          var value;
           function fillStar(value)
           {
             switch (value)
             {
-              case 1:
+                case 1:
                 if (image1.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
                 {
                   image1.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+                  document.getElementById("submit").value = value;
+                  return value;
                 }
                 else if((image2.getAttribute('src') || image3.getAttribute('src') || image4.getAttribute('src') || image5.getAttribute('src')) == "{% static 'dashboard/images/reviewStarFilled.svg' %}")
                 {
@@ -108,18 +103,20 @@
                 }
                 break;
 
-              case 2: 
+                case 2: 
                   if (image2.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
                   {
                     image2.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
                     image1.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+                    document.getElementById("submit").value = value;
+                    return value;
+                    
                   }
                   else if((image3.getAttribute('src') || image4.getAttribute('src') || image5.getAttribute('src')) == "{% static 'dashboard/images/reviewStarFilled.svg' %}")
                   {
                     image5.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
                     image4.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
                     image3.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                    
                   }
                   else
                   {
@@ -129,12 +126,14 @@
                 break;
               
 
-              case 3: 
+                case 3: 
                 if (image3.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
                 {
                   image3.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
                   image2.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
                   image1.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+                  document.getElementById("submit").value = value;
+                  return value;
                 }
                 else if((image4.getAttribute('src') || image5.getAttribute('src')) == "{% static 'dashboard/images/reviewStarFilled.svg' %}")
                 {
@@ -149,13 +148,15 @@
                 }
                 break;
 
-              case 4: 
+                case 4: 
                 if (image4.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
                 {
                   image4.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
                   image3.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
                   image2.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
                   image1.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+                  document.getElementById("submit").value = value;
+                  return value;
                 }
                 else if(image5.getAttribute('src') == "{% static 'dashboard/images/reviewStarFilled.svg' %}")
                 {
@@ -170,7 +171,7 @@
                 }
                 break;
 
-              case 5: 
+                case 5: 
                 if (image5.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
                 {
                   image5.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
@@ -178,6 +179,8 @@
                   image3.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
                   image2.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
                   image1.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+                  document.getElementById("submit").value = value;
+                  return value;
                 }
                 else
                 {
@@ -188,8 +191,7 @@
                   image1.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
                 }
                 break;
-              }
-
+              } 
           }
         </script>
     </body>
