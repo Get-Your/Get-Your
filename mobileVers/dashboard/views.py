@@ -3,7 +3,7 @@ from .forms import FileForm
 
 from .models import User, Form
 
-from .backend import authenticate, files_to_string
+from .backend import authenticate, files_to_string, what_page
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from application.backend import broadcast_email, broadcast_sms
 # Create your views here.
@@ -12,58 +12,65 @@ from application.backend import broadcast_email, broadcast_sms
 
 
 def files(request):
-    # TODO: Grace Add something that checks if user logged in
-    file_list = {"SNAP Card": request.user.programs.snap,
-                # Have Reduced Lunch be last item in the list if we add more programs
-                 "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch
-    }
+    page = what_page(request.user)
+    print(page)
+    if what_page(request.user) == "dashboard:files":
 
-    if request.method == "POST":   
-        form = FileForm(request.POST, request.FILES)
-        print(form)
-        if form.is_valid():  
-            if request.user.is_authenticated:
-                instance = form.save(commit=False)
-                # NOTE FOR ANDREW: This was that stupid line that caused user auth to not work 
-                instance.user_id = request.user
-                instance.save()
-                print("File Saved")
+        
+        # TODO: Grace Add something that checks if user logged in
+        file_list = {"SNAP Card": request.user.programs.snap,
+                    # Have Reduced Lunch be last item in the list if we add more programs
+                    "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch
+        }
 
-                # Check if the user needs to upload another form
-                Forms = Form.objects.filter(user_id = request.user)
-                checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch)]
-                for group in Forms.all():
-                    if group.document_title == "SNAP":
-                        file_list["SNAP Card"] = False
-                        checkAllForms[0] = True
-                    if group.document_title == "Free and Reduced Lunch":
-                        checkAllForms[1] = True
-                        file_list["PSD Reduced Lunch Approval Letter"] = False
-                
-                if False in checkAllForms:
-                    return render(request, 'dashboard/files.html', {
-                            'form':form,
-                            'programs': file_list,
-                            'program_string': files_to_string(file_list),
-                            'step':5,
-                            'formPageNum':6,
-                        })
-                return redirect(reverse("dashboard:broadcast"))
-            else:
-                print("notautnehticated")
-                # TODO: Change this link
-                return render(request, 'dashboard/layout.html',)
-    else:
-        form = FileForm()
-    print(file_list)
-    return render(request, 'dashboard/files.html', {
+        if request.method == "POST":   
+            form = FileForm(request.POST, request.FILES)
+            print(form)
+            if form.is_valid():  
+                if request.user.is_authenticated:
+                    instance = form.save(commit=False)
+                    # NOTE FOR ANDREW: This was that stupid line that caused user auth to not work 
+                    instance.user_id = request.user
+                    instance.save()
+                    print("File Saved")
+
+                    # Check if the user needs to upload another form
+                    Forms = Form.objects.filter(user_id = request.user)
+                    checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch)]
+                    for group in Forms.all():
+                        if group.document_title == "SNAP":
+                            file_list["SNAP Card"] = False
+                            checkAllForms[0] = True
+                        if group.document_title == "Free and Reduced Lunch":
+                            checkAllForms[1] = True
+                            file_list["PSD Reduced Lunch Approval Letter"] = False
+                    
+                    if False in checkAllForms:
+                        return render(request, 'dashboard/files.html', {
+                                'form':form,
+                                'programs': file_list,
+                                'program_string': files_to_string(file_list),
+                                'step':5,
+                                'formPageNum':6,
+                            })
+                    return redirect(reverse("dashboard:broadcast"))
+                else:
+                    print("notautnehticated")
+                    # TODO: Change this link
+                    return render(request, 'dashboard/layout.html',)
+        else:
+            form = FileForm()
+        print(file_list)
+        return render(request, 'dashboard/files.html', {
         'form':form,
         'programs': file_list,
         'program_string': files_to_string(file_list),
         'step':5,
         'formPageNum':6,
-    })
+        })
 
+    else:
+        return redirect(reverse(page))
 
 def broadcast(request):
     current_user = request.user
