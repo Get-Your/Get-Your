@@ -1,7 +1,7 @@
 # All of the forms built from models are here 
 from django import forms
 
-from .models import User, Addresses, Eligibility, programs, choices #Feedback
+from .models import User, Addresses, Eligibility, programs, choices
 
 
 # form for user account creation
@@ -61,5 +61,3 @@ class programForm(forms.ModelForm):
             'freeReducedLunch':'Free and Reduced Lunch', 
         } 
         
-
-

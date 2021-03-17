@@ -1,5 +1,6 @@
 from django import forms
-from .models import Form
+from .models import Form, Feedback
+
  
 class FileForm(forms.ModelForm):
     class Meta:
@@ -9,3 +10,18 @@ class FileForm(forms.ModelForm):
             'document_title':'Program', 
             'document':'Document Upload',
         }
+
+
+
+'''need to complete below , tie this and models.py to index.html stars rating'''
+class FeedbackForm(forms.ModelForm):
+    #starRating = forms.ChoiceField(widget=forms.RadioSelect(), label="starRating")
+    feedbackComments = forms.CharField(max_length = 500, required=False) 
+    starRating = forms.CharField(max_length=1, required=False)
+    class Meta:
+        model = Feedback
+        fields = ['feedbackComments','starRating']
+        labels  = { 
+            'starRating':'Rating in Stars',
+            'feedbackComments':'Feedback and Comments by Clients', 
+        } 

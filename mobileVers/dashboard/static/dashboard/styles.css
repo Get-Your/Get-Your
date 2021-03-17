@@ -90,6 +90,11 @@ button {
     height: 6vh;
     font-size: max(3.8vw, 16px);
 }
+
+clearButton {
+    
+}
+
 /*Backgrounds for homepage*/
 .bluemain{
     background-color: var(--darkblue);

@@ -141,4 +141,3 @@ class programs(TimeStampedModel):
     # TODO: Andrew/Grace - These two fields have to be entered in after the verification of the documents
     snap = models.BooleanField()
     freeReducedLunch = models.BooleanField()
-    
