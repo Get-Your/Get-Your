@@ -53,7 +53,7 @@ ALLOWED_HOSTS = ["*", "192.168.0.15"]
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'django.contrib.admin', # NOTE: may just be able to stop admin stuff in settings.py
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',

@@ -11,7 +11,7 @@ from django.db import IntegrityError
 from .forms import UserForm, AddressForm, EligibilityForm, programForm
 from .backend import addressCheck, validateUSPS, broadcast_email, broadcast_sms
 
-
+from dashboard.backend import what_page
 formPageNum = 6
 
 # Notes: autofill in empty rows for users who don't fill out all of their info?
@@ -48,12 +48,19 @@ def address(request):
             return redirect(reverse("application:finances"))
     else:
         form = AddressForm()
-    return render(request, 'application/address.html', {
-        'form':form,
-        'step':2,
-        'request.user':request.user,
-        'formPageNum':formPageNum,
-    })
+    page = what_page(request.user)
+
+    print(page)
+    if what_page(request.user) == "application:address":
+        return render(request, 'application/address.html', {
+            'form':form,
+            'step':2,
+            'request.user':request.user,
+            'formPageNum':formPageNum,
+        })
+    else:
+        return redirect(reverse(page))
+
 
 def account(request):
     if request.method == "POST": 
@@ -72,11 +79,17 @@ def account(request):
             return redirect(reverse("application:address"))
     else:
         form = UserForm()
-    return render(request, 'application/account.html', {
+
+    # Check if user is already logged in and has an account; just push them to next step of application
+    page = what_page(request.user)
+    if what_page(request.user) == "application:account":
+        return render(request, 'application/account.html', {
         'form':form,
         'step':1,
         'formPageNum':formPageNum,
     })
+    else:
+        return redirect(reverse(page))
 
 def finances(request):
     if request.method == "POST": 
@@ -95,11 +108,17 @@ def finances(request):
             print(form.data)
     else:
         form = EligibilityForm()
-    return render(request, 'application/finances.html', {
+
+    page = what_page(request.user)
+    if what_page(request.user) == "application:finances":
+        return render(request, 'application/finances.html', {
         'form':form,
         'step':3,
         'formPageNum':formPageNum,
     })
+    else:
+        return redirect(reverse(page))
+
 
 def programs(request):
     if request.method == "POST": 
@@ -122,11 +141,17 @@ def programs(request):
             return redirect(reverse("application:available"))
     else:
         form = programForm()
-    return render(request, 'application/programs.html', {
+
+    page = what_page(request.user)
+    if what_page(request.user) == "application:programs":
+        return render(request, 'application/programs.html', {
         'form':form,
         'step':4,
         'formPageNum':formPageNum,
     })
+
+    else:
+        return redirect(reverse(page))
     #return render(request, 'application/programs.html',)
 
 def available(request):
