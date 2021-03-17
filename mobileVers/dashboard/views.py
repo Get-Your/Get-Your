@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, reverse
-from .forms import FileForm
+from .forms import FileForm, FeedbackForm
 
 from .models import User, Form
 
@@ -105,6 +105,37 @@ def login_user(request):
     # Just give back log in page if none of the above is true
     else:
         return render(request, "dashboard/login.html",{})
+
+def feedback(request):
+    if request.method == "POST":
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            form.save()
+            print(form.cleaned_data['starRating'])
+            print(form.cleaned_data['feedbackComments'])
+            
+            return redirect(reverse("application:available"))
+        else:
+
+            print("form is not valid")
+            
+    else:
+        form = FeedbackForm()
+        print("you never even got to POST")
+    return render(request, 'dashboard/index.html',)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def account(request):
