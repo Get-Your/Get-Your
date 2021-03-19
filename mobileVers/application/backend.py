@@ -37,6 +37,30 @@ def addressCheck(address1):
                 else:
                     continue
 
+
+def qualification(dependentNumber):
+    with open("AMI.csv", "r") as csv_file:
+        counter = 0
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        for lines in csv_reader:
+            dependentAmount = lines[0]
+            AMINumber = lines[1]
+            if dependentNumber == dependentAmount:
+                return AMINumber
+            else:
+                counter = counter + 1
+                if counter == 10:
+                    return False
+                else:
+                    continue
+    #1) open file csv containing AMI information
+    #2) compare dependents number to file, find right "row"
+    #3) take that value and compare to income level selection
+    #       current_user = request.user
+    #       record_data = programs.objects.get(user_id = current_user)
+    #       form = programForm(request.POST, instance = record_data)
+
+
 def validateUSPS(form):
     address = Address(
         name = " ",
