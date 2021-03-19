@@ -82,6 +82,11 @@ def finances(request):
     if request.method == "POST": 
         form = EligibilityForm(request.POST)
         if form.is_valid():
+            #take dependent information, compare that AMI level number with the client's income selection and determine if qualified or not, flag this
+            #if INCOME_LEVEL <  qualification(form['dependents'].value(),):
+                #qualified = True
+            #else:
+                #qualification = False
             print(form.data)
             try:
                 instance = form.save(commit=False)
@@ -104,10 +109,6 @@ def finances(request):
 def programs(request):
     if request.method == "POST": 
         form = programForm(request.POST)
-
-##                current_user = request.user
- #       record_data = programs.objects.get(user_id = current_user)
- #       form = programForm(request.POST, instance = record_data)
         if form.is_valid():
             print(form.data)
             print(request.session)
@@ -134,5 +135,3 @@ def available(request):
 
 def notAvailable(request):
     return render(request, 'application/de_notavailable.html',)
-
-
