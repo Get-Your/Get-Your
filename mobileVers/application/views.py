@@ -78,6 +78,7 @@ def account(request):
         'formPageNum':formPageNum,
     })
 
+
 def finances(request):
     if request.method == "POST": 
         form = EligibilityForm(request.POST)
@@ -92,18 +93,21 @@ def finances(request):
                     print("GAHI is below 19,800")
                     if qualification(form['dependents'].value(),) >= 19800:
                         instance.qualified = True
+                        return redirect(reverse("application:mayQualify"))
                     else:
                         instance.qualified = False
                 elif form['grossAnnualHouseholdIncome'].value() == '$19,800 ~ $32,800':
                     print("GAHI is between 19,800 and 32,800")
                     if 19800 <= qualification(form['dependents'].value(),) <= 32800:
                         instance.qualified = True
+                        return redirect(reverse("application:mayQualify"))
                     else:
                         instance.qualified = False
                 elif form['grossAnnualHouseholdIncome'].value() == 'Over $32,800':
                     print("GAHI is above 32,800")
                     if qualification(form['dependents'].value(),) >= 32800:
                         instance.qualified = True
+                        return redirect(reverse("application:mayQualify"))
                     else:
                         instance.qualified = False                        
                     
@@ -151,3 +155,7 @@ def available(request):
 
 def notAvailable(request):
     return render(request, 'application/de_notavailable.html',)
+
+def mayQualify(request):
+    return render(request, 'application/mayQualify.html',)
+
