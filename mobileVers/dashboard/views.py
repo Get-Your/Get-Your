@@ -6,6 +6,13 @@ from .models import User, Form
 from .backend import authenticate, files_to_string
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from application.backend import broadcast_email, broadcast_sms
+
+from django.forms.models import model_to_dict
+
+
+
+
+
 # Create your views here.
 
 # first index page we come into
@@ -63,8 +70,6 @@ def files(request):
         'step':5,
         'formPageNum':6,
     })
-
-
 def broadcast(request):
     current_user = request.user
     #Andrew Twilio functions found below!
@@ -76,10 +81,15 @@ def broadcast(request):
             'step':6,
             'formPageNum':6,
         })
-    
+
 
 def index(request):
     return render(request, 'dashboard/index.html',)
+    #current_user = request.user
+    #return render(request, 'dashboard/index.html', {
+    #    'program_string':current_user.email
+    #})
+
 
 def login_user(request):
     if request.method == "POST":
@@ -107,6 +117,7 @@ def login_user(request):
         return render(request, "dashboard/login.html",{})
 
 def feedback(request):
+    current_user = request.user
     if request.method == "POST":
         form = FeedbackForm(request.POST)
         if form.is_valid():
@@ -114,30 +125,25 @@ def feedback(request):
             print(form.cleaned_data['starRating'])
             print(form.cleaned_data['feedbackComments'])
             
-            return redirect(reverse("application:available"))
+            return redirect(reverse("dashboard:feedbackReceived"))
         else:
 
             print("form is not valid")
-            
     else:
         form = FeedbackForm()
-        print("you never even got to POST")
-    return render(request, 'dashboard/index.html',)
+    
+    return render(request, 'dashboard/index.html',context={"program_string": current_user.email})
+
+
+def feedbackReceived(request):
+    return render(request, "dashboard/feedbackReceived.html",)
 
 
 
 
 
 
-
-
-
-
-
-
-
-
-
+#no longer used down below????
 def account(request):
     if request.method == "POST": 
         # Check password with Confirm Password field, 

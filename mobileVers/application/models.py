@@ -116,16 +116,16 @@ class Eligibility(TimeStampedModel):
     # TODO: possibly add field for how many total individuals are in the household
     dependents = models.IntegerField(100)
     #need this for function in views.py after client uploads their dependent information
-    qualified = models.BooleanField()
+    qualified = models.BooleanField(default=False)
 
     # Income Levels
-    LOW = 'Below $30,000'
-    MED = '$30,000 ~ $60,000'
-    HIGH = 'Over $60,000'
+    LOW = 'Below $19,800'
+    MED = '$19,800 ~ $32,800'
+    HIGH = 'Over $32,800'
     INCOME_LEVELS = (
-        (LOW, 'Below $30,000'),
-        (MED, '$30,000 ~ $60,000'),
-        (HIGH, 'Over $60,000'),
+        (LOW, 'Below $19,800'),
+        (MED, '$19,800 ~ $32,800'),
+        (HIGH, 'Over $32,800'),
     )
     grossAnnualHouseholdIncome = models.CharField(
         max_length=20,
