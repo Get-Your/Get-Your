@@ -46,11 +46,12 @@ def qualification(dependentNumber):
             dependentAmount = lines[0]
             AMINumber = lines[1]
             if dependentNumber == dependentAmount:
-                return AMINumber
+                print("AMI NUMBER IS: " + AMINumber)
+                return int(AMINumber)
             else:
                 counter = counter + 1
                 if counter == 10:
-                    return False
+                    return 0
                 else:
                     continue
     #1) open file csv containing AMI information

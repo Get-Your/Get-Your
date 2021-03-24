@@ -1,8 +1,9 @@
 <!-- This brings in the CSS-->
-{% load static %}
 
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
     <!--Get the various stylesheets I need like my fonts and CSS-->
     <head>
         <title>GetYour: Connexion</title>
@@ -46,7 +47,8 @@
                 <img src="{% static 'dashboard/images/clock.svg' %}" alt="back" style="width:10vw; margin-right:5vw;" onclick="location.href='{% url 'application:index' %}'">
                 <div>
                   <p style="margin-bottom: 0;">Estimated processing time:</p>
-                  <p style="font-weight: 800; margin-top: 5px;">~5 bussiness days</p>
+                  <p style="font-weight: 800; margin-top: 5px;">Qualification Status:</p>
+                  <p style="font-weight: 800; margin-top: 5px;">{{program_string}}</p> 
                 </div>
               </div>
             </div>
@@ -196,6 +198,8 @@
         </script>
     </body>
 </html>
+
+
 
 
 

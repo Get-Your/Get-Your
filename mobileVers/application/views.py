@@ -9,7 +9,7 @@ from.models import User
 from django.db import IntegrityError
 
 from .forms import UserForm, AddressForm, EligibilityForm, programForm
-from .backend import addressCheck, validateUSPS, broadcast_email, broadcast_sms
+from .backend import addressCheck, validateUSPS, broadcast_email, broadcast_sms, qualification
 
 
 formPageNum = 6
@@ -82,16 +82,32 @@ def finances(request):
     if request.method == "POST": 
         form = EligibilityForm(request.POST)
         if form.is_valid():
-            #take dependent information, compare that AMI level number with the client's income selection and determine if qualified or not, flag this
-            #if INCOME_LEVEL <  qualification(form['dependents'].value(),):
-                #qualified = True
-            #else:
-                #qualification = False
             print(form.data)
             try:
                 instance = form.save(commit=False)
                 # NOTE FOR ANDREW: This was that stupid line that caused user auth to not work 
                 instance.user_id = request.user
+            #take dependent information, compare that AMI level number with the client's income selection and determine if qualified or not, flag this
+                if form['grossAnnualHouseholdIncome'].value() == 'Below $19,800':
+                    print("GAHI is below 19,800")
+                    if qualification(form['dependents'].value(),) >= 19800:
+                        instance.qualified = True
+                    else:
+                        instance.qualified = False
+                elif form['grossAnnualHouseholdIncome'].value() == '$19,800 ~ $32,800':
+                    print("GAHI is between 19,800 and 32,800")
+                    if 19800 <= qualification(form['dependents'].value(),) <= 32800:
+                        instance.qualified = True
+                    else:
+                        instance.qualified = False
+                elif form['grossAnnualHouseholdIncome'].value() == 'Over $32,800':
+                    print("GAHI is above 32,800")
+                    if qualification(form['dependents'].value(),) >= 32800:
+                        instance.qualified = True
+                    else:
+                        instance.qualified = False                        
+                    
+                print(instance.qualified)
                 instance.save()
                 return redirect(reverse("application:programs"))
             except IntegrityError:
