@@ -1,8 +1,9 @@
 <!-- This brings in the CSS-->
-{% load static %}
 
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
     <!--Get the various stylesheets I need like my fonts and CSS-->
     <head>
         <title>GetYour: Connexion</title>
@@ -42,11 +43,11 @@
                 <img src="{% static 'dashboard/images/iconRise.svg' %}" alt="back" style="width:23vw;margin-right: 3vw;" onclick="location.href='{% url 'application:index' %}'">
                 <p>The office is experiencing busier than normal application rates. </p>
             </div>
-            <div class="row" style="width:100%; margin:0; justify-content: flex-start;">
-                <img src="{% static 'dashboard/images/clock.svg' %}" alt="back" style="width:10vw; margin-right:5vw;" onclick="location.href='{% url 'application:index' %}'">
+            <div class="row" style="width:100%; margin:0;">
+                <img src="{% static 'dashboard/images/clock.svg' %}" alt="back" style="width:15vw; margin-right:5vw;" onclick="location.href='{% url 'application:index' %}'">
                 <div>
-                  <p style="margin-bottom: 0;">Estimated processing time:</p>
-                  <p style="font-weight: 800; margin-top: 5px;">~5 bussiness days</p>
+                  <p style="margin-bottom: 0;">Qualification Status:</p>
+                  <p style="font-weight: 800; margin-top: 5px;">{{program_string}}</p> 
                 </div>
               </div>
             </div>
@@ -61,13 +62,13 @@
                       <clearButton name="starRating" value="2" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star2" style="width:10vw;margin-right: 3vw;" onclick="fillStar(2)"> </clearButton>
                       <clearButton name="starRating" value="3" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star3" style="width:10vw;margin-right: 3vw;" onclick="fillStar(3)"> </clearButton>
                       <clearButton name="starRating" value="4" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star4" style="width:10vw;margin-right: 3vw;" onclick="fillStar(4)"> </clearButton>
-                      <clearButton name="starRating" value="5" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star5" style="width:10vw;margin-right: 3vw;" onclick="fillStar(5)"> </clearButton>>
+                      <clearButton name="starRating" value="5" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star5" style="width:10vw;margin-right: 3vw;" onclick="fillStar(5)"> </clearButton>
                       </div>
                 </div>
                 <div class="column" style="width:100%; margin:0; justify-content: flex-start;">
                       <p style="font-weight: 800; margin-top: 50px;">How can we do better?</p> 
                       <textarea class="feedback" placeholder="Tell us how we're doing!"id="" name="feedbackComments" maxlength="500"></textarea>
-                    <button name="starRating" value = "777" id="submit" style="width:100%; padding:0; justify-content: flex-start;"> <b>SHARE FEEDBACK</b> </button>
+                    <button name="starRating" value = "" id="submit" style="width:100%; padding:0; justify-content: flex-start;"> <b>SHARE FEEDBACK</b> </button>
                   </div>
               </form>
             </div>
@@ -196,6 +197,8 @@
         </script>
     </body>
 </html>
+
+
 
 
 

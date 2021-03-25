@@ -115,15 +115,17 @@ class Eligibility(TimeStampedModel):
 
     # TODO: possibly add field for how many total individuals are in the household
     dependents = models.IntegerField(100)
+    #need this for function in views.py after client uploads their dependent information
+    qualified = models.BooleanField(default=False)
 
     # Income Levels
-    LOW = 'Below $30,000'
-    MED = '$30,000 ~ $60,000'
-    HIGH = 'Over $60,000'
+    LOW = 'Below $19,800'
+    MED = '$19,800 ~ $32,800'
+    HIGH = 'Over $32,800'
     INCOME_LEVELS = (
-        (LOW, 'Below $30,000'),
-        (MED, '$30,000 ~ $60,000'),
-        (HIGH, 'Over $60,000'),
+        (LOW, 'Below $19,800'),
+        (MED, '$19,800 ~ $32,800'),
+        (HIGH, 'Over $32,800'),
     )
     grossAnnualHouseholdIncome = models.CharField(
         max_length=20,
@@ -141,3 +143,29 @@ class programs(TimeStampedModel):
     # TODO: Andrew/Grace - These two fields have to be entered in after the verification of the documents
     snap = models.BooleanField()
     freeReducedLunch = models.BooleanField()
+
+
+'''
+
+
+AMI = area median income, based on number of people per household
+30% AMI
+1 100,000
+2 200,000
+3 300,000
+4 400,000
+5 ...
+6 ...
+7 ...
+8 800,000
+
+I'm a client and i'm going through the application, i have 4 dependents
+which means that I must make $400,000 and under to qualify for this program
+
+the secret sauce for the application to automatically qualify / disqualify
+is the number of dependents in the household
+
+
+*DISCLAIMER NOT REAL NUMBERS JUST USING FOR THEORY CRAFTING*
+
+'''
