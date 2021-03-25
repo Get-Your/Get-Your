@@ -93,27 +93,27 @@ def finances(request):
                     print("GAHI is below 19,800")
                     if qualification(form['dependents'].value(),) >= 19800:
                         instance.qualified = True
-                        return redirect(reverse("application:mayQualify"))
                     else:
                         instance.qualified = False
                 elif form['grossAnnualHouseholdIncome'].value() == '$19,800 ~ $32,800':
                     print("GAHI is between 19,800 and 32,800")
                     if 19800 <= qualification(form['dependents'].value(),) <= 32800:
                         instance.qualified = True
-                        return redirect(reverse("application:mayQualify"))
                     else:
                         instance.qualified = False
                 elif form['grossAnnualHouseholdIncome'].value() == 'Over $32,800':
                     print("GAHI is above 32,800")
                     if qualification(form['dependents'].value(),) >= 32800:
                         instance.qualified = True
-                        return redirect(reverse("application:mayQualify"))
                     else:
                         instance.qualified = False                        
                     
                 print(instance.qualified)
                 instance.save()
-                return redirect(reverse("application:programs"))
+                if instance.qualified == True:
+                    return redirect(reverse("application:mayQualify"))
+                else:
+                    return redirect(reverse("application:programs"))
             except IntegrityError:
                 print("User already has information filled out for this section")
         else:

@@ -2,14 +2,11 @@ from django.shortcuts import render, redirect, reverse
 from .forms import FileForm, FeedbackForm
 
 from .models import User, Form
+from application.models import Eligibility
 
 from .backend import authenticate, files_to_string
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from application.backend import broadcast_email, broadcast_sms
-
-from django.forms.models import model_to_dict
-
-
 
 
 
@@ -117,7 +114,7 @@ def login_user(request):
         return render(request, "dashboard/login.html",{})
 
 def feedback(request):
-    current_user = request.user
+    
     if request.method == "POST":
         form = FeedbackForm(request.POST)
         if form.is_valid():
@@ -132,7 +129,12 @@ def feedback(request):
     else:
         form = FeedbackForm()
     
-    return render(request, 'dashboard/index.html',context={"program_string": current_user.email})
+    if request.user.eligibility.qualified == True:
+        text = "Based on your information, you may qualify! Be on the lookout for the email and phone call."
+    else:
+        text = "We may need more information!"
+
+    return render(request, 'dashboard/index.html',context={"program_string": text})
 
 
 def feedbackReceived(request):

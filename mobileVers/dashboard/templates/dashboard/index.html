@@ -43,11 +43,10 @@
                 <img src="{% static 'dashboard/images/iconRise.svg' %}" alt="back" style="width:23vw;margin-right: 3vw;" onclick="location.href='{% url 'application:index' %}'">
                 <p>The office is experiencing busier than normal application rates. </p>
             </div>
-            <div class="row" style="width:100%; margin:0; justify-content: flex-start;">
-                <img src="{% static 'dashboard/images/clock.svg' %}" alt="back" style="width:10vw; margin-right:5vw;" onclick="location.href='{% url 'application:index' %}'">
+            <div class="row" style="width:100%; margin:0;">
+                <img src="{% static 'dashboard/images/clock.svg' %}" alt="back" style="width:15vw; margin-right:5vw;" onclick="location.href='{% url 'application:index' %}'">
                 <div>
-                  <p style="margin-bottom: 0;">Estimated processing time:</p>
-                  <p style="font-weight: 800; margin-top: 5px;">Qualification Status:</p>
+                  <p style="margin-bottom: 0;">Qualification Status:</p>
                   <p style="font-weight: 800; margin-top: 5px;">{{program_string}}</p> 
                 </div>
               </div>
