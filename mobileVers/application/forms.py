@@ -1,7 +1,7 @@
 # All of the forms built from models are here 
 from django import forms
 
-from .models import User, Addresses, Eligibility, programs, choices
+from .models import User, Addresses, Eligibility, programs, choices, zipCode,futureEmails
 
 
 # form for user account creation
@@ -48,7 +48,7 @@ class EligibilityForm(forms.ModelForm):
         labels  = {
             'rent':'Rent',
             'dependents':'Number of Dependents', 
-            'grossAnnualHouseholdIncome':'Gross Annual Household Income',
+            'grossAnnualHouseholdIncome':'Adjusted Gross Annual Household Income',
         } 
 
 # programs they are available for
@@ -61,3 +61,18 @@ class programForm(forms.ModelForm):
             'freeReducedLunch':'Free and Reduced Lunch', 
         } 
         
+class zipCodeForm(forms.ModelForm):
+    class Meta:
+        model = zipCode
+        fields = ['zipCode']
+        labels  = { 
+            'zipCode':'Zip Code', 
+        } 
+
+class futureEmailsForm(forms.ModelForm):
+    class Meta:
+        model = futureEmails
+        fields = ['email']
+        labels  = { 
+            'email':'Email Address', 
+        } 

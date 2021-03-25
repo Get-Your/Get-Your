@@ -14,14 +14,19 @@
     </head>
 
     <body>
-        
-        <div class="content spaceAround">
-            <!--NOTE: For the future have numbers change based on database-->
+        <div class=nav>
+            <a href="{% url 'application:index' %}" style="margin-left:auto; margin-right:10px">
+                <p style = "color:white; font-weight: 700;">EXIT</p>
+            </a>        
+        </div>
+        <div class="content spaceAround" style="padding: 0 0 0 2vw;">
             <h1 style="color:white"><b>Connexion is available & ready in your neighborhood!</b></h1>
-                <!--Whatever I need in the other pages, I can enter it here-->
+            <!--Whatever I need in the other pages, I can enter it here-->
+            <p style="color:white; margin-top: 2vh;">Click the continue button below to start your application now!</p>
+        
 
         </div>
-        <div class="footer">
+        <div class="footer" style="width:100vw">
             <button onclick="location.href='{% url 'application:account' %}'"> CONTINUE </button>
         </div>
     </body>
