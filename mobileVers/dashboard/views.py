@@ -114,26 +114,21 @@ def login_user(request):
         return render(request, "dashboard/login.html",{})
 
 def feedback(request):
-    
     if request.method == "POST":
         form = FeedbackForm(request.POST)
         if form.is_valid():
             form.save()
             print(form.cleaned_data['starRating'])
             print(form.cleaned_data['feedbackComments'])
-            
             return redirect(reverse("dashboard:feedbackReceived"))
         else:
-
             print("form is not valid")
     else:
         form = FeedbackForm()
-    
     if request.user.eligibility.qualified == True:
-        text = "Based on your information, you may qualify! Be on the lookout for the email and phone call."
+        text = "Based on your information, you may qualify! Be on the lookout for an email or phone call."
     else:
-        text = "We may need more information!"
-
+        text = "Based on your info, you may be over the pre-tax income limit. At this time you do not qualify. If your income changes, please apply again."
     return render(request, 'dashboard/index.html',context={"program_string": text})
 
 
