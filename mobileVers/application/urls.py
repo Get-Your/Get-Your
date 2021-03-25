@@ -15,5 +15,7 @@ urlpatterns = [
 
     # Available/NotAvailable Digital equity in your area
     path('available', views.available, name='available'),
-    path('notAvailable', views.notAvailable, name='notAvailable')
+    path('notAvailable', views.notAvailable, name='notAvailable'),
+    # May qualify page
+    path('mayQualify', views.mayQualify, name='mayQualify')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #this is needed to get file uploads to work! 

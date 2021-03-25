@@ -17,7 +17,7 @@ class FileForm(forms.ModelForm):
 class FeedbackForm(forms.ModelForm):
     #starRating = forms.ChoiceField(widget=forms.RadioSelect(), label="starRating")
     feedbackComments = forms.CharField(max_length = 500, required=False) 
-    starRating = forms.CharField(max_length=1, required=False)
+    starRating = forms.CharField(max_length=1, required=True)
     class Meta:
         model = Feedback
         fields = ['feedbackComments','starRating']
