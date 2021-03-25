@@ -2,10 +2,14 @@ from django.shortcuts import render, redirect, reverse
 from .forms import FileForm, FeedbackForm
 
 from .models import User, Form
+from application.models import Eligibility
 
 from .backend import authenticate, files_to_string, what_page
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from application.backend import broadcast_email, broadcast_sms
+
+
+
 # Create your views here.
 
 # first index page we come into
@@ -83,10 +87,15 @@ def broadcast(request):
             'step':6,
             'formPageNum':6,
         })
-    
+
 
 def index(request):
     return render(request, 'dashboard/index.html',)
+    #current_user = request.user
+    #return render(request, 'dashboard/index.html', {
+    #    'program_string':current_user.email
+    #})
+
 
 def login_user(request):
     if request.method == "POST":
@@ -120,31 +129,27 @@ def feedback(request):
             form.save()
             print(form.cleaned_data['starRating'])
             print(form.cleaned_data['feedbackComments'])
-            
-            return redirect(reverse("application:available"))
+            return redirect(reverse("dashboard:feedbackReceived"))
         else:
-
             print("form is not valid")
-            
     else:
         form = FeedbackForm()
-        print("you never even got to POST")
-    return render(request, 'dashboard/index.html',)
+    if request.user.eligibility.qualified == True:
+        text = "Based on your information, you may qualify! Be on the lookout for an email or phone call."
+    else:
+        text = "Based on your info, you may be over the pre-tax income limit. At this time you do not qualify. If your income changes, please apply again."
+    return render(request, 'dashboard/index.html',context={"program_string": text})
+
+
+def feedbackReceived(request):
+    return render(request, "dashboard/feedbackReceived.html",)
 
 
 
 
 
 
-
-
-
-
-
-
-
-
-
+#no longer used down below????
 def account(request):
     if request.method == "POST": 
         # Check password with Confirm Password field, 
