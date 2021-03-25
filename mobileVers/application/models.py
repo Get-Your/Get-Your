@@ -141,3 +141,11 @@ class programs(TimeStampedModel):
     # TODO: Andrew/Grace - These two fields have to be entered in after the verification of the documents
     snap = models.BooleanField()
     freeReducedLunch = models.BooleanField()
+
+class zipCode(TimeStampedModel):
+    zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
+
+class futureEmails(TimeStampedModel):
+    email = models.EmailField(unique=True)
+
+

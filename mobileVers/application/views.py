@@ -8,7 +8,7 @@ from.models import User
 
 from django.db import IntegrityError
 
-from .forms import UserForm, AddressForm, EligibilityForm, programForm
+from .forms import UserForm, AddressForm, EligibilityForm, programForm, zipCodeForm,futureEmailsForm
 from .backend import addressCheck, validateUSPS, broadcast_email, broadcast_sms
 
 from dashboard.backend import what_page
@@ -21,13 +21,31 @@ formPageNum = 6
 # Should all of these view functions look up at this one function and figure out where they need to go next
 # based on which page they are on?
 
-# TODO: Grace - add user authorization for next pages
-
 # first index page we come into
 def index(request):
+
+    foco_zipCodes = [80521, 80523, 80525, 80527, 80522, 80524, 80526, 80528, 80553]
+
+    if request.method == "POST": 
+        form = zipCodeForm(request.POST or None)
+        if form.is_valid():
+            print(form)
+            print(form.cleaned_data['zipCode'])
+            try:
+                if form.cleaned_data['zipCode'] in foco_zipCodes:
+                    return redirect(reverse("application:available"))
+                else:
+                    return redirect(reverse("application:notAvailable"))
+                form.save()
+            except AttributeError:
+                print("Error ZipCode")
+    
+    form = zipCodeForm()
     logout(request)
     print(request.user)
-    return render(request, 'application/index.html',)
+    return render(request, 'application/index.html', {
+            'form':form,
+        })
 
 def address(request):
     if request.method == "POST": 
@@ -109,6 +127,12 @@ def finances(request):
     else:
         form = EligibilityForm()
 
+
+    return render(request, 'application/finances.html', {
+        'form':form,
+        'step':3,
+        'formPageNum':formPageNum,
+    })
     page = what_page(request.user)
     if what_page(request.user) == "application:finances":
         return render(request, 'application/finances.html', {
@@ -158,6 +182,20 @@ def available(request):
     return render(request, 'application/de_available.html',)
 
 def notAvailable(request):
-    return render(request, 'application/de_notavailable.html',)
+    
+    if request.method == "POST": 
+        form = futureEmailsForm(request.POST or None)
+        if form.is_valid():
+            try:
+                form.save()
+                return redirect(reverse("application:index"))
+            except AttributeError:
+                print("Error Email Saving")
+    
+    form = futureEmailsForm()
+    return render(request, 'application/de_notavailable.html', {
+            'form':form,
+        })
+
 
 
