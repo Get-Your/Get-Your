@@ -2,10 +2,10 @@
 # 2/23/2021 TODO:
 # Streamline logic for going through CSV file - priority: medium
 # Using USPS-API, incorporate returned address to clients' view via drop-down bar - priority: high
-
 import csv
 from usps import USPSApi, Address
 import json
+from PyPDF2 import PdfFileReader
 
 #Andrew backend code for Twilio
 from twilio.rest import Client
@@ -61,6 +61,15 @@ def qualification(dependentNumber):
     #       record_data = programs.objects.get(user_id = current_user)
     #       form = programForm(request.POST, instance = record_data)
 
+def pdfScan(file):
+    with open(file, "rb") as f:
+        pdf = PdfFileReader(f)
+        for page in range(pdf.getNumPages()):
+            content = pdf.getPage(page)
+            print(content)
+            print('Page type: {}'.format(str(type(page))))
+            text = content.extractText()
+            print(text)
 
 def validateUSPS(form):
     address = Address(
@@ -89,7 +98,6 @@ def broadcast_email(email):
         to_emails=email)
     
     message.template_id = TEMPLATE_ID
-    
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)

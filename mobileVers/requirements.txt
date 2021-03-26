@@ -11,3 +11,9 @@ twilio
 django-phonenumber-field[phonenumbers]
 django-environ
 psycopg2-binary
+
+#pypdf2
+#pytesseract
+#tesseract need to system install, not pip install... i think
+#poppler need to system install
+#pdf2image
