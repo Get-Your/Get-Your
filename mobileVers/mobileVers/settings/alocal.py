@@ -39,7 +39,7 @@ def get_secret(setting, secrets=secrets):
         raise ImproperlyConfigured(error_msg)'''
 
 
-#Keys
+#Below is loading via locally
 #SECRET_KEY = get_secret('SECRET_KEY')
 #TWILIO_ACCOUNT_SID = get_secret('TWILIO_ACCOUNT_SID') #os.getenv("TWILIO_ACCOUNT_SID") 
 #TWILIO_AUTH_TOKEN = get_secret('TWILIO_AUTH_TOKEN') #os.getenv("TWILIO_AUTH_TOKEN") 
@@ -50,6 +50,7 @@ def get_secret(setting, secrets=secrets):
 #TEMPLATE_ID = get_secret("TEMPLATE_ID")
 
 
+#Below is loading via .env (for Docker purposes)
 SECRET_KEY = env("SECRET_KEY") 
 TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID") 
 TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN") 
@@ -61,7 +62,7 @@ TEMPLATE_ID = env("TEMPLATE_ID")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # ANDREW: Make sure to change this later!
 ALLOWED_HOSTS = ["*", "192.168.0.15","localhost"]
