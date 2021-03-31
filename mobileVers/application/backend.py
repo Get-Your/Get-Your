@@ -5,7 +5,7 @@
 import csv
 from usps import USPSApi, Address
 import json
-from PyPDF2 import PdfFileReader
+
 
 #Andrew backend code for Twilio
 from twilio.rest import Client
@@ -61,15 +61,6 @@ def qualification(dependentNumber):
     #       record_data = programs.objects.get(user_id = current_user)
     #       form = programForm(request.POST, instance = record_data)
 
-def pdfScan(file):
-    with open(file, "rb") as f:
-        pdf = PdfFileReader(f)
-        for page in range(pdf.getNumPages()):
-            content = pdf.getPage(page)
-            print(content)
-            print('Page type: {}'.format(str(type(page))))
-            text = content.extractText()
-            print(text)
 
 def validateUSPS(form):
     address = Address(
