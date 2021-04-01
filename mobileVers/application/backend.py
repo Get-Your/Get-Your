@@ -2,10 +2,10 @@
 # 2/23/2021 TODO:
 # Streamline logic for going through CSV file - priority: medium
 # Using USPS-API, incorporate returned address to clients' view via drop-down bar - priority: high
-
 import csv
 from usps import USPSApi, Address
 import json
+
 
 #Andrew backend code for Twilio
 from twilio.rest import Client
@@ -89,7 +89,6 @@ def broadcast_email(email):
         to_emails=email)
     
     message.template_id = TEMPLATE_ID
-    
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
