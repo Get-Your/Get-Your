@@ -4,7 +4,7 @@ mkdir -p /code/logs
 touch /code/logs/gunicorn.log
 touch /code/logs/gunicorn-access.log
 tail -n 0 -f /code/logs/gunicorn*.log &
-export DJANGO_SETTINGS_MODULE=mobileVers.settings.alocal
+export DJANGO_SETTINGS_MODULE=mobileVers.settings.production
 exec gunicorn mobileVers.wsgi:application \
      --name mobileVers \
      --bind 0.0.0.0:8002 \
