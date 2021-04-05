@@ -2,10 +2,25 @@
 {% load static %}
 
 {% block body %}
+<script type='text/javascript'>
+    function preview_image(event) 
+    {
+        var reader = new FileReader();
+        reader.onload = function()
+        {
+        var output = document.getElementById('output_image');
+        output.src = reader.result;
+        }
+        
+        reader.readAsDataURL(event.target.files[0]);
+
+    }
+    </script>
+
 <p style="color:var(--lightblue);font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
             
 <div style="margin-top: 3vh;">
-    <p style="color:white;">To get qualified, please upload your</p>
+    <p style="color:white;">To get verified, please upload your</p>
     <h3 style="color:white"> {{program_string}} </h3>
     <p style="color:white;font-size: max(3.3vw, 12px);">Uploaded documents are secure & not shared with anyone outside of digital equity.</p>
     
@@ -36,17 +51,38 @@
             <div class="upload-btn-wrapper" style ="width:100%; align-items: center; margin-top: 3vh;">
                 <button class="buttonFileUpload">
                     <div class="row" style="justify-content: space-between;">
-                        <img src="{% static 'dashboard/images/upload.svg' %}" alt="back" style="width:15vw; margin-right: 5vw">
+                        <img src="{% static 'dashboard/images/upload.svg' %}" alt="back" style="width:15vw; margin-right: 5vw;">
                         <div style="display:flex; flex-direction:column;align-items:flex-start;">
                             <p style = "color:white; font-weight: 400;text-align: left; margin-bottom: 5px;">Select the document from your photo library.</p>
                             <p style = "color:white;font-weight: 200;">PDF, PNG or JPEG</p>
                         </div>
                     </div>
                 </button>
-                <input type="file" name ="{{field.name}}" id="{{ field.id_for_label }}" required/>
+                <input type="file" name ="{{field.name}}" id="{{ field.id_for_label }}" onchange="preview_image(event)" required/>
             </div>
         {% endif %}
     {% endfor %}
+  
+    <br>
+    <div class="preview"> 
+        <img style ="max-width:300px;" id="output_image"/>
+    </div>
+    <br>
+    <div class="preview"> 
+        <p style = "color:white; font-weight: 400;text-align: left; margin-bottom: 5px;"> If you are uploading you're uploading your 1040, what is your total annual salary? (Box 1 on your 1040 tax form)</p> 
+        Amount:
+        <div class="input" style = "width:100%;">
+            <!--TODO: change this to dropdown menu with data-->
+            <input class="fill" name="{{ form.zipCode.name }}"
+                id="{{ form.zipCode.id_for_label }}"
+                maxlength="{{ form.zipCode.max_length }}"
+                type="text" 
+                style="width:100%;" 
+                required  
+                autocomplete="off">
+            <label class="label">{{ form.zipCode.label }}</label>    
+            </div>
+        </div>
     <div class="footer">
         <button type ="submit" > CONTINUE </button>
     </div>

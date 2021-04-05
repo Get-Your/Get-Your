@@ -89,6 +89,23 @@ p {
     margin:0;
 }
 
+
+.preview {
+    margin: auto;
+    width:84%;
+    font-family: Montserrat;
+    font-size: 3.2vh;
+    color: white;
+    padding: 3.5vh;
+    background-color: var(--darkblue);
+    
+    border-radius: 2vh;
+    color:white;
+    height: auto;
+    font-size: max(3.8vw, 16px);
+    font-weight: 700;
+}
+
 /*Keep things in rows*/
 .row{
     display: flex;

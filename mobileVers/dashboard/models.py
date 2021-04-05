@@ -24,6 +24,7 @@ class Form(TimeStampedModel):
         choices=form_titles,
     )
     document = models.FileField()
+    TaxBox1Amount = models.CharField(max_length=8,)
 
 
 
