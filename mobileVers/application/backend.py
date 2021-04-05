@@ -29,10 +29,11 @@ def addressCheck(address1):
         for lines in csv_reader:
             column = lines[0] + " " + lines[1] + " " + lines[2]
             if address1 == column:
+                print("True!")
                 return True
             else:
                 counter = counter + 1
-                if counter == 78:
+                if counter == 77:
                     return False
                 else:
                     continue
@@ -75,7 +76,7 @@ def validateUSPS(form):
     validation = usps.validate_address(address)
     dict = validation.result
     try:
-        #print(dict['AddressValidateResponse']['Address']['Address2'])
+        print(dict['AddressValidateResponse']['Address']['Address2'])
         print(dict)
         return dict
     except KeyError:
