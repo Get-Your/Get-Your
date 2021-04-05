@@ -5,10 +5,11 @@ from .models import Form, Feedback
 class FileForm(forms.ModelForm):
     class Meta:
         model = Form
-        fields = ['document_title','document']
+        fields = ['document_title','document','TaxBoxAmount']
         labels  = { 
             'document_title':'Program', 
             'document':'Document Upload',
+            'TaxBoxAmount':'Amount of Box 11',
         }
 
 

@@ -47,7 +47,7 @@
                 {% endfor %}
                 </select>
             </div>
-        {% else %}
+        {% elif field.label == "Document Upload" %}
             <div class="upload-btn-wrapper" style ="width:100%; align-items: center; margin-top: 3vh;">
                 <button class="buttonFileUpload">
                     <div class="row" style="justify-content: space-between;">
@@ -62,25 +62,22 @@
             </div>
         {% endif %}
     {% endfor %}
-  
     <br>
     <div class="preview"> 
         <img style ="max-width:300px;" id="output_image"/>
     </div>
     <br>
     <div class="preview"> 
-        <p style = "color:white; font-weight: 400;text-align: left; margin-bottom: 5px;"> If you are uploading you're uploading your 1040, what is your total annual salary? (Box 1 on your 1040 tax form)</p> 
+        <p style = "color:white; font-weight: 400;text-align: left; margin-bottom: 5px;"> If you're uploading your 1040, what is your adjusted annual salary? (Box 11 on your 1040 tax form)</p> 
         Amount:
         <div class="input" style = "width:100%;">
-            <!--TODO: change this to dropdown menu with data-->
-            <input class="fill" name="{{ form.zipCode.name }}"
-                id="{{ form.zipCode.id_for_label }}"
-                maxlength="{{ form.zipCode.max_length }}"
+            <!--TODO: this was copy pasted from address, need to update to taxboxamount-->
+            <input class="fill" name="TaxBoxAmount"
+                id="TaxBoxAmount"
+                maxlength="9"
                 type="text" 
-                style="width:100%;" 
-                required  
+                style="width:100%;"   
                 autocomplete="off">
-            <label class="label">{{ form.zipCode.label }}</label>    
             </div>
         </div>
     <div class="footer">
