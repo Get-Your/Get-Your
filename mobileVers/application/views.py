@@ -36,15 +36,21 @@ def address(request):
         if form.is_valid():
             dict = validateUSPS(form)
             try:
-                addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'], )
-            except KeyError:
-                print("Wrong address info added")
-            try:
                 instance = form.save(commit=False)
                 instance.user_id = request.user
+                #addressResult returns true or false, use this as logic for leading to available.html/notavailable.html
+                addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'],)
+                #if addressResult == True instance.2n2 = True
+                instance.sanitizedAddress = dict['AddressValidateResponse']['Address']['Address2'], 
+                instance.sanitizedAddress2 = dict['AddressValidateResponse']['Address']['Address1'], 
+                instance.sanitizedCity = dict['AddressValidateResponse']['Address']['City'], 
+                instance.sanitizedState = dict['AddressValidateResponse']['Address']['State'], 
+                instance.sanitizedZipCode = int(dict['AddressValidateResponse']['Address']['Zip5'])
+
                 instance.save()
             except IntegrityError:
                 print("User already has information filled out for this section")
+
             return redirect(reverse("application:finances"))
     else:
         form = AddressForm()
@@ -54,6 +60,15 @@ def address(request):
         'request.user':request.user,
         'formPageNum':formPageNum,
     })
+
+def addressCorrection(request):
+    return render(request, 'application/addressCorrection.html',  {
+        'step':2,
+        'formPageNum':formPageNum,
+        'program_string': request.user.addresses.address + " " + request.user.addresses.address2 + " " + request.user.addresses.city + " " + request.user.addresses.state + " " + str(request.user.addresses.zipCode),
+        'program_string_2': request.user.addresses.sanitizedAddress + " " + request.user.addresses.sanitizedAddress2 + " " + request.user.addresses.sanitizedCity + " " + request.user.addresses.sanitizedState + " " + str(request.user.addresses.sanitizedZipCode),
+    })
+
 
 def account(request):
     if request.method == "POST": 
@@ -155,6 +170,7 @@ def available(request):
 
 def notAvailable(request):
     return render(request, 'application/de_notavailable.html',)
+
 
 def mayQualify(request):
     return render(request, 'application/mayQualify.html',)
