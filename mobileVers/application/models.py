@@ -128,10 +128,12 @@ class Eligibility(TimeStampedModel):
     LOW = 'Below $19,800'
     MED = '$19,800 ~ $32,800'
     HIGH = 'Over $32,800'
+    four = '+1,000,000'
     INCOME_LEVELS = (
         (LOW, 'Below $19,800'),
         (MED, '$19,800 ~ $32,800'),
         (HIGH, 'Over $32,800'),
+        (four, '+1,000,000'),
     )
     grossAnnualHouseholdIncome = models.CharField(
         max_length=20,

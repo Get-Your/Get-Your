@@ -1,5 +1,5 @@
 from django import forms
-from .models import Form, Feedback
+from .models import Form, Feedback, TaxInformation
 
  
 class FileForm(forms.ModelForm):
@@ -9,6 +9,14 @@ class FileForm(forms.ModelForm):
         labels  = { 
             'document_title':'Program', 
             'document':'Document Upload',
+            'TaxBoxAmount':'Amount of Box 11',
+        }
+
+class TaxForm(forms.ModelForm):
+    class Meta:
+        model = TaxInformation
+        fields = ['TaxBoxAmount',]
+        labels  = { 
             'TaxBoxAmount':'Amount of Box 11',
         }
 
