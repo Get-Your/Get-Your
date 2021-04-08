@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, reverse
-from .forms import FileForm, FeedbackForm
+from .forms import FileForm, FeedbackForm, TaxForm
 
 from .models import User, Form
 from application.models import Eligibility
@@ -7,6 +7,8 @@ from application.models import Eligibility
 from .backend import authenticate, files_to_string
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from application.backend import broadcast_email, broadcast_sms
+
+from django.db import IntegrityError
 
 
 
@@ -52,7 +54,7 @@ def files(request):
                             'step':5,
                             'formPageNum':6,
                         })
-                return redirect(reverse("dashboard:broadcast"))
+                return redirect(reverse("dashboard:manualVerifyIncome"))
             else:
                 print("notautnehticated")
                 # TODO: Change this link
@@ -132,8 +134,33 @@ def feedback(request):
     return render(request, 'dashboard/index.html',context={"program_string": text})
 
 
+def manualVerifyIncome(request):
+    if request.method == "POST": 
+        form = TaxForm(request.POST)
+        if form.is_valid():
+            print(form.data)
+            print(request.session)
+            try:
+                instance = form.save(commit=False)
+                instance.user_id = request.user
+                instance.save()
+                return redirect(reverse("dashboard:broadcast"))
+            except IntegrityError:
+                print("User already has information filled out for this section")
+        else:
+            form = TaxForm()
+    return render(request, "dashboard/manualVerifyIncome.html", {
+    'step':5,
+    'formPageNum':6,
+})
+
 def feedbackReceived(request):
     return render(request, "dashboard/feedbackReceived.html",)
+
+
+
+
+
 
 
 

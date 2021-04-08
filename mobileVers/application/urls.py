@@ -17,6 +17,7 @@ urlpatterns = [
     path('available', views.available, name='available'),
     path('notAvailable', views.notAvailable, name='notAvailable'),
     path('addressCorrection', views.addressCorrection, name='addressCorrection'),
+    path('n2n', views.n2n, name='n2n'),
     # May qualify page
     path('mayQualify', views.mayQualify, name='mayQualify')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #this is needed to get file uploads to work! 
