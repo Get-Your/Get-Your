@@ -33,7 +33,7 @@ class AddressForm(forms.ModelForm):
         labels  = { 
             'user_id': 'user_id',
             'address':'Address',
-            'address2':'Apt, Suite, etc', 
+            'address2':'Apt, Suite, etc',
             'city':'City', 
             'state':'State', 
             'zipCode':'Zip Code',
