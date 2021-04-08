@@ -2,7 +2,7 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style ="background-color: white;">
     <!--Get the various stylesheets I need like my fonts and CSS-->
     <head>
         <title>GetYour: Connexion</title>
@@ -13,25 +13,34 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
 
-    <body>
+    <body style="background-color: white;">
         <div class=nav>
-            <a href="" style="margin-left:auto; margin-right:10px">
-                <p style = "color:white; font-weight: 700;">EXIT</p>
+            <a href="{% url 'application:index' %}" style="margin-left:auto; margin-right:10px">
+                <p style = "color:#999999; font-weight: 700;">EXIT</p>
             </a>        
         </div>
         <div class="content spaceAround">
             <h1 style="color:var(--yellow)"><b>Connexion is not quite ready to go where you are.</b></h1>
-            <p style="color:white; margin-top: 2vh;">Stay updated for when Connexion will be available for you & your neighborhood.</p>
-            <div class="input" style="width: 100%; margin-top:5vh;">
-                <!--TODO: Save input-->
-                <input type="text" style="width:100%;border-bottom:1px solid white;" required>
-                
-                <label style="color:white">Email Address</label>    
-            </div>
+            <p style="color:#999999; margin-top: 2vh;">Stay updated for when Connexion will be available for you & your neighborhood.</p>
+            
+            <form action="{% url 'application:notAvailable' %}" method="post" autocomplete="false" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="input" style = "width:100%; margin-top:5vh;">
+                    <!--TODO: change this to dropdown menu with data-->
+                    <input class="fill" name="{{ form.email.name }}"
+                        id="{{ form.email.id_for_label }}"
+                        maxlength="{{ form.email.max_length }}"
+                        type="text" 
+                        style="width:100%;border-bottom:1px solid #999999;background-color: white;color:var(--darkblue)" 
+                        required  
+                        autocomplete="off">
+                    <label class="label" style="color:#999999">{{ form.email.label }}</label>    
+                </div>
+                <div class="footer" style = "background-color: white;">
+                    <button type="submit" style="padding:10px"> SUBSCRIBE TO UPDATES </button>
+                </div>
+            </form>             
 
-        </div>
-        <div class="footer">
-            <button> SUBSCRIBE TO UPDATES </button>
         </div>
     </body>
 </html>

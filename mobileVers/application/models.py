@@ -152,6 +152,13 @@ class programs(TimeStampedModel):
     snap = models.BooleanField()
     freeReducedLunch = models.BooleanField()
 
+class zipCode(TimeStampedModel):
+    zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
+
+class futureEmails(TimeStampedModel):
+    email = models.EmailField(unique=True)
+
+
 
 '''
 
