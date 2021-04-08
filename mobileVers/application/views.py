@@ -58,7 +58,12 @@ def address(request):
                 instance.user_id = request.user
                 #addressResult returns true or false, use this as logic for leading to available.html/notavailable.html
                 addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'],)
-                #if addressResult == True instance.2n2 = True
+                if addressResult == True:
+                    instance.n2n = True
+                    print("n2n instance is true")
+                else:
+                    instance.n2n = False
+                    print("n2n instance is false")
                 instance.sanitizedAddress = dict['AddressValidateResponse']['Address']['Address2'], 
                 instance.sanitizedAddress2 = dict['AddressValidateResponse']['Address']['Address1'], 
                 instance.sanitizedCity = dict['AddressValidateResponse']['Address']['City'], 
@@ -69,7 +74,7 @@ def address(request):
             except IntegrityError:
                 print("User already has information filled out for this section")
 
-            return redirect(reverse("application:finances"))
+            return redirect(reverse("application:addressCorrection"))
     else:
         form = AddressForm()
     page = what_page(request.user)
@@ -93,6 +98,12 @@ def addressCorrection(request):
         'program_string': request.user.addresses.address + " " + request.user.addresses.address2 + " " + request.user.addresses.city + " " + request.user.addresses.state + " " + str(request.user.addresses.zipCode),
         'program_string_2': request.user.addresses.sanitizedAddress + " " + request.user.addresses.sanitizedAddress2 + " " + request.user.addresses.sanitizedCity + " " + request.user.addresses.sanitizedState + " " + str(request.user.addresses.sanitizedZipCode),
     })
+
+def n2n(request):
+    if request.user.addresses.n2n == True:
+        return redirect(reverse("application:available"))
+    else:
+        return redirect(reverse("application:finances")) 
 
 
 def account(request):
@@ -193,7 +204,10 @@ def programs(request):
             try:
                 instance = form.save(commit=False)
                 instance.user_id = request.user
-                instance.save() 
+                instance.save()
+                #logic goes here, if SNAP / PSD not checked 
+                    #return redirect(reverse("dashboard:manualVerifyIncome"))
+                #else:
                 return redirect(reverse("dashboard:files"))
             except IntegrityError:
                 print("User already has information filled out for this section")
