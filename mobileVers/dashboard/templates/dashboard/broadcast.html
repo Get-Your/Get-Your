@@ -21,13 +21,11 @@
     
     <br>
 
-    <u class=yellow style=>Click here to re-send it!</u></b>
+    <a class=yellow href="{% url 'dashboard:broadcast' %}" style=><u>Click here to re-send it!</u></a></b>
         <!--Whatever I need in the other pages, I can enter it here-->
 
     <div class="footer">
         <button onclick="location.href='{% url 'dashboard:index' %}'"> CONTINUE </button>
-
-
 </div>
 
 {% endblock %}
