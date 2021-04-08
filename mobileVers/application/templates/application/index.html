@@ -109,15 +109,28 @@
             <h2 style="color:white">Intrigued?</h2>
             <p style="color:white">Check if you qualify & if connexion 
                 is available in your neighborhood</p>
-            <div class="row" style="margin: 30px 0 0 0;">
                 <!--TODO: Save input and add logic for checking zipcode-->
-                <div class="input">
-                    <input type="text" required>
-                    <!--I'm going to move label up as user presses button-->
-                    <label>Zip Code</label>    
-                </div>
+                
+                <form action="{% url 'application:index' %}" method="post" autocomplete="false" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row" style="margin: 30px 0 0 0;">
+                        <div class="input" style = "width:100%">
+                            <!--TODO: change this to dropdown menu with data-->
+                            <input class="fill" name="{{ form.zipCode.name }}"
+                                id="{{ form.zipCode.id_for_label }}"
+                                maxlength="{{ form.zipCode.max_length }}"
+                                type="text" 
+                                style="width:100%;" 
+                                required  
+                                autocomplete="off">
+                            <label class="label">{{ form.zipCode.label }}</label>    
+                        </div>
+                        <button style="background-color:var(--darkblue);padding: 5px 35px; margin: 15px 0 0 10px; height:40px;font-weight: 700;" type="submit"> ENTER </button>
+                    </div>
+                </form>
+                <!--
                 <button id="open-popup-1" style="background-color:var(--darkblue);padding: 5px 35px; margin: 15px 0 0 10px; height:40px;"><b>ENTER</b></button>
-            </div>
+                    -->
             <p class="link" style="margin:0; padding-top: 10%;">Service brought to you by the City of Fort Collins</p>
         </div>
         
@@ -125,12 +138,14 @@
         <!--TODO: make suure popup only comes up when  address is wrong-->
         <div id="popup-1">
             <div class="popup-content">
+                <img src="{% static 'application/images/X_gray.svg' %}" alt="back" style="width:5vw; top:20px;right:20px;position:absolute" onclick="location.href='{% url 'application:index' %}'">
                 <div>
                     <h1 style="color:var(--yellow)"><b>Connexion is not quite ready to go where you are.</b></h1>
                     <p>Stay updated for when Connexion will be available for you & your neighborhood.</p>
                 </div>
                 <div class="input">
                     <!--TODO: Save input-->
+                    
                     <input type="text" style="width:100%;border-bottom:1px solid#888; background-color: white;" required>
                     
                     <label style="color:#888">Email Address</label>    
