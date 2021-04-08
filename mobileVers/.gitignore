@@ -1,4 +1,4 @@
 /secrets.json
 *.pyc
-.vscode
+settings.json
 /.env
