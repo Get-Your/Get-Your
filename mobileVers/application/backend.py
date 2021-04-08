@@ -2,10 +2,10 @@
 # 2/23/2021 TODO:
 # Streamline logic for going through CSV file - priority: medium
 # Using USPS-API, incorporate returned address to clients' view via drop-down bar - priority: high
-
 import csv
 from usps import USPSApi, Address
 import json
+
 
 #Andrew backend code for Twilio
 from twilio.rest import Client
@@ -29,10 +29,11 @@ def addressCheck(address1):
         for lines in csv_reader:
             column = lines[0] + " " + lines[1] + " " + lines[2]
             if address1 == column:
+                print("True!")
                 return True
             else:
                 counter = counter + 1
-                if counter == 78:
+                if counter == 77:
                     return False
                 else:
                     continue
@@ -75,7 +76,7 @@ def validateUSPS(form):
     validation = usps.validate_address(address)
     dict = validation.result
     try:
-        #print(dict['AddressValidateResponse']['Address']['Address2'])
+        print(dict['AddressValidateResponse']['Address']['Address2'])
         print(dict)
         return dict
     except KeyError:
@@ -89,7 +90,6 @@ def broadcast_email(email):
         to_emails=email)
     
     message.template_id = TEMPLATE_ID
-    
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
