@@ -24,7 +24,6 @@ class Form(TimeStampedModel):
         choices=form_titles,
     )
     document = models.FileField()
-    TaxBoxAmount = models.DecimalField(max_digits=9, null=True, blank=True, decimal_places=2,)
 
 class TaxInformation(TimeStampedModel):
     user_id = models.OneToOneField(
