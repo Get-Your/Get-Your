@@ -5,11 +5,10 @@ from .models import Form, Feedback, TaxInformation
 class FileForm(forms.ModelForm):
     class Meta:
         model = Form
-        fields = ['document_title','document','TaxBoxAmount']
+        fields = ['document_title','document',]
         labels  = { 
             'document_title':'Program', 
             'document':'Document Upload',
-            'TaxBoxAmount':'Amount of Box 11',
         }
 
 class TaxForm(forms.ModelForm):
