@@ -216,7 +216,7 @@ input:focus ~ label, input:valid ~ label {
 }
 .popup-content {
 	position: relative;
-    padding: 15vh 20px 5vh 20px;
+    padding: 10vh 20px 10vh 20px;
     flex-direction: columnn;
 	margin: auto;
     background-color: white;

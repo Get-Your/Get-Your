@@ -17,7 +17,8 @@ class Form(TimeStampedModel):
     user_id = models.ForeignKey(User, related_name ="UserFiles", on_delete=models.CASCADE)
     form_titles = (
         ('SNAP', 'SNAP'),
-        ('Free and Reduced Lunch', 'Free and Reduced Lunch')
+        ('Free and Reduced Lunch', 'Free and Reduced Lunch'),
+        ('1040', '1040')
         )
     document_title = models.CharField(
         max_length=30,
