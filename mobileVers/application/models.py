@@ -128,12 +128,10 @@ class Eligibility(TimeStampedModel):
     LOW = 'Below $19,800'
     MED = '$19,800 ~ $32,800'
     HIGH = 'Over $32,800'
-    four = '+1,000,000'
     INCOME_LEVELS = (
         (LOW, 'Below $19,800'),
         (MED, '$19,800 ~ $32,800'),
         (HIGH, 'Over $32,800'),
-        (four, '+1,000,000'),
     )
     grossAnnualHouseholdIncome = models.CharField(
         max_length=20,
@@ -151,6 +149,7 @@ class programs(TimeStampedModel):
     # TODO: Andrew/Grace - These two fields have to be entered in after the verification of the documents
     snap = models.BooleanField()
     freeReducedLunch = models.BooleanField()
+    Tax1040 = models.BooleanField()
 
 class zipCode(TimeStampedModel):
     zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
