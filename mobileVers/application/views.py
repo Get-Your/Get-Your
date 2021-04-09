@@ -205,9 +205,6 @@ def programs(request):
                 instance = form.save(commit=False)
                 instance.user_id = request.user
                 instance.save()
-                #logic goes here, if SNAP / PSD not checked 
-                    #return redirect(reverse("dashboard:manualVerifyIncome"))
-                #else:
                 return redirect(reverse("dashboard:files"))
             except IntegrityError:
                 print("User already has information filled out for this section")
