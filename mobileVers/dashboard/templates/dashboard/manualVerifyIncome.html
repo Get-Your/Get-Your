@@ -6,8 +6,13 @@
 <form action="{% url 'dashboard:manualVerifyIncome' %}" method="post" autocomplete="false" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="preview"> 
+        <br>
+        <h4 style = "color:white; font-weight: 400;text-align: left; margin-bottom: 5px;"><b>Verify Your Income</b></h4>
+        <br>
+        <br>
     <p style = "color:white; font-weight: 400;text-align: left; margin-bottom: 5px;"> If you're uploading your 1040, what is your adjusted annual salary? (Box 11 on your 1040 tax form)</p> 
-    Amount:
+    <br>
+    <p style = "color:white; font-weight: 400;text-align: left; margin-bottom: 5px;"> Amount:</p>
     <div class="input" style = "width:100%;">
         <!--TODO: this was copy pasted from address, need to update to taxboxamount-->
         <input class="fill" name="TaxBoxAmount"
