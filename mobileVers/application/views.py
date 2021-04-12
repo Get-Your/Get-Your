@@ -49,14 +49,16 @@ def index(request):
 
 def address(request):
     if request.method == "POST": 
-        form = AddressForm(request.POST or None)
+        existing = request.user.addresses
+        form = AddressForm(request.POST,instance = existing)
         print(form.data)
         if form.is_valid():
             dict = validateUSPS(form)
+            instance = form.save(commit=False)
+            instance.user_id = request.user
+            #addressResult returns true or false, use this as logic for leading to available.html/notavailable.html
             try:
-                instance = form.save(commit=False)
-                instance.user_id = request.user
-                #addressResult returns true or false, use this as logic for leading to available.html/notavailable.html
+                print(addressCheck(dict['AddressValidateResponse']['Address']['Address2'],))
                 addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'],)
                 if addressResult == True:
                     instance.n2n = True
@@ -69,26 +71,20 @@ def address(request):
                 instance.sanitizedCity = dict['AddressValidateResponse']['Address']['City'], 
                 instance.sanitizedState = dict['AddressValidateResponse']['Address']['State'], 
                 instance.sanitizedZipCode = int(dict['AddressValidateResponse']['Address']['Zip5'])
-
                 instance.save()
-            except IntegrityError:
-                print("User already has information filled out for this section")
+            except TypeError:
+                print("USPS couldn't figure it out!")
 
             return redirect(reverse("application:addressCorrection"))
     else:
         form = AddressForm()
-    page = what_page(request.user)
 
-    print(page)
-    if what_page(request.user) == "application:address":
-        return render(request, 'application/address.html', {
-            'form':form,
-            'step':2,
-            'request.user':request.user,
-            'formPageNum':formPageNum,
+    return render(request, 'application/address.html', {
+        'form':form,
+        'step':2,
+        'request.user':request.user,
+        'formPageNum':formPageNum,
         })
-    else:
-        return redirect(reverse(page))
 
 
 def addressCorrection(request):
@@ -125,15 +121,15 @@ def account(request):
         form = UserForm()
 
     # Check if user is already logged in and has an account; just push them to next step of application
-    page = what_page(request.user)
-    if what_page(request.user) == "application:account":
-        return render(request, 'application/account.html', {
-        'form':form,
-        'step':1,
-        'formPageNum':formPageNum,
+#    page = what_page(request.user)
+#    if what_page(request.user) == "application:account":
+    return render(request, 'application/account.html', {
+    'form':form,
+    'step':1,
+    'formPageNum':formPageNum,
     })
-    else:
-        return redirect(reverse(page))
+#    else:
+#        return redirect(reverse(page))
 
 
 def finances(request):
@@ -184,15 +180,15 @@ def finances(request):
         'step':3,
         'formPageNum':formPageNum,
     })
-    page = what_page(request.user)
-    if what_page(request.user) == "application:finances":
-        return render(request, 'application/finances.html', {
+#    page = what_page(request.user)
+#    if what_page(request.user) == "application:finances":
+    return render(request, 'application/finances.html', {
         'form':form,
         'step':3,
         'formPageNum':formPageNum,
     })
-    else:
-        return redirect(reverse(page))
+#    else:
+#        return redirect(reverse(page))
 
 
 def programs(request):
@@ -216,16 +212,16 @@ def programs(request):
     else:
         form = programForm()
 
-    page = what_page(request.user)
-    if what_page(request.user) == "application:programs":
-        return render(request, 'application/programs.html', {
-        'form':form,
-        'step':4,
-        'formPageNum':formPageNum,
+#    page = what_page(request.user)
+#    if what_page(request.user) == "application:programs":
+    return render(request, 'application/programs.html', {
+    'form':form,
+    'step':4,
+    'formPageNum':formPageNum,
     })
 
-    else:
-        return redirect(reverse(page))
+#    else:
+#        return redirect(reverse(page))
     #return render(request, 'application/programs.html',)
 
 def available(request):
