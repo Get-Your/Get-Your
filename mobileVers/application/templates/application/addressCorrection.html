@@ -1,15 +1,13 @@
 <!-- This brings in the CSS-->
 {% extends "application/layout.html" %}
-{% load static %}
 
 {% block body %}
 
-<div class="content spaceAround">
     <!--NOTE: For the future have numbers change based on database-->
-    <h1 style="color:white">We found this address for you, is this correct?</h1>
+    <h2 style="color:white">We found this address for you, is this correct?</h1>
     <br>
-
-    <h1 style="color:white"> {{program_string_2}} </h1>
+    <!-- NOTE GRACE START HERE-->
+    <h1 style="color:white"> {{for program_string_2 in }} </h1>
 
     <br>
     <h1 style="color:white"> Or we could go with what you entered:</h1>
@@ -21,7 +19,6 @@
 
         <!--Whatever I need in the other pages, I can enter it here-->
 
-</div>
 <div class="footer">
     <button onclick="location.href='{% url 'application:n2n' %}'"> CONTINUE </button>
 </div>
