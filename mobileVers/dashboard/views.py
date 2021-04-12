@@ -21,14 +21,12 @@ def files(request):
     page = what_page(request.user)
     print(page)
     if what_page(request.user) == "dashboard:files":
-
-        
         # TODO: Grace Add something that checks if user logged in
         file_list = {"SNAP Card": request.user.programs.snap,
                     # Have Reduced Lunch be last item in the list if we add more programs
-                    "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch
+                    "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
+                    #"1040 Tax Form": request.user.programs.Tax1040
         }
-
         if request.method == "POST":   
             form = FileForm(request.POST, request.FILES)
             print(form)
@@ -50,6 +48,10 @@ def files(request):
                         if group.document_title == "Free and Reduced Lunch":
                             checkAllForms[1] = True
                             file_list["PSD Reduced Lunch Approval Letter"] = False
+                        #TODO UPDATE TO TAX BELOW
+                        if group.document_title == "1040 Form":
+                            checkAllForms[1] = True
+                            file_list["1040 Tax Form"] = False
                     
                     if False in checkAllForms:
                         return render(request, 'dashboard/files.html', {
@@ -59,7 +61,10 @@ def files(request):
                                 'step':5,
                                 'formPageNum':6,
                             })
-                    return redirect(reverse("dashboard:broadcast"))
+                    if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True:
+                        return redirect(reverse("dashboard:manualVerifyIncome"))
+                    else:
+                        return redirect(reverse("dashboard:broadcast")) 
                 else:
                     print("notautnehticated")
                     # TODO: Change this link
