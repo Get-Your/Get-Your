@@ -145,25 +145,25 @@ def finances(request):
                 if form['grossAnnualHouseholdIncome'].value() == 'Below $19,800':
                     print("GAHI is below 19,800")
                     if qualification(form['dependents'].value(),) >= 19800:
-                        instance.qualified = True
+                        instance.DEqualified = True
                     else:
-                        instance.qualified = False
+                        instance.DEqualified = False
                 elif form['grossAnnualHouseholdIncome'].value() == '$19,800 ~ $32,800':
                     print("GAHI is between 19,800 and 32,800")
                     if 19800 <= qualification(form['dependents'].value(),) <= 32800:
-                        instance.qualified = True
+                        instance.DEqualified = True
                     else:
-                        instance.qualified = False
+                        instance.DEqualified = False
                 elif form['grossAnnualHouseholdIncome'].value() == 'Over $32,800':
                     print("GAHI is above 32,800")
                     if qualification(form['dependents'].value(),) >= 32800:
-                        instance.qualified = True
+                        instance.DEqualified = True
                     else:
-                        instance.qualified = False                        
+                        instance.DEqualified = False                        
                     
-                print(instance.qualified)
+                print(instance.DEqualified)
                 instance.save()
-                if instance.qualified == True:
+                if instance.DEqualified == True:
                     return redirect(reverse("application:mayQualify"))
                 else:
                     return redirect(reverse("application:programs"))
@@ -189,6 +189,16 @@ def finances(request):
     })
 #    else:
 #        return redirect(reverse(page))
+
+
+def GRQuickApply(request):
+    obj = request.user.eligibility
+    print(obj.GRqualified)
+    #print(request.user.eligibility.GRQualified)
+    obj.GRqualified = True
+    print(obj.GRqualified)
+    obj.save()
+    return render(request, "application/GRQuickApply.html",)
 
 
 def programs(request):
