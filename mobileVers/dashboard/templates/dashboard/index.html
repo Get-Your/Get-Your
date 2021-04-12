@@ -69,8 +69,25 @@
                       <p style="font-weight: 800; margin-top: 50px;">How can we do better?</p> 
                       <textarea class="feedback" placeholder="Tell us how we're doing!"id="" name="feedbackComments" maxlength="500"></textarea>
                     <button name="starRating" value = "" id="submit" style="width:100%; padding:0; justify-content: flex-start;"> <b>SHARE FEEDBACK</b> </button>
-                  </div>
+                    <br>
+                    <br>
+                </div>
               </form>
+            </div>
+
+            <div class="module">
+              <p>Other Programs:</p>
+              <div class="column" style="width:100%; margin:0;">
+              <p style="font-weight: 800;">{{program_string2}}</p>
+              <p style="font-weight: 800;">{{program_string3}} </p>
+              <a class=yellow href="{% url 'application:GRQuickApply' %}" style="font-weight: 800;"><u>{{program_string4}}</u></a></b>
+              <a class=yellow href="https://www.fcgov.com/rebate/" style="font-weight: 800;"><u>{{program_string5}}</u></a></b>
+              <br>
+              <br>
+              <a class=yellow href="https://www.fcgov.com/utilities/iqap/" style="font-weight: 800;"><u>{{program_string6}}</u></a></b>
+              <br>
+              <br>
+              </div>
             </div>
         </div>
 
