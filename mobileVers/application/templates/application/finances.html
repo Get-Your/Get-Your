@@ -24,7 +24,7 @@
         {% if field.label == "Rent" %}
         {% elif field.label == 'Number of Dependents' %}
             <input class="fill" type="text" name="{{ field.name }}" id="{{ field.id_for_label}}" value ="0">
-            <label class="label">How many dependents are in your household?</label> 
+            <label class="label">How many people are in your household including dependents?</label> 
         {% else %}
             <label class="label" style="position:relative; top:-5px">How much is your gross annual household income?</label> 
             <select name="{{ field.name }}" id="{{ field.id_for_label}}">
