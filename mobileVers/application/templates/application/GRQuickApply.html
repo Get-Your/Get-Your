@@ -1,0 +1,28 @@
+<!-- This brings in the CSS-->
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <!--Get the various stylesheets I need like my fonts and CSS-->
+    <head>
+        <title>GetYour: Connexion</title>
+        <link href="{% static 'application/styles_app.css' %}" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&display=swap" rel="stylesheet">
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+
+    <body>
+        
+        <div class="content spaceAround">
+            <!--NOTE: For the future have numbers change based on database-->
+            <h1 style="color:white"><b>Thank you for quick applying to the Grocery Rebate Tax program!</b></h1>
+                <!--Whatever I need in the other pages, I can enter it here-->
+
+        </div>
+        <div class="footer">
+            <button onclick="location.href='{% url 'dashboard:index' %}'"> CONTINUE </button>
+        </div>
+    </body>
+</html>
