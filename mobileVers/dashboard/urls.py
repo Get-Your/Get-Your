@@ -12,5 +12,6 @@ urlpatterns = [
     path('broadcast', views.broadcast, name='broadcast'),
     path('feedbackReceived', views.feedbackReceived, name="feedbackReceived"),
     path('manualVerifyIncome', views.manualVerifyIncome, name='manualVerifyIncome'),
+    
     # Available/NotAvailable Digital equity in your area
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #this is needed to get file uploads to work! 
