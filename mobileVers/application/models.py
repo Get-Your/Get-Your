@@ -122,7 +122,8 @@ class Eligibility(TimeStampedModel):
     # TODO: possibly add field for how many total individuals are in the household
     dependents = models.IntegerField(100)
     #need this for function in views.py after client uploads their dependent information
-    qualified = models.BooleanField(default=False)
+    DEqualified = models.BooleanField(default=False)
+    GRqualified = models.BooleanField(default=False)
 
     # Income Levels
     LOW = 'Below $19,800'
