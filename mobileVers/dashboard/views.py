@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, reverse
-from .forms import FileForm, FeedbackForm, TaxForm
+from .forms import FileForm, FeedbackForm, TaxForm 
 
 from .models import User, Form
 from application.models import Eligibility
@@ -141,11 +141,28 @@ def feedback(request):
             print("form is not valid")
     else:
         form = FeedbackForm()
-    if request.user.eligibility.qualified == True:
+    if request.user.eligibility.DEqualified == True:
         text = "Based on your information, you may qualify! Be on the lookout for an email or phone call."
+        text2 = "Based on your information you may also qualify for the city's Grocery Rebate Tax program!"
+        text3 = "By clicking on the link below, we can send your information over and quick apply for you."
+        text4 = "Click here to quick apply"
+        text5 = ""
+        text6 = "Utilities Income-Qualified Assistance Program"
     else:
         text = "Based on your info, you may be over the pre-tax income limit. At this time you do not qualify. If your income changes, please apply again."
-    return render(request, 'dashboard/index.html',context={"program_string": text})
+        text2 = ""
+        text3 = ""
+        text4 = ""
+        text5 = "Grocery Rebate Tax Program"
+        text6 = "Utilities Income-Qualified Assistance Program"
+    return render(request, 'dashboard/index.html',context={
+        "program_string": text,
+        "program_string2": text2,
+        "program_string3": text3,
+        "program_string4": text4,
+        "program_string5": text5,
+        "program_string6": text6,
+        })
 
 
 def manualVerifyIncome(request):
