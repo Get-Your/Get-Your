@@ -66,12 +66,13 @@ def qualification(dependentNumber):
 def validateUSPS(form):
     address = Address(
         name = " ",
-        address_1 = form['address'].value(),
-        address_2 = form['address2'].value(),
-        city = form['city'].value(),
-        state = form['state'].value(),
-        zipcode = form['zipCode'].value() 
+        address_1 = form['address'],
+        address_2 = form['address2'],
+        city = form['city'],
+        state = form['state'],
+        zipcode = form['zipcode'],
     )
+    print (address)
     usps = USPSApi(settings.USPS_SID, test=True)
     validation = usps.validate_address(address)
     dict = validation.result

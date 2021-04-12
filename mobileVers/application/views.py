@@ -7,9 +7,10 @@ from django.contrib.auth import get_user_model
 from.models import User
 
 from django.db import IntegrityError
-
+from django.core.exceptions import ObjectDoesNotExist
 from .forms import UserForm, AddressForm, EligibilityForm, programForm, zipCodeForm,futureEmailsForm
 from .backend import addressCheck, validateUSPS, broadcast_email, broadcast_sms, qualification
+from django.http import QueryDict
 
 from dashboard.backend import what_page
 formPageNum = 6
@@ -49,31 +50,36 @@ def index(request):
 
 def address(request):
     if request.method == "POST": 
-        existing = request.user.addresses
-        form = AddressForm(request.POST,instance = existing)
+        try:
+            existing = request.user.addresses
+            form = AddressForm(request.POST,instance = existing)
+        except ObjectDoesNotExist:
+            form = AddressForm(request.POST or None)
+
         print(form.data)
         if form.is_valid():
-            dict = validateUSPS(form)
             instance = form.save(commit=False)
             instance.user_id = request.user
-            #addressResult returns true or false, use this as logic for leading to available.html/notavailable.html
-            try:
-                print(addressCheck(dict['AddressValidateResponse']['Address']['Address2'],))
-                addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'],)
-                if addressResult == True:
-                    instance.n2n = True
-                    print("n2n instance is true")
-                else:
-                    instance.n2n = False
-                    print("n2n instance is false")
-                instance.sanitizedAddress = dict['AddressValidateResponse']['Address']['Address2'], 
-                instance.sanitizedAddress2 = dict['AddressValidateResponse']['Address']['Address1'], 
-                instance.sanitizedCity = dict['AddressValidateResponse']['Address']['City'], 
-                instance.sanitizedState = dict['AddressValidateResponse']['Address']['State'], 
-                instance.sanitizedZipCode = int(dict['AddressValidateResponse']['Address']['Zip5'])
-                instance.save()
-            except TypeError:
-                print("USPS couldn't figure it out!")
+            instance.save()            
+            # instance.user_id = request.user
+            # #addressResult returns true or false, use this as logic for leading to available.html/notavailable.html
+            # try:
+            #     print(addressCheck(dict['AddressValidateResponse']['Address']['Address2'],))
+            #     addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'],)
+            #     if addressResult == True:
+            #         instance.n2n = True
+            #         print("n2n instance is true")
+            #     else:
+            #         instance.n2n = False
+            #         print("n2n instance is false")
+            #     instance.sanitizedAddress = dict['AddressValidateResponse']['Address']['Address2'], 
+            #     instance.sanitizedAddress2 = dict['AddressValidateResponse']['Address']['Address1'], 
+            #     instance.sanitizedCity = dict['AddressValidateResponse']['Address']['City'], 
+            #     instance.sanitizedState = dict['AddressValidateResponse']['Address']['State'], 
+            #     instance.sanitizedZipCode = int(dict['AddressValidateResponse']['Address']['Zip5'])
+            #     instance.save()
+            # except TypeError or RelatedObjectDoesNotExist:
+            #     print("USPS couldn't figure it out!")
 
             return redirect(reverse("application:addressCorrection"))
     else:
@@ -88,12 +94,48 @@ def address(request):
 
 
 def addressCorrection(request):
+    q = QueryDict('', mutable=True)
+    q.update({"address": request.user.addresses.address, 
+           "address2": request.user.addresses.address2, 
+           "city": request.user.addresses.city,
+           "state": request.user.addresses.state,
+           "zipcode": str(request.user.addresses.zipCode),})
+    dict_address = validateUSPS(q)
+    print(dict_address['AddressValidateResponse']['Address'])
+    program_string_2 = [dict_address['AddressValidateResponse']['Address']['Address2'], 
+                        dict_address['AddressValidateResponse']['Address']['Address1'],
+                        dict_address['AddressValidateResponse']['Address']['City'] + " "+ dict_address['AddressValidateResponse']['Address']['State'] +" "+  str(dict_address['AddressValidateResponse']['Address']['Zip5'])]
+    program_string = [request.user.addresses.address, request.user.addresses.address2, request.user.addresses.city + " " + request.user.addresses.state + " " + str(request.user.addresses.zipCode)]
     return render(request, 'application/addressCorrection.html',  {
         'step':2,
         'formPageNum':formPageNum,
-        'program_string': request.user.addresses.address + " " + request.user.addresses.address2 + " " + request.user.addresses.city + " " + request.user.addresses.state + " " + str(request.user.addresses.zipCode),
-        'program_string_2': request.user.addresses.sanitizedAddress + " " + request.user.addresses.sanitizedAddress2 + " " + request.user.addresses.sanitizedCity + " " + request.user.addresses.sanitizedState + " " + str(request.user.addresses.sanitizedZipCode),
+        'program_string': program_string,
+        'program_string_2': program_string_2,
     })
+
+def takeUSPSaddress(request):
+
+    q = QueryDict('', mutable=True)
+    q.update({"address": request.user.addresses.address, 
+           "address2": request.user.addresses.address2, 
+           "city": request.user.addresses.city,
+           "state": request.user.addresses.state,
+           "zipcode": str(request.user.addresses.zipCode),})
+    dict_address = validateUSPS(q)
+
+    instance = request.user.addresses
+    instance.user_id = request.user
+    instance.address = dict_address['AddressValidateResponse']['Address']['Address2']
+    instance.address2 = dict_address['AddressValidateResponse']['Address']['Address1']
+    instance.city = dict_address['AddressValidateResponse']['Address']['City']
+    instance.state = dict_address['AddressValidateResponse']['Address']['State']
+    instance.zipCode = int(dict_address['AddressValidateResponse']['Address']['Zip5'])
+
+    instance.save()
+
+    return redirect(reverse("application:n2n"))
+
+
 
 def n2n(request):
     if request.user.addresses.n2n == True:
@@ -105,7 +147,11 @@ def n2n(request):
 def account(request):
     if request.method == "POST": 
         # maybe also do some password requirements here too
-        form = UserForm(request.POST)
+        try:
+            existing = request.user
+            form = UserForm(request.POST,instance = existing)
+        except AttributeError or ObjectDoesNotExist:
+            form = UserForm(request.POST or None)
         if form.is_valid():
             # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
             # Make sure password isn't getting saved twice
