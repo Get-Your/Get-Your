@@ -112,6 +112,7 @@ p {
     height:70vh;
 }
 button {
+    font-family: Montserrat;
     background-color: var(--lightblue);
     border-radius: 3vh;
     padding: 5px 40px;
@@ -155,6 +156,10 @@ input:checked+label {
     background-color: white;
 }
 
+.extraspace{
+    width:10%;
+    height:12vh;
+}
 
 .footer{
     display: flex;
@@ -196,7 +201,7 @@ input{
 input:focus { outline:none; }
 .labelword{
     color:white;
-    font-size: 12px;
+    font-size: max(3.4vw, 12px);
 }
 .label{
     /*This pushed the words away*/
@@ -220,4 +225,21 @@ input.fill:focus ~ label, input.fill:valid ~ label {
     display:flex;
     flex-direction: column;
     justify-content: center;
+}
+
+.buttonAddress{
+    background-color: rgba(255,255,255,0.15);
+    border-radius: 3vh;
+    border:none;
+    outline: none;
+    box-shadow: none;
+    color:white;
+    text-align: start;
+    display:flex;
+    height:auto;
+    font-size: max(5vw, 24px);
+    font-weight: 700;
+    width:100%;
+    padding: 3vh;
+    cursor: pointer;
 }

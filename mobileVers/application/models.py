@@ -103,7 +103,7 @@ class Addresses(TimeStampedModel):
     sanitizedAddress2 =  models.CharField(max_length=200, blank=True, default="")
     sanitizedCity =  models.CharField(max_length=64, blank=True, default="")
     sanitizedState =  models.CharField(max_length=255, blank=True, default="")
-    sanitizedZipCode = models.DecimalField(max_digits=5, blank=True, decimal_places=0,)    
+    sanitizedZipCode = models.DecimalField(max_digits=5, blank=True, decimal_places=0, default="0")    
 
 choices = (
     ('Rent', 'Rent'),

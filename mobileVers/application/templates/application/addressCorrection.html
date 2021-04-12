@@ -4,23 +4,28 @@
 {% block body %}
 
     <!--NOTE: For the future have numbers change based on database-->
-    <h2 style="color:white">We found this address for you, is this correct?</h1>
+    <h2 style="color:white; margin-bottom: 0;">We found this address for you, is this correct?</h1>
     <br>
     <!-- NOTE GRACE START HERE-->
-    <h1 style="color:white"> {{for program_string_2 in }} </h1>
+    <button class="buttonAddress" style="color:white; font-weight: 400; margin-bottom: 0;" onclick="location.href='{% url 'application:takeUSPSaddress' %}'"> 
+        {% for i in program_string_2 %}
+            {{ i }} <br>
+        {% endfor %}
+    </button>
+    
 
     <br>
-    <h1 style="color:white"> Or we could go with what you entered:</h1>
+    <h2 style="color:white; margin-bottom: 0;"> Or we could go with what you entered:</h2>
 
     <br>
 
-    <h1 style="color:white"> {{program_string}} </h1>
-
+    <button class="buttonAddress" style="color:white; font-weight: 400; margin-bottom: 0;" onclick="location.href='{% url 'application:n2n' %}'"> 
+        {% for i in program_string %}
+            {{i}} <br>
+        {% endfor %}
+    </button>
 
         <!--Whatever I need in the other pages, I can enter it here-->
 
-<div class="footer">
-    <button onclick="location.href='{% url 'application:n2n' %}'"> CONTINUE </button>
-</div>
 
 {% endblock %}
