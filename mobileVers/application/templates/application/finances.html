@@ -20,20 +20,22 @@
         </div> 
     </div>
     {% for field in form %}
-    <div class="input">
         {% if field.label == "Rent" %}
         {% elif field.label == 'Number of Dependents' %}
-            <label class="labelword"style="position:relative; top:-5px">How many dependents are in your household?</label> 
+        <div class="input">
+            <label class="labelword"style="position:relative">How many dependents are in your household?</label> 
             <input class="fill" type="text" name="{{ field.name }}" id="{{ field.id_for_label}}" value ="0" style="height: 3vh;">
+        </div>
         {% else %}
-            <label class="labelword" style="position:relative; top:-5px">How much is your gross annual household income?</label> 
+        <div class="input">
+            <label class="labelword" style="position:relative">How much is your gross annual household income?</label> 
             <select name="{{ field.name }}" id="{{ field.id_for_label}}">
             {% for option in field %}
                 <option style="background-color: var(--darkblue);" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
             {% endfor %}
             </select>
+        </div>
         {% endif %}
-    </div>
     {% endfor %}
     <div class="footer">
         <button type="submit"> CONTINUE </button>
