@@ -84,7 +84,7 @@ button {
     outline: none;
     box-shadow: none;
     color:white;
-    height: 6vh;
+    height: 5vh;
     font-size: max(3.8vw, 16px);
 }
 /*Backgrounds for homepage*/
@@ -124,7 +124,7 @@ button {
 /*the ul that holds the navbar links list*/
 .navUl {
     margin:0;
-    padding: 6% 0% 3% 3%;
+    padding: 6% 0% 6% 3%;
     vertical-align: middle;
     /*make list horizontal*/
     display: flex;
