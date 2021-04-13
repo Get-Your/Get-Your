@@ -46,10 +46,13 @@
                     <option style="background-color: var(--darkblue);" value="SNAP"> SNAP </option>
                 {% elif program_string == "PSD Reduced Lunch Approval Letter" %}
                     <option style="background-color: var(--darkblue);" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                {% elif program_string == "SNAP Card, PSD Reduced Lunch Approval Letter" %}
+                    {% for option in field %}
+                        <option style="background-color: var(--darkblue);" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
+                    {% endfor %}
+                {% elif program_string == "1040 Form" %}
+                    <option style="background-color: var(--darkblue);" value="1040"> Tax Form </option>
                 {% endif %}
-                {% for option in field %}
-                    <option style="background-color: var(--darkblue);" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
-                {% endfor %}
                 </select>
             </div>
         {% elif field.label == "Document Upload" %}
