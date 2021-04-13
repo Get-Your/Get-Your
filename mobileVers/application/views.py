@@ -60,6 +60,13 @@ def address(request):
         if form.is_valid():
             instance = form.save(commit=False)
             instance.user_id = request.user
+            addressResult = addressCheck(instance.address)
+            if addressResult == True:
+                instance.n2n = True
+                print("n2n instance is true")
+            else:
+                instance.n2n = False
+                print("n2n instance is false")
             instance.save()            
             # instance.user_id = request.user
             # #addressResult returns true or false, use this as logic for leading to available.html/notavailable.html
@@ -94,17 +101,21 @@ def address(request):
 
 
 def addressCorrection(request):
-    q = QueryDict('', mutable=True)
-    q.update({"address": request.user.addresses.address, 
-           "address2": request.user.addresses.address2, 
-           "city": request.user.addresses.city,
-           "state": request.user.addresses.state,
-           "zipcode": str(request.user.addresses.zipCode),})
-    dict_address = validateUSPS(q)
-    print(dict_address['AddressValidateResponse']['Address'])
-    program_string_2 = [dict_address['AddressValidateResponse']['Address']['Address2'], 
-                        dict_address['AddressValidateResponse']['Address']['Address1'],
-                        dict_address['AddressValidateResponse']['Address']['City'] + " "+ dict_address['AddressValidateResponse']['Address']['State'] +" "+  str(dict_address['AddressValidateResponse']['Address']['Zip5'])]
+    try:
+        q = QueryDict('', mutable=True)
+        q.update({"address": request.user.addresses.address, 
+            "address2": request.user.addresses.address2, 
+            "city": request.user.addresses.city,
+            "state": request.user.addresses.state,
+            "zipcode": str(request.user.addresses.zipCode),})
+        dict_address = validateUSPS(q)
+        print(dict_address['AddressValidateResponse']['Address'])
+        program_string_2 = [dict_address['AddressValidateResponse']['Address']['Address2'], 
+                            dict_address['AddressValidateResponse']['Address']['Address1'],
+                            dict_address['AddressValidateResponse']['Address']['City'] + " "+ dict_address['AddressValidateResponse']['Address']['State'] +" "+  str(dict_address['AddressValidateResponse']['Address']['Zip5'])]
+    except TypeError or RelatedObjectDoesNotExist:
+        program_string_2 = ["Sorry, we couldn't verify this address through USPS."]
+        print("USPS couldn't figure it out!")
     program_string = [request.user.addresses.address, request.user.addresses.address2, request.user.addresses.city + " " + request.user.addresses.state + " " + str(request.user.addresses.zipCode)]
     return render(request, 'application/addressCorrection.html',  {
         'step':2,
@@ -114,24 +125,34 @@ def addressCorrection(request):
     })
 
 def takeUSPSaddress(request):
+    try:
+        q = QueryDict('', mutable=True)
+        q.update({"address": request.user.addresses.address, 
+            "address2": request.user.addresses.address2, 
+            "city": request.user.addresses.city,
+            "state": request.user.addresses.state,
+            "zipcode": str(request.user.addresses.zipCode),})
+        dict_address = validateUSPS(q)
 
-    q = QueryDict('', mutable=True)
-    q.update({"address": request.user.addresses.address, 
-           "address2": request.user.addresses.address2, 
-           "city": request.user.addresses.city,
-           "state": request.user.addresses.state,
-           "zipcode": str(request.user.addresses.zipCode),})
-    dict_address = validateUSPS(q)
+        instance = request.user.addresses
+        instance.user_id = request.user
+        instance.address = dict_address['AddressValidateResponse']['Address']['Address2']
+        addressResult = addressCheck(instance.address)
+        if addressResult == True:
+            instance.n2n = True
+            print("n2n instance is true")
+        else:
+            instance.n2n = False
+            print("n2n instance is false")
 
-    instance = request.user.addresses
-    instance.user_id = request.user
-    instance.address = dict_address['AddressValidateResponse']['Address']['Address2']
-    instance.address2 = dict_address['AddressValidateResponse']['Address']['Address1']
-    instance.city = dict_address['AddressValidateResponse']['Address']['City']
-    instance.state = dict_address['AddressValidateResponse']['Address']['State']
-    instance.zipCode = int(dict_address['AddressValidateResponse']['Address']['Zip5'])
+        instance.address2 = dict_address['AddressValidateResponse']['Address']['Address1']
+        instance.city = dict_address['AddressValidateResponse']['Address']['City']
+        instance.state = dict_address['AddressValidateResponse']['Address']['State']
+        instance.zipCode = int(dict_address['AddressValidateResponse']['Address']['Zip5'])
 
-    instance.save()
+        instance.save()
+    except TypeError or RelatedObjectDoesNotExist:
+        print("USPS couldn't figure it out!")
 
     return redirect(reverse("application:n2n"))
 

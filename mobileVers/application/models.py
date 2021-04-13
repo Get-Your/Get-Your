@@ -98,12 +98,6 @@ class Addresses(TimeStampedModel):
 
     zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
     n2n = models.BooleanField()
-    #used to keep the USPS sanitized address (if available)
-    sanitizedAddress =  models.CharField(max_length=200, blank=True, default="")
-    sanitizedAddress2 =  models.CharField(max_length=200, blank=True, default="")
-    sanitizedCity =  models.CharField(max_length=64, blank=True, default="")
-    sanitizedState =  models.CharField(max_length=255, blank=True, default="")
-    sanitizedZipCode = models.DecimalField(max_digits=5, blank=True, decimal_places=0, default="0")    
 
 choices = (
     ('Rent', 'Rent'),
