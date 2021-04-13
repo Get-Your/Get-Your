@@ -68,6 +68,8 @@ def what_page(user):
             value = user.forms
         except AttributeError:
             return "dashboard:files"
+        
+        return "dashboard:index"
 
     else:
         return "application:account"

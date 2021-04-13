@@ -32,24 +32,28 @@
             </div>
           </nav>
             <p style="font-weight: 700; color:var(--darkblue);">GetYour: Connexion</p>
-            <img src="{% static 'dashboard/images/AlertBell.svg' %}" alt="back" style="width:4.5vw;" onclick="location.href='{% url 'application:index' %}'">
+            <img src="{% static 'dashboard/images/AlertBell.svg' %}" alt="back" style="width:4.5vw;">
         </div>
         
         <div class="content ">
             <div class="module" >
               <p>Application Status </p>
-              <h3 style="color:#137D13; font-weight: 800;"><span style="font-size:max(5.9vw, 30px);margin-right: 4vw;">01</span>In Progress</h3>
-              <div class="row" style="margin:0; width:100%;">
-                <img src="{% static 'dashboard/images/iconRise.svg' %}" alt="back" style="width:23vw;margin-right: 3vw;" onclick="location.href='{% url 'application:index' %}'">
-                <p>The office is experiencing busier than normal application rates. </p>
-            </div>
-            <div class="row" style="width:100%; margin:0;">
-                <img src="{% static 'dashboard/images/clock.svg' %}" alt="back" style="width:15vw; margin-right:5vw;" onclick="location.href='{% url 'application:index' %}'">
-                <div>
-                  <p style="margin-bottom: 0;">Qualification Status:</p>
+              <h3 style="color:#137D13; font-weight: 800;"><span style="font-size:max(5.9vw, 30px);margin-right: 4vw;">01</span>
+                <span style="font-size: max(5vw, 18px);margin-right: 4vw;">In Progress</span></h3>
+             <table style="text-align: left;"> 
+              <tr >
+                <th style="width:15%; padding: 0 1vw;"><img src="{% static 'dashboard/images/iconRise.svg' %}" alt="back" style="width:100%;" ></th>
+                <th style="width:85%;"><p> {{program_string7}} </p></th>
+              </tr>
+              <tr>
+                <th style="padding: 0 1.5vw"><img src="{% static 'dashboard/images/clock.svg' %}" alt="back" style="width:100%;" ></th>
+                <th>
+                  <p style="margin-bottom: 0; font-weight: 400;">Qualification Status:</p>
                   <p style="font-weight: 800; margin-top: 5px;">{{program_string}}</p> 
-                </div>
-              </div>
+
+                </th>
+              </tr>
+            </table>
             </div>
             <div class="module" >
               <form action="{% url 'dashboard:index' %}" method="post">
@@ -67,8 +71,8 @@
                 </div>
                 <div class="column" style="width:100%; margin:0; justify-content: flex-start;">
                       <p style="font-weight: 800; margin-top: 50px;">How can we do better?</p> 
-                      <textarea class="feedback" placeholder="Tell us how we're doing!"id="" name="feedbackComments" maxlength="500"></textarea>
-                    <button name="starRating" value = "" id="submit" style="width:100%; padding:0; justify-content: flex-start;"> <b>SHARE FEEDBACK</b> </button>
+                      <textarea class="feedback" placeholder="Tell us how we're doing!"id="" name="feedbackComments" maxlength="500" style="border-radius: 2vh;"></textarea>
+                    <button name="starRating" value = "" id="submit" style="width:100%; padding:0; margin-top: 2vh; justify-content: flex-start;"> <b>SHARE FEEDBACK</b> </button>
                     <br>
                     <br>
                 </div>
@@ -80,14 +84,16 @@
               <div class="column" style="width:100%; margin:0;">
               <p style="font-weight: 800;">{{program_string2}}</p>
               <p style="font-weight: 800;">{{program_string3}} </p>
-              <a class=yellow href="{% url 'application:GRQuickApply' %}" style="font-weight: 800;"><u>{{program_string4}}</u></a></b>
-              <a class=yellow href="https://www.fcgov.com/rebate/" style="font-weight: 800;"><u>{{program_string5}}</u></a></b>
+              <a class=yellow href="{% url 'application:GRQuickApply' %}" style="font-weight: 800;font-size: max(3.8vw, 16px)"><u>{{program_string4}}</u></a></b>
+              <a class=yellow href="https://www.fcgov.com/rebate/" style="font-weight: 800;font-size: max(3.8vw, 16px)"><u>{{program_string5}}</u></a></b>
               <br>
               <br>
-              <a class=yellow href="https://www.fcgov.com/utilities/iqap/" style="font-weight: 800;"><u>{{program_string6}}</u></a></b>
+              <a class=yellow href="https://www.fcgov.com/utilities/iqap/" style="font-weight: 800;font-size: max(3.8vw, 16px)"><u>{{program_string6}}</u></a></b>
               <br>
               <br>
               </div>
+            </div>
+            <div class="extraspace">
             </div>
         </div>
 

@@ -105,7 +105,10 @@ p {
     font-size: max(3.8vw, 16px);
     font-weight: 700;
 }
-
+.extraspace{
+    width:10%;
+    height:12vh;
+}
 /*Keep things in rows*/
 .row{
     display: flex;
@@ -212,7 +215,7 @@ input{
 input:focus { outline:none; }
 .labelword{
     color:white;
-    font-size: 12px;
+    font-size: max(3.4vw, 12px);
 }
 .label{
     /*This pushed the words away*/

@@ -156,10 +156,7 @@ input:checked+label {
     background-color: white;
 }
 
-.extraspace{
-    width:10%;
-    height:12vh;
-}
+
 
 .footer{
     display: flex;

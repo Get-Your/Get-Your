@@ -18,70 +18,65 @@ from django.db import IntegrityError
 
 
 def files(request):
-    page = what_page(request.user)
-    print(page)
-    if what_page(request.user) == "dashboard:files":
-        # TODO: Grace Add something that checks if user logged in
-        file_list = {"SNAP Card": request.user.programs.snap,
-                    # Have Reduced Lunch be last item in the list if we add more programs
-                    "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
-                    #"1040 Tax Form": request.user.programs.Tax1040
-        }
-        if request.method == "POST":   
-            form = FileForm(request.POST, request.FILES)
-            print(form)
-            if form.is_valid():  
-                if request.user.is_authenticated:
-                    instance = form.save(commit=False)
-                    # NOTE FOR ANDREW: This was that stupid line that caused user auth to not work 
-                    instance.user_id = request.user
-                    instance.save()
-                    print("File Saved")
+    file_list = {"SNAP Card": request.user.programs.snap,
+                # Have Reduced Lunch be last item in the list if we add more programs
+                "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
+                #"1040 Tax Form": request.user.programs.Tax1040
+    }
+    if request.method == "POST":   
+        form = FileForm(request.POST, request.FILES)
+        if form.is_valid():
+            print(form)  
+            if request.user.is_authenticated:
+                instance = form.save(commit=False)
+                print(instance)
+                instance.user_id = request.user
+                instance.save()
+                
+                file_upload = request.user
+                file_upload.files.add(instance)
 
-                    # Check if the user needs to upload another form
-                    Forms = Form.objects.filter(user_id = request.user)
-                    checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch)]
-                    for group in Forms.all():
-                        if group.document_title == "SNAP":
-                            file_list["SNAP Card"] = False
-                            checkAllForms[0] = True
-                        if group.document_title == "Free and Reduced Lunch":
-                            checkAllForms[1] = True
-                            file_list["PSD Reduced Lunch Approval Letter"] = False
-                        #TODO UPDATE TO TAX BELOW
-                        if group.document_title == "1040 Form":
-                            checkAllForms[1] = True
-                            file_list["1040 Tax Form"] = False
-                    
-                    if False in checkAllForms:
-                        return render(request, 'dashboard/files.html', {
-                                'form':form,
-                                'programs': file_list,
-                                'program_string': files_to_string(file_list),
-                                'step':5,
-                                'formPageNum':6,
-                            })
-                    if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True:
-                        return redirect(reverse("dashboard:manualVerifyIncome"))
-                    else:
-                        return redirect(reverse("dashboard:broadcast")) 
+                # Check if the user needs to upload another form
+                Forms = request.user.files
+                checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch)]
+                for group in Forms.all():
+                    if group.document_title == "SNAP":
+                        file_list["SNAP Card"] = False
+                        checkAllForms[0] = True
+                    if group.document_title == "Free and Reduced Lunch":
+                        checkAllForms[1] = True
+                        file_list["PSD Reduced Lunch Approval Letter"] = False
+                    #TODO UPDATE TO TAX BELOW
+                    if group.document_title == "1040 Form":
+                        checkAllForms[1] = True
+                        file_list["1040 Tax Form"] = False
+                
+                if False in checkAllForms:
+                    return render(request, 'dashboard/files.html', {
+                            'form':form,
+                            'programs': file_list,
+                            'program_string': files_to_string(file_list),
+                            'step':5,
+                            'formPageNum':6,
+                        })
+                if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True:
+                    return redirect(reverse("dashboard:manualVerifyIncome"))
                 else:
-                    print("notautnehticated")
-                    # TODO: Change this link
-                    return render(request, 'dashboard/layout.html',)
-        else:
-            form = FileForm()
-        print(file_list)
-        return render(request, 'dashboard/files.html', {
-        'form':form,
-        'programs': file_list,
-        'program_string': files_to_string(file_list),
-        'step':5,
-        'formPageNum':6,
-        })
-
+                    return redirect(reverse("dashboard:broadcast")) 
+            else:
+                print("notautnehticated")
+                # TODO: Change this link
+                return render(request, 'dashboard/layout.html',)
     else:
-        return redirect(reverse(page))
+        form = FileForm()
+    print(file_list)
+    return render(request, 'dashboard/files.html', {
+    'form':form,
+    'programs': file_list,
+    'program_string': files_to_string(file_list),
+    'step':5,
+    'formPageNum':6,
+    })
 
 def broadcast(request):
     current_user = request.user
@@ -114,8 +109,15 @@ def login_user(request):
         # Check if the authentication was successful
         if user is not None:
             login(request, user)
-            #TODO logic needed here to check if client has completed application or not!
-            return redirect(reverse("dashboard:index"))
+            
+            
+            # Push user to correct page
+            page = what_page(request.user)
+            if what_page(request.user) == "dashboard:index":
+                return redirect(reverse("dashboard:index"))
+            else:
+                return redirect(reverse("dashboard:notifyRemaining"))
+
         else:
             return render(request, "dashboard/login.html", {
                 "message": "Invalid username and/or password"
@@ -123,11 +125,18 @@ def login_user(request):
     
     # If it turns out user is already logged in but is trying to log in again redirect to user's homepage
     if request.method == "GET" and request.user.is_authenticated:
-        return redirect(reverse("dashboard:files"))
+        return redirect(reverse("dashboard:index"))
 
     # Just give back log in page if none of the above is true
     else:
         return render(request, "dashboard/login.html",{})
+
+def notifyRemaining(request):    
+    page = what_page(request.user)
+    return render(request, "dashboard/notifyRemaining.html",{
+        "next_page": page,
+    })
+
 
 def feedback(request):
     if request.method == "POST":
@@ -148,6 +157,7 @@ def feedback(request):
         text4 = "Click here to quick apply"
         text5 = ""
         text6 = "Utilities Income-Qualified Assistance Program"
+        text7 = "The Digital Equity Office is working on a timeline to respond to applications within the next two weeks."
     else:
         text = "Based on your info, you may be over the pre-tax income limit. At this time you do not qualify. If your income changes, please apply again."
         text2 = ""
@@ -155,6 +165,9 @@ def feedback(request):
         text4 = ""
         text5 = "Grocery Rebate Tax Program"
         text6 = "Utilities Income-Qualified Assistance Program"
+        text7 = "The Digital Equity Office is working on a timeline to respond to applications within the next two weeks."
+
+
     return render(request, 'dashboard/index.html',context={
         "program_string": text,
         "program_string2": text2,
@@ -162,6 +175,8 @@ def feedback(request):
         "program_string4": text4,
         "program_string5": text5,
         "program_string6": text6,
+        "program_string7": text7,
+
         })
 
 

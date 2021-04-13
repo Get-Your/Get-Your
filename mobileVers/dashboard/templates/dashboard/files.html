@@ -32,11 +32,11 @@
     {% csrf_token %}
     {% for field in form %}
         {% if form.errors %}
-        {% for error in field.errors %}
-        <div class="alert alert-danger">
-            <strong>{{ error|escape }}</strong>
-        </div>
-        {% endfor %}
+            {% for error in field.errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
         {% endif %}
         {% if field.label == "Program" %}
             <div class="row" style="justify-content: space-between;">
@@ -64,7 +64,7 @@
     {% endfor %}
     <br>
     <div class="preview"> 
-        <img style ="max-width:300px;" id="output_image"/>
+        <img style ="max-width:100%;" id="output_image"/>
     </div>
     <br>
     <div class="footer">
