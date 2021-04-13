@@ -24,12 +24,12 @@
 
         <div class="content spaceAround" style="padding: 0 0 0 3vw;">
             <!--NOTE: For the future have numbers change based on database-->
-            <h1 style="color:white"><b>Based on your financial information, you may qualify!</b></h1>
+            <h2 style="color:white; font-weight: 400;">We see you have not finished your application. </br></br> <b> Would you like to continue from where you left off?</b></h2>
                 <!--Whatever I need in the other pages, I can enter it here-->
 
         </div>
         <div class="footer" style="width:100%">
-            <button onclick="location.href='{% url 'application:programs' %}'"> CONTINUE </button>
+            <button onclick="location.href='{% url next_page %}'"> CONTINUE </button>
         </div>
     </body>
 </html>

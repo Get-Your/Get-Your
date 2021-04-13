@@ -201,41 +201,41 @@ def account(request):
 
 def finances(request):
     if request.method == "POST": 
-        form = EligibilityForm(request.POST)
+        try:
+            existing = request.user.eligibility
+            form = EligibilityForm(request.POST,instance = existing)
+        except AttributeError or ObjectDoesNotExist:
+            form = EligibilityForm(request.POST or None)
         if form.is_valid():
             print(form.data)
-            try:
-                instance = form.save(commit=False)
-                # NOTE FOR ANDREW: This was that stupid line that caused user auth to not work 
-                instance.user_id = request.user
+            instance = form.save(commit=False)
+            instance.user_id = request.user       
             #take dependent information, compare that AMI level number with the client's income selection and determine if qualified or not, flag this
-                if form['grossAnnualHouseholdIncome'].value() == 'Below $19,800':
-                    print("GAHI is below 19,800")
-                    if qualification(form['dependents'].value(),) >= 19800:
-                        instance.DEqualified = True
-                    else:
-                        instance.DEqualified = False
-                elif form['grossAnnualHouseholdIncome'].value() == '$19,800 ~ $32,800':
-                    print("GAHI is between 19,800 and 32,800")
-                    if 19800 <= qualification(form['dependents'].value(),) <= 32800:
-                        instance.DEqualified = True
-                    else:
-                        instance.DEqualified = False
-                elif form['grossAnnualHouseholdIncome'].value() == 'Over $32,800':
-                    print("GAHI is above 32,800")
-                    if qualification(form['dependents'].value(),) >= 32800:
-                        instance.DEqualified = True
-                    else:
-                        instance.DEqualified = False                        
-                    
-                print(instance.DEqualified)
-                instance.save()
-                if instance.DEqualified == True:
-                    return redirect(reverse("application:mayQualify"))
+            if form['grossAnnualHouseholdIncome'].value() == 'Below $19,800':
+                print("GAHI is below 19,800")
+                if qualification(form['dependents'].value(),) >= 19800:
+                    instance.DEqualified = True
                 else:
-                    return redirect(reverse("application:programs"))
-            except IntegrityError:
-                print("User already has information filled out for this section")
+                    instance.DEqualified = False
+            elif form['grossAnnualHouseholdIncome'].value() == '$19,800 ~ $32,800':
+                print("GAHI is between 19,800 and 32,800")
+                if 19800 <= qualification(form['dependents'].value(),) <= 32800:
+                    instance.DEqualified = True
+                else:
+                    instance.DEqualified = False
+            elif form['grossAnnualHouseholdIncome'].value() == 'Over $32,800':
+                print("GAHI is above 32,800")
+                if qualification(form['dependents'].value(),) >= 32800:
+                    instance.DEqualified = True
+                else:
+                    instance.DEqualified = False                        
+                
+            print("SAVING")
+            instance.save()
+            if instance.DEqualified == True:
+                return redirect(reverse("application:mayQualify"))
+            else:
+                return redirect(reverse("application:programs"))
         else:
             print(form.data)
     else:
@@ -247,15 +247,6 @@ def finances(request):
         'step':3,
         'formPageNum':formPageNum,
     })
-#    page = what_page(request.user)
-#    if what_page(request.user) == "application:finances":
-    return render(request, 'application/finances.html', {
-        'form':form,
-        'step':3,
-        'formPageNum':formPageNum,
-    })
-#    else:
-#        return redirect(reverse(page))
 
 
 def GRQuickApply(request):
@@ -270,7 +261,11 @@ def GRQuickApply(request):
 
 def programs(request):
     if request.method == "POST": 
-        form = programForm(request.POST)
+        try:
+            existing = request.user.programs
+            form = programForm(request.POST,instance = existing)
+        except AttributeError or ObjectDoesNotExist:
+            form = programForm(request.POST or None)
         if form.is_valid():
             print(form.data)
             print(request.session)
@@ -320,5 +315,8 @@ def notAvailable(request):
 
 
 def mayQualify(request):
-    return render(request, 'application/mayQualify.html',)
+    return render(request, 'application/mayQualify.html',{
+        'step':3,
+        'formPageNum':formPageNum,
+    })
 
