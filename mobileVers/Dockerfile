@@ -48,5 +48,5 @@ RUN python manage.py collectstatic --noinput --settings=mobileVers.settings.prod
 EXPOSE 8002
 COPY entrypoint.sh /code/
 WORKDIR /code
-ENTRYPOINT ["python", "/code/manage.py", "runserver", "0.0.0.0:8002"]
 #ENTRYPOINT ["sh", "entrypoint.sh"]
+ENTRYPOINT ["python", "/code/manage.py", "runserver", "0.0.0.0:8002"]
