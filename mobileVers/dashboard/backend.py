@@ -43,6 +43,8 @@ def files_to_string(file_list):
             else:
                 counter = 1
             list_string += key
+    if list_string == "":
+        list_string = "1040 Form"
     return list_string
 
 # redirect user to whatever page they need to go to every time by checking which steps they've
