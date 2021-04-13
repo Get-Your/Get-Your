@@ -301,11 +301,15 @@ nav{
 .feedback {
     border: 2px solid rgba(99,99,99,0.25);
     width: 100%;
-    max-width:100%;
+    max-width:90%;
     height:100px;
-    padding: 0;
+    padding:5%;
     font-family: Montserrat;
     text-align: justify;
     text-justify: center;
     resize: none;
+}
+.extraspace{
+    width:10%;
+    height:12vh;
 }
