@@ -43,7 +43,9 @@ RUN pip install -r requirements.txt
 RUN pip install gunicorn
 RUN pip install whitenoise
 
-RUN python manage.py collectstatic --noinput --settings=mobileVers.settings.production
+RUN python manage.py collectstatic --noinput 
+#--settings=mobileVers.settings.production
+
 #Layer for exposing the app through gunicorn
 EXPOSE 8002
 COPY entrypoint.sh /code/
