@@ -23,16 +23,7 @@
         {% if field.label == "Rent" %}
         {% elif field.label == 'Number of Dependents' %}
         <div class="input">
-            <label class="labelword"style="position:relative">How many dependents are in your household?</label> 
-
-            {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                     <li class="{{ message.tags }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-            
+            <label class="labelword"style="position:relative">How many dependents are in your household?</label>             
             <input class="fill" type="text" name="{{ field.name }}" id="{{ field.id_for_label}}" value ="0" style="height: 3vh;">
         </div>
         {% else %}
@@ -50,10 +41,4 @@
         <button type="submit"> CONTINUE </button>
     </div>
 </form>
-
-
-{% block scripts %}
-
-{% endblock %}
-
 {% endblock %}

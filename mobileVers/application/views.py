@@ -202,7 +202,6 @@ def account(request):
 
 def finances(request):
     if request.method == "POST":
-        messages.INFO(request, "Message sent." ) 
         try:
             existing = request.user.eligibility
             form = EligibilityForm(request.POST,instance = existing)
