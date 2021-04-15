@@ -5,7 +5,7 @@
 import csv
 from usps import USPSApi, Address
 import json
-
+import re
 
 #Andrew backend code for Twilio
 from twilio.rest import Client
@@ -23,12 +23,14 @@ def broadcast_sms(phone_Number):
 
 #address comparison function for finding if address is within N2N bounds
 def addressCheck(address1):
+    myex = re.compile(r"(DRIVE|DR)")
+    final_str = re.sub(myex, '', address1)
     with open("compare.csv", "r") as csv_file:
         counter = 0
         csv_reader = csv.reader(csv_file, delimiter=',')
         for lines in csv_reader:
-            column = lines[0] + " " + lines[1] + " " + lines[2]
-            if address1 == column:
+            column = lines[0] + " " + lines[1] + " " #+ lines[2]
+            if final_str == column:
                 print("True!")
                 return True
             else:
@@ -37,7 +39,6 @@ def addressCheck(address1):
                     return False
                 else:
                     continue
-
 
 def qualification(dependentNumber):
     with open("AMI.csv", "r") as csv_file:

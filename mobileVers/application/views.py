@@ -3,6 +3,7 @@ from django.contrib.auth import login, authenticate, logout
 #from django.contrib.auth.forms import UserCreationForm
 #from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
+from django.contrib import messages #import messages
 
 from.models import User
 
@@ -60,7 +61,7 @@ def address(request):
         if form.is_valid():
             instance = form.save(commit=False)
             instance.user_id = request.user
-            addressResult = addressCheck(instance.address)
+            addressResult = addressCheck(instance.address.upper())
             if addressResult == True:
                 instance.n2n = True
                 print("n2n instance is true")
@@ -200,7 +201,8 @@ def account(request):
 
 
 def finances(request):
-    if request.method == "POST": 
+    if request.method == "POST":
+        messages.INFO(request, "Message sent." ) 
         try:
             existing = request.user.eligibility
             form = EligibilityForm(request.POST,instance = existing)

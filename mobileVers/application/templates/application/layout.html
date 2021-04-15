@@ -24,6 +24,7 @@
         <div class="content" style="height:100vh">
             <p style="color:var(--lightblue);font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
                 <!--Whatever I need in the other pages, I can enter it here-->
+            {% include 'messages.html' %}
             {% block body %}
             {% endblock %}
         </div>
