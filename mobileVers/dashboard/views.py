@@ -207,15 +207,8 @@ def manualVerifyIncome(request):
 def feedbackReceived(request):
     return render(request, "dashboard/feedbackReceived.html",)
 
-
-
-
-
-
-
-
-
-
+def underConstruction(request):
+    return render(request, "dashboard/underConstruction.html",)
 
 #no longer used down below????
 def account(request):
