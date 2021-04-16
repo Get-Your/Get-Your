@@ -297,6 +297,9 @@ def programs(request):
 def available(request):
     return render(request, 'application/de_available.html',)
 
+def privacyPolicy(request):
+    return render(request, 'application/privacyPolicy.html',)
+
 def notAvailable(request):
     
     if request.method == "POST": 

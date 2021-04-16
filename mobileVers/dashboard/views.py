@@ -166,6 +166,11 @@ def feedback(request):
         text5 = "Grocery Rebate Tax Program"
         text6 = "Utilities Income-Qualified Assistance Program"
         text7 = "The Digital Equity Office is working on a timeline to respond to applications within the next two weeks."
+    
+    if request.user.eligibility.GRqualified == True:
+        text2 = "Thank you for quick applying for the Grocery Rebate Tax Program."
+        text3 = "Expect an update within 3 weeks - check your email!"
+        text4 = ""
 
 
     return render(request, 'dashboard/index.html',context={
@@ -176,7 +181,6 @@ def feedback(request):
         "program_string5": text5,
         "program_string6": text6,
         "program_string7": text7,
-
         })
 
 
