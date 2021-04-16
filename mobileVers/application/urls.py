@@ -23,4 +23,5 @@ urlpatterns = [
     path('mayQualify', views.mayQualify, name='mayQualify'),
     path('takeUSPSaddress', views.takeUSPSaddress, name='takeUSPSaddress'),
     path('privacyPolicy', views.privacyPolicy, name='privacyPolicy'),
+    path('dependentInfo', views.dependentInfo, name='dependentInfo'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #this is needed to get file uploads to work! 

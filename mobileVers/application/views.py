@@ -242,6 +242,8 @@ def finances(request):
     else:
         form = EligibilityForm()
 
+    #messages.success(request, "Message sent." )
+    #return redirect("application:finances")
 
     return render(request, 'application/finances.html', {
         'form':form,
@@ -299,6 +301,10 @@ def available(request):
 
 def privacyPolicy(request):
     return render(request, 'application/privacyPolicy.html',)
+
+def dependentInfo(request):
+    return render(request, 'application/dependentInfo.html',)
+
 
 def notAvailable(request):
     
