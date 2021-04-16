@@ -3,7 +3,6 @@ from django.contrib.auth import login, authenticate, logout
 #from django.contrib.auth.forms import UserCreationForm
 #from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
-from django.contrib import messages #import messages
 
 from.models import User
 
@@ -241,9 +240,6 @@ def finances(request):
             print(form.data)
     else:
         form = EligibilityForm()
-
-    #messages.success(request, "Message sent." )
-    #return redirect("application:finances")
 
     return render(request, 'application/finances.html', {
         'form':form,
