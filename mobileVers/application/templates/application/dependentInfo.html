@@ -9,26 +9,27 @@
         <link href="{% static 'application/styles_app.css' %}" rel="stylesheet">
         <link rel="preconnect" href="https://fonts.gstatic.com">
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
         <meta http-equiv="X-UA-Compatible" content="IE=Edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
 
-    <body style="height:100vh">
+    <body>
         <div class=nav>
             <a class="row" onClick="window.history.back();return false;">
                 <img src="{% static 'application/images/BackArrow-white.svg' %}" alt="back" style="width:8vw; margin-right: 5px;">
                 <p style = "color:white; font-weight: 700;">BACK</p>
             </a>
-            <img src="{% static 'application/images/X_white.svg' %}" alt="back" style="width:4.5vw; margin-right: 5px;" onclick="location.href='{% url 'application:index' %}'">
+            <img src="{% static 'application/images/X_white.svg' %}" alt="back" style="width:4.5vw; margin-right: 5px;" onclick="location.href='{% url 'application:finances' %}'">
         </div>
-        <div class="content" style="height:100vh">
-            <p style="color:var(--lightblue);font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
+
+        <div class="content spaceAround" style="padding: 0 0 0 3vw;">
+            <!--NOTE: For the future have numbers change based on database-->
+            <p style="color:white"><b>Household shall means collectively the applicant and any other person claimed as a dependent on the applicant’s federal income tax return. This may include the applicant's spouse, and applicant's children by birth or adoption, step children, foster children and children under legal guardianship who reside with the applicant in the taxed dwelling unit.</b></p>
                 <!--Whatever I need in the other pages, I can enter it here-->
-            {% include 'application\messages.html' %}
-            {% block body %}
-            {% endblock %}
+
+        </div>
+        <div class="footer" style="width:100%">
+            <button onclick="location.href='{% url 'application:finances' %}'"> CONTINUE </button>
         </div>
     </body>
 </html>

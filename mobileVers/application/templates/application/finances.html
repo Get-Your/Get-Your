@@ -23,7 +23,12 @@
         {% if field.label == "Rent" %}
         {% elif field.label == 'Number of Dependents' %}
         <div class="input">
-            <label class="labelword"style="position:relative">How many dependents are in your household?</label>             
+            <!-- Below is code to be able to toggle text to visible and invisible and also an animation for text to appear, to be used possibly for dependents
+            <a href="#" onclick="toggle_visibility('foo');">Click here to toggle visibility of element #foo</a>
+            <div id="foo">This is foo</div>
+            <h1 class="animate__animated animate__bounce">An animated element</h1>
+            -->
+            <label class="labelword"style="position:relative">How many dependents are in your household?</label>  <a href="{% url 'application:dependentInfo' %}"><img src="{% static 'application/images/clipart249308.png' %}" alt="back" style="width:4.5vw;"></a>
             <input class="fill" type="text" name="{{ field.name }}" id="{{ field.id_for_label}}" value ="0" style="height: 3vh;">
         </div>
         {% else %}
