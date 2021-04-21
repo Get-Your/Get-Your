@@ -50,6 +50,11 @@ def files(request):
                     if group.document_title == "1040 Form":
                         checkAllForms[1] = True
                         file_list["1040 Tax Form"] = False
+                    '''
+                    TODO Include ID Card below...
+                    if group.document_title == "ID Card":
+                        checkAllForms[1] = True
+                        file_list["Identification Card"] = False'''
                 
                 if False in checkAllForms:
                     return render(request, 'dashboard/files.html', {

@@ -45,6 +45,8 @@ def files_to_string(file_list):
             list_string += key
     if list_string == "":
         list_string = "1040 Form"
+    #TODO Incorporate ID card here somewhere...
+    #list_string ="ID Card"
     return list_string
 
 # redirect user to whatever page they need to go to every time by checking which steps they've
