@@ -21,7 +21,7 @@ def files(request):
     file_list = {"SNAP Card": request.user.programs.snap,
                 # Have Reduced Lunch be last item in the list if we add more programs
                 "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
-                #TODO 424 include "Identification Card": request.user.programs.Identification,
+                "Identification Card": request.user.programs.Identification,
     }
     if request.method == "POST":   
         form = FileForm(request.POST, request.FILES)
@@ -46,13 +46,14 @@ def files(request):
                     if group.document_title == "Free and Reduced Lunch":
                         checkAllForms[1] = True
                         file_list["PSD Reduced Lunch Approval Letter"] = False
-                    if group.document_title == "Identification":
-                        checkAllForms[3] = True
-                        file_list["Identification"] = False
-                    #TODO UPDATE TO TAX BELOW
+
+                    #TODO UPDATE IDENTIFICATION AND TAX BELOW
                     if group.document_title == "1040 Form":
-                        checkAllForms[1] = True
+                        checkAllForms[3] = True
                         file_list["1040 Tax Form"] = False
+                    if group.document_title == "Identification":
+                        checkAllForms[4] = True
+                        file_list["Identification"] = False
 
                 
                 if False in checkAllForms:
