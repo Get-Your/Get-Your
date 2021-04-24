@@ -22,7 +22,7 @@ def files(request):
                 # Have Reduced Lunch be last item in the list if we add more programs
                 "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
                 "Identification": request.user.programs.Identification,
-                #"Tax Form": request.user.programs.1040,
+                #"Tax Form": request.user.programs.1040, TODO 4/24 incorporate this for file checking
     }
     if request.method == "POST":   
         form = FileForm(request.POST, request.FILES)

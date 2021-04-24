@@ -149,7 +149,7 @@ class programs(TimeStampedModel):
     snap = models.BooleanField()
     freeReducedLunch = models.BooleanField()
     Identification = models.BooleanField()
-    #1040 = models.BooleanField()
+    #1040 = models.BooleanField() TODO 4/24 include for 1040 filechecking
 
 class zipCode(TimeStampedModel):
     zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
