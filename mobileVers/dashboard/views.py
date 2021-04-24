@@ -21,6 +21,7 @@ def files(request):
     file_list = {"SNAP Card": request.user.programs.snap,
                 # Have Reduced Lunch be last item in the list if we add more programs
                 "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
+                #TODO 424 include "Identification Card": request.user.programs.Identification,
     }
     if request.method == "POST":   
         form = FileForm(request.POST, request.FILES)
@@ -37,7 +38,7 @@ def files(request):
 
                 # Check if the user needs to upload another form
                 Forms = request.user.files
-                checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch)]
+                checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch)] #TODO 424 include not(request.user.programs.Identification) here
                 for group in Forms.all():
                     if group.document_title == "SNAP":
                         file_list["SNAP Card"] = False
@@ -45,15 +46,14 @@ def files(request):
                     if group.document_title == "Free and Reduced Lunch":
                         checkAllForms[1] = True
                         file_list["PSD Reduced Lunch Approval Letter"] = False
+                    if group.document_title == "Identification":
+                        checkAllForms[3] = True
+                        file_list["Identification"] = False
                     #TODO UPDATE TO TAX BELOW
                     if group.document_title == "1040 Form":
                         checkAllForms[1] = True
                         file_list["1040 Tax Form"] = False
-                    '''
-                    TODO Include ID Card below...
-                    if group.document_title == "ID Card":
-                        checkAllForms[1] = True
-                        file_list["Identification Card"] = False'''
+
                 
                 if False in checkAllForms:
                     return render(request, 'dashboard/files.html', {
