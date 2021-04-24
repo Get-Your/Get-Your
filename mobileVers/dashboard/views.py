@@ -21,7 +21,6 @@ def files(request):
     file_list = {"SNAP Card": request.user.programs.snap,
                 # Have Reduced Lunch be last item in the list if we add more programs
                 "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
-                #"1040 Tax Form": request.user.programs.Tax1040
     }
     if request.method == "POST":   
         form = FileForm(request.POST, request.FILES)
