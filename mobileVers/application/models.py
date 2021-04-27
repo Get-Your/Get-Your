@@ -148,7 +148,7 @@ class programs(TimeStampedModel):
     # TODO: Andrew/Grace - These two fields have to be entered in after the verification of the documents
     snap = models.BooleanField()
     freeReducedLunch = models.BooleanField()
-    Identification = models.BooleanField()
+    #Identification = models.BooleanField()
     #1040 = models.BooleanField() TODO 4/24 include for 1040 filechecking
 
 class zipCode(TimeStampedModel):
