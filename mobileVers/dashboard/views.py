@@ -85,6 +85,9 @@ def files(request):
     'formPageNum':6,
     })
 
+def filesContinued(request):
+    return render(request, 'dashboard/filesContinued.html',)
+
 def broadcast(request):
     current_user = request.user
     #Andrew Twilio functions found below!
@@ -161,9 +164,9 @@ def feedback(request):
         text = "Based on your information, you may qualify! Be on the lookout for an email or phone call."
         text2 = "Based on your information you may also qualify for the city's Grocery Rebate Tax program!"
         text3 = "By clicking on the link below, we can send your information over and quick apply for you."
-        text4 = "Click here to quick apply"
+        text4 = "Click here to quick apply for Grocery Rebate Tax Program"
         text5 = ""
-        text6 = "Utilities Income-Qualified Assistance Program"
+        text6 = "Click here to quick apply for Recreation"
         text7 = "The Digital Equity Office is working on a timeline to respond to applications within the next two weeks."
     else:
         text = "Based on your info, you may be over the pre-tax income limit. At this time you do not qualify. If your income changes, please apply again."

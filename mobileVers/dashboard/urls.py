@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.feedback, name='index'), #path('', views.index, name='index'),
     # Pages for forms
     path('files', views.files, name='files'),
+    path('filesContinued', views.filesContinued, name='filesContinued'),
     path('login', views.login_user, name='login'),
     path('broadcast', views.broadcast, name='broadcast'),
     path('feedbackReceived', views.feedbackReceived, name="feedbackReceived"),
