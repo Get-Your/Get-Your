@@ -1,0 +1,84 @@
+{% extends "dashboard/layout.html" %}
+{% load static %}
+
+{% block body %}
+<script type='text/javascript'>
+    function preview_image(event) 
+    {
+        var reader = new FileReader();
+        reader.onload = function()
+        {
+        var output = document.getElementById('output_image');
+        output.src = reader.result;
+        }
+        
+        reader.readAsDataURL(event.target.files[0]);
+
+    }
+    </script>
+
+<p style="color:var(--lightblue);font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
+            
+<div style="margin-top: 3vh;">
+    <p style="color:white;">To get verified, please upload your</p>
+    <h3 style="color:white"> {{program_string}} </h3>
+    <p style="color:white;font-size: max(3.3vw, 12px);">Uploaded documents are secure & not shared with anyone outside of digital equity.</p>
+    
+</div>
+
+<h6 style="color:white"> Upload Files Below:</h6>
+
+<form action="{% url 'dashboard:files' %}" method="post" autocomplete="false" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in form %}
+        {% if form.errors %}
+            {% for error in field.errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% if field.label == "Program" %}
+            <div class="row" style="justify-content: space-between;">
+                <p style="color:white;font-weight: 800;">Files: </p> 
+                <select name="{{ field.name }}" id="{{ field.id_for_label}}">
+                {% if program_string == "SNAP Card" %}
+                    <option style="background-color: var(--darkblue);" value="SNAP"> SNAP </option>
+                {% elif program_string == "PSD Reduced Lunch Approval Letter" %}
+                    <option style="background-color: var(--darkblue);" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                {% elif program_string == "SNAP Card, PSD Reduced Lunch Approval Letter" %}
+                    {% for option in field %}
+                        <option style="background-color: var(--darkblue);" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
+                    {% endfor %}
+                {% elif program_string == "1040 Form" %}
+                    <option style="background-color: var(--darkblue);" value="1040"> Tax Form </option>
+                <!-- take above and include for Identification-->
+                {% endif %}
+                </select>
+            </div>
+        {% elif field.label == "Document Upload" %}
+            <div class="upload-btn-wrapper" style ="width:100%; align-items: center; margin-top: 3vh;">
+                <button class="buttonFileUpload">
+                    <div class="row" style="justify-content: space-between;">
+                        <img src="{% static 'dashboard/images/upload.svg' %}" alt="back" style="width:15vw; margin-right: 5vw;">
+                        <div style="display:flex; flex-direction:column;align-items:flex-start;">
+                            <p style = "color:white; font-weight: 400;text-align: left; margin-bottom: 5px;">Select the document from your photo library.</p>
+                            <p style = "color:white;font-weight: 200;">PDF, PNG or JPEG</p>
+                        </div>
+                    </div>
+                </button>
+                <input type="file" name ="{{field.name}}" id="{{ field.id_for_label }}" onchange="preview_image(event)" required/>
+            </div>
+        {% endif %}
+    {% endfor %}
+    <br>
+    <div class="preview"> 
+        <img style ="max-width:100%;" id="output_image"/>
+    </div>
+    <br>
+    <div class="footer">
+        <button type ="submit" > CONTINUE </button>
+    </div>
+</form>
+
+{% endblock %}

@@ -135,7 +135,7 @@ WSGI_APPLICATION = 'mobileVers.wsgi.application'
 DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.postgresql',
-         'NAME': 'getyours_connexion',
+         'NAME': 'getfoco',
          'USER': 'gycpcdriver@gyc1.postgres.database.azure.com',
          'PASSWORD': POSTGRESQLPW,
          'HOST': 'gyc1.postgres.database.azure.com'
