@@ -1,5 +1,6 @@
 from django import forms
-from .models import Form, Feedback, TaxInformation
+from .models import Form, Feedback, TaxInformation, residencyForm
+from application.models import addressVerification
 
  
 class FileForm(forms.ModelForm):
@@ -10,6 +11,31 @@ class FileForm(forms.ModelForm):
             'document_title':'Program', 
             'document':'Document Upload',
         }
+
+ 
+class AddressForm(forms.ModelForm):
+    class Meta:
+        model = residencyForm
+        fields = ['document_title','document',]
+        labels  = { 
+            'document_title':'Program', 
+            'document':'Document Upload',
+        }
+
+
+
+# identification forms that they have currently
+class addressVerificationForm(forms.ModelForm):
+    class Meta:
+        model = addressVerification
+        fields = ['Utility', 'Identification',]
+        labels  = { 
+            'Utility':'Utility Bill',
+            'Identification':'Identification Card',
+        } 
+        
+
+
 
 class TaxForm(forms.ModelForm):
     class Meta:

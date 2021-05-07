@@ -70,6 +70,7 @@ class User(TimeStampedModel,AbstractUser):
     last_name = models.CharField(max_length=200)
     phone_number = PhoneNumberField()
     files = models.ManyToManyField('dashboard.Form', related_name="forms")
+    address_files = models.ManyToManyField('dashboard.residencyForm', related_name="residencyforms")
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -138,8 +139,13 @@ class Eligibility(TimeStampedModel):
         default=LOW,
     )
 
+
+
+
+
+
 # Programs model class attached to user (will delete as user account is deleted too)
-class programs(TimeStampedModel):
+class programs(TimeStampedModel): #incomeVerificationPrograms
     user_id = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -148,38 +154,29 @@ class programs(TimeStampedModel):
     # TODO: Andrew/Grace - These two fields have to be entered in after the verification of the documents
     snap = models.BooleanField()
     freeReducedLunch = models.BooleanField()
-    #Identification = models.BooleanField()
     #1040 = models.BooleanField() TODO 4/24 include for 1040 filechecking
+
+
+class addressVerification(TimeStampedModel):
+    user_id = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
+    Identification = models.BooleanField()
+    Utility = models.BooleanField()
+
+
+
+
+
+
+
+
+
 
 class zipCode(TimeStampedModel):
     zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
 
 class futureEmails(TimeStampedModel):
     email = models.EmailField(unique=True)
-
-
-
-'''
-
-
-AMI = area median income, based on number of people per household
-30% AMI
-1 100,000
-2 200,000
-3 300,000
-4 400,000
-5 ...
-6 ...
-7 ...
-8 800,000
-
-I'm a client and i'm going through the application, i have 4 dependents
-which means that I must make $400,000 and under to qualify for this program
-
-the secret sauce for the application to automatically qualify / disqualify
-is the number of dependents in the household
-
-
-*DISCLAIMER NOT REAL NUMBERS JUST USING FOR THEORY CRAFTING*
-
-'''

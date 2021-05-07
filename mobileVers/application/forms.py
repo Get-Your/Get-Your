@@ -51,6 +51,13 @@ class EligibilityForm(forms.ModelForm):
             'grossAnnualHouseholdIncome':'Adjusted Gross Annual Household Income',
         } 
 
+
+
+
+
+
+
+
 # programs they are available for
 class programForm(forms.ModelForm):
     class Meta:
@@ -60,7 +67,18 @@ class programForm(forms.ModelForm):
             'snap':'Food Assistance (SNAP)',
             'freeReducedLunch':'Free and Reduced Lunch',
         } 
-        
+
+
+
+
+
+
+
+
+
+
+
+
 class zipCodeForm(forms.ModelForm):
     class Meta:
         model = zipCode

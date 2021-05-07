@@ -292,6 +292,17 @@ def programs(request):
 #        return redirect(reverse(page))
     #return render(request, 'application/programs.html',)
 
+
+
+
+
+
+
+
+
+
+
+
 def available(request):
     return render(request, 'application/de_available.html',)
 
