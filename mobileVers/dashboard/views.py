@@ -169,7 +169,7 @@ def filesContinued(request):
                 if request.user.addressverification.Identification != True and request.user.addressverification.Utility != True:
                     return redirect(reverse("dashboard:manualVerifyIncome"))
                 else:
-                    return redirect(reverse("dashboard:broadcast")) 
+                    return redirect(reverse("application:RecreationQuickApply")) 
             else:
                 print("notautnehticated")
                 # TODO: Change this link

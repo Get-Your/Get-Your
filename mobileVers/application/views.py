@@ -257,6 +257,15 @@ def GRQuickApply(request):
     obj.save()
     return render(request, "application/GRQuickApply.html",)
 
+def RecreationQuickApply(request):
+    obj = request.user.eligibility
+    print(obj.RecreationQualified)
+    #print(request.user.eligibility.GRQualified)
+    obj.RecreationQualified = True
+    print(obj.RecreationQualified)
+    obj.save()
+    return render(request, "application/RecreationQuickApply.html",)
+
 
 def programs(request):
     if request.method == "POST": 
