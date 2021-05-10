@@ -119,7 +119,7 @@ class Eligibility(TimeStampedModel):
     #need this for function in views.py after client uploads their dependent information
     DEqualified = models.BooleanField(default=False)
     GRqualified = models.BooleanField(default=False)
-    #RecreationQualified = models.BooleanField(default=False)
+    RecreationQualified = models.BooleanField(default=False)
     #insert other rebate flags here i.e.
     #xQualified = models.BooleanField(default=False)
     #utilitiesQualified = models.BooleanField(default=False)
