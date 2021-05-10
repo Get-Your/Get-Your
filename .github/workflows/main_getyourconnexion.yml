@@ -17,14 +17,14 @@ steps:
 - uses: actions/checkout@v2
 
 - name: Set up Docker Buildx
-uses: docker/setup-buildx-action@v1
+  uses: docker/setup-buildx-action@v1
 
 - name: Log in to registry
-uses: docker/login-action@v1
-with:
-registry: https://index.docker.io/v1/
-username: ${{ secrets.AzureAppService_ContainerUsername_e21a6575492d43ef9d19e78acc82200f }}
-password: ${{ secrets.AzureAppService_ContainerPassword_24db98ba39ad47dba747c87b66e569cf }}
+  uses: docker/login-action@v1
+  with:
+    registry: https://index.docker.io/v1/
+    username: ${{ secrets.AzureAppService_ContainerUsername_e21a6575492d43ef9d19e78acc82200f }}
+    password: ${{ secrets.AzureAppService_ContainerPassword_24db98ba39ad47dba747c87b66e569cf }}
 
 - name: Build and push container image to registry
 uses: docker/build-push-action@v2
