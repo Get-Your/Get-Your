@@ -48,7 +48,7 @@ RUN python manage.py collectstatic --noinput --settings=mobileVers.settings.prod
 
 #Layer for exposing the app through gunicorn
 EXPOSE 8002
-EXPOSE 2222
+#EXPOSE 2222
 COPY entrypoint.sh /code/
 WORKDIR /code
 #ENTRYPOINT ["sh", "entrypoint.sh"]
