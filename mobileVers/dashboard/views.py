@@ -101,7 +101,7 @@ def addressVerification(request):
                 instance = form.save(commit=False)
                 instance.user_id = request.user
                 instance.save()
-                return redirect(reverse("dashboard:filesContinued")) #dashboard:filesContinued
+                return redirect(reverse("dashboard:filesContinued"))
             except IntegrityError:
                 print("User already has information filled out for this section")
             #enter upload code here for client to upload images
