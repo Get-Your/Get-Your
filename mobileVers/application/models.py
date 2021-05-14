@@ -99,6 +99,7 @@ class Addresses(TimeStampedModel):
 
     zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
     n2n = models.BooleanField()
+    #TODO add / change n2n for future proofing when Digital Equity moves past N2N bounds
 
 choices = (
     ('Rent', 'Rent'),
@@ -120,6 +121,8 @@ class Eligibility(TimeStampedModel):
     DEqualified = models.BooleanField(default=False)
     GRqualified = models.BooleanField(default=False)
     RecreationQualified = models.BooleanField(default=False)
+    #list of boolean models taht comes out of CMS database so we don't need to add in new variables per each program
+    #TODO 5/13/2021
     #insert other rebate flags here i.e.
     #xQualified = models.BooleanField(default=False)
     #utilitiesQualified = models.BooleanField(default=False)
