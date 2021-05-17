@@ -31,7 +31,7 @@ jobs:
       with:
         push: true
         tags: ${{ secrets.AzureAppService_ContainerUsername_e21a6575492d43ef9d19e78acc82200f }}/computerdriver/getyourconnexion:${{ github.sha }}
-        file: ./mobileVers/Dockerfile
+        file: ./Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
