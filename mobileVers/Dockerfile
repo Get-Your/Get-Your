@@ -39,9 +39,22 @@ RUN mkdir /code
 WORKDIR /code
 ADD . /code/
 RUN pip install pip --upgrade
-RUN pip install -r requirements.txt
+#RUN pip install -r requirements.txt took this out to hardcode requirements
 RUN pip install gunicorn
 RUN pip install whitenoise
+RUN pip install django==3.1.7
+RUN pip install sendgrid==6.6.0
+RUN pip install numpy==1.19.5
+RUN pip install django-formwizard~=1.0
+RUN pip install django-formtools~=2.2
+RUN pip install numpy~=1.19.4
+RUN pip install matplotlib~=3.3.3
+RUN pip install mpld3~=0.5.2
+RUN pip install usps-api
+RUN pip install twilio
+RUN pip install django-phonenumber-field[phonenumbers]
+RUN pip install django-environ
+RUN pip install psycopg2-binary
 
 RUN python manage.py collectstatic --noinput --settings=mobileVers.settings.production
 #--settings=mobileVers.settings.production
