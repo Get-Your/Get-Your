@@ -49,7 +49,7 @@ RUN python manage.py collectstatic --noinput --settings=mobileVers.settings.prod
 #Layer for exposing the app through gunicorn
 EXPOSE 8002
 #EXPOSE 2222
-COPY entrypoint.sh /code/
+#COPY entrypoint.sh /code/ commented this out because .yml can't find it for some reason, also entrypoint wasn't working to begin with hence commented out entrypoint below
 WORKDIR /code
 #ENTRYPOINT ["sh", "entrypoint.sh"]
 ENTRYPOINT ["python", "/code/manage.py", "runserver", "0.0.0.0:8002"]
