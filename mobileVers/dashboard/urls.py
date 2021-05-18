@@ -15,5 +15,8 @@ urlpatterns = [
     path('manualVerifyIncome', views.manualVerifyIncome, name='manualVerifyIncome'),
     path('notifyRemaining', views.notifyRemaining, name='notifyRemaining'),
     path('underConstruction', views.underConstruction, name='underConstruction'),
+    path('GetFOCO', views.dashboardGetFoco, name='dashboard'),
+    path('qualifiedPrograms', views.qualifiedPrograms, name='qualifiedPrograms'),
+    path('ProgramsList', views.ProgramsList, name='ProgramsList'),
     # Available/NotAvailable Digital equity in your area
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #this is needed to get file uploads to work! 

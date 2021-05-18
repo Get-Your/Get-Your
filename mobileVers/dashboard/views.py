@@ -280,3 +280,30 @@ def available(request):
 def notAvailable(request):
     return render(request, 'application/de_notavailable.html',)
 
+# Everything under here is for new dashboard
+def dashboardGetFoco(request):
+    return render(request, 'dashboard/dashboard_GetFoco.html',{
+        "page_title": "Get: FOCO",
+        "dashboard_color": "var(--yellow)",
+        "program_list_color": "white",
+        "FAQ_color": "white",
+        "Settings_color": "white",
+        "Privacy_Policy_color": "white",})
+
+def qualifiedPrograms(request):
+    return render(request, 'dashboard/qualifiedPrograms.html',{
+        "page_title": "Qualified Programs",
+        "dashboard_color": "white",
+        "program_list_color": "var(--yellow)",
+        "FAQ_color": "white",
+        "Settings_color": "white",
+        "Privacy_Policy_color": "white",})
+
+def ProgramsList(request):
+    return render(request, 'dashboard/qualifiedPrograms.html',{
+        "page_title": "Programs List",
+        "dashboard_color": "white",
+        "program_list_color": "var(--yellow)",
+        "FAQ_color": "white",
+        "Settings_color": "white",
+        "Privacy_Policy_color": "white",})
