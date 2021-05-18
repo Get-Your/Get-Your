@@ -77,6 +77,7 @@ p {
 
 /*button background*/
 button {
+    font-family: Montserrat;
     background-color: var(--lightblue);
     border-radius: 3vh;
     padding: 5px 40px;
@@ -86,6 +87,7 @@ button {
     color:white;
     height: 5vh;
     font-size: max(3.8vw, 16px);
+    text-
 }
 .quickapply {
     background-color: var(--red);
@@ -107,6 +109,13 @@ button {
     padding: 20% 5%;
     justify-content: center;
     margin:0;
+}
+.programsListmain{
+    background-color: var(--lightblue);
+    width: 84% !important;
+    flex-direction: column;
+    padding: 5% 8%;
+    justify-content: center;
 }
 .whitemain{
     background-color: white;
