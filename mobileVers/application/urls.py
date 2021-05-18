@@ -19,6 +19,7 @@ urlpatterns = [
     path('addressCorrection', views.addressCorrection, name='addressCorrection'),
     path('n2n', views.n2n, name='n2n'),
     path('GRQuickApply', views.GRQuickApply, name='GRQuickApply'),
+    path('RecreationQuickApply', views.RecreationQuickApply, name='RecreationQuickApply'),
     # May qualify page
     path('mayQualify', views.mayQualify, name='mayQualify'),
     path('takeUSPSaddress', views.takeUSPSaddress, name='takeUSPSaddress'),

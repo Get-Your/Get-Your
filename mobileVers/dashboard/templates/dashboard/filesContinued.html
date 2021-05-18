@@ -20,7 +20,7 @@
 <p style="color:var(--lightblue);font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
             
 <div style="margin-top: 3vh;">
-    <p style="color:white;">To get verified, please upload your</p>
+    <p style="color:white;">We need some additional information, such as proof of residency - if you do not have a PSD letter please upload the following:</p>
     <h3 style="color:white"> {{program_string}} </h3>
     <p style="color:white;font-size: max(3.3vw, 12px);">Uploaded documents are secure & not shared with anyone outside of digital equity.</p>
     
@@ -28,7 +28,7 @@
 
 <h6 style="color:white"> Upload Files Below:</h6>
 
-<form action="{% url 'dashboard:files' %}" method="post" autocomplete="false" enctype="multipart/form-data">
+<form action="{% url 'dashboard:filesContinued' %}" method="post" autocomplete="false" enctype="multipart/form-data">
     {% csrf_token %}
     {% for field in form %}
         {% if form.errors %}
@@ -42,17 +42,14 @@
             <div class="row" style="justify-content: space-between;">
                 <p style="color:white;font-weight: 800;">Files: </p> 
                 <select name="{{ field.name }}" id="{{ field.id_for_label}}">
-                {% if program_string == "SNAP Card" %}
-                    <option style="background-color: var(--darkblue);" value="SNAP"> SNAP </option>
-                {% elif program_string == "PSD Reduced Lunch Approval Letter" %}
-                    <option style="background-color: var(--darkblue);" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
-                {% elif program_string == "SNAP Card, PSD Reduced Lunch Approval Letter" %}
+                {% if program_string == "Identification" %}
+                    <option style="background-color: var(--darkblue);" value="Identification"> Identification </option>
+                {% elif program_string == "Utility Bill" %}
+                    <option style="background-color: var(--darkblue);" value="Utility"> Utility Bill </option>
+                {% elif program_string == "Identification, Utility Bill" %}
                     {% for option in field %}
                         <option style="background-color: var(--darkblue);" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
                     {% endfor %}
-                {% elif program_string == "1040 Form" %}
-                    <option style="background-color: var(--darkblue);" value="1040"> Tax Form </option>
-                <!-- take above and include for Identification-->
                 {% endif %}
                 </select>
             </div>

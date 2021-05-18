@@ -22,6 +22,7 @@ def broadcast_sms(phone_Number):
                             body=message_to_broadcast)
 
 #address comparison function for finding if address is within N2N bounds
+#TODO start thinking about SQL querys for this section and change it for database integration!
 def addressCheck(address1):
     myex = re.compile(r"(DRIVE|DR)")
     final_str = re.sub(myex, '', address1)

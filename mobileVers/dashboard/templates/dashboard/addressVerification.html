@@ -1,0 +1,42 @@
+{% extends "application/layout.html" %}
+
+{% block body %}
+<h2 style="font-weight: 700;color:white; margin-top:5vh"> Which of these documents do you have? </h2>
+
+<p style="color: white;"> Choose all that apply: </p>
+
+<form action="{% url 'dashboard:addressVerification' %}" method="post" autocomplete="false">
+  {% csrf_token %}
+  {% for field in form %}
+  <input style="display: none;" id="{{ field.id_for_label}}" type="checkbox" name="{{ field.name}}">
+  <label class="checklabel" for="{{ field.id_for_label}}">
+    
+  <style>
+    
+    
+    input:not(.checked)~ label span.buttonCheck {
+      color: white;
+    }
+    /*TODO: FIX COLORING*/
+    input:checked~ label span.buttonCheck {
+      color: var(--darkblue);
+    }
+
+    </style>
+  
+    <span class=buttonCheck >{{field.label}}</span>
+  </label>
+  {% endfor %}
+  <h6 style="color:white"> or </h6>
+
+  <!--TODO GRACE: Lead this to the paystub pages-->
+  <p style="color: var(--yellow);font-weight: 800;text-align: center;">Not Curently Enrolled in Any</p>
+  <div class="footer">
+      <button type ="submit" > CONTINUE </button>
+  </div>
+  
+  </form>
+  
+{% endblock %}
+
+

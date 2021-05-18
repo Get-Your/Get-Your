@@ -37,18 +37,18 @@ RUN apt-get remove -y curl
 #Layers for the django app
 RUN mkdir /code
 WORKDIR /code
-ADD . /code/
+ADD ./mobileVers/ /code/
 RUN pip install pip --upgrade
 RUN pip install -r requirements.txt
-RUN pip install gunicorn
-RUN pip install whitenoise
 
-RUN python manage.py collectstatic --noinput 
+
+RUN python manage.py collectstatic --noinput --settings=mobileVers.settings.production
 #--settings=mobileVers.settings.production
 
 #Layer for exposing the app through gunicorn
 EXPOSE 8002
-COPY entrypoint.sh /code/
+#EXPOSE 2222
+#COPY entrypoint.sh /code/ commented this out because .yml can't find it for some reason, also entrypoint wasn't working to begin with hence commented out entrypoint below
 WORKDIR /code
 #ENTRYPOINT ["sh", "entrypoint.sh"]
 ENTRYPOINT ["python", "/code/manage.py", "runserver", "0.0.0.0:8002"]
