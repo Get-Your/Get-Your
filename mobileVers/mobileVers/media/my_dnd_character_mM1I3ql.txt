@@ -1,0 +1,98 @@
+You Are A:
+
+Neutral Good Human Paladin/Cleric (3rd/2nd Level)
+
+
+Ability Scores:
+Strength- 18
+Dexterity- 15
+Constitution- 17
+Intelligence- 14
+Wisdom- 17
+Charisma- 14
+
+Alignment:
+Neutral Good- A neutral good character does the best that a good person can do. He is devoted to helping others. He works with kings and magistrates but does not feel beholden to them. Neutral good is the best alignment you can be because it means doing what is good without bias for or against order. However, neutral good can be a dangerous alignment when it advances mediocrity by limiting the actions of the truly capable.
+
+Race:
+Humans are the most adaptable of the common races. Short generations and a penchant for migration and conquest have made them physically diverse as well. Humans are often unorthodox in their dress, sporting unusual hairstyles, fanciful clothes, tattoos, and the like.
+
+Primary Class:
+Paladins- Paladins take their adventures seriously, and even a mundane mission is, in the heart of the paladin, a personal test an opportunity to demonstrate bravery, to learn tactics, and to find ways to do good. Divine power protects these warriors of virtue, warding off harm, protecting from disease, healing, and guarding against fear. The paladin can also direct this power to help others, healing wounds or curing diseases, and also use it to destroy evil. Experienced paladins can smite evil foes and turn away undead. A paladin's Wisdom score should be high, as this determines the maximum spell level that they can cast. Many of the paladin's special abilities also benefit from a high Charisma score.
+
+Secondary Class:
+Clerics- Clerics act as intermediaries between the earthly and the divine (or infernal) worlds. A good cleric helps those in need, while an evil cleric seeks to spread his patron's vision of evil across the world. All clerics can heal wounds and bring people back from the brink of death, and powerful clerics can even raise the dead. Likewise, all clerics have authority over undead creatures, and they can turn away or even destroy these creatures. Clerics are trained in the use of simple weapons, and can use all forms of armor and shields without penalty, since armor does not interfere with the casting of divine spells. In addition to his normal complement of spells, every cleric chooses to focus on two of his deity's domains. These domains grants the cleric special powers, and give him access to spells that he might otherwise never learn. A cleric's Wisdom score should be high, since this determines the maximum spell level that he can cast.
+
+
+
+Web page and journal code: Copy and paste the following:
+
+<b>I Am A:</b> Neutral Good Human Paladin/Cleric (3rd/2nd Level)
+<br><br><u>Ability Scores:</u><br>
+<b>Strength-</b>18<br>
+<b>Dexterity-</b>15<br>
+<b>Constitution-</b>17<br>
+<b>Intelligence-</b>14<br>
+<b>Wisdom-</b>17<br>
+<b>Charisma-</b>14
+<br><br><u>Alignment:</u><br><b>Neutral Good</b> A neutral good character does the best that a good person can do. He is devoted to helping others. He works with kings and magistrates but does not feel beholden to them. Neutral good is the best alignment you can be because it means doing what is good without bias for or against order. However, neutral good can be a dangerous alignment when it advances mediocrity by limiting the actions of the truly capable.<br>
+<br><u>Race:</u><br><b>Humans</b> are the most adaptable of the common races. Short generations and a penchant for migration and conquest have made them physically diverse as well. Humans are often unorthodox in their dress, sporting unusual hairstyles, fanciful clothes, tattoos, and the like.
+<br><br><u>Primary Class:</u><br><b>Paladins</b> take their adventures seriously, and even a mundane mission is, in the heart of the paladin, a personal test an opportunity to demonstrate bravery, to learn tactics, and to find ways to do good. Divine power protects these warriors of virtue, warding off harm, protecting from disease, healing, and guarding against fear. The paladin can also direct this power to help others, healing wounds or curing diseases, and also use it to destroy evil. Experienced paladins can smite evil foes and turn away undead. A paladin's Wisdom score should be high, as this determines the maximum spell level that they can cast. Many of the paladin's special abilities also benefit from a high Charisma score.
+<br><br><u>Secondary Class:</u><br><b>Clerics</b> act as intermediaries between the earthly and the divine (or infernal) worlds. A good cleric helps those in need, while an evil cleric seeks to spread his patron's vision of evil across the world. All clerics can heal wounds and bring people back from the brink of death, and powerful clerics can even raise the dead. Likewise, all clerics have authority over undead creatures, and they can turn away or even destroy these creatures. Clerics are trained in the use of simple weapons, and can use all forms of armor and shields without penalty, since armor does not interfere with the casting of divine spells. In addition to his normal complement of spells, every cleric chooses to focus on two of his deity's domains. These domains grants the cleric special powers, and give him access to spells that he might otherwise never learn. A cleric's Wisdom score should be high, since this determines the maximum spell level that he can cast.
+<br><br>Find out <a href='http://www.easydamus.com/character.html' target='mt'>What Kind of Dungeons and Dragons Character Would You Be?</a>, courtesy of Easydamus <a href='mailto:zybstrski@excite.com'>(e-mail)</a><br><br>
+
+
+
+Detailed Results:
+
+Alignment:
+Lawful Good ----- XXXXXXXXXXXXXXXXXXXXXXXXXX (26)
+Neutral Good ---- XXXXXXXXXXXXXXXXXXXXXXXXXXXXX (29)
+Chaotic Good ---- XXXXXXXXXXXXXXXXXXXXXX (22)
+Lawful Neutral -- XXXXXXXXXXXXXXXXXXXXX (21)
+True Neutral ---- XXXXXXXXXXXXXXXXXXXXXXXX (24)
+Chaotic Neutral - XXXXXXXXXXXXXXXXX (17)
+Lawful Evil ----- XXXXXXXXXXXXX (13)
+Neutral Evil ---- XXXXXXXXXXXXXXXX (16)
+Chaotic Evil ---- XXXXXXXXX (9)
+
+Law & Chaos:
+Law ----- XXXXXXXXXX (10)
+Neutral - XXXXXXXXXXXXX (13)
+Chaos --- XXXXXX (6)
+
+Good & Evil:
+Good ---- XXXXXXXXXXXXXXXX (16)
+Neutral - XXXXXXXXXXX (11)
+Evil ---- XXX (3)
+
+Race:
+Human ---- XXXXXXXXXXXXX (13)
+Dwarf ---- XXXXXXXXXX (10)
+Elf ------ XXXXXXXX (8)
+Gnome ---- XXXX (4)
+Halfling - XXXXXXXX (8)
+Half-Elf - XXXXXXXX (8)
+Half-Orc - XXXXXXXXXX (10)
+
+Class:
+Barbarian - XXXX (4)
+Bard ------ XXXXXX (6)
+Cleric ---- XXXXXXXXXXXXXXXXXXXX (20)
+Druid ----- XXXXXX (6)
+Fighter --- XXXXXXXXXXXX (12)
+Monk ------ XXXXXXXXXX (10)
+Paladin --- XXXXXXXXXXXXXXXXXXXX (20)
+Ranger ---- XXXXXXXX (8)
+Rogue ----- XXXXXX (6)
+Sorcerer -- XXXXXXXXXXXX (12)
+Warlock --- XXXXXXXXXXXXXX (14)
+Wizard ---- XXXXXXXXXXXXXX (14)
+
+
+
+Neppyman said, 'Like this survey? Copy, paste, and edit the code to make your own! Please give me credit if you do so, of course,' so I'm giving him his due. ^_^
+
+Questions? Comments? Suggestions? E-mail Me!
+
+(close this window)
