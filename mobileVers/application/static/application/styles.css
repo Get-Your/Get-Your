@@ -87,6 +87,17 @@ button {
     height: 5vh;
     font-size: max(3.8vw, 16px);
 }
+.quickapply {
+    background-color: var(--red);
+    border-radius: 3vh;
+    padding: 5px 40px;
+    border:none;
+    outline: none;
+    box-shadow: none;
+    color:white;
+    height: 6vh;
+    font-size: max(3.8vw, 16px);
+}
 /*Backgrounds for homepage*/
 .bluemain{
     background-color: var(--darkblue);
