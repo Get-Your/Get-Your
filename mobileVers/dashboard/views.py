@@ -404,3 +404,13 @@ def ProgramsList(request):
         "FAQ_color": "white",
         "Settings_color": "white",
         "Privacy_Policy_color": "white",})
+
+
+def FAQ(request):
+    return render(request, 'dashboard/FAQ.html',{
+        "page_title": "FAQ",
+        "dashboard_color": "white",
+        "program_list_color": "white",
+        "FAQ_color": "var(--yellow)",
+        "Settings_color": "white",
+        "Privacy_Policy_color": "white",})

@@ -19,5 +19,6 @@ urlpatterns = [
     path('GetFOCO', views.dashboardGetFoco, name='dashboard'),
     path('qualifiedPrograms', views.qualifiedPrograms, name='qualifiedPrograms'),
     path('ProgramsList', views.ProgramsList, name='ProgramsList'),
+    path('FAQ', views.FAQ, name='FAQ'),
     # Available/NotAvailable Digital equity in your area
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #this is needed to get file uploads to work! 
