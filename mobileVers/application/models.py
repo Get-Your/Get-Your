@@ -80,8 +80,6 @@ class User(TimeStampedModel,AbstractUser):
     def __str__(self):
         return self.email
     #id = models.AutoField(primary_key=True)    
-    # TODO:@Grace check this and implement? 
-    # phone = models.DecimalField(max_digits=10, decimal_places=0)
 
 # Addresses model attached to user (will delete as user account is deleted too)
 class Addresses(TimeStampedModel):

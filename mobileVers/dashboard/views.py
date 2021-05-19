@@ -245,6 +245,32 @@ def notifyRemaining(request):
     })
 
 
+def qualifiedPrograms(request):
+    print("hi")
+    print(request.user.programs.freeReducedLunch)
+    if request.user.eligibility.DEqualified == True:
+        text = "True"
+    else:
+        text = "False"
+    
+    if request.user.programs.snap == True or request.user.programs.freeReducedLunch == True:
+        text2 = "True"
+    else:
+        text2 = "False"
+
+
+    return render(request, 'dashboard/qualifiedPrograms.html',{
+        "page_title": "Qualified Programs",
+        "dashboard_color": "white",
+        "program_list_color": "var(--yellow)",
+        "FAQ_color": "white",
+        "Settings_color": "white",
+        "Privacy_Policy_color": "white",
+        
+        "GRPreQualification": text,
+        "RecreationPreQualification": text2,})
+
+ 
 def feedback(request):
     if request.method == "POST":
         form = FeedbackForm(request.POST)
@@ -383,15 +409,6 @@ def dashboardGetFoco(request):
         "page_title": "Get: FOCO",
         "dashboard_color": "var(--yellow)",
         "program_list_color": "white",
-        "FAQ_color": "white",
-        "Settings_color": "white",
-        "Privacy_Policy_color": "white",})
-
-def qualifiedPrograms(request):
-    return render(request, 'dashboard/qualifiedPrograms.html',{
-        "page_title": "Qualified Programs",
-        "dashboard_color": "white",
-        "program_list_color": "var(--yellow)",
         "FAQ_color": "white",
         "Settings_color": "white",
         "Privacy_Policy_color": "white",})
