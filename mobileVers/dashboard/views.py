@@ -246,19 +246,14 @@ def notifyRemaining(request):
 
 
 def qualifiedPrograms(request):
-    print("hi")
-    print(request.user.programs.freeReducedLunch)
     if request.user.eligibility.DEqualified == True:
         text = "True"
     else:
         text = "False"
-    
     if request.user.programs.snap == True or request.user.programs.freeReducedLunch == True:
         text2 = "True"
     else:
         text2 = "False"
-
-
     return render(request, 'dashboard/qualifiedPrograms.html',{
         "page_title": "Qualified Programs",
         "dashboard_color": "white",
