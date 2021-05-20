@@ -40,6 +40,8 @@ WORKDIR /code
 ADD . /code/
 RUN pip install pip --upgrade
 RUN pip install -r requirements.txt
+RUN pip install gunicorn
+RUN pip install whitenoise
 
 
 RUN python manage.py collectstatic --noinput --settings=mobileVers.settings.production
