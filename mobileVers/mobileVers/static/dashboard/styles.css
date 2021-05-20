@@ -49,6 +49,13 @@ html,body {
 div{
     position: relative;
 }
+
+/*Set up font -program labels*/
+hprogram {
+    font-size: max(7vh, 50px);
+    font-family: Montserrat;
+    font-weight: 500
+}
 /*Set up font sizes*/
 h1 {
     font-size: max(5.9vw, 30px);
@@ -65,7 +72,7 @@ h2 {
     margin:0;
 }
 h3 {
-    font-size: max(4.vw, 20px);
+    font-size: max(4vw, 20px);
 }
 h4 {
     font-size: 25px;
@@ -91,8 +98,14 @@ button {
     font-size: max(3.8vw, 16px);
 }
 
-clearButton {
-    
+.quickapply {
+    background-color: white;
+    border-radius: 3vw;
+    border: 1px solid var(--darkblue);
+    padding: 5px 10px;
+    color:var(--darkblue);
+    height:max(3.2vw, 16px);
+    font-size: max(3vw, 12px);
 }
 
 /*Backgrounds for homepage*/
@@ -261,6 +274,7 @@ nav{
   position: absolute;
   width: 60vw;
   height:100vh;
+  min-height: -webkit-fill-available;
   margin: -8vw 0 0 -8vw;
   padding: 5vw;
   border-radius: 3vw;
@@ -290,12 +304,15 @@ nav{
 {
   transform: none;
 }
-
 .module {
     margin: 5vw;
     padding: 0 5vw ;
-    border: 2px solid rgba(99,99,99,0.25);
+    border: 2px solid rgba(99,99,99,0.1);
     border-radius: 3vw;
+}
+.modulequickApply {
+    margin: 5vw 8vw;
+    border-bottom: 1px solid rgba(153, 153, 153, 0.47);
 }
 
 .feedback {
