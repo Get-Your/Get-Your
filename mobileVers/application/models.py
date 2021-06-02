@@ -4,18 +4,6 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import ugettext_lazy as _
 
-
-# 2/23/2021 @Grace - yes they do! When we setup the database engine to Postgre SQL when we re-migrate and whatnot, the models are
-# automatically formatted in the Postgre SQL format, we need to set timezone in settings.py however! Using your old code as an
-# example, IDs were automatically generated, they were created incrementally. I actually want to ask you about ID's since we're
-# on the topic - should we set clients and their IDs based on when the account was created (i.e. sequentially)? Or do we want
-# some kind of numbering system? Perhaps for now, for simplicities sake maybe we can just give ID's out sequentially?
-
-# 3/3/2021 @Andrew - yes that would be good to implement in the future! Just not sure what the best method is to do that; but 
-# definitely feel like this is something we should discuss later
-
-
-
 # Create custom user manager class (because django only likes to use usernames as usernames not email)
 class CustomUserManager(BaseUserManager):
     """
@@ -78,8 +66,7 @@ class User(TimeStampedModel,AbstractUser):
     objects = CustomUserManager()
 
     def __str__(self):
-        return self.email
-    #id = models.AutoField(primary_key=True)    
+        return self.email  
 
 # Addresses model attached to user (will delete as user account is deleted too)
 class Addresses(TimeStampedModel):
@@ -97,7 +84,7 @@ class Addresses(TimeStampedModel):
 
     zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
     n2n = models.BooleanField()
-    #TODO add / change n2n for future proofing when Digital Equity moves past N2N bounds
+    #TODO add / change n2n for future proofing when Digital Equity moves past N2N bounds isConnexted
 
 choices = (
     ('Rent', 'Rent'),
@@ -113,13 +100,11 @@ class Eligibility(TimeStampedModel):
 
     rent = models.CharField(choices=choices, max_length=10)
 
-    # TODO: possibly add field for how many total individuals are in the household
+    #TODO: possibly add field for how many total individuals are in the household
     dependents = models.IntegerField(100)
-    #need this for function in views.py after client uploads their dependent information
     DEqualified = models.BooleanField(default=False)
     GRqualified = models.BooleanField(default=False)
     RecreationQualified = models.BooleanField(default=False)
-    #list of boolean models taht comes out of CMS database so we don't need to add in new variables per each program
     #TODO 5/13/2021
     #insert other rebate flags here i.e.
     #xQualified = models.BooleanField(default=False)
@@ -140,11 +125,6 @@ class Eligibility(TimeStampedModel):
         default=LOW,
     )
 
-
-
-
-
-
 # Programs model class attached to user (will delete as user account is deleted too)
 class programs(TimeStampedModel): #incomeVerificationPrograms
     user_id = models.OneToOneField(
@@ -152,10 +132,9 @@ class programs(TimeStampedModel): #incomeVerificationPrograms
         on_delete=models.CASCADE,
         primary_key=True,
     )
-    # TODO: Andrew/Grace - These two fields have to be entered in after the verification of the documents
     snap = models.BooleanField()
     freeReducedLunch = models.BooleanField()
-    #1040 = models.BooleanField() TODO 4/24 include for 1040 filechecking
+    #1040 = models.BooleanField() TODO include for 1040 filechecking
 
 
 class addressVerification(TimeStampedModel):
@@ -166,15 +145,6 @@ class addressVerification(TimeStampedModel):
     )
     Identification = models.BooleanField()
     Utility = models.BooleanField()
-
-
-
-
-
-
-
-
-
 
 class zipCode(TimeStampedModel):
     zipCode = models.DecimalField(max_digits=5, decimal_places=0)    

@@ -21,8 +21,6 @@ def files(request):
     file_list = {"SNAP Card": request.user.programs.snap,
                 # Have Reduced Lunch be last item in the list if we add more programs
                 "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
-                #"Identification": request.user.programs.Identification, #at this point figure out if you want to hardcode the idcard page or somehow use Grace's logic to try and forloop it in (like how when client chooses SNAP + PSD letter) TODO 4/24
-                #"Tax Form": request.user.programs.1040, TODO 4/24 incorporate this for file checking
     }
     if request.method == "POST":   
         form = FileForm(request.POST, request.FILES)

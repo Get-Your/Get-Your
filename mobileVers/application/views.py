@@ -1,26 +1,16 @@
 from django.shortcuts import render, redirect, reverse
-from django.contrib.auth import login, authenticate, logout
-#from django.contrib.auth.forms import UserCreationForm
-#from django.contrib.auth.models import User
-from django.contrib.auth import get_user_model
-
-from.models import User
+from django.contrib.auth import login, logout
 
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from .forms import UserForm, AddressForm, EligibilityForm, programForm, zipCodeForm,futureEmailsForm
-from .backend import addressCheck, validateUSPS, broadcast_email, broadcast_sms, qualification
+from .backend import addressCheck, validateUSPS, qualification
 from django.http import QueryDict
 
-from dashboard.backend import what_page
+import logging
+
+
 formPageNum = 6
-
-# Notes: autofill in empty rows for users who don't fill out all of their info?
-
-
-# TODO: Grace - possibly make a function that automatically returns next step of the page?
-# Should all of these view functions look up at this one function and figure out where they need to go next
-# based on which page they are on?
 
 # first index page we come into
 def index(request):
@@ -30,20 +20,18 @@ def index(request):
     if request.method == "POST": 
         form = zipCodeForm(request.POST or None)
         if form.is_valid():
-            print(form)
-            print(form.cleaned_data['zipCode'])
             try:
+                form.save()
                 if form.cleaned_data['zipCode'] in foco_zipCodes:
                     return redirect(reverse("application:available"))
                 else:
                     return redirect(reverse("application:notAvailable"))
-                form.save()
             except AttributeError:
-                print("Error ZipCode")
+                #TODO implement look into logs!
+                logging.warning("insert valid zipcode")
     
     form = zipCodeForm()
     logout(request)
-    print(request.user)
     return render(request, 'application/index.html', {
             'form':form,
         })
@@ -68,26 +56,6 @@ def address(request):
                 instance.n2n = False
                 print("n2n instance is false")
             instance.save()            
-            # instance.user_id = request.user
-            # #addressResult returns true or false, use this as logic for leading to available.html/notavailable.html
-            # try:
-            #     print(addressCheck(dict['AddressValidateResponse']['Address']['Address2'],))
-            #     addressResult = addressCheck(dict['AddressValidateResponse']['Address']['Address2'],)
-            #     if addressResult == True:
-            #         instance.n2n = True
-            #         print("n2n instance is true")
-            #     else:
-            #         instance.n2n = False
-            #         print("n2n instance is false")
-            #     instance.sanitizedAddress = dict['AddressValidateResponse']['Address']['Address2'], 
-            #     instance.sanitizedAddress2 = dict['AddressValidateResponse']['Address']['Address1'], 
-            #     instance.sanitizedCity = dict['AddressValidateResponse']['Address']['City'], 
-            #     instance.sanitizedState = dict['AddressValidateResponse']['Address']['State'], 
-            #     instance.sanitizedZipCode = int(dict['AddressValidateResponse']['Address']['Zip5'])
-            #     instance.save()
-            # except TypeError or RelatedObjectDoesNotExist:
-            #     print("USPS couldn't figure it out!")
-
             return redirect(reverse("application:addressCorrection"))
     else:
         form = AddressForm()
@@ -187,9 +155,6 @@ def account(request):
     else:
         form = UserForm()
 
-    # Check if user is already logged in and has an account; just push them to next step of application
-#    page = what_page(request.user)
-#    if what_page(request.user) == "application:account":
     return render(request, 'application/account.html', {
     'form':form,
     'step':1,
@@ -289,8 +254,6 @@ def programs(request):
     else:
         form = programForm()
 
-#    page = what_page(request.user)
-#    if what_page(request.user) == "application:programs":
     return render(request, 'application/programs.html', {
     'form':form,
     'step':4,
