@@ -1,10 +1,5 @@
-# Andrew backend code for address check
-# 2/23/2021 TODO:
-# Streamline logic for going through CSV file - priority: medium
-# Using USPS-API, incorporate returned address to clients' view via drop-down bar - priority: high
 import csv
 from usps import USPSApi, Address
-import json
 import re
 
 #Andrew backend code for Twilio
@@ -41,6 +36,13 @@ def addressCheck(address1):
                 else:
                     continue
 
+
+#1) open file csv containing AMI information
+#2) compare dependents number to file, find right "row"
+#3) take that value and compare to income level selection
+#       current_user = request.user
+#       record_data = programs.objects.get(user_id = current_user)
+#       form = programForm(request.POST, instance = record_data)
 def qualification(dependentNumber):
     with open("AMI.csv", "r") as csv_file:
         counter = 0
@@ -57,13 +59,6 @@ def qualification(dependentNumber):
                     return 0
                 else:
                     continue
-    #1) open file csv containing AMI information
-    #2) compare dependents number to file, find right "row"
-    #3) take that value and compare to income level selection
-    #       current_user = request.user
-    #       record_data = programs.objects.get(user_id = current_user)
-    #       form = programForm(request.POST, instance = record_data)
-
 
 def validateUSPS(form):
     address = Address(

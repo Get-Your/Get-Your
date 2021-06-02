@@ -3,7 +3,6 @@ from django import forms
 
 from .models import User, Addresses, Eligibility, programs, choices, zipCode,futureEmails
 
-
 # form for user account creation
 class UserForm(forms.ModelForm):
     class Meta:
@@ -15,8 +14,6 @@ class UserForm(forms.ModelForm):
             'password':'Password', 
             'email':'Email',
             'phone_number':'Phone Number',
-            # TODO:@Grace check this and implement? 
-            # 'phone':'Phone',
         }
     def save(self, commit=True):
         user = super(UserForm, self).save(commit=False)
@@ -51,13 +48,6 @@ class EligibilityForm(forms.ModelForm):
             'grossAnnualHouseholdIncome':'Adjusted Gross Annual Household Income',
         } 
 
-
-
-
-
-
-
-
 # programs they are available for
 class programForm(forms.ModelForm):
     class Meta:
@@ -67,17 +57,6 @@ class programForm(forms.ModelForm):
             'snap':'Food Assistance (SNAP)',
             'freeReducedLunch':'Free and Reduced Lunch',
         } 
-
-
-
-
-
-
-
-
-
-
-
 
 class zipCodeForm(forms.ModelForm):
     class Meta:
