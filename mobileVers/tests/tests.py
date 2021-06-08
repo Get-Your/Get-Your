@@ -46,3 +46,7 @@ class SNAPTestCase(TestCase):
         cat = Animal.objects.get(name="cat")
         self.assertEqual(lion.speak(), 'The lion says "roar"')
         self.assertEqual(cat.speak(), 'The cat says "meow"')
+
+    def test_Qualifications(self):
+        Andrew = User.objects.get(email="jandrewh@outlook.com")
+        self.AssertEqual(Andrew.DEqualified, "True")
