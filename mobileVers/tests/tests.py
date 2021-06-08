@@ -1,10 +1,12 @@
-from mobileVers.application.models import User
+#from mobileVers.application.models import User
 from django.test import TestCase
 import application.models
 import dashboard.models
 
 class SNAPTestCase(TestCase):
     def setUp(self):
+
+        #User.objects.get(email=username)
         User.objects.create(
             #User
             email="jandrewh@outlook.com", 
@@ -38,15 +40,8 @@ class SNAPTestCase(TestCase):
             #File uploads part...
             #files? 
             #address_files?
-
             )
-    def test_animals_can_speak(self):
-        """Animals that can speak are correctly identified"""
-        lion = Animal.objects.get(name="lion")
-        cat = Animal.objects.get(name="cat")
-        self.assertEqual(lion.speak(), 'The lion says "roar"')
-        self.assertEqual(cat.speak(), 'The cat says "meow"')
-
     def test_Qualifications(self):
+        """Find out if test case is DE qualfied"""
         Andrew = User.objects.get(email="jandrewh@outlook.com")
         self.AssertEqual(Andrew.DEqualified, "True")
