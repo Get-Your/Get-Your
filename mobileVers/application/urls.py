@@ -16,6 +16,7 @@ urlpatterns = [
     # Available/NotAvailable Digital equity in your area
     path('available', views.available, name='available'),
     path('notAvailable', views.notAvailable, name='notAvailable'),
+    path('notInRegion', views.notInRegion, name='notInRegion'),
     path('addressCorrection', views.addressCorrection, name='addressCorrection'),
     path('n2n', views.n2n, name='n2n'),
     path('GRQuickApply', views.GRQuickApply, name='GRQuickApply'),
