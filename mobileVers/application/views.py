@@ -37,6 +37,7 @@ def index(request):
         })
 
 def address(request):
+    foco_zipCodes = [80521, 80523, 80525, 80527, 80522, 80524, 80526, 80528, 80553]
     if request.method == "POST": 
         try:
             existing = request.user.addresses
@@ -277,6 +278,9 @@ def programs(request):
 
 def available(request):
     return render(request, 'application/de_available.html',)
+
+def notInRegion(request):
+    return render(request, 'application/notInRegion.html',)
 
 def privacyPolicy(request):
     return render(request, 'application/privacyPolicy.html',)
