@@ -28,10 +28,11 @@ class AddressForm(forms.ModelForm):
 class addressVerificationForm(forms.ModelForm):
     class Meta:
         model = addressVerification
-        fields = ['Utility', 'Identification',]
+        fields = ['Utility', 'Identification','freeReducedLunch']
         labels  = { 
             'Utility':'Utility Bill',
             'Identification':'Identification Card',
+            'freeReducedLunch':'Free and Reduced Lunch',
         } 
         
 
