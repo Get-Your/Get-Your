@@ -37,11 +37,14 @@ def files_to_string(file_list):
         # only add things to the list_string if its true
         if value == True:
             # Also add commas based on counter
-            if counter == 1:
+            if counter == 2:
+                list_string += ", "
+                counter = 1
+            elif counter == 1:
                 list_string += ", "
                 counter = 0
             else:
-                counter = 1
+                counter = 2
             list_string += key
     if list_string == "":
         list_string = "1040 Form"

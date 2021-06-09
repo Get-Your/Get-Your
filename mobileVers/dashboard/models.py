@@ -13,10 +13,6 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
 
-
-
-
-
 class Form(TimeStampedModel):
     user_id = models.ForeignKey(User, related_name ="UserFiles", on_delete=models.CASCADE)
     form_titles = (
@@ -35,16 +31,13 @@ class residencyForm(TimeStampedModel):
     form_titles = (
         ('Identification', 'Identification'),
         ('Utility', 'Utility'),
+        ('Free and Reduced Lunch', 'Free and Reduced Lunch'),
         )
     document_title = models.CharField(
         max_length=30,
         choices=form_titles,
     )
     document = models.FileField()
-
-
-
-
 
 
 class TaxInformation(TimeStampedModel):

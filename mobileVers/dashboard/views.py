@@ -102,13 +102,10 @@ def addressVerification(request):
                 return redirect(reverse("dashboard:filesContinued"))
             except IntegrityError:
                 print("User already has information filled out for this section")
-            #enter upload code here for client to upload images
             return redirect(reverse("application:available"))
     else:
         form = addressVerificationForm()
 
-#    page = what_page(request.user)
-#    if what_page(request.user) == "application:programs":
     return render(request, 'dashboard/addressVerification.html', {
     'form':form,
     'step':1,
@@ -125,13 +122,11 @@ def addressVerification(request):
 
 
 def filesContinued(request):
-    if request.user.programs.freeReducedLunch == False:
-        file_list = {"Identification": request.user.addressverification.Identification,
+    file_list = {   "Identification": request.user.addressverification.Identification,
                     "Utility Bill": request.user.addressverification.Utility,
-        }
-    else:
-        file_list = {"Why are you here? Go away": request.user.programs.freeReducedLunch,
+                    "PSD Reduced Lunch Approval Letter": request.user.addressverification.freeReducedLunch,
     }
+
     if request.method == "POST":   
         form = AddressForm(request.POST, request.FILES)
         if form.is_valid():
@@ -147,7 +142,7 @@ def filesContinued(request):
 
                 # Check if the user needs to upload another form
                 Forms = request.user.address_files
-                checkAllForms = [not(request.user.addressverification.Identification),not(request.user.addressverification.Utility),] #TODO 4/24 include not(request.user.programs.1040) here not(request.user.programs.Identification),
+                checkAllForms = [not(request.user.addressverification.Identification),not(request.user.addressverification.Utility),not(request.user.addressverification.freeReducedLunch),]
                 for group in Forms.all():
                     if group.document_title == "Identification":
                         checkAllForms[0] = True
@@ -155,6 +150,9 @@ def filesContinued(request):
                     if group.document_title == "Utility":
                         checkAllForms[1] = True
                         file_list["Utility Bill"] = False
+                    if group.document_title == "Free and Reduced Lunch": 
+                        checkAllForms[2] = True
+                        file_list["PSD Reduced Lunch Approval Letter"] = False
 
                 if False in checkAllForms:
                     return render(request, 'dashboard/filesContinued.html', {
@@ -164,10 +162,7 @@ def filesContinued(request):
                             'step':2,
                             'formPageNum':2,
                         })
-                if request.user.addressverification.Identification != True and request.user.addressverification.Utility != True:
-                    return redirect(reverse("dashboard:manualVerifyIncome"))
-                else:
-                    return redirect(reverse("application:RecreationQuickApply")) 
+                return redirect(reverse("application:RecreationQuickApply")) 
             else:
                 print("notautnehticated")
                 # TODO: Change this link

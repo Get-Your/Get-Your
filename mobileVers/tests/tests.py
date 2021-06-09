@@ -5,7 +5,6 @@ import dashboard.models
 
 class SNAPTestCase(TestCase):
     def setUp(self):
-
         #User.objects.get(email=username)
         User.objects.create(
             #User

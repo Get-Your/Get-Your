@@ -145,6 +145,7 @@ class addressVerification(TimeStampedModel):
     )
     Identification = models.BooleanField()
     Utility = models.BooleanField()
+    freeReducedLunch = models.BooleanField()
 
 class zipCode(TimeStampedModel):
     zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
