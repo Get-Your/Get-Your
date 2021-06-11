@@ -37,7 +37,7 @@ def index(request):
         })
 
 def address(request):
-    foco_zipCodes = [80521, 80523, 80525, 80527, 80522, 80524, 80526, 80528, 80553]
+    foco_zipCodes = [80521, 80523, 80525, 80527, 80522, 80524, 80526, 80528, 80553] #TODO implement this for zipcode fail function if client inputs zip outside of FoCo
     if request.method == "POST": 
         try:
             existing = request.user.addresses
