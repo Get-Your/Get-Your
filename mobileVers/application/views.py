@@ -49,6 +49,15 @@ def address(request):
         if form.is_valid():
             instance = form.save(commit=False)
             instance.user_id = request.user
+            for zip in foco_zipCodes:
+                print(instance.zipCode)
+                print(zip)
+                if instance.zipCode == zip:
+                    print("breaking for some reason...")
+                    break
+            else:
+                print("address not found")
+                return redirect(reverse("application:notInRegion"))
             addressResult = addressCheck(instance.address.upper())
             if addressResult == True:
                 instance.n2n = True
@@ -129,7 +138,7 @@ def takeUSPSaddress(request):
 
 def n2n(request):
     if request.user.addresses.n2n == True:
-        return redirect(reverse("application:available"))
+        return redirect(reverse("application:finances")) #TODO figure out to clean?
     else:
         return redirect(reverse("application:finances")) 
 

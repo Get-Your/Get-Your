@@ -15,12 +15,15 @@
 
     <body style="background-color: white;">
         <div class=nav>
-            <a href="{% url 'application:index' %}" style="margin-left:auto; margin-right:10px">
-                <p style = "color:#999999; font-weight: 700;">EXIT</p>
+            <a href="{% url 'application:address' %}" style="margin-left:auto; margin-left:10px;text-decoration: none;">
+                <p style = "color:#999999; font-weight: 700;">BACK</p>
             </a>        
         </div>
         <div class="content spaceAround">
             <h1 style="color:var(--yellow)"><b>Your zip code isn't in our service area.</b></h1>
+            <p style="color:var(--yellow); margin-top: 2vh;">Please press back and re-enter your zip code if think you've made a mistake, for further help please call:</p>
+            
+
         
             <div class="footer" style = "background-color: white;">
                 <button onclick="location.href='{% url 'application:index' %}'"> EXIT </button>

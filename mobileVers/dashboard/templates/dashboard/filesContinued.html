@@ -58,9 +58,9 @@
                     <option style="background-color: var(--darkblue);" value="Identification"> Identification </option>
                     <option style="background-color: var(--darkblue);" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>  
                 {% elif program_string == "Identification, Utility Bill, PSD Reduced Lunch Approval Letter" %}
-                    {% for option in field %}
-                        <option style="background-color: var(--darkblue);" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
-                    {% endfor %}
+                    <option style="background-color: var(--darkblue);" value="Identification"> Identification </option>
+                    <option style="background-color: var(--darkblue);" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                    <option style="background-color: var(--darkblue);" value="Utility"> Utility Bill </option>
                 {% endif %}
                 </select>
             </div>

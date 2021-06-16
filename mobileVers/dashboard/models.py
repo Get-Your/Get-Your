@@ -27,7 +27,7 @@ class Form(TimeStampedModel):
     document = models.FileField()
 
 class residencyForm(TimeStampedModel):
-    user_id = models.ForeignKey(User, related_name ="UserResidencyFiles", on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, related_name ="UserResidencyFiles", on_delete=models.CASCADE, blank=False)
     form_titles = (
         ('Identification', 'Identification'),
         ('Utility', 'Utility'),
