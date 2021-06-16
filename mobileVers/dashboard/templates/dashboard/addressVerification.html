@@ -8,7 +8,7 @@
 <form action="{% url 'dashboard:addressVerification' %}" method="post" autocomplete="false">
   {% csrf_token %}
   {% for field in form %}
-  <input style="display: none;" id="{{ field.id_for_label}}" type="checkbox" name="{{ field.name}}">
+  <input style="display: none;" id="{{ field.id_for_label}}" type="submit" name="{{ field.name}}">
   <label class="checklabel" for="{{ field.id_for_label}}">
     
   <style>
