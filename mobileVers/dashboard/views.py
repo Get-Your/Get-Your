@@ -192,7 +192,10 @@ def broadcast(request):
 
 
 def index(request):
-    return render(request, 'dashboard/index.html',)
+    #active_program_count = Program.objects..wherecurrent_user.
+    return render(request, 'dashboard/index.html', #{
+   #     "active_program_count": active_program_count}
+    )
     #current_user = request.user
     #return render(request, 'dashboard/index.html', {
     #    'program_string':current_user.email
