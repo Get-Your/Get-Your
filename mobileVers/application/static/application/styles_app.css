@@ -490,7 +490,11 @@ input.fill:focus ~ label, input.fill:valid ~ label {
     padding: 3vh;
     cursor: pointer;
 }
-<<<<<<< HEAD
+}
+select {
+    font-family: Montserrat;
+}
+
 
 * { box-sizing:border-box; }
 body { font-size:0.9em; background:url(https://subtlepatterns.com/patterns/diagonal-noise.png) }
@@ -549,9 +553,3 @@ section p { color:#222; padding:0 20px; }
  border-color:#2f5bb7;
  
  }
-=======
-}
-select {
-    font-family: Montserrat;
-}
->>>>>>> ff46fb88f5da2d0af8aea60ec64331da54e73013
