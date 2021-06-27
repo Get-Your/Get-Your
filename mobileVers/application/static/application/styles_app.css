@@ -241,3 +241,61 @@ input.fill:focus ~ label, input.fill:valid ~ label {
     padding: 3vh;
     cursor: pointer;
 }
+
+* { box-sizing:border-box; }
+body { font-size:0.9em; background:url(https://subtlepatterns.com/patterns/diagonal-noise.png) }
+
+section {
+  overflow: hidden;
+  margin:25px auto;
+  padding:15px 0 0;
+  animation:slidedown 3s ease;
+}
+@keyframes slidedown {
+ 	0%{ transform:translateY(10px); opacity:0; }
+  65%,100%{ transform:translateY(0); opacity:1; }
+}
+section p { color:#222; padding:0 20px; }
+.confirmation-slider {
+  padding:10px;
+  margin-top:20px;
+  border-top:1px solid rgba(0,0,0,0.1);
+  text-align:center;
+}
+
+#status {
+  border:1px solid #ccc;
+  border-radius:20px;
+  height:52px;
+}
+
+@keyframes fadein {
+ 	from{ opacity:0; }
+  to{ opacity:1; }
+}
+
+.delete-notice { display:none; user-select:none; font-size:20px; line-height:50px; color:var(--yellow); animation:fadein 4s ease; }
+
+#confirm {
+  appearance:none!important;
+  background:transparent;
+  height:50px;
+  padding:0 5px;
+  width:100%;
+}
+
+#confirm::-webkit-slider-thumb {
+  appearance:none!important;
+  height:40px;
+  width:160px;
+  border:1px solid #3079ED;
+  border-radius:20px;
+  cursor:e-resize;
+  background:no-repeat center center;
+  background-image:url(data:image/gif;base64,R0lGODlhIAAXAJEDAD1740KC7Ttx0////yH5BAEAAAMALAAAAAAgABcAAAJInI9poO0/hAiwOjmtPliwbXUeWIkSRTam9CHrC7NJTK9oVOfYp/ejDwzWAkKaofhqIU2tFG7lnDGj0k6T+pRgFbstd+SdXR0FADs=), linear-gradient(top,#4D90FE,#4787ED);
+ }
+
+#confirm:hover::-webkit-slider-thumb {
+ border-color:#2f5bb7;
+ 
+ }
