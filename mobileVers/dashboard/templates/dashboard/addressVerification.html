@@ -3,7 +3,7 @@
 {% block body %}
 <h2 style="font-weight: 700;color:white; margin-top:5vh"> Which of these documents do you have? </h2>
 
-<p style="color: white;"> Choose all that apply: </p>
+<p style="color: white;"> Choose whichever is most convenient: </p>
 
 <form action="{% url 'dashboard:addressVerification' %}" method="post" autocomplete="false">
   {% csrf_token %}

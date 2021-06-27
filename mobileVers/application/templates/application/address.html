@@ -2,6 +2,21 @@
 
 {% block body %}
 
+<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js'></script>
+<script type="text/javascript"> 
+  $(document).ready(function(){
+        $("#confirm").on('change',function() {
+            var slidepos = $(this).val();
+            if(slidepos > 99){
+                // User slided the slider
+            $("#confirm").fadeOut();
+            $(".delete-notice").fadeIn();
+            }
+        });
+    });
+</script>
+
+
 <h2 style="font-weight: 700;color:white; margin:5vh 0"> What is your address? </h2>
 
 <form action="{% url 'application:address' %}" method="post" autocomplete="false" enctype="multipart/form-data">
@@ -58,6 +73,19 @@
     </div>
     {% endif %}
 {% endfor %}
+
+
+<section id="alertbox">
+    <p style="color:#F9B316"><strong> I am lawfully present in the United States and/or am only applying on behalf of ONLY applying on behalf on my children (under 18 years of age) who are lawfully present.
+    </strong></p>
+    <div class="confirmation-slider">
+      <div id="status">
+            <input id="confirm" type="range" value="0" min="0" max="100" />
+        <span class="delete-notice">Verified</span>
+      </div>
+    </div>
+  </section>
+  
 <div class="footer">
     <button type="submit"> CONTINUE </button>
 </div>
