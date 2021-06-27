@@ -334,65 +334,6 @@ def feedbackReceived(request):
 def underConstruction(request):
     return render(request, "dashboard/underConstruction.html",)
 
-#no longer used down below????
-def account(request):
-    if request.method == "POST": 
-        # Check password with Confirm Password field, 
-        # maybe also do some password requirements here too
-        form = UserForm(request.POST)
-        if form.is_valid():
-            # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
-            # Make sure password isn't getting saved twice
-            email(form['email'].value(),)
-            print(form.data)
-            form.save()
-            return redirect(reverse("application:address"))
-    else:
-        form = UserForm()
-    return render(request, 'application/account.html', {
-        'form':form,
-        'step':1,
-        'formPageNum':formPageNum,
-    })
-
-def finances(request):
-    if request.method == "POST": 
-        form = EligibilityForm(request.POST)
-        if form.is_valid():
-            print(form.data)
-            form.save()
-            return redirect(reverse("application:programs"))
-        else:
-            print(form.data)
-    else:
-        form = EligibilityForm()
-    return render(request, 'application/finances.html', {
-        'form':form,
-        'step':3,
-        'formPageNum':formPageNum,
-    })
-
-def programs(request):
-    if request.method == "POST": 
-        form = programForm(request.POST)
-        if form.is_valid():
-            print(form.data)
-            form.save()
-            return redirect(reverse("application:available"))
-    else:
-        form = programForm()
-    return render(request, 'application/programs.html', {
-        'form':form,
-        'step':4,
-        'formPageNum':formPageNum,
-    })
-    #return render(request, 'application/programs.html',)
-
-def available(request):
-    return render(request, 'application/de_available.html',)
-
-def notAvailable(request):
-    return render(request, 'application/de_notavailable.html',)
 
 # Everything under here is for new dashboard
 def dashboardGetFoco(request):
