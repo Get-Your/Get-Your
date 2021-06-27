@@ -18,12 +18,12 @@
     <body style="height:100vh">
         <div class=nav>
             <a class="row" onClick="window.history.back();return false;">
-                <img src="{% static 'application/images/BackArrow-white.svg' %}" alt="back" style="width:8vw; margin-right: 5px;">
+                <img src="{% static 'application/images/BackArrow-white.svg' %}" alt="back" style="width:max(4.5vw, 16px); margin-right: 5px;">
                 <p style = "color:white; font-weight: 700;">BACK</p>
             </a>
-            <img src="{% static 'application/images/X_white.svg' %}" alt="back" style="width:4.5vw; margin-right: 5px;" onclick="location.href='{% url 'application:index' %}'">
+            <img src="{% static 'application/images/X_white.svg' %}" alt="back" style="width:max(2.6vw, 16px); margin-right: 5px;" onclick="location.href='{% url 'application:index' %}'">
         </div>
-        <div class="content" style="height:100vh">
+        <div class="content desktop" style="height:100vh">
             <p style="color:var(--lightblue);font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
                 <!--Whatever I need in the other pages, I can enter it here-->
             {% block body %}

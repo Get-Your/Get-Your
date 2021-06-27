@@ -16,7 +16,7 @@
     </head>
 
     <body>
-        <div class="row" style="text-align: center;">
+        <div class="row" style="text-align: center; position:fixed; background-color: white;z-index: 99;">
           <nav role="navigation" style="width: 3vh;">
             <div id="menuToggle" class="icon" style="position: fixed;">
               <input type="checkbox" />
@@ -32,13 +32,19 @@
                 <a style="color:{{ FAQ_color }}; " href="{% url 'dashboard:FAQ' %}"><li>FAQ</li></a>
                 <a style="color:{{ Settings_color }}; " href="{% url 'dashboard:underConstruction' %}"><li>Settings</li></a>
                 <a style="color:{{ Privacy_Policy_color }}; " href="{% url 'application:privacyPolicy' %}"><li>Privacy Policy</li></a>
+                <a style="color:white; " href="{% url 'application:index' %}"><li>Log Out</li></a>
+              
               </ul>
             </div>
           </nav>
             <p style="font-weight: 400; color:var(--darkblue);">{{ page_title }}</p>
-            <img src="{% static 'dashboard/images/AlertBell.svg' %}" alt="back" style="width:4.5vw;">
+            <img src="{% static 'dashboard/images/AlertBell.svg' %}" alt="back" style="width:min(4.5vw,30px)">
         </div>
+        <div class="extraspace">
+        </div>
+          <div class="">
             {% block body %}
+            
             {% endblock %}
             <div class="module" >
                 <form action="{% url 'dashboard:index' %}" method="post">
@@ -47,26 +53,27 @@
                     <div class="column" style="margin:0; width:100%;">
                       <p style="font-weight: 800;">How would you rate your experience so far using the Connexion portal? </p>
                       <div class="column" style="margin:0; width:100%;">
-                        <clearButton name="starRating" value="1" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star1" style="width:10vw;margin-right: 3vw;" onclick="fillStar(1)"> </clearButton>
-                        <clearButton name="starRating" value="2" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star2" style="width:10vw;margin-right: 3vw;" onclick="fillStar(2)"> </clearButton>
-                        <clearButton name="starRating" value="3" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star3" style="width:10vw;margin-right: 3vw;" onclick="fillStar(3)"> </clearButton>
-                        <clearButton name="starRating" value="4" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star4" style="width:10vw;margin-right: 3vw;" onclick="fillStar(4)"> </clearButton>
-                        <clearButton name="starRating" value="5" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star5" style="width:10vw;margin-right: 3vw;" onclick="fillStar(5)"> </clearButton>
+                        <clearButton name="starRating" value="1" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star1" style="width:min(10vw, 50px);margin-right: 3vw;" onclick="fillStar(1)"> </clearButton>
+                        <clearButton name="starRating" value="2" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star2" style="width:min(10vw, 50px);margin-right: 3vw;" onclick="fillStar(2)"> </clearButton>
+                        <clearButton name="starRating" value="3" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star3" style="width:min(10vw, 50px);margin-right: 3vw;" onclick="fillStar(3)"> </clearButton>
+                        <clearButton name="starRating" value="4" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star4" style="width:min(10vw, 50px);margin-right: 3vw;" onclick="fillStar(4)"> </clearButton>
+                        <clearButton name="starRating" value="5" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star5" style="width:min(10vw, 50px);margin-right: 3vw;" onclick="fillStar(5)"> </clearButton>
                       </div>
                   </div>
                   <div class="column" style="width:100%; margin:0; justify-content: flex-start;">
                         <p style="font-weight: 800; margin-top: 50px;">How can we do better?</p> 
                         <textarea class="feedback" placeholder="Tell us how we're doing!"id="" name="feedbackComments" maxlength="500" style="border-radius: 2vh;"></textarea>
-                      <button name="starRating" value = "" id="submit" style="width:100%; padding:0; margin-top: 2vh; justify-content: flex-start;font-family: Montserrat"> <b>Share Feedback</b> </button>
+                      <button name="starRating" value = "" id="submit" style="width:100%"> <b>Share Feedback</b> </button>
                       <br>
                       <br>
                   </div>
                 </form>
               </div>
               <div class="extraspace">
-              </div>
+            </div>
           </div>
-  
+          </div>
+        </div>
           <script>
             var image1 =  document.getElementById("star1");
             var image2 =  document.getElementById("star2");
