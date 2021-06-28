@@ -250,6 +250,25 @@ def qualifiedPrograms(request):
         text2 = "True"
     else:
         text2 = "False"
+
+    if request.user.eligibility.GRqualified == True:
+        GRButtonText = "Applied"
+        GRButtonColor = "green"
+        GRButtonTextColor = "White"
+    else:
+        GRButtonText = "Quick Apply +"
+        GRButtonColor = ""
+        GRButtonTextColor = ""
+
+    if request.user.eligibility.RecreationQualified == True:
+        RECButtonText = "Applied"
+        RECButtonColor = "green"
+        RECButtonTextColor = "White"
+    else:
+        RECButtonText = "Quick Apply +"
+        RECButtonColor = ""
+        RECButtonTextColor = ""
+
     return render(request, 'dashboard/qualifiedPrograms.html',{
         "page_title": "Qualified Programs",
         "dashboard_color": "white",
@@ -257,9 +276,18 @@ def qualifiedPrograms(request):
         "FAQ_color": "white",
         "Settings_color": "white",
         "Privacy_Policy_color": "white",
+
+        "GRButtonText": GRButtonText,
+        "GRButtonColor": GRButtonColor,
+        "GRButtonTextColor": GRButtonTextColor,
+
+        "RECButtonText" : RECButtonText,
+        "RECButtonColor" : RECButtonColor,
+        "RECButtonTextColor" : RECButtonTextColor,
         
         "GRPreQualification": text,
-        "RecreationPreQualification": text2,})
+        "RecreationPreQualification": text2,
+        })
 
  
 def feedback(request):
