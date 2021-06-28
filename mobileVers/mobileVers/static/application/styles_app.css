@@ -495,10 +495,6 @@ select {
     font-family: Montserrat;
 }
 
-
-* { box-sizing:border-box; }
-body { font-size:0.9em; background:url(https://subtlepatterns.com/patterns/diagonal-noise.png) }
-
 section {
   overflow: hidden;
   margin:25px auto;
@@ -512,6 +508,7 @@ section {
 section p { color:#222; padding:0 20px; }
 .confirmation-slider {
   padding:10px;
+  overflow: hidden;
   margin-top:20px;
   border-top:1px solid rgba(0,0,0,0.1);
   text-align:center;
@@ -545,11 +542,10 @@ section p { color:#222; padding:0 20px; }
   border:1px solid #3079ED;
   border-radius:20px;
   cursor:e-resize;
-  background:no-repeat center center;
-  background-image:url(data:image/gif;base64,R0lGODlhIAAXAJEDAD1740KC7Ttx0////yH5BAEAAAMALAAAAAAgABcAAAJInI9poO0/hAiwOjmtPliwbXUeWIkSRTam9CHrC7NJTK9oVOfYp/ejDwzWAkKaofhqIU2tFG7lnDGj0k6T+pRgFbstd+SdXR0FADs=), linear-gradient(top,#4D90FE,#4787ED);
+  background: var(--yellow);
  }
 
 #confirm:hover::-webkit-slider-thumb {
- border-color:#2f5bb7;
+ border-color:var(--yellow);
  
  }
