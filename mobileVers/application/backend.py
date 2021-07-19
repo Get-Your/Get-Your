@@ -72,11 +72,11 @@ def validateUSPS(form):
     print (address)
     usps = USPSApi(settings.USPS_SID, test=True)
     validation = usps.validate_address(address)
-    dict = validation.result
+    outDict = validation.result
     try:
-        print(dict['AddressValidateResponse']['Address']['Address2'])
-        print(dict)
-        return dict
+        print(outDict['AddressValidateResponse']['Address']['Address2'])
+        print(outDict)
+        return outDict
     except KeyError:
         print("Wrong address info added")
 
