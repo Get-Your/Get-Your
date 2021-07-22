@@ -148,8 +148,8 @@ class addressVerification(TimeStampedModel):
     Utility = models.BooleanField()
     freeReducedLunch = models.BooleanField()
 
-class zipCode(TimeStampedModel):
-    zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
+class addressLookup(TimeStampedModel):
+    address = models.CharField(max_length=100) 
 
 class futureEmails(TimeStampedModel):
     email = models.EmailField(unique=True)
