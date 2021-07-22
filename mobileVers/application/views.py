@@ -21,13 +21,104 @@ def index(request):
         if form.is_valid():
             try:
                 form.save()
-                if form.cleaned_data['zipCode'] in foco_zipCodes:
-                    return redirect(reverse("application:available"))
+                
+                # Use usaddress to try to parse the input text into an address
+                
+                # Clean the data
+                # Remove 'fort collins' - the multi-word city can confuse the
+                # parser
+                addressStr = form.cleaned_data['address'].lower().replace('fort collins','')
+                
+                # Use the following tag mapping for USPS standards
+                tag_mapping = {
+                   'Recipient': 'recipient',
+                   'AddressNumber': 'address_2',
+                   'AddressNumberPrefix': 'address_2',
+                   'AddressNumberSuffix': 'address_2',
+                   'StreetName': 'address_2',
+                   'StreetNamePreDirectional': 'address_2',
+                   'StreetNamePreModifier': 'address_2',
+                   'StreetNamePreType': 'address_2',
+                   'StreetNamePostDirectional': 'address_2',
+                   'StreetNamePostModifier': 'address_2',
+                   'StreetNamePostType': 'address_2',
+                   'CornerOf': 'address_2',
+                   'IntersectionSeparator': 'address_2',
+                   'LandmarkName': 'address_2',
+                   'USPSBoxGroupID': 'address_2',
+                   'USPSBoxGroupType': 'address_2',
+                   'USPSBoxID': 'address_2',
+                   'USPSBoxType': 'address_2',
+                   'BuildingName': 'address_1',
+                   'OccupancyType': 'address_1',
+                   'OccupancyIdentifier': 'address_1',
+                   'SubaddressIdentifier': 'address_1',
+                   'SubaddressType': 'address_1',
+                   'PlaceName': 'city',
+                   'StateName': 'state',
+                   'ZipCode': 'zipcode',
+                }
+                
+                rawAddressDict, addressType = usaddress.tag(
+                    addressStr,
+                    tag_mapping,
+                    )
+                
+                # Only continue to validation, etc if a 'Street Address' is
+                # found by usaddress
+                if addressType != 'Street Address':
+                    raise NameError("The address cannot be parsed")
+                    
+                print(
+                    'Address parsing found',
+                    rawAddressDict,
+                    )
+                
+                # Help out parsing with educated guesses
+                # if 'state' not in rawAddressDict.keys():
+                rawAddressDict['state'] = 'CO'
+                # if 'city' not in rawAddressDict.keys():
+                rawAddressDict['city'] = 'Fort Collins'
+                    
+                print(
+                    'Updated address parsing is', 
+                    rawAddressDict,
+                    )
+                    
+                # Ensure the necessary keys for USPS validation are included
+                uspsKeys = [
+                    'name',
+                    'address_1',
+                    'address_2',
+                    'city',
+                    'state',
+                    'zipcode']
+                rawAddressDict.update(
+                    {key:'' for key in uspsKeys if key not in rawAddressDict.keys()}
+                    )
+                
+                # Validate to USPS address
+                addressDict = validateUSPS(rawAddressDict)
+                
+                # Check for IQ and Connexion services
+                isInGMA, hasConnexion = addressCheck(addressDict)
+                
+                if isInGMA:
+                    # Connexion status unknown, but since isInGMA==True, it
+                    # will be available at some point
+                    if not hasConnexion:    # this covers both None and False
+                        return redirect(reverse("application:quickComingSoon"))
+                        
+                    else:  # hasConnexion==True is the only remaining option
+                        return redirect(reverse("application:quickAvailable"))
+                    
                 else:
-                    return redirect(reverse("application:notAvailable"))
-            except AttributeError:
+                    return redirect(reverse("application:quickNotAvailable"))
+
+            except:
                 #TODO implement look into logs!
                 logging.warning("insert valid zipcode")
+                return(redirect(reverse("application:quickNotFound")))
     
     form = addressLookupForm() 
     logout(request)

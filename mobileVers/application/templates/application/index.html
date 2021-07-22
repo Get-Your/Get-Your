@@ -151,8 +151,8 @@
         </div>
         <div class="intrigued">
             <h2 style="color:white"><a id="Check Availability">Curious?</a></h2>
-            <p style="color:white">Check if you qualify & if Fort Collins Connexion 
-                is available in your neighborhood</p>
+            <p style="color:white">Enter your address to check if you qualify & if Fort Collins Connexion 
+                is currently available for you</p>
                 <!--TODO: Save input and add logic for checking zipcode-->
                 
                 <form action="{% url 'application:index' %}" method="post" autocomplete="false" enctype="multipart/form-data">
@@ -160,14 +160,14 @@
                     <div class="row" style="margin: 30px 0 0 0;">
                         <div class="input" style = "width:100%">
                             <!--TODO: change this to dropdown menu with data-->
-                            <input class="fill" name="{{ form.zipCode.name }}"
-                                id="{{ form.zipCode.id_for_label }}"
-                                maxlength="{{ form.zipCode.max_length }}"
+                            <input class="fill" name="{{ form.address.name }}"
+                                id="{{ form.address.id_for_label }}"
+                                maxlength="{{ form.address.max_length }}"
                                 type="text" 
                                 style="width:95%;" 
                                 required  
                                 autocomplete="off">
-                            <label class="label">{{ form.zipCode.label }}</label>    
+                            <label class="label">{{ form.address.label }}</label>    
                         </div>
                         <button style="background-color:var(--darkblue);font-weight: 700;" type="submit"> ENTER </button>
                     </div>
