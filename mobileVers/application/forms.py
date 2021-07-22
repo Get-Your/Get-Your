@@ -58,12 +58,12 @@ class programForm(forms.ModelForm):
             'freeReducedLunch':'Free and Reduced Lunch',
         } 
 
-class zipCodeForm(forms.ModelForm):
+class addressLookupForm(forms.ModelForm):
     class Meta:
-        model = zipCode
-        fields = ['zipCode']
+        model = addressLookup
+        fields = ['address']
         labels  = { 
-            'zipCode':'Zip Code', 
+            'address':'Address', 
         } 
 
 class futureEmailsForm(forms.ModelForm):

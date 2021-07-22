@@ -3,11 +3,12 @@ from django.contrib.auth import login, logout
 
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
-from .forms import UserForm, AddressForm, EligibilityForm, programForm, zipCodeForm,futureEmailsForm
+from .forms import UserForm, AddressForm, EligibilityForm, programForm, addressLookupForm, futureEmailsForm
 from .backend import addressCheck, validateUSPS, qualification
 from django.http import QueryDict
 
 import logging
+import usaddress
 
 
 formPageNum = 6
@@ -37,7 +38,7 @@ def index(request):
         })
 
 def address(request):
-    foco_zipCodes = [80521, 80523, 80525, 80527, 80522, 80524, 80526, 80528, 80553] #TODO implement this for zipcode fail function if client inputs zip outside of FoCo
+
     if request.method == "POST": 
         try:
             existing = request.user.addresses
@@ -49,22 +50,7 @@ def address(request):
         if form.is_valid():
             instance = form.save(commit=False)
             instance.user_id = request.user
-            for zipCode in foco_zipCodes:
-                print(instance.zipCode)
-                print(zipCode)
-                if instance.zipCode == zipCode:
-                    print("breaking for some reason...")
-                    break
-            else:
-                print("address not found")
-                return redirect(reverse("application:notInRegion"))
-            addressResult = addressCheck(instance.address.upper())
-            if addressResult == True:
-                instance.n2n = True
-                print("n2n instance is true")
-            else:
-                instance.n2n = False
-                print("n2n instance is false")
+
             instance.save()            
             return redirect(reverse("application:addressCorrection"))
     else:
@@ -111,23 +97,21 @@ def takeUSPSaddress(request):
             "state": request.user.addresses.state,
             "zipcode": str(request.user.addresses.zipCode),})
         dict_address = validateUSPS(q)
+        
+        # Check for and store GMA and Connexion status
+        isInGMA, hasConnexion = addressCheck(dict_address)
 
         instance = request.user.addresses
         instance.user_id = request.user
         instance.address = dict_address['AddressValidateResponse']['Address']['Address2']
-        addressResult = addressCheck(instance.address)
-        if addressResult == True:
-            instance.n2n = True
-            print("n2n instance is true")
-        else:
-            instance.n2n = False
-            print("n2n instance is false")
-
         instance.address2 = dict_address['AddressValidateResponse']['Address']['Address1']
         instance.city = dict_address['AddressValidateResponse']['Address']['City']
         instance.state = dict_address['AddressValidateResponse']['Address']['State']
         instance.zipCode = int(dict_address['AddressValidateResponse']['Address']['Zip5'])
-
+        
+        instance.isInGMA = isInGMA
+        instance.hasConnexion = hasConnexion
+        
         instance.save()
     except TypeError or RelatedObjectDoesNotExist:
         print("USPS couldn't figure it out!")
