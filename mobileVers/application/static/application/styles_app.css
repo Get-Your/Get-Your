@@ -165,9 +165,9 @@
         box-shadow: none;
         color:white;
         height: 6vh;
-        font-size:  max(2vw, 14px);
+        font-size: max(2vw, 14px);
         font-weight: 700;
-        width:85%;
+        width: 85%;
     }
     
     
@@ -457,12 +457,23 @@ input:checked+label {
 .footer{
     display: flex;
     justify-content: center;
-    /*These two lines made the button stick to the bottom*/
+    /*These two lines make the button stick to the bottom*/
     position: fixed;
     bottom: 0;
     width:90%;
     height:12vh;
 }
+
+.doublefooter{
+    display: block;
+    justify-content: center;
+    /*These two lines make the button stick to just above the 'footer' bottom*/
+    position: fixed;
+    bottom: 0;
+    width: 90%;
+    height: 19vh;    /* 2*<button height> + div height separating buttons + 6vh to space from the bottom */
+}
+
 /*TODO: Do we want to make the link highlights disappear?*/
 .noselect {
     -webkit-touch-callout: none; /* iOS Safari */

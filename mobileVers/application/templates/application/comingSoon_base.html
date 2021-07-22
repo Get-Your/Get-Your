@@ -1,0 +1,30 @@
+{% extends 'application/availability_base.html' %}
+
+{% block content %}
+    <h1 style="color: white"><b>Your address is in the Get:FoCo service area but Connexion is not quite ready.</b></h1>
+    <p style="color:white; margin-top: 2vh;">Subscribe for updates when Connexion will be available for your address, and/or continue to the application to enroll.</p>  
+
+    <form action="{% url 'application:quickComingSoon' %}" method="post" autocomplete="false" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="input" style = "width:100%; margin-top:5vh;">
+            <!--TODO: change this to dropdown menu with data-->
+            <input class="fill" name="{{ form.email.name }}"
+                id="{{ form.email.id_for_label }}"
+                maxlength="{{ form.email.max_length }}"
+                type="text" 
+                style="width:100%;border-bottom:1px solid #999999;color: white" 
+                required  
+                autocomplete="off">
+            <label class="label" style="color:#999999">{{ form.email.label }}</label>    
+        </div>
+        <div class="doublefooter">
+            <div style = "text-align: center;">
+                <button type="submit" style="padding:10px"> SUBSCRIBE AND CONTINUE </button>
+            </div>
+            <div style = "height: 1vh;"></div>
+            <div style = "text-align: center;">
+                <button onclick="location.href='{% url 'application:account' %}'"> CONTINUE ONLY </button>
+            </div>
+        </div>             
+    </form>   
+{% endblock %}

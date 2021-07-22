@@ -1,0 +1,12 @@
+{% extends 'application/availability_base.html' %}
+
+{% block content %}
+    <h1 style="color: white"><b>Your address is in the Get:FoCo service area and Connexion is available & ready!</b></h1>
+    <p style="color:white; margin-top: 2vh;">Click the continue button below to start your application now!</p>
+{% endblock %}
+
+{% block footerdiv %}
+    <div class="footer" style="width:100%">
+        <button onclick="location.href='{% url 'application:account' %}'"> CONTINUE </button> 
+    </div>
+{% endblock %}
