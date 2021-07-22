@@ -15,11 +15,9 @@ formPageNum = 6
 
 # first index page we come into
 def index(request):
-
-    foco_zipCodes = [80521, 80523, 80525, 80527, 80522, 80524, 80526, 80528, 80553]
-
+    
     if request.method == "POST": 
-        form = zipCodeForm(request.POST or None)
+        form = addressLookupForm(request.POST or None)
         if form.is_valid():
             try:
                 form.save()
@@ -31,7 +29,7 @@ def index(request):
                 #TODO implement look into logs!
                 logging.warning("insert valid zipcode")
     
-    form = zipCodeForm()
+    form = addressLookupForm() 
     logout(request)
     return render(request, 'application/index.html', {
             'form':form,
@@ -266,24 +264,19 @@ def programs(request):
 
 
 
-
-
-
-
-def available(request):
-    return render(request, 'application/de_available.html',)
-
-def notInRegion(request):
-    return render(request, 'application/notInRegion.html',)
-
-def privacyPolicy(request):
-    return render(request, 'application/privacyPolicy.html',)
-
-def dependentInfo(request):
-    return render(request, 'application/dependentInfo.html',)
-
-
 def notAvailable(request):
+    return render(request, 'application/notAvailable.html',)
+
+def quickAvailable(request):
+    return render(request, 'application/quickAvailable.html',)
+
+def quickNotAvailable(request):
+    return render(request, 'application/quickNotAvailable.html',) 
+
+def quickNotFound(request):
+    return render(request, 'application/quickNotFound.html',) 
+
+def quickComingSoon(request):
     
     if request.method == "POST": 
         form = futureEmailsForm(request.POST or None)
@@ -295,11 +288,15 @@ def notAvailable(request):
                 print("Error Email Saving")
     
     form = futureEmailsForm()
-    return render(request, 'application/de_notavailable.html', {
+    return render(request, 'application/quickComingSoon.html', {
             'form':form,
         })
 
+def privacyPolicy(request):
+    return render(request, 'application/privacyPolicy.html',)
 
+def dependentInfo(request):
+    return render(request, 'application/dependentInfo.html',)
 
 def mayQualify(request):
     return render(request, 'application/mayQualify.html',{
