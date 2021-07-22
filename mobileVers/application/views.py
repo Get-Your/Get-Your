@@ -116,15 +116,16 @@ def takeUSPSaddress(request):
     except TypeError or RelatedObjectDoesNotExist:
         print("USPS couldn't figure it out!")
 
-    return redirect(reverse("application:n2n"))
+    return redirect(reverse("application:inServiceArea"))
 
 
 
-def n2n(request):
-    if request.user.addresses.n2n == True:
+def inServiceArea(request):
+    if request.user.addresses.isInGMA:
         return redirect(reverse("application:finances")) #TODO figure out to clean?
     else:
-        return redirect(reverse("application:finances")) 
+        print("address not in GMA")
+        return redirect(reverse("application:notAvailable")) 
 
 
 def account(request):
