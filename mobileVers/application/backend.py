@@ -1,6 +1,7 @@
 import csv
 from usps import USPSApi, Address
 import re
+from django import http  # used for type checks
 
 #Andrew backend code for Twilio
 from twilio.rest import Client
@@ -60,15 +61,25 @@ def qualification(dependentNumber):
                 else:
                     continue
 
-def validateUSPS(form):
-    address = Address(
-        name = " ",
-        address_1 = form['address'],
-        address_2 = form['address2'],
-        city = form['city'],
-        state = form['state'],
-        zipcode = form['zipcode'],
-    )
+def validateUSPS(inobj):
+    
+    if isinstance(inobj, http.request.QueryDict):
+        # Combine fields into Address
+        address = Address(
+            name = " ",
+            address_1 = inobj['address'],
+            address_2 = inobj['address2'],
+            city = inobj['city'],
+            state = inobj['state'],
+            zipcode = inobj['zipcode'],
+        )
+        
+    elif isinstance(inobj, dict):
+        address = Address(**inobj)
+        
+    else:
+        raise AttributeError('Unknown validation input')
+        
     print (address)
     usps = USPSApi(settings.USPS_SID, test=True)
     validation = usps.validate_address(address)
@@ -77,8 +88,10 @@ def validateUSPS(form):
         print(outDict['AddressValidateResponse']['Address']['Address2'])
         print(outDict)
         return outDict
+    
     except KeyError:
         print("Wrong address info added")
+        raise
 
 
 def broadcast_email(email):
