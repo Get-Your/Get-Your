@@ -49,10 +49,10 @@ def address(request):
         if form.is_valid():
             instance = form.save(commit=False)
             instance.user_id = request.user
-            for zip in foco_zipCodes:
+            for zipCode in foco_zipCodes:
                 print(instance.zipCode)
-                print(zip)
-                if instance.zipCode == zip:
+                print(zipCode)
+                if instance.zipCode == zipCode:
                     print("breaking for some reason...")
                     break
             else:
