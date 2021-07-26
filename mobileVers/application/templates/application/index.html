@@ -30,28 +30,34 @@
                     <a class="link" style = "display: inline;padding-top:2.5vh," href="">ENGLISH</a>
                     <div class="row" style="height: 5vh; vertical-align: middle; display: table-cell; text-align: right;overflow: initial;">
                         <!--TODO: MAKE SURE THIS LINK WORKS-->
+                            <a class ="navLink"> How it Works</a>
+                            <a class ="navLink"> Available Programs </a>
+                            <a class ="navLink"> Check Availability </a>
                             <a class="link" style = "display: inline;" href="{% url 'dashboard:login' %}">LOG IN</a>
                             <button onclick="location.href='{% url 'application:account' %}'"><b>APPLY</b></button>
                     </div>
                 </ul>
         </div>
-        <div class=bluemain style="margin:0">
+        <div class=bluemain style="margin:0;">
+            <div class="img" style="float:left; padding: 20px;">
+                <img src="{% static 'application/images/WelcomeIllustration.svg' %}" alt="Welcome" style="width:100%;">
+            </div>
             <h1 style="color:white">Welcome to</h1>
             <h1 style="color:white"><b>Get: <b class=yellow style=>FOCO</b></b></h1>
-            <p style="color:white"> An all-in-one application application that will connect with all that Fort Collins has to offer with income-based municipal programs</p>
-        </div>
-        <div class=programsListmain>
-            <h2 style="color:white; text-align: center;">Available Programs</h2>
-            <p style="color:white; text-align: center;">Get: FOCO is always working to include more programs into the mobile app– making it easier for you to be connected!</p>
-            <button style="background-color: var(--darkblue);width:100%;margin-bottom: 3vh;" onclick="location.href='{% url 'dashboard:ProgramsList' %}'">Explore Programs</button>
+            <p style="color:white"> An all-in-one application portal to the discounted services and municipal benefits offered by the City of Fort Collins, a partnership with Fort Collins Connexion, Recreation and more.</p>
         </div>
         <div class=whitemain>
             <h2 style="text-align:center"><b>How it Works</b></h2>
-            <p>With Get:Foco, you’ll be able to do more with your City of Fort Collins program applications than ever before.</p>
+            <p style="padding-bottom:20px">With Get:Foco, you’ll be able to do more with your City of Fort Collins program applications than ever before.</p>
             <div class="column">
                 <div class="row"  style = "justify-content: space-around;">
                     <div class="img">
-                        <img src="{% static 'application/images/control.png' %}" alt="Control" style="width:100%">
+                        <div class="fadeLarge">
+                            <img src="{% static 'application/images/control.png' %}" alt="Control" style="width:100%">
+                        </div>
+                        <div class ="fadeSmall">
+                            <img src="{% static 'application/images/control.svg' %}" alt="Control" style="width:100%">
+                        </div>
                     </div>
                     <div class="wordblock">
                         <p style="margin-top:0;"><b>Control Your Application</b></p>
@@ -64,7 +70,12 @@
             <div class="column">
                 <div class="row" style = "justify-content: space-around;">
                     <div class="img">
-                        <img src="{% static 'application/images/save.png' %}" alt="Save" style="width:100%">
+                        <div class="fadeLarge">
+                            <img src="{% static 'application/images/save.png' %}" alt="Save" style="width:100%">
+                        </div>
+                        <div class ="fadeSmall">
+                            <img src="{% static 'application/images/save.svg' %}" alt="Save" style="width:100%">
+                        </div>
                     </div>
                     <div class="wordblock">
                         <p style="margin-top:0;"><b>Do More, Save More</b></p>
@@ -78,7 +89,12 @@
             <div class="column">
                 <div class="row"  style = "justify-content: space-around;">
                     <div class="img">
-                        <img src="{% static 'application/images/forget.png' %}" alt="forget" style="width:100%">
+                        <div class="fadeLarge">
+                            <img src="{% static 'application/images/forget.png' %}" alt="Forget" style="width:100%">
+                        </div>
+                        <div class ="fadeSmall">
+                            <img src="{% static 'application/images/forget.svg' %}" alt="Forget" style="width:100%">
+                        </div>
                     </div>
                     <div class="wordblock">
                         <p style="margin-top:0;"><b>Forget “Forgetting”</b></p>
@@ -92,7 +108,12 @@
             <div class="column">
                 <div class="row"  style = "justify-content: space-around;">
                     <div class="img">
-                        <img src="{% static 'application/images/know.png' %}" alt="know" style="width:100%">
+                        <div class="fadeLarge">
+                            <img src="{% static 'application/images/know.png' %}" alt="Know" style="width:100%">
+                        </div>
+                        <div class ="fadeSmall">
+                            <img src="{% static 'application/images/know.svg' %}" alt="Know" style="width:100%">
+                        </div>
                     </div>
                     <div class="wordblock">
                         <p style="margin-top:0;"><b>Stay in the Know</b></p>
@@ -102,7 +123,11 @@
                     </div>
                 </div>
             </div>
-
+        </div>
+        <div class=programsListmain>
+            <h2 style="color:white; text-align: center;">Available Programs</h2>
+            <p style="color:white; text-align: center;">Get: FOCO is always working to include more programs into the mobile app– making it easier for you to be connected!</p>
+            <div class=fadeLarge><button style="background-color: var(--darkblue);width:100%;margin-bottom: 3vh;" onclick="location.href='{% url 'dashboard:ProgramsList' %}'">Explore Programs</button> </div>
         </div>
         <div class="intrigued">
             <h2 style="color:white">Curious?</h2>

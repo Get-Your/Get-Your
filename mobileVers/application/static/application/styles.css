@@ -9,6 +9,9 @@
 
 @media screen and (min-width : 768px) {
     
+    .fadeLarge {
+        display: none;
+    }
     .column {
         float: left;
         width: 50%
@@ -112,18 +115,19 @@
         margin:0;
     }
     .programsListmain{
-        background-color: var(--lightblue);
+        background-color: var(--darkblue);
         width: 84% !important;
         flex-direction: column;
         padding: 5% 8%;
         justify-content: center;
     }
     .whitemain{
-        background-color: white;
+        background-color: var(--darkblue);
         width: 84% !important;
         flex-direction: column;
         padding: 5% 8%;
         justify-content: center;
+        color:white
     }
 
     .wordblock{
@@ -173,6 +177,12 @@
         display: block;
         color: white;
         text-align: center;
+        text-decoration: none;
+        margin-right: 20px;
+    }
+    .navLink{
+        font-size: max(2vw, 14px);
+        color: var(--lightblue);
         text-decoration: none;
         margin-right: 20px;
     }
@@ -256,6 +266,9 @@
 
 
 @media screen and (max-width : 767px) {
+    .fadeSmall {
+        display: none;
+    }
     .column {
         float: left;
         width: 50%
@@ -422,6 +435,9 @@
         text-align: center;
         text-decoration: none;
         margin-right: 20px;
+    }
+    .navLink{
+        display: none;
     }
 
     /*whenever i need to make a row*/

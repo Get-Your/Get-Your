@@ -246,6 +246,9 @@ def qualifiedPrograms(request):
         text = "True"
     else:
         text = "False"
+    # apply for other dynamic income work etc.
+    if request.user.eligibility.grossAnnualHouseholdIncome == '$19,800 ~ $32,800':
+        text ="CallUs"
     if request.user.programs.snap == True or request.user.programs.freeReducedLunch == True:
         text2 = "True"
     else:

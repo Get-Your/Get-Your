@@ -13,17 +13,22 @@ urlpatterns = [
     path('programs', views.programs, name='programs'),
     
 
-    # Available/NotAvailable Digital equity in your area
+    # Available/NotAvailable Digital Equity in your area
     path('available', views.available, name='available'),
     path('notAvailable', views.notAvailable, name='notAvailable'),
     path('notInRegion', views.notInRegion, name='notInRegion'),
+    # Address verification pages
     path('addressCorrection', views.addressCorrection, name='addressCorrection'),
     path('n2n', views.n2n, name='n2n'),
     path('GRQuickApply', views.GRQuickApply, name='GRQuickApply'),
-    path('RecreationQuickApply', views.RecreationQuickApply, name='RecreationQuickApply'),
-    # May qualify page
-    path('mayQualify', views.mayQualify, name='mayQualify'),
     path('takeUSPSaddress', views.takeUSPSaddress, name='takeUSPSaddress'),
+    # Grocery Rebate Dependent Pages
+    path('callUs', views.callUs, name='callUs'),
+    # Recreation Dependent Pages
+    path('RecreationQuickApply', views.RecreationQuickApply, name='RecreationQuickApply'),
+    # ETC. pages
+    path('mayQualify', views.mayQualify, name='mayQualify'),
     path('privacyPolicy', views.privacyPolicy, name='privacyPolicy'),
     path('dependentInfo', views.dependentInfo, name='dependentInfo'),
+    
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #this is needed to get file uploads to work! 

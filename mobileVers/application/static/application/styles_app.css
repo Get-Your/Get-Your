@@ -9,6 +9,9 @@
 }
 
 @media screen and (min-width : 768px) {
+    .fadeLarge{
+        display:none;
+    }
 
     select {
         background-color: var(--darkblue);
@@ -29,7 +32,7 @@
         width: 100%;
         box-sizing: border-box;
         position: relative;
-        background-color: var(--darkblue);
+        background-color: white;
         margin:0;
         padding:0;
     }
@@ -51,6 +54,7 @@
     }
     h2 {
         font-size: max(2.5vw, 20px);
+        color:var(--darkblue);
     }
     h3 {
         font-size: max(3vw, 16px);
@@ -198,8 +202,8 @@
         display:block;
         border:none;
         color:var(--yellow);
-        background-color: var(--darkblue);
-        border-bottom:1px solid white;
+        background-color: white;
+        border-bottom:1px solid var(--darkblue);
     }
     input:focus { outline:none; }
     .labelword{
@@ -209,7 +213,7 @@
     .label{
         /*This pushed the words away*/
         position:absolute;
-        color:white;
+        color:var(--darkblue);
         font-size:  max(2vw, 14px);
         left:5px;
         top:30px;
@@ -298,6 +302,7 @@ h1 {
 }
 h2 {
     font-size: max(5vw, 24px);
+    color:white;
 }
 h3 {
     font-size: max(4vw, 16px);

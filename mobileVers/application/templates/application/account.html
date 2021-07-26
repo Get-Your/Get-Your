@@ -2,7 +2,7 @@
 
 {% block body %}
 
-<h2 style="font-weight: 700;color:white; margin:5vh 0"> Create an Account </h2>
+<h2 style="font-weight: 700; margin:5vh 0"> Create an Account </h2>
 
 <form action="{% url 'application:account' %}" method="post" autocomplete="false">
 {% csrf_token %}
@@ -50,7 +50,7 @@
         id="{{ field.id_for_label }}"
         maxlength="{{ field.max_length }}"
         type="text" 
-        style="width:100%;" 
+        style="width:100%;"
         required  
         autocomplete="off">
         <label class="label">{{field.label}}</label>    
