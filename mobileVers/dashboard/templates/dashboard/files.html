@@ -16,17 +16,23 @@
 
     }
 </script>
-
+<div class=sideNav>
+    <div class=fadeSmall>
+        <h1><b>Almost Done!</b></h1>
+        <p><b>Why are you asking for these documents?</b></p>
+        <p>The documents that you upload will help verify your address. They’ll also help us further validate which programs you may be eligible for.</p>
+    </div>
+</div>
 <p style="color:var(--lightblue);font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
             
 <div style="margin-top: 3vh;">
-    <p style="color:white;">To get verified, please upload your</p>
-    <h3 style="color:white"> {{program_string}} </h3>
-    <p style="color:white;">Uploaded documents are secure & not shared with anyone outside of digital equity.</p>
+    <p>To get verified, please upload your</p>
+    <h3> {{program_string}} </h3>
+    <p >Uploaded documents are secure & not shared with anyone outside of Fort Collins.</p>
     
 </div>
 
-<h6 style="color:white"> Upload Files Below:</h6>
+<div class=fadeLarge><h6> Upload Files Below:</h6></div>
 
 <form action="{% url 'dashboard:files' %}" method="post" autocomplete="false" enctype="multipart/form-data">
     {% csrf_token %}
@@ -40,7 +46,7 @@
         {% endif %}
         {% if field.label == "Program" %}
             <div class="row" style="justify-content: space-between;">
-                <p style="color:white;font-weight: 800;">Files: </p> 
+                <p style="font-weight: 800;">Files: </p> 
                 <select name="{{ field.name }}" id="{{ field.id_for_label}}">
                 {% if program_string == "SNAP Card" %}
                     <option style="background-color: var(--darkblue);" value="SNAP"> SNAP </option>

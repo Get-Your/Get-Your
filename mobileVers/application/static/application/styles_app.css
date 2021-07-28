@@ -15,10 +15,11 @@
 
     select {
         background-color: var(--darkblue);
-        color: white;
+        color: var(--darkblue);
         background: url('http://www.free-icons-download.net/images/small-down-arrow-icon-15593.png');
         width: 50%;
-        height: 6vh;
+        height:10vh;
+        font-size: 1vw;
         border: none;
         border-bottom-style: solid;
         border-bottom-width: thin;
@@ -47,7 +48,8 @@
         margin-bottom:1px;
         margin-top: 0px;
         font-family: Montserrat;
-        font-weight: 400
+        font-weight: 400;
+        color:var(--darkblue);
     }
     .yellow{
         color: var(--yellow)
@@ -69,7 +71,8 @@
         overflow: hidden;
         text-align: center;
         font-size: 12px;
-        font-weight: 400
+        font-weight: 400;
+        color:var(--darkblue);
     }
     h6:before,
     h6:after {
@@ -94,6 +97,10 @@
         font-size: max(2vw, 14px);
         padding:0;
         margin:0;
+        color: var(--darkblue);
+    }
+    .p2{
+        color:var(--darkblue);
     }
     
 
@@ -108,12 +115,41 @@
     }
     
     .nav{
-        
         display:flex;
         justify-content: space-between;
-        width: 90%;
+        width: 70%;
         padding: 5% 5%;
-    
+        margin-left:18vw;
+    }
+
+    .sideNav{
+        height: 100%;
+        width: 20vw;
+        position: fixed;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        background-color: var(--darkblue);
+        overflow-x: hidden;
+        padding-top: 20px;
+        padding-left:30px;
+    }
+    .sideNav h1{
+        color: white;
+        font-size: 40px;
+        display: block;
+        padding-top:200px;
+        padding-left:50px;
+        padding-right: 50px;
+    }
+
+    .sideNav p{
+        color: white;
+        font-size: 20px;
+        display: block;
+        padding-top:15px;
+        padding-left:50px;
+        padding-right: 50px;
     }
     .content {
         margin:5vw;
@@ -140,9 +176,9 @@
         font-family: Montserrat;
         font-weight: 200;
         font-size:  max(2vw, 14px);
-        color: white;
-        padding: 3vh;
-        
+        color: var(--darkblue);
+        background-color: var(--darkblue);
+        padding: 3vh;    
     }
     
     .checklabel{
@@ -161,7 +197,7 @@
     }
     
     input:checked+label {
-        background-color: white;
+        background-color: var(--darkblue);
     }
     
     
@@ -207,7 +243,7 @@
     }
     input:focus { outline:none; }
     .labelword{
-        color:white;
+        color:var(--darkblue);
         font-size: max(2vw, 14px);
     }
     .label{
@@ -235,7 +271,7 @@
     }
     
     .buttonAddress{
-        background-color: rgba(255,255,255,0.15);
+        background-color: rgba(33, 65, 248, 0.15);
         border-radius: 3vh;
         border:none;
         outline: none;
@@ -261,6 +297,9 @@
 
 
 @media screen and (max-width : 767px) {
+.fadeSmall{
+        display:none;
+    }
 select {
     background-color: var(--darkblue);
     color: white;
@@ -295,13 +334,14 @@ h1 {
     margin-bottom:1px;
     margin-top: 0px;
     font-family: Montserrat;
-    font-weight: 400
+    font-weight: 400;
+    color:white;
 }
 .yellow{
     color: var(--yellow)
 }
 h2 {
-    font-size: max(5vw, 24px);
+    font-size: 25px;
     color:white;
 }
 h3 {
@@ -317,7 +357,8 @@ h6 {
     overflow: hidden;
     text-align: center;
     font-size: 12px;
-    font-weight: 400
+    font-weight: 400;
+    color: white;
 }
 h6:before,
 h6:after {
@@ -338,10 +379,12 @@ h6:after {
     margin-right: -50%;
 }
 
+
 p {
     font-size: max(3.8vw, 16px);
     padding:0;
     margin:0;
+    color:white; 
 }
 
 /*Keep things in rows*/
@@ -355,12 +398,10 @@ p {
 }
 
 .nav{
-    
     display:flex;
     justify-content: space-between;
     width: 90%;
     padding: 5% 5%;
-
 }
 .content {
     margin:5vw;

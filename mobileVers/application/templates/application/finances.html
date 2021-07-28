@@ -1,8 +1,13 @@
 {% extends "application/layout.html" %}
 {% load static %}
 {% block body %}
-
-<h2 style="font-weight: 700;color:white; margin:5vh 0"> Please share basic information about your income </h2>
+<div class=sideNav>
+    <div class=fadeSmall>
+        <h1 style="font-weight: 700; margin:5vh 0"> Please share basic information about your income </h1>
+        <p>These questions are not stored or shared with anyone. They are meant to determine what potential assistance programs you may qualify for.</p>
+    </div>
+</div>
+<div class=fadeLarge><h2 style="font-weight: 700; margin:5vh 0"> Please share basic information about your income </h2></div>
 
 
 <form action="{% url 'application:finances' %}" method="post" autocomplete="false">
@@ -14,7 +19,7 @@
             {% for choice in form.rent %}
                 <label for="{{choice.id_for_label}}" class="row" style="padding-right: 5%;">
                     <span class="radio">{{ choice.tag }}</span>
-                    <p style="color: white;">{{ choice.choice_label }}</p>
+                    <p style="color: #13467D;">{{ choice.choice_label }}</p>
                 </label>
             {% endfor %}
         </div> 
@@ -37,7 +42,7 @@
             <br>
             <select name="{{ field.name }}" id="{{ field.id_for_label}}">
             {% for option in field %}
-                <option style="background-color: var(--darkblue);" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
+                <option style="background-color: var(--white);" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
             {% endfor %}
             </select>
         </div>

@@ -30,9 +30,9 @@
                     <a class="link" style = "display: inline;padding-top:2.5vh," href="">ENGLISH</a>
                     <div class="row" style="height: 5vh; vertical-align: middle; display: table-cell; text-align: right;overflow: initial;">
                         <!--TODO: MAKE SURE THIS LINK WORKS-->
-                            <a class ="navLink"> How it Works</a>
-                            <a class ="navLink"> Available Programs </a>
-                            <a class ="navLink"> Check Availability </a>
+                            <a href="#How it Works" class ="navLink"> How it Works</a>
+                            <a href="#Available Programs" class ="navLink"> Available Programs </a>
+                            <a href="#Check Availability" class ="navLink"> Check Availability </a>
                             <a class="link" style = "display: inline;" href="{% url 'dashboard:login' %}">LOG IN</a>
                             <button onclick="location.href='{% url 'application:account' %}'"><b>APPLY</b></button>
                     </div>
@@ -47,7 +47,7 @@
             <p style="color:white"> An all-in-one application portal to the discounted services and municipal benefits offered by the City of Fort Collins, a partnership with Fort Collins Connexion, Recreation and more.</p>
         </div>
         <div class=whitemain>
-            <h2 style="text-align:center"><b>How it Works</b></h2>
+            <h2 style="text-align:center"><b><a id="How it Works">How it Works</a></b></h2>
             <p style="padding-bottom:20px">With Get:Foco, you’ll be able to do more with your City of Fort Collins program applications than ever before.</p>
             <div class="column">
                 <div class="row"  style = "justify-content: space-around;">
@@ -125,12 +125,32 @@
             </div>
         </div>
         <div class=programsListmain>
-            <h2 style="color:white; text-align: center;">Available Programs</h2>
+            <h2 style="color:white; text-align: center;"><a id="Available Programs">Available Programs</a></h2>
             <p style="color:white; text-align: center;">Get: FOCO is always working to include more programs into the mobile app– making it easier for you to be connected!</p>
+            <div class=fadeSmall> 
+                <div class=exploreDiv> 
+                        <div style="padding-top: 1vw; padding-left: 3vw;"> <h4 style="color: white;">All Programs</h4></div>
+                        <div class=exploreDivPrograms>
+                            <p class=p2><b>Connexion Discount Program</b>: Utilities Aid</p>
+                            <p class=p2>An income-qualified discount of $19.995 for 1 GB home internet plus WiFi </p>
+                            <p class=p3> Applications begin February 15, 2021</p>
+                        </div>
+                        <div class=exploreDivPrograms>
+                            <p class=p2><b>Grocery Tax Rebate</b>: Groceries Aid</p>
+                            <p class=p2>Yearly cash payment based on food taxes for low income familes </p>
+                            <p class=p3> Applications begin March 11, 2021</p>
+                        </div>
+                        <div class=exploreDivPrograms>
+                            <p class=p2><b>Recreation Reduced Fee</b>: Recreation Aid</p>
+                            <p class=p2>Access to City facilities plus reduced costs for recreation programs and classes</p>
+                            <p class=p3> Applications begin July 01, 2021</p>
+                        </div>
+                </div>
+            </div>
             <div class=fadeLarge><button style="background-color: var(--darkblue);width:100%;margin-bottom: 3vh;" onclick="location.href='{% url 'dashboard:ProgramsList' %}'">Explore Programs</button> </div>
         </div>
         <div class="intrigued">
-            <h2 style="color:white">Curious?</h2>
+            <h2 style="color:white"><a id="Check Availability">Curious?</a></h2>
             <p style="color:white">Check if you qualify & if Fort Collins Connexion 
                 is available in your neighborhood</p>
                 <!--TODO: Save input and add logic for checking zipcode-->
