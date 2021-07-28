@@ -9,6 +9,9 @@
 
 @media screen and (min-width : 768px) {
     
+    .fadeLarge {
+        display: none;
+    }
     .column {
         float: left;
         width: 50%
@@ -76,6 +79,14 @@
     p {
         font-size: max(2vw, 14px);
     }
+    .p2 {
+        color:white;
+        font-size:20px;
+    }
+    .p3{
+        color:var(--yellow);
+        font-size: 20px;
+    }
 
     /*button background*/
     button {
@@ -101,6 +112,8 @@
         height: 6vh;
         font-size: max(3.8vw, 16px);
     }
+
+
     /*Backgrounds for homepage*/
     .bluemain{
         background-color: var(--darkblue);
@@ -112,18 +125,39 @@
         margin:0;
     }
     .programsListmain{
-        background-color: var(--lightblue);
+        background-color: var(--darkblue);
         width: 84% !important;
         flex-direction: column;
         padding: 5% 8%;
         justify-content: center;
     }
+
+
+
+    .exploreDiv{
+        /*padding takes some of the width, this ensures nothing overflows*/
+        background-color: rgb(255, 255, 255,0.1);
+        border-radius:25px;
+        height:40vw;
+        overflow-y:scroll;
+    }
+
+    .exploreDivPrograms{
+        background-color: rgb(255, 255, 255,0.1);
+        border-radius:10px;
+        
+        width: 75% !important;
+        padding: 2% 8%;
+        margin:40px auto;
+        justify-content: center;
+    }
     .whitemain{
-        background-color: white;
+        background-color: var(--darkblue);
         width: 84% !important;
         flex-direction: column;
         padding: 5% 8%;
         justify-content: center;
+        color:white
     }
 
     .wordblock{
@@ -140,6 +174,35 @@
         justify-content: center;
         margin:0;
     }
+
+    /*scroll bar, works with Chrome, Edge, Safar and Opera*/
+    /* Track */
+    body::-webkit-scrollbar-track {
+        background-color: none; 
+        background:blue;
+    }
+    body::-webkit-scrollbar {
+        width: 0px;
+        border-radius:10px;
+        background: none;
+      }
+
+    div::-webkit-scrollbar-track {
+        background-color: none; 
+        background:none;
+    }
+    div::-webkit-scrollbar {
+        width: 7px;
+        background: none;
+      }
+    div::-webkit-scrollbar-thumb {
+        border-radius:15px;
+        background: rgba(84, 160, 210, 0.6);
+      }
+    div::-webkit-scrollbar-track-piece{
+        background: none;
+        margin:20px;
+    } 
     /*Every styling feature below is for the navigation bar --------------------------*/
 
     /*the ul that holds the navbar links list*/
@@ -173,6 +236,12 @@
         display: block;
         color: white;
         text-align: center;
+        text-decoration: none;
+        margin-right: 20px;
+    }
+    .navLink{
+        font-size: max(2vw, 14px);
+        color: var(--lightblue);
         text-decoration: none;
         margin-right: 20px;
     }
@@ -256,6 +325,9 @@
 
 
 @media screen and (max-width : 767px) {
+    .fadeSmall {
+        display: none;
+    }
     .column {
         float: left;
         width: 50%
@@ -422,6 +494,9 @@
         text-align: center;
         text-decoration: none;
         margin-right: 20px;
+    }
+    .navLink{
+        display: none;
     }
 
     /*whenever i need to make a row*/
