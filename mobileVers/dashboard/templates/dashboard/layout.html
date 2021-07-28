@@ -13,7 +13,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
 
-    <body style="height:100vh">
+    <body style="height:100vh;">
         <div class=nav>
             <a class="row" onClick="window.history.back();return false;">
                 <img src="{% static 'application/images/BackArrow-white.svg' %}" alt="back" style="width:max(4.5vw, 16px); margin-right: 5px;">
@@ -21,7 +21,7 @@
             </a>
             <img src="{% static 'application/images/X_white.svg' %}" alt="back" style="width:max(2.6vw, 16px); margin-right: 5px;" onclick="location.href='{% url 'application:index' %}'">
         </div>
-        <div class="marginauto content desktop" style="height:100vh;">
+        <div class="marginauto content desktop" style="height:150vh;">
                 <!--Whatever I need in the other pages, I can enter it here-->
             {% block body %}
             {% endblock %}

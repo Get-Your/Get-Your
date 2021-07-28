@@ -1,7 +1,7 @@
 {% extends "application/layout.html" %}
 
 {% block body %}
-
+<div class=sideNav> <h1> <b>Provide your address so we can find all your available programs</b></h1></div>
 <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js'></script>
 <script type="text/javascript"> 
   $(document).ready(function(){
@@ -79,7 +79,7 @@
     <p style="color:#F9B316"><strong> I am lawfully present in the United States and/or am only applying on behalf of ONLY applying on behalf on my children (under 18 years of age) who are lawfully present.
     </strong></p>
     <div class="confirmation-slider">
-      <div id="status">
+      <div id="status"  style="overflow-y: hidden;">
             <input id="confirm" type="range" value="0" min="0" max="100" />
         <span class="delete-notice"><button type="submit" style="background-color: #13467D;"> CONTINUE </button></span>
       </div>

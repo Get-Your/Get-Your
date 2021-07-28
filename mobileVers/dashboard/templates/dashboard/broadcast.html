@@ -5,23 +5,29 @@
 {% block body %}
 
 <!--Get the various stylesheets I need like my fonts and CSS-->
+<div class=sideNav>
+    <div class=fadeSmall>
+        <h1><b>One Last Thing!</b></h1>
+        <p>Get Foco sent some pretty important emails. We'll notify you when it's time to reapply for a specific program or when you've been approved. We won't ever spam you with any unwanted emails.</p>
+    </div>
+</div>
 
 <div class="margin-top: 2vh;">
     <!--NOTE: For the future have numbers change based on database-->
     <br>
     <br>
     
-    <h1 style="color:white"><b>We sent you an email!</b></h1>
+    <h1><b>We sent you an email!</b></h1>
     <br>
     <br>
-    <p style="color:white">Check the email at {{program_string}}.</p>
-    <p style="color:white">Be sure to check your spam folder!</p>
+    <p>Check the email at {{program_string}}.</p>
+    <p>Be sure to check your spam folder!</p>
     <br>
-    <p style="color:white">Didn't get an email from us?</p>
+    <p>Didn't get an email from us?</p>
     
     <br>
 
-    <a class=yellow href="{% url 'dashboard:broadcast' %}" style=><u>Click here to re-send it!</u></a></b>
+    <a class=yellow href="{% url 'dashboard:broadcast' %}" style="font-size: 2vw;"><u>Click here to re-send it!</u></a></b>
         <!--Whatever I need in the other pages, I can enter it here-->
 
     <br>
