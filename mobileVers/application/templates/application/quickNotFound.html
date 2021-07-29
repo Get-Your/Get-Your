@@ -1,14 +1,14 @@
 {% extends 'application/availability_base.html' %}
 
 {% block backurl %}
-    <a href="{% url 'application:index' %}#Check Availability" style="margin-left:auto; margin-left:10px;text-decoration: none;">
-        <p style = "color:#999999; font-weight: 700;">BACK</p>
-    </a>        
+    <a class="row" href="{% url 'application:index' %}#Check Availability">
+        <p style = " font-weight: 700;">BACK</p>
+    </a>
 {% endblock %}
 
 {% block content %}
-    <h1 style="color: white"><b>Your address couldn't be found with this method.</b></h1>
-    <p style="color:white; margin-top: 2vh;">Please press back and re-enter your address or press the continue button below to fill out the application with more detailed information.</p>
+    <h1><b>Your address couldn't be found with this method.</b></h1>
+    <p style="margin-top: 2vh;">Please press back and re-enter your address or press the continue button below to fill out the application with more detailed information.</p>
 {% endblock %}
 
 {% block footerdiv %}
