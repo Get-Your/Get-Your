@@ -1,8 +1,8 @@
 {% extends 'application/availability_base.html' %}
 
 {% block content %}
-    <h1 style="color: white"><b>Your address is in the Get:FoCo service area but Connexion is not quite ready.</b></h1>
-    <p style="color:white; margin-top: 2vh;">Subscribe for updates when Connexion will be available for your address, and/or continue to the application to enroll.</p>  
+    <h1><b>Your address is in the Get:FoCo service area but Connexion is not quite ready.</b></h1>
+    <p style="margin-top: 2vh;">Subscribe for updates when Connexion will be available for your address, and/or continue to the application to enroll.</p>  
 
     <form action="{% url 'application:quickComingSoon' %}" method="post" autocomplete="false" enctype="multipart/form-data">
         {% csrf_token %}
