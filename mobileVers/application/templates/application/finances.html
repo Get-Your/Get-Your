@@ -19,7 +19,7 @@
             {% for choice in form.rent %}
                 <label for="{{choice.id_for_label}}" class="row" style="padding-right: 5%;">
                     <span class="radio">{{ choice.tag }}</span>
-                    <p style="color: #13467D;">{{ choice.choice_label }}</p>
+                    <p>{{ choice.choice_label }}</p>
                 </label>
             {% endfor %}
         </div> 
