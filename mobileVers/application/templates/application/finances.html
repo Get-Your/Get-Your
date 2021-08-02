@@ -3,8 +3,13 @@
 {% block body %}
 <div class=sideNav>
     <div class=fadeSmall>
-        <h1 style="font-weight: 700; margin:5vh 0"> Please share basic information about your income </h1>
+        <h1 style="font-weight: 700; margin:5vh 0; padding-top: 20px;"> Please share basic information about your income </h1>
         <p>These questions are not stored or shared with anyone. They are meant to determine what potential assistance programs you may qualify for.</p>
+        <p><a href="{% url 'application:dependentInfo' %}"><img src="{% static 'application/images/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px);"></a> 
+            “Household” means the applicant and any other people claimed on your federal tax return.
+            <br>
+            This could include your spouse, and your children by birth or adoption, step children, foster children and children under legal guardianship who live with you in your home as submited on your federal income tax return. 
+        </p>
     </div>
 </div>
 <div class=fadeLarge><h2 style="font-weight: 700; margin:5vh 0"> Please share basic information about your income </h2></div>
