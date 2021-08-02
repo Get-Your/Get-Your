@@ -3,73 +3,151 @@
 {% load static %}
 
 {% block body %}
-<div class="content ">
+<div class="content">
+  <div class=fadeLarge>
+  <!--Program number blocks - information section-->
+    <div class="row">
+      <div class="module" style="margin-left: 0;margin-right:1.5vw;padding: 1vw ;">
+          
+          <!--CSV HERE-->
+          <hprogram style = "color: var(--darkblue)"> 02 </hprogram>
+          <h3 style = "font-weight: 400; margin: 0; ">Programs Active </h3>
+          
+      </div>
+      <div class="module" style="margin-left: 1.5vw;margin-right:0;padding: 1vw ;">
+          
+          <!--CSV HERE-->
+          <hprogram style = "color: var(--yellow)"> 02 </hprogram>
+          <h3 style = "font-weight: 400; margin: 0;">Pending Approval </h3>
+      </div>
+    </div>
+    <div class="row">
+    <a style="color:var(--white); font-weight: 800; text-decoration: none;" href="{% url 'dashboard:qualifiedPrograms' %}">
+      <div class="module" style="padding: 1vw ;margin:0 5vw;">
+        <div class="row" style="align-items: center;">
+            <!--CSV HERE-->
+            <hprogram style = "color: #4CAD00;margin:0"> 02 </hprogram>
+            <h3 style = "font-weight: 400; margin: 0 0 0 5vw" >Programs you qualify for </h3>
+        </div>
+      </div>
+    </a>
+    </div>
 
-<!--Program number blocks - information section-->
-<div class="row">
-  <div class="module" style="margin-left: 0;margin-right:1.5vw;padding: 5vw ;">
-      
-      <!--CSV HERE-->
-      <hprogram style = "color: var(--darkblue)"> 02 </hprogram>
-      <h3 style = "font-weight: 400; margin: 0; ">Programs Active </h3>
-  </div>
-  <div class="module" style="margin-left: 1.5vw;margin-right:0;padding: 5vw ;">
-      
-      <!--CSV HERE-->
-      <hprogram style = "color: var(--yellow)"> 02 </hprogram>
-      <h3 style = "font-weight: 400; margin: 0;">Pending Approval </h3>
+    <div class="module" >
+      <p style = "color: #999999">Upcoming Program Updates </p>
+
+    <!--CSV HERE / Also template for printing out all updates-->
+      <div>
+          <p style="font-weight: 550;margin-bottom:0">Program Benefits Come in Effect </p>
+          <div class="row" style="margin:0;">
+              <p style = "margin-top:0;"> Grocery Rebate </p>
+              <p style = "color:#999999;margin-top:0;" >07/19/21 </p>
+          </div>
+      </div>
+      <div>
+          <p style="font-weight: 550;margin-bottom:0">Program Benefits Come in Effect </p>
+          <div class="row" style="margin:0;">
+              <p style = "margin-top:0;"> Grocery Rebate </p>
+              <p style = "color:#999999;margin-top:0;" >07/19/21 </p>
+          </div>
+      </div>
+
+
+    </div>
+    <div class="module" >
+      <p style = "color: #999999">City News  </p>
+
+    <!--CSV HERE / Also template for printing out all updates-->
+      <div>
+        <p style = "margin-bottom:0;"> The Coloradoan </p>
+        <p style="font-weight: 550; margin: 5px 0">Its application season: new rounds of applications begin this week. </p>
+        <p style = "color:#999999;margin-top:0;" >4 days ago</p>
+      </div>
+
+      <div>
+        <p style = "margin-bottom:0;"> The Coloradoan </p>
+        <p style="font-weight: 550; margin: 5px 0">Its application season: new rounds of applications begin this week. </p>
+        <p style = "color:#999999;margin-top:0;" >4 days ago</p>
+      </div>
   </div>
 </div>
 
-<a style="color:var(--white); font-weight: 800; text-decoration: none;" href="{% url 'dashboard:qualifiedPrograms' %}">
-  <div class="module" style="padding: 5vw ;margin:0 5vw;">
-    <div class="row" style="align-items: center;">
+<div class="fadeSmall">
+  <div class="container">
+    <div class="item thin" >
+        <!--CSV HERE-->
+        <hprogram style = "color: var(--darkblue)"> 02 </hprogram>
+        <p style = "font-weight: 400; padding-left: 20px; ">Programs Active </p>
+        <a href="{% url 'dashboard:dashboard' %}"><img src="{% static 'dashboard/images/downArrow.svg' %}" style="position: absolute; bottom: 10px;right: 10px;"> </a>
+    </div>
+    <div class="item small">
+      <a style="color:var(--white); font-weight: 800; text-decoration: none;" href="{% url 'dashboard:qualifiedPrograms' %}">
         <!--CSV HERE-->
         <hprogram style = "color: #4CAD00;margin:0"> 02 </hprogram>
-        <h3 style = "font-weight: 400; margin: 0 0 0 5vw" >Programs you qualify for </h3>
+        <p style = "font-weight: 400;">Programs you qualify for </p>
+        <a href="{% url 'dashboard:dashboard' %}"><img src="{% static 'dashboard/images/downArrow.svg' %}" style="position: absolute; bottom: 10px;right: 10px;"> </a>
+      </a>
     </div>
-  </div>
-</a>
+    <div class="item large" style="align-content:flex-end">
+      <p style = "color: #999999">Upcoming Program Updates </p>
+    <!--CSV HERE / Also template for printing out all updates-->
+      <p style="font-weight: 550;">Program Benefits Come in Effect </p>
+      <p> Grocery Rebate 07/19/21</p>
+      <a href="{% url 'dashboard:dashboard' %}" style="text-decoration: none; color:#55A1D3">Show More   <img src="{% static 'dashboard/images/rightArrow.svg' %}" > </a>
+    </div>
+    <div class="item thin" >
+      <!--CSV HERE-->
+      <hprogram style = "color: var(--darkblue)"> 02 </hprogram>
+      <p style = "font-weight: 400; padding-left: 20px; ">Pending Approval</p>
+      <a href="{% url 'dashboard:dashboard' %}"><img src="{% static 'dashboard/images/downArrow.svg' %}" style="position: absolute; bottom: 10px;right: 10px;"> </a>
+    </div>
 
-<div class="module" >
-  <p style = "color: #999999">Upcoming Program Updates </p>
+    <div class="item large">
+      <p style = "color: #999999">City News & Events </p>
 
-<!--CSV HERE / Also template for printing out all updates-->
-  <div>
-      <p style="font-weight: 550;margin-bottom:0">Program Benefits Come in Effect </p>
-      <div class="row" style="margin:0;">
-          <p style = "margin-top:0;"> Grocery Rebate </p>
-          <p style = "color:#999999;margin-top:0;" >07/19/21 </p>
+    <!--CSV HERE / Also template for printing out all updates-->
+      <div>
+        <p style = "margin-bottom:0;"> The Coloradoan </p>
+        <p style="font-weight: 550; margin: 5px 0">Its application season: new rounds of applications begin this week. </p>
+        <p style = "color:#999999;margin-top:0;" >4 days ago</p>
       </div>
-  </div>
-  <div>
-      <p style="font-weight: 550;margin-bottom:0">Program Benefits Come in Effect </p>
-      <div class="row" style="margin:0;">
-          <p style = "margin-top:0;"> Grocery Rebate </p>
-          <p style = "color:#999999;margin-top:0;" >07/19/21 </p>
+
+      <div>
+        <p style = "margin-bottom:0;"> The Coloradoan </p>
+        <p style="font-weight: 550; margin: 5px 0">Blast of winter returns with up to 6 inches of snow expected in Fort... </p>
+        <p style = "color:#999999;margin-top:0;" >2 days ago</p>
       </div>
+    </div>
+
+    <div class="item" style="border: white;"></div>
+
+    <div class="item extraLarge">
+      <form action="{% url 'dashboard:index' %}" method="post">
+        {% csrf_token %}
+          <p>Feedback</p>
+          <div class="column" style="margin:0; width:100%;">
+            <p style="font-weight: 600;">How would you rate your experience so far using the Connexion portal? </p>
+            <div class="column" style="margin:0; width:100%;">
+              <clearButton name="starRating" value="1" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star1" style="width:min(10vw, 50px);" onclick="fillStar(1)"> </clearButton>
+              <clearButton name="starRating" value="2" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star2" style="width:min(10vw, 50px);" onclick="fillStar(2)"> </clearButton>
+              <clearButton name="starRating" value="3" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star3" style="width:min(10vw, 50px);" onclick="fillStar(3)"> </clearButton>
+              <clearButton name="starRating" value="4" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star4" style="width:min(10vw, 50px);" onclick="fillStar(4)"> </clearButton>
+              <clearButton name="starRating" value="5" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star5" style="width:min(10vw, 50px);" onclick="fillStar(5)"> </clearButton>
+            </div>
+        </div>
+        <div class="column" style="width:100%; margin:0; justify-content: flex-start;">
+              <p style="font-weight: 800; margin-top: 50px;">How can we do better?</p> 
+              <textarea class="feedback" placeholder="Tell us how we're doing!"id="" name="feedbackComments" maxlength="500" style="border-radius: 2vh;"></textarea>
+            <button name="starRating" value = "" id="submit" style="width:90%"> <b>Share Feedback</b> </button>
+        </div>
+      </form> 
+    </div>
+    </div>
+    <div class="item" style="border: white;"></div>
+
   </div>
 
 
-</div>
-<div class="module" >
-  <p style = "color: #999999">City News  </p>
-
-<!--CSV HERE / Also template for printing out all updates-->
-  <div>
-    <p style = "margin-bottom:0;"> The Coloradoan </p>
-    <p style="font-weight: 550; margin: 5px 0">Its application season: new rounds of applications begin this week. </p>
-    <p style = "color:#999999;margin-top:0;" >4 days ago</p>
-  </div>
-
-  <div>
-    <p style = "margin-bottom:0;"> The Coloradoan </p>
-    <p style="font-weight: 550; margin: 5px 0">Its application season: new rounds of applications begin this week. </p>
-    <p style = "color:#999999;margin-top:0;" >4 days ago</p>
-  </div>
-
-
-</div>
 {% endblock %}
 
 

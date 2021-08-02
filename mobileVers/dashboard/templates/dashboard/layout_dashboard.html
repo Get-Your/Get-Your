@@ -16,36 +16,52 @@
     </head>
 
     <body>
-        <div class="row" style="text-align: center; position:fixed; background-color: white;z-index: 99;">
+      <div class="topNavRow" style="text-align: center; position:fixed; background-color: white;z-index: 99;">
           <nav role="navigation" style="width: 3vh;">
-            <div id="menuToggle" class="icon" style="position: fixed;">
-              <input type="checkbox" />
-              
-              <!--Some spans to act as a hamburger.-->
-              <span></span>
-              <span></span>
-              <span></span>
-              
-              <ul id="menu">
-                <a style="color: {{ dashboard_color }} ; " href="{% url 'dashboard:dashboard' %}"><li>Dashboard</li></a>
-                <a style="color:{{ program_list_color }}; " href="{% url 'dashboard:ProgramsList' %}"><li>Program List</li></a>
-                <a style="color:{{ FAQ_color }}; " href="{% url 'dashboard:FAQ' %}"><li>FAQ</li></a>
-                <a style="color:{{ Settings_color }}; " href="{% url 'dashboard:underConstruction' %}"><li>Settings</li></a>
-                <a style="color:{{ Privacy_Policy_color }}; " href="{% url 'application:privacyPolicy' %}"><li>Privacy Policy</li></a>
-                <a style="color:white; " href="{% url 'application:index' %}"><li>Log Out</li></a>
-              
-              </ul>
+            <div class="fadeLarge">
+              <div id="menuToggle" class="icon" style="position: fixed;">
+                <input type="checkbox" />
+                
+                <!--Some spans to act as a hamburger.-->
+                <span></span>
+                <span></span>
+                <span></span>
+                
+                <ul id="menu">
+                  <a style="color: {{ dashboard_color }} ; " href="{% url 'dashboard:dashboard' %}"><li>Dashboard</li></a>
+                  <a style="color:{{ program_list_color }}; " href="{% url 'dashboard:ProgramsList' %}"><li>Program List</li></a>
+                  <a style="color:{{ FAQ_color }}; " href="{% url 'dashboard:FAQ' %}"><li>FAQ</li></a>
+                  <a style="color:{{ Settings_color }}; " href="{% url 'dashboard:underConstruction' %}"><li>Settings</li></a>
+                  <a style="color:{{ Privacy_Policy_color }}; " href="{% url 'application:privacyPolicy' %}"><li>Privacy Policy</li></a>
+                  <a style="color:white; " href="{% url 'application:index' %}"><li>Log Out</li></a>
+                
+                </ul>
+              </div>
+            </div>
+
+            <div class="fadeSmall">
+              <div class=sideNav style="padding-left: 0;">
+                <ul>
+                  <p> <img src="{% static 'dashboard/images/Dashboard.svg' %}">  <a style="color: {{ dashboard_color }}; text-decoration:none; " href="{% url 'dashboard:dashboard' %}">Dashboard</a></p>
+                  <p> <img src="{% static 'dashboard/images/ProgramList.svg' %}"> <a style="color:{{ program_list_color }}; text-decoration:none;" href="{% url 'dashboard:ProgramsList' %}">Programs</a></p>
+                  <p> <img src="{% static 'dashboard/images/FAQ.svg' %}">  <a style="color:{{ FAQ_color }}; text-decoration:none;" href="{% url 'dashboard:FAQ' %}">FAQ</a></p>
+                  <p> <img src="{% static 'dashboard/images/Settings.svg' %}">  <a style="color:{{ Settings_color }};text-decoration:none; " href="{% url 'dashboard:underConstruction' %}">Settings</a></p>
+                  <p> <img src="{% static 'dashboard/images/PrivacyPolicy.svg' %}">  <a style="color:{{ Privacy_Policy_color }};text-decoration:none; " href="{% url 'application:privacyPolicy' %}">Privacy Policy</a></p>
+                  <p> <img src="{% static 'dashboard/images/LogOut.svg' %}">  <a style="color:white;text-decoration:none; " href="{% url 'application:index' %}">Log Out</a></p>
+                </ul>
+              </div>
             </div>
           </nav>
             <p style="font-weight: 400; color:var(--darkblue);">{{ page_title }}</p>
             <img src="{% static 'dashboard/images/AlertBell.svg' %}" alt="back" style="width:min(4.5vw,30px)">
-        </div>
-        <div class="extraspace">
-        </div>
-          <div class="">
-            {% block body %}
-            
-            {% endblock %}
+      </div>
+      <div class="extraspace">
+      </div>
+        <div class="">
+          {% block body %}
+          
+          {% endblock %}
+          <div class=fadeLarge>
             <div class="module" >
                 <form action="{% url 'dashboard:index' %}" method="post">
                   {% csrf_token %}
@@ -69,8 +85,9 @@
                   </div>
                 </form>
               </div>
-              <div class="extraspace">
-            </div>
+          </div>
+            <div class="extraspace">
+          </div>
           </div>
           </div>
         </div>

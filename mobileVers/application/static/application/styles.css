@@ -151,6 +151,10 @@
         margin:40px auto;
         justify-content: center;
     }
+
+    .exploreDivPrograms span {
+        margin-left: 50px;
+    }
     .whitemain{
         background-color: var(--darkblue);
         width: 84% !important;

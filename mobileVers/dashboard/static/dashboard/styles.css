@@ -5,12 +5,105 @@
     --orange: #F27B1F;
     --yellow: #F9B316;
     --gray: #999999;
-
 }
 
-@media screen and (min-width : 768px) {
-    
 
+@media screen and (min-width : 768px) {
+    .fadeLarge{
+        display:none;
+    }
+    body::-webkit-scrollbar-track {
+        background-color: none; 
+        background:blue;
+    }
+    body::-webkit-scrollbar {
+        width: 0px;
+        border-radius:10px;
+        background: none;
+      }
+
+    div::-webkit-scrollbar-track {
+        background-color: none; 
+        background:none;
+    }
+    div::-webkit-scrollbar {
+        width: 7px;
+        background: none;
+      }
+    div::-webkit-scrollbar-thumb {
+        border-radius:15px;
+        background: rgba(84, 160, 210, 0.6);
+      }
+    div::-webkit-scrollbar-track-piece{
+        background: none;
+        margin:20px;
+    } 
+
+    * {
+        box-sizing: border-box;
+        font-size: 22px;
+        font-family: "Helvetica", sans-serif;
+        color: #333333;
+      }
+      
+      .container {
+        background-color: #FFFFFF;
+        padding:10px;
+        /*border: 2px solid #CCCCCC;*/
+        width: 74%;
+        margin-left: 400px;
+        height: 50vw;
+        display: flex;
+        flex-flow: column wrap; /* Shorthand – you could use ‘flex-direction: column’ and ‘flex-wrap: wrap’ instead */
+        justify-content: flex-start;
+        align-items: flex-start;
+        overflow-x: scroll;
+      }
+      
+      .item {
+        background-color: white;
+        border-radius: 10px;
+        border: 1px solid rgba(85, 161, 211, 0.3);
+        height: 150px;
+        width: 31%;
+        margin: 1%;
+        padding: 10px;
+
+      }
+      .item.extraLarge {
+       /* background-color: yellow;*/
+        height: 500px;
+      }
+      
+      .item.large {
+        /*background-color: red;*/
+        height: 350px;
+      }
+
+      .item.medium {
+       /* background-color: aqua;*/
+        height: 220px;
+        overflow:hidden;
+        display: flex;
+        justify-content: left;
+        align-items: top;
+      }
+      .item.small {
+        /*background-color: violet;*/
+        height: 150px;
+        overflow:hidden;
+        display: flex;
+        justify-content: left;
+        align-items: top;
+      } 
+      .item.thin {
+        /*background-color: green;*/
+        height: 100px;
+        overflow:hidden;
+        display: flex;
+        justify-content: left;
+        align-items: top;
+      } 
     .column {
         float: left;
         width: 50%
@@ -39,13 +132,13 @@
     /*Like the Montserrat font*/
     html,body {
         font-family: Montserrat;
-        font-style: normal;
-        overflow-x: hidden; 
+        font-style: normal; 
         width: 100%;
         box-sizing: border-box;
         position: relative;
         margin:0;
         padding:0;
+        overflow-y: hidden;
     }
 
     /*Keep floating contents inside respective parents*/
@@ -55,7 +148,7 @@
 
     /*Set up font -program labels*/
     hprogram {
-        font-size: max(7vh, 50px);
+        font-size: max(1vh, 50px);
         font-family: Montserrat;
         font-weight: 500
     }
@@ -84,7 +177,7 @@
     }
 
     p {
-        font-size: max(2vw, 14px);
+        font-size: max(1vw, 20px);
     }
 
     /*button background*/
@@ -159,10 +252,48 @@
         display: flex;
         justify-content: space-between;
         flex-direction: row;
-        width: 90%;
+        width: 30%;
         padding: 0;
         margin: 0 5%;
         
+    }
+    .sideNav{
+        height: 100%;
+        width: 20vw;
+        position: fixed;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        background-color: var(--darkblue);
+        overflow-x: hidden;
+        padding-top: 20px;
+        padding-left:30px;
+    }
+    .sideNav h1{
+        color: white;
+        font-size: 40px;
+        display: block;
+        padding-top:200px;
+        padding-left:50px;
+        padding-right: 50px;
+    }
+
+    .sideNav p{
+        color: white;
+        font-size: 20px;
+        display: block;
+        padding-top:15px;
+        padding-left:50px;
+        padding-right: 50px;
+    }
+
+    .topNavRow{
+        display: flex;
+        justify-content: space-between;
+        flex-direction: row;
+        width: 10%;
+        padding: 0;
+        margin: 0 5%;
     }
 
     nav{
@@ -341,10 +472,12 @@
         text-decoration: none;
         margin-right: 20px;
     }
+}
     
-
-
 @media screen and (max-width : 767px) {
+    .fadeSmall{
+        display:none;
+    }
 
     .column {
         float: left;
@@ -493,7 +626,15 @@
         width: 90%;
         padding: 0;
         margin: 0 5%;
-        
+    }
+    
+    .topNavRow{
+        display: flex;
+        justify-content: space-between;
+        flex-direction: row;
+        width: 90%;
+        padding: 0;
+        margin: 0 5%;
     }
 
     nav{
