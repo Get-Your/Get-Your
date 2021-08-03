@@ -1,0 +1,7 @@
+{% extends 'application/available_base.html' %}
+
+{% block backurl %}
+    <a href="{% url 'application:index' %}" style="margin-left:auto; margin-right:10px; text-decoration: none;">
+        <p class=p2 alt="back" style="margin-left:auto; margin-right: 5px;" onclick="location.href='{% url 'application:index' %}'">EXIT</p>
+    </a>    
+{% endblock %}

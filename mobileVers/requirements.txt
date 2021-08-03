@@ -5,6 +5,7 @@ django-formtools~=2.2
 matplotlib~=3.3.3
 mpld3~=0.5.2
 usps-api
+usaddress~=0.5.10
 twilio
 django-phonenumber-field[phonenumbers]
 django-environ

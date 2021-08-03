@@ -3,41 +3,131 @@ from django.contrib.auth import login, logout
 
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
-from .forms import UserForm, AddressForm, EligibilityForm, programForm, zipCodeForm,futureEmailsForm
+from .forms import UserForm, AddressForm, EligibilityForm, programForm, addressLookupForm, futureEmailsForm
 from .backend import addressCheck, validateUSPS, qualification
 from django.http import QueryDict
 
 import logging
+import usaddress
 
 
 formPageNum = 6
 
 # first index page we come into
 def index(request):
-
-    foco_zipCodes = [80521, 80523, 80525, 80527, 80522, 80524, 80526, 80528, 80553]
-
+    
     if request.method == "POST": 
-        form = zipCodeForm(request.POST or None)
+        form = addressLookupForm(request.POST or None)
         if form.is_valid():
             try:
                 form.save()
-                if form.cleaned_data['zipCode'] in foco_zipCodes:
-                    return redirect(reverse("application:available"))
+                
+                # Use usaddress to try to parse the input text into an address
+                
+                # Clean the data
+                # Remove 'fort collins' - the multi-word city can confuse the
+                # parser
+                addressStr = form.cleaned_data['address'].lower().replace('fort collins','')
+                
+                # Use the following tag mapping for USPS standards
+                tag_mapping = {
+                   'Recipient': 'recipient',
+                   'AddressNumber': 'address_2',
+                   'AddressNumberPrefix': 'address_2',
+                   'AddressNumberSuffix': 'address_2',
+                   'StreetName': 'address_2',
+                   'StreetNamePreDirectional': 'address_2',
+                   'StreetNamePreModifier': 'address_2',
+                   'StreetNamePreType': 'address_2',
+                   'StreetNamePostDirectional': 'address_2',
+                   'StreetNamePostModifier': 'address_2',
+                   'StreetNamePostType': 'address_2',
+                   'CornerOf': 'address_2',
+                   'IntersectionSeparator': 'address_2',
+                   'LandmarkName': 'address_2',
+                   'USPSBoxGroupID': 'address_2',
+                   'USPSBoxGroupType': 'address_2',
+                   'USPSBoxID': 'address_2',
+                   'USPSBoxType': 'address_2',
+                   'BuildingName': 'address_1',
+                   'OccupancyType': 'address_1',
+                   'OccupancyIdentifier': 'address_1',
+                   'SubaddressIdentifier': 'address_1',
+                   'SubaddressType': 'address_1',
+                   'PlaceName': 'city',
+                   'StateName': 'state',
+                   'ZipCode': 'zipcode',
+                }
+                
+                rawAddressDict, addressType = usaddress.tag(
+                    addressStr,
+                    tag_mapping,
+                    )
+                
+                # Only continue to validation, etc if a 'Street Address' is
+                # found by usaddress
+                if addressType != 'Street Address':
+                    raise NameError("The address cannot be parsed")
+                    
+                print(
+                    'Address parsing found',
+                    rawAddressDict,
+                    )
+                
+                # Help out parsing with educated guesses
+                # if 'state' not in rawAddressDict.keys():
+                rawAddressDict['state'] = 'CO'
+                # if 'city' not in rawAddressDict.keys():
+                rawAddressDict['city'] = 'Fort Collins'
+                    
+                print(
+                    'Updated address parsing is', 
+                    rawAddressDict,
+                    )
+                    
+                # Ensure the necessary keys for USPS validation are included
+                uspsKeys = [
+                    'name',
+                    'address_1',
+                    'address_2',
+                    'city',
+                    'state',
+                    'zipcode']
+                rawAddressDict.update(
+                    {key:'' for key in uspsKeys if key not in rawAddressDict.keys()}
+                    )
+                
+                # Validate to USPS address
+                addressDict = validateUSPS(rawAddressDict)
+                
+                # Check for IQ and Connexion services
+                isInGMA, hasConnexion = addressCheck(addressDict)
+                
+                if isInGMA:
+                    # Connexion status unknown, but since isInGMA==True, it
+                    # will be available at some point
+                    if not hasConnexion:    # this covers both None and False
+                        return redirect(reverse("application:quickComingSoon"))
+                        
+                    else:  # hasConnexion==True is the only remaining option
+                        return redirect(reverse("application:quickAvailable"))
+                    
                 else:
-                    return redirect(reverse("application:notAvailable"))
-            except AttributeError:
+                    return redirect(reverse("application:quickNotAvailable"))
+
+            except:
                 #TODO implement look into logs!
                 logging.warning("insert valid zipcode")
+                return(redirect(reverse("application:quickNotFound")))
     
-    form = zipCodeForm()
+    form = addressLookupForm() 
     logout(request)
     return render(request, 'application/index.html', {
             'form':form,
         })
 
 def address(request):
-    foco_zipCodes = [80521, 80523, 80525, 80527, 80522, 80524, 80526, 80528, 80553] #TODO implement this for zipcode fail function if client inputs zip outside of FoCo
+
     if request.method == "POST": 
         try:
             existing = request.user.addresses
@@ -49,22 +139,7 @@ def address(request):
         if form.is_valid():
             instance = form.save(commit=False)
             instance.user_id = request.user
-            for zipCode in foco_zipCodes:
-                print(instance.zipCode)
-                print(zipCode)
-                if instance.zipCode == zipCode:
-                    print("breaking for some reason...")
-                    break
-            else:
-                print("address not found")
-                return redirect(reverse("application:notInRegion"))
-            addressResult = addressCheck(instance.address.upper())
-            if addressResult == True:
-                instance.n2n = True
-                print("n2n instance is true")
-            else:
-                instance.n2n = False
-                print("n2n instance is false")
+
             instance.save()            
             return redirect(reverse("application:addressCorrection"))
     else:
@@ -111,36 +186,35 @@ def takeUSPSaddress(request):
             "state": request.user.addresses.state,
             "zipcode": str(request.user.addresses.zipCode),})
         dict_address = validateUSPS(q)
+        
+        # Check for and store GMA and Connexion status
+        isInGMA, hasConnexion = addressCheck(dict_address)
 
         instance = request.user.addresses
         instance.user_id = request.user
         instance.address = dict_address['AddressValidateResponse']['Address']['Address2']
-        addressResult = addressCheck(instance.address)
-        if addressResult == True:
-            instance.n2n = True
-            print("n2n instance is true")
-        else:
-            instance.n2n = False
-            print("n2n instance is false")
-
         instance.address2 = dict_address['AddressValidateResponse']['Address']['Address1']
         instance.city = dict_address['AddressValidateResponse']['Address']['City']
         instance.state = dict_address['AddressValidateResponse']['Address']['State']
         instance.zipCode = int(dict_address['AddressValidateResponse']['Address']['Zip5'])
-
+        
+        instance.isInGMA = isInGMA
+        instance.hasConnexion = hasConnexion
+        
         instance.save()
     except TypeError or RelatedObjectDoesNotExist:
         print("USPS couldn't figure it out!")
 
-    return redirect(reverse("application:n2n"))
+    return redirect(reverse("application:inServiceArea"))
 
 
 
-def n2n(request):
-    if request.user.addresses.n2n == True:
+def inServiceArea(request):
+    if request.user.addresses.isInGMA:
         return redirect(reverse("application:finances")) #TODO figure out to clean?
     else:
-        return redirect(reverse("application:finances")) 
+        print("address not in GMA")
+        return redirect(reverse("application:notAvailable")) 
 
 
 def account(request):
@@ -281,24 +355,19 @@ def programs(request):
 
 
 
-
-
-
-
-def available(request):
-    return render(request, 'application/de_available.html',)
-
-def notInRegion(request):
-    return render(request, 'application/notInRegion.html',)
-
-def privacyPolicy(request):
-    return render(request, 'application/privacyPolicy.html',)
-
-def dependentInfo(request):
-    return render(request, 'application/dependentInfo.html',)
-
-
 def notAvailable(request):
+    return render(request, 'application/notAvailable.html',)
+
+def quickAvailable(request):
+    return render(request, 'application/quickAvailable.html',)
+
+def quickNotAvailable(request):
+    return render(request, 'application/quickNotAvailable.html',) 
+
+def quickNotFound(request):
+    return render(request, 'application/quickNotFound.html',) 
+
+def quickComingSoon(request):
     
     if request.method == "POST": 
         form = futureEmailsForm(request.POST or None)
@@ -310,11 +379,15 @@ def notAvailable(request):
                 print("Error Email Saving")
     
     form = futureEmailsForm()
-    return render(request, 'application/de_notavailable.html', {
+    return render(request, 'application/quickComingSoon.html', {
             'form':form,
         })
 
+def privacyPolicy(request):
+    return render(request, 'application/privacyPolicy.html',)
 
+def dependentInfo(request):
+    return render(request, 'application/dependentInfo.html',)
 
 def mayQualify(request):
     return render(request, 'application/mayQualify.html',{
