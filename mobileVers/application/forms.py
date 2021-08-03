@@ -1,7 +1,7 @@
 # All of the forms built from models are here 
 from django import forms
 
-from .models import User, Addresses, Eligibility, programs, choices, zipCode,futureEmails
+from .models import User, Addresses, Eligibility, programs, choices, addressLookup, futureEmails
 
 # form for user account creation
 class UserForm(forms.ModelForm):
@@ -26,7 +26,7 @@ class UserForm(forms.ModelForm):
 class AddressForm(forms.ModelForm):
     class Meta:
         model = Addresses
-        fields = ['address', 'address2', 'city', 'state', 'zipCode', 'n2n']
+        fields = ['address', 'address2', 'city', 'state', 'zipCode']
         labels  = { 
             'user_id': 'user_id',
             'address':'Address',
@@ -58,12 +58,12 @@ class programForm(forms.ModelForm):
             'freeReducedLunch':'Free and Reduced Lunch',
         } 
 
-class zipCodeForm(forms.ModelForm):
+class addressLookupForm(forms.ModelForm):
     class Meta:
-        model = zipCode
-        fields = ['zipCode']
+        model = addressLookup
+        fields = ['address']
         labels  = { 
-            'zipCode':'Zip Code', 
+            'address':'Address', 
         } 
 
 class futureEmailsForm(forms.ModelForm):
