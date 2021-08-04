@@ -58,13 +58,15 @@
         margin-bottom:1px;
         margin-top: 0px;
         font-family: Montserrat;
-        font-weight: 400
+        font-weight: 400;
+        color: var(--darkblue);
     }
     .yellow{
         color: var(--yellow)
     }
     h2 {
         font-size: max(3.8vw, 20px);
+        color:var(--darkblue);
     }
     h3 {
         font-size: max(3vw, 16px);
@@ -234,6 +236,15 @@
         padding: 10px 0px;
     }
 
+    
+    .navClean{
+        display:flex;
+        justify-content: space-between;
+        width: 90%;
+        padding: 5% 5%;
+    }
+
+
     /*styles for the links on navbar*/
     .link{
         font-size: max(2vw, 14px);
@@ -378,13 +389,15 @@
         margin-bottom:1px;
         margin-top: 0px;
         font-family: Montserrat;
-        font-weight: 400
+        font-weight: 400;
+        color: white;
     }
     .yellow{
         color: var(--yellow)
     }
     h2 {
         font-size: max(5vw, 24px);
+        color:white;
     }
     h3 {
         font-size: max(4vw, 16px);
