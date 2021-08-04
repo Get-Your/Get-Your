@@ -178,7 +178,9 @@
 
     p {
         font-size: max(1vw, 20px);
+        color: var(--darkblue);
     }
+    
 
     /*button background*/
     button {
@@ -554,6 +556,7 @@
 
     p {
         font-size: max(3.8vw, 16px);
+        color: white;
     }
 
     /*button background*/
