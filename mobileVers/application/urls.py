@@ -11,15 +11,16 @@ urlpatterns = [
     path('account', views.account, name='account'),
     path('finances', views.finances, name='finances'),
     path('programs', views.programs, name='programs'),
-    
 
     # Available/NotAvailable Digital Equity in your area
-    path('available', views.available, name='available'),
+    # path('available', views.available, name='available'),
     path('notAvailable', views.notAvailable, name='notAvailable'),
-    path('notInRegion', views.notInRegion, name='notInRegion'),
-    # Address verification pages
+    path('quickAvailable', views.quickAvailable, name='quickAvailable'),
+    path('quickNotAvailable', views.quickNotAvailable, name='quickNotAvailable'),
+    path('quickComingSoon', views.quickComingSoon, name='quickComingSoon'),
+    path('quickNotFound', views.quickNotFound, name='quickNotFound'),
     path('addressCorrection', views.addressCorrection, name='addressCorrection'),
-    path('n2n', views.n2n, name='n2n'),
+    path('inServiceArea', views.inServiceArea, name='inServiceArea'),
     path('GRQuickApply', views.GRQuickApply, name='GRQuickApply'),
     path('takeUSPSaddress', views.takeUSPSaddress, name='takeUSPSaddress'),
     # Grocery Rebate Dependent Pages
