@@ -83,8 +83,9 @@ class Addresses(TimeStampedModel):
     state = models.CharField(max_length=2, default="CO")
 
     zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
-    n2n = models.BooleanField()
-    #TODO add / change n2n for future proofing when Digital Equity moves past N2N bounds isConnexted
+    
+    isInGMA = models.BooleanField(null=True, default=None)
+    hasConnexion = models.BooleanField(null=True, default=None)
 
 choices = (
     ('Rent', 'Rent'),
@@ -147,8 +148,8 @@ class addressVerification(TimeStampedModel):
     Utility = models.BooleanField()
     freeReducedLunch = models.BooleanField()
 
-class zipCode(TimeStampedModel):
-    zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
+class addressLookup(TimeStampedModel):
+    address = models.CharField(max_length=100) 
 
 class futureEmails(TimeStampedModel):
     email = models.EmailField(unique=True)

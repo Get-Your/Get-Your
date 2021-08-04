@@ -172,9 +172,9 @@
         box-shadow: none;
         color:white;
         height: 6vh;
-        font-size:  max(2vw, 14px);
+        font-size: max(2vw, 14px);
         font-weight: 700;
-        width:85%;
+        width: 85%;
     }
     
     
@@ -219,6 +219,17 @@
         
         position:absolute;
     }
+
+    .doublefooter{
+        display: block;
+        justify-content: center;
+        /*These two lines make the button stick to just above the 'footer' bottom*/
+        
+        bottom: 0;
+        width: 100%;
+        height: 19vh;    /* 2*<button height> + div height separating buttons + 6vh to space from the bottom */
+    }
+
     /*TODO: Do we want to make the link highlights disappear?*/
     .noselect {
         -webkit-touch-callout: none; /* iOS Safari */
@@ -434,7 +445,7 @@
         font-family: Montserrat;
         font-weight: 200;
         font-size: 3.2vh;
-        /*color: white;*/
+        color: white;
         padding: 3vh;
         
     }
@@ -463,22 +474,33 @@
     .footer{
         display: flex;
         justify-content: center;
-        /*These two lines made the button stick to the bottom*/
+        /*These two lines make the button stick to the bottom*/
         position: fixed;
         bottom: 0;
         width:90%;
         height:12vh;
     }
+
+    .doublefooter{
+        display: block;
+        justify-content: center;
+        /*These two lines make the button stick to just above the 'footer' bottom*/
+        position: fixed;
+        bottom: 0;
+        width: 90%;
+        height: 19vh;    /* 2*<button height> + div height separating buttons + 6vh to space from the bottom */
+    }
+
     /*TODO: Do we want to make the link highlights disappear?*/
     .noselect {
         -webkit-touch-callout: none; /* iOS Safari */
-        -webkit-user-select: none; /* Safari */
-        -khtml-user-select: none; /* Konqueror HTML */
-            -moz-user-select: none; /* Old versions of Firefox */
-            -ms-user-select: none; /* Internet Explorer/Edge */
-                user-select: none; /* Non-prefixed version, currently
+          -webkit-user-select: none; /* Safari */
+           -khtml-user-select: none; /* Konqueror HTML */
+             -moz-user-select: none; /* Old versions of Firefox */
+              -ms-user-select: none; /* Internet Explorer/Edge */
+                  user-select: none; /* Non-prefixed version, currently
                                         supported by Chrome, Edge, Opera and Firefox */
-    }
+      }
 
 
     /*ALL THINGS BELOW ARE FOR INPUTS*/
@@ -515,10 +537,10 @@
         -webkit-transition:0.2s ease all;
         
     }
-    
+      
     input.fill:focus ~ label, input.fill:valid ~ label {
         transform:translateY(-20px);
-    }
+      }
 
     .spaceAround{
         display:flex;

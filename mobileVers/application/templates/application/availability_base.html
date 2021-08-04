@@ -15,19 +15,15 @@
 
     <body>
         <div class=nav>
-            <a href="{% url 'application:index' %}" style="margin-left:auto; margin-right:10px">
-                <p style = "color:white; font-weight: 700;">EXIT</p>
-            </a>        
+            {% block backurl %}
+            {% endblock %}    
         </div>
         <div class="content spaceAround" style="padding: 0 0 0 2vw;">
-            <h1 style="color:white"><b>Connexion is available & ready in your neighborhood!</b></h1>
-            <!--Whatever I need in the other pages, I can enter it here-->
-            <p style="color:white; margin-top: 2vh;">Click the continue button below to start your application now!</p>
-        
+            {% block content %}
+            {% endblock %}
 
         </div>
-        <div class="footer"style="width:100%">
-            <button onclick="location.href='{% url 'application:account' %}'"> CONTINUE </button>
-        </div>
+        {% block footerdiv %}
+        {% endblock %}
     </body>
 </html>
