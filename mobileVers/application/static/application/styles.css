@@ -58,7 +58,8 @@
         margin-bottom:1px;
         margin-top: 0px;
         font-family: Montserrat;
-        font-weight: 400
+        font-weight: 400;
+        color: var(--darkblue);
     }
     .yellow{
         color: var(--yellow)
@@ -388,7 +389,8 @@
         margin-bottom:1px;
         margin-top: 0px;
         font-family: Montserrat;
-        font-weight: 400
+        font-weight: 400;
+        color: white;
     }
     .yellow{
         color: var(--yellow)
