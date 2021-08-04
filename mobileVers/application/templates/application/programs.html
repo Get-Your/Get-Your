@@ -16,24 +16,25 @@
   <input style="display: none;" id="{{ field.id_for_label}}" type="checkbox" name="{{ field.name}}">
   <label class="checklabel" for="{{ field.id_for_label}}">
 
-  <style>  
-    input:not(.checked)~ label span.buttonCheck {
-      color: white;
-    }
-    /*TODO: FIX COLORING*/
-    input:checked~ label span.buttonCheck {
-      color: #F9B316;
-    }
+    <style>  
+      input:not(.checked)~ label span.buttonCheck {
+        color: white;
+      }
+      /*TODO: FIX COLORING*/
+      input:checked~ label span.buttonCheck {
+        <!--color:yellow;-->
+      }
 
     </style>
-  
+    
     <span class=buttonCheck >{{field.label}}</span>
   </label>
+  
   {% endfor %}
   <h6> or </h6>
 
   <!--TODO GRACE: Lead this to the paystub pages-->
-  <p style="color: var(--yellow);font-weight: 800;text-align: center;">Not Curently Enrolled in Any</p>
+  <p style="color: var(--yellow);font-weight: 800;text-align: center;">Not Currently Enrolled in Any</p>
   <div class="footer">
       <button type ="submit" > CONTINUE </button>
   </div>
