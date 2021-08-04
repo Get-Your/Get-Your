@@ -178,7 +178,9 @@
 
     p {
         font-size: max(1vw, 20px);
+        color: var(--darkblue);
     }
+    
 
     /*button background*/
     button {
@@ -533,7 +535,7 @@
         margin-bottom:1px;
         margin-top: 0px;
         font-family: Montserrat;
-        font-weight: 400
+        font-weight: 400;
     }
     .yellow{
         color: var(--yellow)
@@ -554,6 +556,7 @@
 
     p {
         font-size: max(3.8vw, 16px);
+        color: var(--darkblue);
     }
 
     /*button background*/
