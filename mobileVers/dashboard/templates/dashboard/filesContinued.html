@@ -20,13 +20,13 @@
 <p style="color:var(--lightblue);font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
             
 <div style="margin-top: 3vh;">
-    <p style="color:white;">We need some additional information, such as proof of residency - if you do not have a PSD letter please upload the following:</p>
-    <h3 style="color:white"> {{program_string}} </h3>
-    <p style="color:white;font-size: max(3.3vw, 12px);">Uploaded documents are secure & not shared with anyone outside of digital equity.</p>
+    <p>We need some additional information, such as proof of residency - if you do not have a PSD letter please upload the following:</p>
+    <h3> {{program_string}} </h3>
+    <p style="font-size: max(3.3vw, 12px);">Uploaded documents are secure & not shared with anyone outside of digital equity.</p>
     
 </div>
 
-<h6 style="color:white"> Upload Files Below:</h6>
+<div class="fadeLarge"><h6 style="color:white"> Upload Files Below:</h6></div>
 
 <form action="{% url 'dashboard:filesContinued' %}" method="post" autocomplete="false" enctype="multipart/form-data">
     {% csrf_token %}
@@ -40,7 +40,7 @@
         {% endif %}
         {% if field.label == "Program" %}
             <div class="row" style="justify-content: space-between;">
-                <p style="color:white;font-weight: 800;">Files: </p> 
+                <p style="font-weight: 800;">Files: </p> 
                 <select name="{{ field.name }}" id="{{ field.id_for_label}}">
                 {% if program_string == "Identification" %}
                     <option style="background-color: var(--darkblue);" value="Identification"> Identification </option>
