@@ -316,6 +316,14 @@ def RecreationQuickApply(request):
     return render(request, "application/RecreationQuickApply.html",)
 
 
+def attestation(request):
+    #TODO add attestation for verification into models and tie it into the html page
+    return render(request, "application/attestation.html",{
+        'step':6,
+        'formPageNum':formPageNum,
+    })
+
+
 def programs(request):
     if request.method == "POST": 
         try:
