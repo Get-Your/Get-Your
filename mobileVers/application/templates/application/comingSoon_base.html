@@ -1,7 +1,7 @@
 {% extends 'application/availability_base.html' %}
 
 {% block content %}
-    <h1><b>Your address is in the Get:FoCo service area but Connexion is not quite ready.</b></h1>
+    <h1 style="overflow: hidden; padding: auto;"><b>Your address is in the Get:FoCo service area but Connexion is not quite ready.</b></h1>
     <p style="margin-top: 2vh;">Subscribe for updates when Connexion will be available for your address, and/or continue to the application to enroll.</p>  
 
     <form action="{% url 'application:quickComingSoon' %}" method="post" autocomplete="false" enctype="multipart/form-data">
@@ -17,8 +17,18 @@
                 autocomplete="off">
             <label class="label" style="color:#999999">{{ form.email.label }}</label>    
         </div>
+        
+        <label for="ConnexionCommAgreement" style="word-wrap: break-word;">
+            <input type="checkbox" id="ConnexionCommAgreement" value="ConnexionCommAgreement" style="vertical-align: middle; display: inline-block;">
+            By checking this box, I agree to receive communications from Fort Collins Connexion. I understand I may opt out at any time.
+        </label>
+
+        <div style="text-align: left;">
+          <a href="https://www.fcgov.com/connexion/privacy"> <p style="font-size: 20px; padding: 5px;color: var(--yellow);">View Connexion Privacy Policy</p></a>
+        </div>
+
         <div class="doublefooter">
-            <div style = "text-align: center;">
+            <div style = "text-align: center;overflow: hidden;margin-top: 3vh;">
                 <button type="submit" style="padding:10px"> SUBSCRIBE AND CONTINUE </button>
             </div>
             <div style = "height: 1vh;"></div>
@@ -26,5 +36,5 @@
                 <button onclick="location.href='{% url 'application:account' %}'"> CONTINUE ONLY </button>
             </div>
         </div>             
-    </form>   
+    </form>
 {% endblock %}
