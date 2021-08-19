@@ -1,7 +1,7 @@
 # All of the forms built from models are here 
 from django import forms
 
-from .models import User, Addresses, Eligibility, programs, choices, addressLookup, futureEmails
+from .models import User, Addresses, Eligibility, programs, choices, addressLookup, futureEmails, attestations
 
 # form for user account creation
 class UserForm(forms.ModelForm):
@@ -48,6 +48,16 @@ class EligibilityForm(forms.ModelForm):
             'grossAnnualHouseholdIncome':'Adjusted Gross Annual Household Income',
         } 
 
+# form for basic finance eligibility
+class EligibilityFormPlus(forms.ModelForm):
+    class Meta:
+        model = Eligibility
+        fields = ['dependentsAge',]
+        labels  = {
+            'dependentsAge':'Age of Dependents', 
+        } 
+
+
 # programs they are available for
 class programForm(forms.ModelForm):
     class Meta:
@@ -56,6 +66,15 @@ class programForm(forms.ModelForm):
         labels  = { 
             'snap':'Food Assistance (SNAP)',
             'freeReducedLunch':'Free and Reduced Lunch',
+        } 
+
+class attestationForm(forms.ModelForm):
+    class Meta:
+        model = attestations
+        fields = ['localAttestation', 'completeAttestation',]
+        labels  = { 
+            'localAttestation':'Attesting to residing in the U.S.',
+            'completeAttestation':'Attesting to verify information is correct',
         } 
 
 class addressLookupForm(forms.ModelForm):

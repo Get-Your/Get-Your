@@ -1,0 +1,33 @@
+{% extends "application/layout.html" %}
+{% load static %}
+{% block body %}
+<div class=sideNav>
+    <div class=fadeSmall>
+        <h1 style="font-weight: 700; margin:5vh 0; padding-top: 20px;"> Share basic information about your income or household information </h1>
+        <p>These questions are not stored or shared with anyone. They are meant to determine potential assistance programs you may qualify for.</p>
+        <p><a href="{% url 'dashboard:dashboard' %}"><img src="{% static 'application/images/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px);"></a> 
+            “Household” means the applicant and any other people claimed on your federal tax return.
+            <br>
+            This could include your spouse, and your children by birth or adoption, step children, foster children and children under legal guardianship who live with you in your home as submited on your federal income tax return. 
+        </p>
+    </div>
+</div>
+<div class=fadeLarge><h2 style="font-weight: 700; margin:5vh 0"> Please share basic information about your income </h2></div>
+
+
+<form action="{% url 'application:moreInfoNeeded' %}" method="post" autocomplete="false">
+    {% csrf_token %}
+    <!-- TODO: Make it yes or no not checkbox-->
+    <div class="input" style="padding-top:0">
+        <label class="labelword">You indicated you had {{dependent}} number of children, what are their ages?</label>
+    </div>
+    {% for number in list %}
+        <div class="input">
+            Age of child {{number}} <input class="fill" type="text" name="{{ field.name }}" id="{{ field.id_for_label}}" value ="0" style="height: 3vh;">
+        </div>
+    {% endfor %}
+    <div class="footer">
+        <button type="submit"> CONTINUE </button>
+    </div>
+</form>
+{% endblock %}
