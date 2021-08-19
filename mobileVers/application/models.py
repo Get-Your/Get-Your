@@ -103,6 +103,7 @@ class Eligibility(TimeStampedModel):
 
     #TODO: possibly add field for how many total individuals are in the household
     dependents = models.IntegerField(100)
+    dependentsAge = models.IntegerField(100, default=0)
     DEqualified = models.BooleanField(default=False)
     GRqualified = models.BooleanField(default=False)
     RecreationQualified = models.BooleanField(default=False)
@@ -136,6 +137,15 @@ class programs(TimeStampedModel): #incomeVerificationPrograms
     snap = models.BooleanField()
     freeReducedLunch = models.BooleanField()
     #1040 = models.BooleanField() TODO include for 1040 filechecking
+
+class attestations(TimeStampedModel):
+    user_id = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
+    completeAttestation = models.BooleanField(default=False)
+    localAttestation = models.BooleanField(default=False)
 
 
 class addressVerification(TimeStampedModel):

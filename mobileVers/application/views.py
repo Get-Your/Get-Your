@@ -3,7 +3,7 @@ from django.contrib.auth import login, logout
 
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
-from .forms import UserForm, AddressForm, EligibilityForm, programForm, addressLookupForm, futureEmailsForm
+from .forms import UserForm, AddressForm, EligibilityForm, programForm, addressLookupForm, futureEmailsForm, EligibilityFormPlus,attestationForm
 from .backend import addressCheck, validateUSPS, qualification
 from django.http import QueryDict
 
@@ -247,6 +247,35 @@ def account(request):
 #    else:
 #        return redirect(reverse(page))
 
+def moreInfoNeeded(request):
+    if request.method =="POST":
+        try:
+            existing = request.user.eligibility
+            form = EligibilityFormPlus(request.POST,instance = existing)
+        except AttributeError or ObjectDoesNotExist:
+            form = EligibilityFormPlus(request.POST or None)
+        if form.is_valid():
+            print(form.data)
+            instance = form.save(commit=False)
+            instance.user_id = request.user
+        
+            print("SAVING")
+            instance.save()
+            if instance.DEqualified == True:
+                    return redirect(reverse("application:mayQualify"))
+            else:
+                    return redirect(reverse("application:programs"))
+        else:
+            print(form.data)
+    else:
+        form = EligibilityFormPlus()
+     
+    return render(request, "application/moreInfoNeeded.html",{
+        'step':2,
+        'dependent':request.user.eligibility.dependents,
+        'list':list(range(request.user.eligibility.dependents)),
+        'formPageNum':3,
+    })
 
 def finances(request):
     if request.method == "POST":
@@ -317,11 +346,32 @@ def RecreationQuickApply(request):
 
 
 def attestation(request):
-    #TODO add attestation for verification into models and tie it into the html page
+    if request.method == "POST": 
+        try:
+            existing = request.user.attestations
+            form = attestationForm(request.POST,instance = existing)
+        except AttributeError or ObjectDoesNotExist:
+            form = attestationForm(request.POST or None)
+        if form.is_valid():
+            print(form.data)
+            print(request.session)
+            try:
+                instance = form.save(commit=False)
+                instance.user_id = request.user
+                instance.save()
+                return redirect(reverse("application:attestation"))
+            except IntegrityError:
+                print("User already has information filled out for this section")
+            #enter upload code here for client to upload images
+            return redirect(reverse("application:available"))
+    else:
+        form = attestationForm()
+
     return render(request, "application/attestation.html",{
         'step':6,
         'formPageNum':formPageNum,
     })
+
 
 
 def programs(request):
