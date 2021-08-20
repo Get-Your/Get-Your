@@ -67,7 +67,7 @@ def files(request):
                 if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True:
                     return redirect(reverse("dashboard:manualVerifyIncome"))
                 else:
-                    return redirect(reverse("dashboard:broadcast")) 
+                    return redirect(reverse("application:attestation")) 
             else:
                 print("notautnehticated")
                 # TODO: Change this link

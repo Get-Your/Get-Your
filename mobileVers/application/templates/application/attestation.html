@@ -11,23 +11,18 @@
 
 <form action="{% url 'application:attestation' %}" method="post" autocomplete="false">
     {% csrf_token %}
-    <label for="completeAttestation" style="word-wrap: break-word;">
-        <input type="checkbox" id="completeAttestation" value="completeAttestation" style="vertical-align: middle; display: inline-block;">
-        I verify the information stated on this application is true.
+    {% for field in form %}
+    <label for="{{ field.id_for_label}}">
+        <input style="vertical-align: middle; display: inline-block;" required id="{{ field.id_for_label}}" type="checkbox" name="{{ field.name}}">
+        {{field.label}}
     </label>
-
-    <label for="localAttestation" style="word-wrap: break-word;">
-        <input type="checkbox" id="localAttestation" value="localAttestation" style="vertical-align: middle; display: inline-block;">
-        I am lawfully present in the United States and/or am only applying on behalf of ONLY applying on behalf on my children (under 18 years of age) who are lawfully present.
-    </label>
-
+    {% endfor %}
 
     <p style="padding: 50px;"><b>Privacy Notice</b>
         <br>Your privacy is important to us. We will only share your information, without your consent, with other City of Fort Collins income eligible services to evaluate your eligibility and make applying for these programs easier. </p> 
 
-
     <div class="footer">
-        <button onclick="location.href='{% url 'dashboard:dashboard' %}'"> CONTINUE </button>
+        <button type="submit"> CONTINUE </button>
     </div>
 </form>
 

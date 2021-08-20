@@ -256,7 +256,7 @@ def moreInfoNeeded(request):
             form = EligibilityFormPlus(request.POST or None)
         if form.is_valid():
             print(form.data)
-            instance = form.save(commit=False)
+            instance = form.save
             instance.user_id = request.user
         
             print("SAVING")
@@ -359,15 +359,15 @@ def attestation(request):
                 instance = form.save(commit=False)
                 instance.user_id = request.user
                 instance.save()
-                return redirect(reverse("application:attestation"))
+                return redirect(reverse("dashboard:broadcast"))
             except IntegrityError:
                 print("User already has information filled out for this section")
-            #enter upload code here for client to upload images
             return redirect(reverse("application:available"))
     else:
         form = attestationForm()
 
     return render(request, "application/attestation.html",{
+        'form':form,
         'step':6,
         'formPageNum':formPageNum,
     })
