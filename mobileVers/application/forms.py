@@ -73,8 +73,8 @@ class attestationForm(forms.ModelForm):
         model = attestations
         fields = ['localAttestation', 'completeAttestation',]
         labels  = { 
-            'localAttestation':'Attesting to residing in the U.S.',
-            'completeAttestation':'Attesting to verify information is correct',
+            'localAttestation':'I am lawfully present in the United States and/or am only applying on behalf of ONLY applying on behalf on my children (under 18 years of age) who are lawfully present.',
+            'completeAttestation':'I verify the information stated on this application is true.',
         } 
 
 class addressLookupForm(forms.ModelForm):
