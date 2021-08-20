@@ -10,25 +10,27 @@
 </div>
 
 <form action="{% url 'application:attestation' %}" method="post" autocomplete="false">
-{% csrf_token %}
-<label for="completeAttestation" style="word-wrap: break-word;">
-    <input type="checkbox" id="completeAttestation" value="completeAttestation" style="vertical-align: middle; display: inline-block;">
-    I verify the information stated on this application is true.
-</label>
+    {% csrf_token %}
+    <label for="completeAttestation" style="word-wrap: break-word;">
+        <input type="checkbox" id="completeAttestation" value="completeAttestation" style="vertical-align: middle; display: inline-block;">
+        I verify the information stated on this application is true.
+    </label>
 
-<label for="locationAttestation" style="word-wrap: break-word;">
-    <input type="checkbox" id="locationAttestation" value="locationAttestation" style="vertical-align: middle; display: inline-block;">
-    I am lawfully present in the United States and/or am only applying on behalf of ONLY applying on behalf on my children (under 18 years of age) who are lawfully present.
-</label>
+    <label for="localAttestation" style="word-wrap: break-word;">
+        <input type="checkbox" id="localAttestation" value="localAttestation" style="vertical-align: middle; display: inline-block;">
+        I am lawfully present in the United States and/or am only applying on behalf of ONLY applying on behalf on my children (under 18 years of age) who are lawfully present.
+    </label>
 
 
-<p style="padding: 50px;"><b>Privacy Notice</b>
-    <br>Your privacy is important to us. We will only share your information, without your consent, with other City of Fort Collins income eligible services to evaluate your eligibility and make applying for these programs easier. </p> 
+    <p style="padding: 50px;"><b>Privacy Notice</b>
+        <br>Your privacy is important to us. We will only share your information, without your consent, with other City of Fort Collins income eligible services to evaluate your eligibility and make applying for these programs easier. </p> 
 
+
+    <div class="footer">
+        <button onclick="location.href='{% url 'dashboard:dashboard' %}'"> CONTINUE </button>
+    </div>
 </form>
 
-<div class="footer">
-    <button onclick="location.href='{% url 'dashboard:dashboard' %}'"> CONTINUE </button>
-</div>
+
 
 {% endblock %}
