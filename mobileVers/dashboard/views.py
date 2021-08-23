@@ -10,6 +10,8 @@ from application.backend import broadcast_email, broadcast_sms
 
 from django.db import IntegrityError
 
+from py_models.qualification_status import QualificationStatus
+
 
 
 # Create your views here.
@@ -242,7 +244,7 @@ def notifyRemaining(request):
 
 
 def qualifiedPrograms(request):
-    if request.user.eligibility.DEqualified == True:
+    if request.user.eligibility.DEqualified != '':
         text = "True"
     else:
         text = "False"
@@ -254,19 +256,27 @@ def qualifiedPrograms(request):
     else:
         text2 = "False"
 
-    if request.user.eligibility.GRqualified == True:
+    if request.user.eligibility.GRqualified == QualificationStatus.PENDING.name:
         GRButtonText = "Applied"
         GRButtonColor = "green"
+        GRButtonTextColor = "White"
+    elif request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
+        GRButtonText = "Enrolled!"
+        GRButtonColor = "blue"
         GRButtonTextColor = "White"
     else:
         GRButtonText = "Quick Apply +"
         GRButtonColor = ""
         GRButtonTextColor = ""
 
-    if request.user.eligibility.RecreationQualified == True:
+    if request.user.eligibility.RecreationQualified == QualificationStatus.PENDING.name:
         RECButtonText = "Applied"
         RECButtonColor = "green"
         RECButtonTextColor = "White"
+    elif request.user.eligibility.RecreationQualified == QualificationStatus.ACTIVE.name:
+        GRButtonText = "Enrolled!" 
+        GRButtonColor = "blue"
+        GRButtonTextColor = "White"
     else:
         RECButtonText = "Quick Apply +"
         RECButtonColor = ""
@@ -305,7 +315,7 @@ def feedback(request):
             print("form is not valid")
     else:
         form = FeedbackForm()
-    if request.user.eligibility.DEqualified == True:
+    if request.user.eligibility.DEqualified != '':
         text = "Based on your information, you may qualify! Be on the lookout for an email or phone call."
         text2 = "Based on your information you may also qualify for the city's Grocery Rebate Tax program!"
         text3 = "By clicking on the link below, we can send your information over and quick apply for you."
@@ -322,7 +332,7 @@ def feedback(request):
         text6 = "Utilities Income-Qualified Assistance Program"
         text7 = "The Digital Equity Office is working on a timeline to respond to applications within the next two weeks."
     
-    if request.user.eligibility.GRqualified == True:
+    if request.user.eligibility.GRqualified != '':
         text2 = "Thank you for quick applying for the Grocery Rebate Tax Program."
         text3 = "Expect an update within 3 weeks - check your email!"
         text4 = ""
