@@ -244,7 +244,7 @@ def notifyRemaining(request):
 
 
 def qualifiedPrograms(request):
-    if request.user.eligibility.DEqualified != '':
+    if request.user.eligibility.DEqualified == QualificationStatus.PENDING.name or request.user.eligibility.DEqualified == QualificationStatus.ACTIVE.name:
         text = "True"
     else:
         text = "False"
@@ -315,7 +315,7 @@ def feedback(request):
             print("form is not valid")
     else:
         form = FeedbackForm()
-    if request.user.eligibility.DEqualified != '':
+    if request.user.eligibility.DEqualified == QualificationStatus.PENDING.name or request.user.eligibility.DEqualified == QualificationStatus.ACTIVE.name:
         text = "Based on your information, you may qualify! Be on the lookout for an email or phone call."
         text2 = "Based on your information you may also qualify for the city's Grocery Rebate Tax program!"
         text3 = "By clicking on the link below, we can send your information over and quick apply for you."
@@ -332,7 +332,7 @@ def feedback(request):
         text6 = "Utilities Income-Qualified Assistance Program"
         text7 = "The Digital Equity Office is working on a timeline to respond to applications within the next two weeks."
     
-    if request.user.eligibility.GRqualified != '':
+    if request.user.eligibility.GRqualified == QualificationStatus.PENDING.name or request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
         text2 = "Thank you for quick applying for the Grocery Rebate Tax Program."
         text3 = "Expect an update within 3 weeks - check your email!"
         text4 = ""
