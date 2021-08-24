@@ -19,15 +19,32 @@
     {% csrf_token %}
     <!-- TODO: Make it yes or no not checkbox-->
     <div class="input" style="padding-top:0">
-        <label class="labelword">You indicated you had {{dependent}} number of children, what are their ages?</label>
+        <label class="labelword">You indicated you had {{dependent}} number of individuals in your household, if they are children, what are their ages?</label>
     </div>
     {% for number in list %}
         <div class="input">
-            Birthdate of child {{number}} <input class="fill" type="date" name="{{ field.name }}" id="{{ field.id_for_label}}" value ="0" style="height: 3vh;">
+            <input type="checkbox" id="notChild" name="notChild" onclick="toggle()" style="vertical-align: middle; display: inline-block;"> Check if not a child
+            <p id="text" style="display: none;">
+                <input class="fill" type="date" name="{{ field.name }}" id="{{ field.id_for_label}}" value ="0" style="height: 3vh;">
+            </p>
         </div>
     {% endfor %}
     <div class="footer">
         <button type="submit"> CONTINUE </button>
     </div>
 </form>
+
+
+<script>
+    function toggle() {
+      var x = document.getElementById("notChild");
+      var text = document.getElementById("text")
+      if (x.checked == "true") {
+        text.style.display = "block";
+      } else {
+        text.style.display = "none";
+      }
+    }
+</script>
+
 {% endblock %}
