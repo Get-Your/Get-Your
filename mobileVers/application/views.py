@@ -7,6 +7,8 @@ from .forms import UserForm, AddressForm, EligibilityForm, programForm, addressL
 from .backend import addressCheck, validateUSPS, qualification
 from django.http import QueryDict
 
+from py_models.qualification_status import QualificationStatus
+
 import logging
 import usaddress
 
@@ -261,7 +263,9 @@ def moreInfoNeeded(request):
         
             print("SAVING")
             instance.save()
-            if instance.DEqualified == True:
+            # If DEqualified is not blank (either PENDING or ACTIVE),
+            # go to the financial information page
+            if instance.DEqualified != '':
                     return redirect(reverse("application:mayQualify"))
             else:
                     return redirect(reverse("application:programs"))
@@ -292,25 +296,33 @@ def finances(request):
             if form['grossAnnualHouseholdIncome'].value() == 'Below $19,800':
                 print("GAHI is below 19,800")
                 if qualification(form['dependents'].value(),) >= 19800:
-                    instance.DEqualified = True
+                    # Set to 'PENDING' (for pending enrollment). Never set to 
+                    # 'ACTIVE' from Django
+                    instance.DEqualified = QualificationStatus.PENDING.name
                 else:
-                    instance.DEqualified = False
+                    instance.DEqualified = QualificationStatus.NOTQUALIFIED.name
             elif form['grossAnnualHouseholdIncome'].value() == '$19,800 ~ $32,800':
                 print("GAHI is between 19,800 and 32,800")
                 if 19800 <= qualification(form['dependents'].value(),) <= 32800:
-                    instance.DEqualified = True
+                    # Set to 'PENDING' (for pending enrollment). Never set to 
+                    # 'ACTIVE' from Django
+                    instance.DEqualified = QualificationStatus.PENDING.name
                 else:
-                    instance.DEqualified = False
+                    instance.DEqualified = QualificationStatus.NOTQUALIFIED.name
             elif form['grossAnnualHouseholdIncome'].value() == 'Over $32,800':
                 print("GAHI is above 32,800")
                 if qualification(form['dependents'].value(),) >= 32800:
-                    instance.DEqualified = True
+                    # Set to 'PENDING' (for pending enrollment). Never set to 
+                    # 'ACTIVE' from Django
+                    instance.DEqualified = QualificationStatus.PENDING.name
                 else:
-                    instance.DEqualified = False                        
+                    instance.DEqualified = QualificationStatus.NOTQUALIFIED.name                      
                 
             print("SAVING")
             instance.save()
-            if instance.DEqualified == True:
+            # If DEqualified is not blank (either PENDING or ACTIVE),
+            # go to the financial information page
+            if instance.DEqualified != '':
                 return redirect(reverse("application:mayQualify"))
             else:
                 return redirect(reverse("application:programs"))
@@ -330,7 +342,7 @@ def GRQuickApply(request):
     obj = request.user.eligibility
     print(obj.GRqualified)
     #print(request.user.eligibility.GRQualified)
-    obj.GRqualified = True
+    obj.GRqualified = QualificationStatus.PENDING.name
     print(obj.GRqualified)
     obj.save()
     return render(request, "application/GRQuickApply.html",)
@@ -339,7 +351,7 @@ def RecreationQuickApply(request):
     obj = request.user.eligibility
     print(obj.RecreationQualified)
     #print(request.user.eligibility.GRQualified)
-    obj.RecreationQualified = True
+    obj.RecreationQualified = QualificationStatus.PENDING.name
     print(obj.RecreationQualified)
     obj.save()
     return render(request, "application/RecreationQuickApply.html",)
