@@ -12,29 +12,24 @@
                 id="{{ form.email.id_for_label }}"
                 maxlength="{{ form.email.max_length }}"
                 type="text" 
-                style="width:100%;border-bottom:1px solid #999999;color: white" 
+                style="width:100%;border-bottom:1px solid #999999;" 
                 required  
                 autocomplete="off">
             <label class="label" style="color:#999999">{{ form.email.label }}</label>    
         </div>
         
-        <label for="ConnexionCommAgreement" style="word-wrap: break-word;">
-            <input type="checkbox" id="ConnexionCommAgreement" value="ConnexionCommAgreement" style="vertical-align: middle; display: inline-block;">
-            By checking this box, I agree to receive communications from Fort Collins Connexion. I understand I may opt out at any time.
+        <label for="{{ form.connexionCommunication.id_for_label }}" style="word-wrap: break-word;">
+            <input type="checkbox" id="{{ form.connexionCommunication.id_for_label }}" name="{{ form.connexionCommunication.name}}"required style="vertical-align: middle; display: inline-block;">
+            {{ form.connexionCommunication.label}}
         </label>
 
         <div style="text-align: left;">
           <a href="https://www.fcgov.com/connexion/privacy"> <p style="font-size: 20px; padding: 5px;color: var(--yellow);">View Connexion Privacy Policy</p></a>
         </div>
 
-        <div class="doublefooter">
-            <div style = "text-align: center;overflow: hidden;margin-top: 3vh;">
-                <button type="submit" style="padding:10px"> SUBSCRIBE AND CONTINUE </button>
-            </div>
-            <div style = "height: 1vh;"></div>
-            <div style = "text-align: center;">
-                <button onclick="location.href='{% url 'application:account' %}'"> CONTINUE ONLY </button>
-            </div>
-        </div>             
+        <div style = "text-align: center;overflow: hidden;margin-top: 3vh;">
+            <button type="submit" style="padding:10px"> CONTINUE </button>
+        </div>
+        <div style = "height: 1vh;"></div>     
     </form>
 {% endblock %}

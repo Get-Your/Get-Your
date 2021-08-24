@@ -163,3 +163,5 @@ class addressLookup(TimeStampedModel):
 
 class futureEmails(TimeStampedModel):
     email = models.EmailField(unique=True)
+    connexionCommunication = models.BooleanField(default=False)
+
