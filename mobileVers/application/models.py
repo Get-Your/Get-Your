@@ -104,13 +104,13 @@ class Eligibility(TimeStampedModel):
     #TODO: possibly add field for how many total individuals are in the household
     dependents = models.IntegerField(100)
     dependentsAge = models.IntegerField(100, default=0)
-    DEqualified = models.BooleanField(default=False)
-    GRqualified = models.BooleanField(default=False)
-    RecreationQualified = models.BooleanField(default=False)
+    DEqualified = models.CharField(max_length=20)
+    GRqualified = models.CharField(max_length=20)
+    RecreationQualified = models.CharField(max_length=20)
     #TODO 5/13/2021
     #insert other rebate flags here i.e.
-    #xQualified = models.BooleanField(default=False)
-    #utilitiesQualified = models.BooleanField(default=False)
+    #xQualified = models.CharField(max_length=20)
+    #utilitiesQualified = models.CharField(max_length=20)
 
     # Income Levels
     LOW = 'Below $19,800'

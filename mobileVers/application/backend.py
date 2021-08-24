@@ -169,7 +169,7 @@ def connexion_lookup(coord_string):
     try:
         statusInput = outVal['features'][0]['attributes']['INVENTORY_STATUS_CODE']
         
-    except IndexError:
+    except (IndexError, KeyError):
         return None
     
     else:
