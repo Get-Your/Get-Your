@@ -265,7 +265,7 @@ def moreInfoNeeded(request):
             instance.save()
             # If DEqualified is not blank (either PENDING or ACTIVE),
             # go to the financial information page
-            if instance.DEqualified != '':
+            if instance.DEqualified == QualificationStatus.PENDING.name or instance.DEqualified == QualificationStatus.ACTIVE.name:
                     return redirect(reverse("application:mayQualify"))
             else:
                     return redirect(reverse("application:programs"))
@@ -322,7 +322,7 @@ def finances(request):
             instance.save()
             # If DEqualified is not blank (either PENDING or ACTIVE),
             # go to the financial information page
-            if instance.DEqualified != '':
+            if instance.DEqualified == QualificationStatus.PENDING.name or instance.DEqualified == QualificationStatus.ACTIVE.name:
                 return redirect(reverse("application:mayQualify"))
             else:
                 return redirect(reverse("application:programs"))
