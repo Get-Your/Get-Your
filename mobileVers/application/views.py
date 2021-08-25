@@ -268,14 +268,14 @@ def moreInfoNeeded(request):
             if instance.DEqualified == QualificationStatus.PENDING.name or instance.DEqualified == QualificationStatus.ACTIVE.name:
                     return redirect(reverse("application:mayQualify"))
             else:
-                    return redirect(reverse("application:programs"))
+                    return redirect(reverse("dashboard:addressVerification"))
         else:
             print(form.data)
     else:
         form = EligibilityFormPlus()
      
     return render(request, "application/moreInfoNeeded.html",{
-        'step':2,
+        'step':1,
         'dependent':request.user.eligibility.dependents,
         'list':list(range(request.user.eligibility.dependents)),
         'formPageNum':3,

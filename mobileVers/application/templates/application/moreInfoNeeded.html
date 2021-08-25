@@ -19,27 +19,26 @@
     {% csrf_token %}
     <!-- TODO: Make it yes or no not checkbox-->
     <div class="input" style="padding-top:0">
-        <label class="labelword">You indicated you had {{dependent}} number of individuals in your household, if they are children, what are their ages?</label>
+        <label class="labelword">You indicated you had {{dependent}} number of individuals in your household, if they are children, what are their ages? If no children press continue!</label>
     </div>
     {% for number in list %}
         <div class="input">
-            <input type="checkbox" id="notChild" name="notChild" onclick="toggle()" style="vertical-align: middle; display: inline-block;"> Check if not a child
-            <p id="text" style="display: none;">
-                <input class="fill" type="date" name="{{ field.name }}" id="{{ field.id_for_label}}" value ="0" style="height: 3vh;">
-            </p>
+            <input type="checkbox" id="notChild{{forloop.counter}}" name="notChild" onclick="toggle()" style="vertical-align: middle; display: inline-block;"> Click here if over 18 years old.
+            <input class="fill" type="date" name="{{ field.name }}" id="{{forloop.counter}} " style="height: 3vh;"> 
         </div>
     {% endfor %}
-    <div class="footer">
-        <button type="submit"> CONTINUE </button>
-    </div>
+
 </form>
+<div class="footer" style="width:100%">
+    <button onclick="location.href='{% url 'dashboard:addressVerification' %}'"> CONTINUE </button>
+</div>
 
 
 <script>
     function toggle() {
-      var x = document.getElementById("notChild");
-      var text = document.getElementById("text")
-      if (x.checked == "true") {
+      var x = document.getElementById("notChild{{forloop.counter}}");
+      var text = document.getElementById("{{forloop.counter}}");
+      if (x.checked == true) {
         text.style.display = "block";
       } else {
         text.style.display = "none";
