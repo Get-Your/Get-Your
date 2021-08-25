@@ -110,8 +110,8 @@ def addressVerification(request):
 
     return render(request, 'dashboard/addressVerification.html', {
     'form':form,
-    'step':1,
-    'formPageNum':2,
+    'step':2,
+    'formPageNum':3,
     })
 
 #    else:
@@ -176,8 +176,8 @@ def filesContinued(request):
     'form':form,
     'programs': file_list,
     'program_string': files_to_string(file_list),
-    'step':2,
-    'formPageNum':2,
+    'step':3,
+    'formPageNum':3,
     })
 
 def broadcast(request):
