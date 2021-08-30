@@ -74,15 +74,6 @@
 
 <div class="fadeSmall">
   <div class="container">
-
-
-
-
-
-
-
-
-
     <div class="item thin" >
         <!--CSV HERE-->
         <hprogram style = "color: var(--darkblue)"> {{ActiveNumber}} </hprogram>
@@ -90,7 +81,7 @@
         <button class="button button2" id="toggle-button2"><img src="{% static 'dashboard/images/downArrow.svg' %}" style="position: absolute; bottom: 10px;right: 10px;"> </button>
     </div>
     <div class="item collapsible active">
-      <div style="display:{{GRDisplay}}">
+      <div style="display:{{GRDisplayActive}}">
         <div class = "row" style="margin:0; width:100%">
             <div style="margin:0">
                 <p style ="font-weight: 400; margin: 0">Grocery Tax Rebate </p>
@@ -104,7 +95,7 @@
         </div>
       </div>
       <div class="divider"></div>
-      <div style="display:{{RECDisplay}};">
+      <div style="display:{{RECDisplayActive}};">
         <div class = "row" style="margin:0; width:100%">
           <div style="margin:0">
               <p style ="font-weight: 400; margin: 0">Recreation Tax Rebate </p>
@@ -170,19 +161,6 @@
       </div>
     </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
- 
     <div class="item large" style="align-content:flex-end">
       <p style = "color: #999999">Upcoming Program Updates </p>
     <!--CSV HERE / Also template for printing out all updates-->
@@ -190,11 +168,6 @@
       <p> Grocery Rebate 07/19/21</p>
       <a href="{% url 'dashboard:dashboard' %}" style="text-decoration: none; color:#55A1D3">Show More   <img src="{% static 'dashboard/images/rightArrow.svg' %}" > </a>
     </div>
-
-
-
-
-
 
     <div class="item thin" >
       <!--CSV HERE-->
@@ -231,22 +204,6 @@
         </div>
       </div>
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     <div class="item large">
       <p style = "color: #999999">City News & Events </p>

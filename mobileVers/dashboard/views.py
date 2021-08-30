@@ -404,10 +404,12 @@ def dashboardGetFoco(request):
         GRButtonColor = "green"
         GRButtonTextColor = "White"
         PendingNumber = PendingNumber + 1
+        GRDisplayActive = "None"
     elif request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!"
         GRButtonColor = "blue"
         GRButtonTextColor = "White"
+        GRDisplayActive = ""
     else:
         GRButtonText = "Quick Apply +"
         GRButtonColor = ""
@@ -418,11 +420,13 @@ def dashboardGetFoco(request):
         RECButtonColor = "green"
         RECButtonTextColor = "White"
         PendingNumber = PendingNumber + 1
+        RECDisplayActive = "None"
     elif request.user.eligibility.RecreationQualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!" 
         GRButtonColor = "blue"
         GRButtonTextColor = "White"
         ActiveNumber = ActiveNumber + 1
+        RECDisplayActive = ""
     else:
         RECButtonText = "Quick Apply +"
         RECButtonColor = ""
@@ -439,12 +443,10 @@ def dashboardGetFoco(request):
         "GRButtonText": GRButtonText,
         "GRButtonColor": GRButtonColor,
         "GRButtonTextColor": GRButtonTextColor,
-        "GRDisplay": GRDisplay,
 
         "RECButtonText" : RECButtonText,
         "RECButtonColor" : RECButtonColor,
         "RECButtonTextColor" : RECButtonTextColor,
-        "RECDisplay": RECDisplay,
         
         "GRPreQualification": text,
         "RecreationPreQualification": text2,
@@ -452,6 +454,13 @@ def dashboardGetFoco(request):
         "QProgramNumber":QProgramNumber,
         "PendingNumber":PendingNumber,
         "ActiveNumber":ActiveNumber,
+
+        "GRDisplay": GRDisplay,
+        "RECDisplay": RECDisplay,
+        "GRDisplayActive": GRDisplayActive,
+        "RECDisplayActive": RECDisplayActive,
+        
+
         })
 
 def ProgramsList(request):
