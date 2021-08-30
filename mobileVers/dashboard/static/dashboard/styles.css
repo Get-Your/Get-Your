@@ -59,6 +59,13 @@
         align-items: flex-start;
         overflow-x: scroll;
       }
+      .divider{
+        border-top-style: solid; 
+        color:rgba(85, 161, 211, 0.3); 
+        border-top-width: thin; 
+        margin-top:20px; 
+        margin-bottom: 20px;
+      }
       
       .item {
         background-color: white;
@@ -88,22 +95,63 @@
         justify-content: left;
         align-items: top;
       }
+
+
+
+
       .item.small {
         /*background-color: violet;*/
-        height: 150px;
+        height:auto;
+        max-height: 150px;
         overflow:hidden;
         display: flex;
         justify-content: left;
         align-items: top;
+        margin-bottom: -1%;
       } 
+
+
+
+
+
+
       .item.thin {
         /*background-color: green;*/
-        height: 100px;
+        height:auto;
+        max-height: 150px;
         overflow:hidden;
         display: flex;
         justify-content: left;
         align-items: top;
+        transition: max-height 5s ease-out;
+        margin-bottom:1%;
       } 
+
+      .item.collapsed {
+        max-height:0px;
+        margin-top:0;
+        display:none;
+      }
+      .item.collapsible{
+        border-top-left-radius: 0px;  
+        border-top-right-radius: 0px;        
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        border: 1px solid rgba(85, 161, 211, 0.3);
+        border-top: none;
+        height: auto;
+        width: 31%;
+        margin-top: -2%;
+        padding: 10px;
+      }
+
+
+
+
+
+
+
+      
     .column {
         float: left;
         width: 50%
@@ -180,7 +228,6 @@
         font-size: max(1vw, 20px);
         color: var(--darkblue);
     }
-    
 
     /*button background*/
     button {
@@ -194,6 +241,17 @@
         height: 6vh;
         font-size: max(2vw, 14px);
     }
+
+    .button2{
+        background-color: transparent;
+        background-image: url('/static/dashboard/images/downArrow.svg') no-repeat;
+        border-radius: none;
+        border:none;
+        outline: none;
+        box-shadow: none;
+        color:white;
+        height: 5px;
+    }
     .desktop {
         width: 50%;
         margin-left: auto;
@@ -204,8 +262,9 @@
         background-color: white;
         border-radius: 3vw;
         border: 1px solid var(--darkblue);
-        padding: 5px 10px;
+        padding: 1px 15px;
         color:var(--darkblue);
+        text-align: center;
         height:max(3.2vw, 16px);
         font-size: max(3vw, 12px);
     }

@@ -378,13 +378,81 @@ def underConstruction(request):
 
 # Everything under here is for new dashboard
 def dashboardGetFoco(request):
+    QProgramNumber = 0
+    ActiveNumber = 0
+    PendingNumber = 0
+    if request.user.eligibility.DEqualified == QualificationStatus.PENDING.name or request.user.eligibility.DEqualified == QualificationStatus.ACTIVE.name:
+        text = "True"
+        QProgramNumber = QProgramNumber + 1
+        GRDisplay = ""
+    else:
+        text = "False"
+        GRDisplay = "none"
+    # apply for other dynamic income work etc.
+    if request.user.eligibility.grossAnnualHouseholdIncome == '$19,800 ~ $32,800':
+        text ="CallUs"
+    if request.user.programs.snap == True or request.user.programs.freeReducedLunch == True:
+        text2 = "True"
+        QProgramNumber = QProgramNumber + 1
+        RECDisplay = ""
+    else:
+        text2 = "False"
+        RECDisplay = "none"
+
+    if request.user.eligibility.GRqualified == QualificationStatus.PENDING.name:
+        GRButtonText = "Applied"
+        GRButtonColor = "green"
+        GRButtonTextColor = "White"
+        PendingNumber = PendingNumber + 1
+    elif request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
+        GRButtonText = "Enrolled!"
+        GRButtonColor = "blue"
+        GRButtonTextColor = "White"
+    else:
+        GRButtonText = "Quick Apply +"
+        GRButtonColor = ""
+        GRButtonTextColor = ""
+
+    if request.user.eligibility.RecreationQualified == QualificationStatus.PENDING.name:
+        RECButtonText = "Applied"
+        RECButtonColor = "green"
+        RECButtonTextColor = "White"
+        PendingNumber = PendingNumber + 1
+    elif request.user.eligibility.RecreationQualified == QualificationStatus.ACTIVE.name:
+        GRButtonText = "Enrolled!" 
+        GRButtonColor = "blue"
+        GRButtonTextColor = "White"
+        ActiveNumber = ActiveNumber + 1
+    else:
+        RECButtonText = "Quick Apply +"
+        RECButtonColor = ""
+        RECButtonTextColor = ""
+
     return render(request, 'dashboard/dashboard_GetFoco.html',{
         "page_title": "Get: FOCO",
         "dashboard_color": "var(--yellow)",
         "program_list_color": "white",
         "FAQ_color": "white",
         "Settings_color": "white",
-        "Privacy_Policy_color": "white",})
+        "Privacy_Policy_color": "white",
+
+        "GRButtonText": GRButtonText,
+        "GRButtonColor": GRButtonColor,
+        "GRButtonTextColor": GRButtonTextColor,
+        "GRDisplay": GRDisplay,
+
+        "RECButtonText" : RECButtonText,
+        "RECButtonColor" : RECButtonColor,
+        "RECButtonTextColor" : RECButtonTextColor,
+        "RECDisplay": RECDisplay,
+        
+        "GRPreQualification": text,
+        "RecreationPreQualification": text2,
+        
+        "QProgramNumber":QProgramNumber,
+        "PendingNumber":PendingNumber,
+        "ActiveNumber":ActiveNumber,
+        })
 
 def ProgramsList(request):
     return render(request, 'dashboard/qualifiedPrograms.html',{

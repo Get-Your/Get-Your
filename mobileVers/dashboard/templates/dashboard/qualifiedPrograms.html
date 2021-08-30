@@ -68,7 +68,7 @@
             {% if  GRPreQualification  == "CallUs" %}
                 <a href="{% url 'application:callUs' %}" style="text-decoration: none"> <div class="quickapply link"  style="background-color: {{GRButtonColor}}; color: {{GRButtonTextColor}}">{{ GRButtonText }}</div></a>
             {% else %}
-                <a href="{% url 'application:GRQuickApply' %}" style="text-decoration: none"> <div class="quickapply link"  style="background-color: {{GRButtonColor}}; color: {{GRButtonTextColor}}">{{ GRButtonText }}</div></a>
+                <a href="{% url 'application:GRQuickApply' %}" style="text-decoration: none"> <div class="quickapply link"  style="background-color: {{GRButtonColor}}; color: {{GRButtonTextColor}};">{{ GRButtonText }}</div></a>
             {% endif %}
         </div>
         <div class = "row" style="margin:0;width:100%">
