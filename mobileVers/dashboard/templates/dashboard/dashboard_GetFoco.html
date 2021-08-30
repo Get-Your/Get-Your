@@ -27,7 +27,7 @@
         <div class="row" style="align-items: center;">
             <!--CSV HERE-->
             <hprogram style = "color: #4CAD00;margin:0"> 02 </hprogram>
-            <h3 style = "font-weight: 400; margin: 0 0 0 5vw" >Programs you qualify for </h3>
+            <h3 style = "font-weight: 400; margin: 0 0 0 5vw ;" >Programs you qualify for </h3>
         </div>
       </div>
     </a>
@@ -74,20 +74,115 @@
 
 <div class="fadeSmall">
   <div class="container">
+
+
+
+
+
+
+
+
+
     <div class="item thin" >
         <!--CSV HERE-->
-        <hprogram style = "color: var(--darkblue)"> 02 </hprogram>
+        <hprogram style = "color: var(--darkblue)"> {{ActiveNumber}} </hprogram>
         <p style = "font-weight: 400; padding-left: 20px; ">Programs Active </p>
-        <a href="{% url 'dashboard:dashboard' %}"><img src="{% static 'dashboard/images/downArrow.svg' %}" style="position: absolute; bottom: 10px;right: 10px;"> </a>
+        <button class="button button2" id="toggle-button2"><img src="{% static 'dashboard/images/downArrow.svg' %}" style="position: absolute; bottom: 10px;right: 10px;"> </button>
     </div>
-    <div class="item small">
+    <div class="item collapsible active">
+      <div style="display:{{GRDisplay}}">
+        <div class = "row" style="margin:0; width:100%">
+            <div style="margin:0">
+                <p style ="font-weight: 400; margin: 0">Grocery Tax Rebate </p>
+            </div>
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/rebate/" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue); font-size: 15px;"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 1vw; margin-left: 5px;color:black">
+            </a>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div style="display:{{RECDisplay}};">
+        <div class = "row" style="margin:0; width:100%">
+          <div style="margin:0">
+              <p style ="font-weight: 400; margin: 0">Recreation Tax Rebate </p>
+          </div>
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/recreation/reducedfeeprogram" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue); font-size: 15px;"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 1vw; margin-left: 5px;color:black">
+            </a>
+        </div>
+      </div>
+    </div>
+
+
+
+
+    <div class="item thin">
       <a style="color:var(--white); font-weight: 800; text-decoration: none;" href="{% url 'dashboard:qualifiedPrograms' %}">
         <!--CSV HERE-->
-        <hprogram style = "color: #4CAD00;margin:0"> 02 </hprogram>
-        <p style = "font-weight: 400;">Programs you qualify for </p>
-        <a href="{% url 'dashboard:dashboard' %}"><img src="{% static 'dashboard/images/downArrow.svg' %}" style="position: absolute; bottom: 10px;right: 10px;"> </a>
+        <hprogram style = "color: #4CAD00;margin:0"> {{QProgramNumber}} </hprogram>
       </a>
+      <p style = "font-weight: 400; padding-left: 15px;">Programs you qualify for </p>
+      <button class="button button2" id="toggle-button1"><img src="{% static 'dashboard/images/downArrow.svg' %}" style="position: absolute; bottom: 10px;right: 10px;"> </button>
     </div>
+    
+    <div class="item collapsible qualifyfor">
+      <div style="display:{{GRDisplay}}">
+        <div class = "row" style="margin:0; width:100%">
+            <div style="margin:0">
+                <p style ="font-weight: 400; margin: 0">Grocery Tax Rebate </p>
+            </div>
+            {% if  GRPreQualification  == "CallUs" %}
+                <a href="{% url 'application:callUs' %}" style="text-decoration: none;"> <div class="quickapply link"  style="background-color: {{GRButtonColor}}; color: {{GRButtonTextColor}}";>{{ GRButtonText }}</div></a>
+            {% else %}
+                <a href="{% url 'application:GRQuickApply' %}" style="text-decoration: none; text-align: center;"> <div class="quickapply link"  style="background-color: {{GRButtonColor}}; color: {{GRButtonTextColor}}; font-size: 13px; height:20px;">{{ GRButtonText }}</div></a>
+            {% endif %}
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/rebate/" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue); font-size: 15px;"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 1vw; margin-left: 5px;color:black">
+            </a>
+            <p style = "color:#999999;margin-top:0;text-align: right; font-size:15px;" >Apply by October 31st</p>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div style="display:{{RECDisplay}};">
+        <div class = "row" style="margin:0; width:100%">
+          <div style="margin:0">
+              <p style ="font-weight: 400; margin: 0">Recreation Tax Rebate </p>
+          </div>
+          <a href="{% url 'application:moreInfoNeeded' %}" style="text-decoration: none;"> <div class="quickapply link" style="background-color: {{RECButtonColor}}; color: {{RECButtonTextColor}}; font-size: 13px; height:20px;">{{ RECButtonText }}</div></a> 
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/recreation/reducedfeeprogram" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue); font-size: 15px;"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 1vw; margin-left: 5px;color:black">
+            </a>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
     <div class="item large" style="align-content:flex-end">
       <p style = "color: #999999">Upcoming Program Updates </p>
     <!--CSV HERE / Also template for printing out all updates-->
@@ -95,12 +190,63 @@
       <p> Grocery Rebate 07/19/21</p>
       <a href="{% url 'dashboard:dashboard' %}" style="text-decoration: none; color:#55A1D3">Show More   <img src="{% static 'dashboard/images/rightArrow.svg' %}" > </a>
     </div>
+
+
+
+
+
+
     <div class="item thin" >
       <!--CSV HERE-->
-      <hprogram style = "color: var(--darkblue)"> 02 </hprogram>
+      <hprogram style = "color: var(--darkblue)"> {{PendingNumber}} </hprogram>
       <p style = "font-weight: 400; padding-left: 20px; ">Pending Approval</p>
-      <a href="{% url 'dashboard:dashboard' %}"><img src="{% static 'dashboard/images/downArrow.svg' %}" style="position: absolute; bottom: 10px;right: 10px;"> </a>
+      <button class="button button2" id="toggle-button"><img src="{% static 'dashboard/images/downArrow.svg' %}" style="position: absolute; bottom: 10px;right: 10px;"> </button>
     </div>
+    <div class="item collapsible pending">
+      <div style="display:{{GRDisplay}}">
+        <div class = "row" style="margin:0; width:100%">
+            <div style="margin:0">
+                <p style ="font-weight: 400; margin: 0">Grocery Tax Rebate </p>
+            </div>
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/rebate/" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue); font-size: 15px;"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 1vw; margin-left: 5px;color:black">
+            </a>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div style="display:{{RECDisplay}};">
+        <div class = "row" style="margin:0; width:100%">
+          <div style="margin:0">
+              <p style ="font-weight: 400; margin: 0">Recreation Tax Rebate </p>
+          </div>
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/recreation/reducedfeeprogram" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue); font-size: 15px;"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 1vw; margin-left: 5px;color:black">
+            </a>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <div class="item large">
       <p style = "color: #999999">City News & Events </p>
@@ -146,6 +292,27 @@
     <div class="item" style="border: white;"></div>
 
   </div>
+
+<script>
+  document.querySelector('#toggle-button').addEventListener('click', function() {
+    document.querySelector('.item.collapsible.pending').classList.toggle('collapsed');
+  });
+</script>
+
+<script>
+  document.querySelector('#toggle-button2').addEventListener('click', function() {
+    document.querySelector('.item.collapsible.active').classList.toggle('collapsed');
+  });
+</script>
+
+<script>
+  document.querySelector('#toggle-button1').addEventListener('click', function() {
+    document.querySelector('.item.collapsible.qualifyfor').classList.toggle('collapsed');
+  });
+</script>
+
+
+
 
 
 {% endblock %}
