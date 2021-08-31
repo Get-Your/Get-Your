@@ -405,6 +405,7 @@ def dashboardGetFoco(request):
         GRButtonTextColor = "White"
         PendingNumber = PendingNumber + 1
         GRDisplayActive = "None"
+        GRPendingDate = "Estimated Time: October 25th"
     elif request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!"
         GRButtonColor = "blue"
@@ -421,6 +422,7 @@ def dashboardGetFoco(request):
         RECButtonTextColor = "White"
         PendingNumber = PendingNumber + 1
         RECDisplayActive = "None"
+        RECPendingDate = "Estimated Time: December 25th"
     elif request.user.eligibility.RecreationQualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!" 
         GRButtonColor = "blue"
@@ -459,6 +461,8 @@ def dashboardGetFoco(request):
         "RECDisplay": RECDisplay,
         "GRDisplayActive": GRDisplayActive,
         "RECDisplayActive": RECDisplayActive,
+        "RECPendingDate": RECPendingDate,
+        "GRPendingDate": GRPendingDate,
         
 
         })
