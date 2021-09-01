@@ -129,7 +129,7 @@
                 <p style ="font-weight: 400; margin: 0">Grocery Tax Rebate </p>
             </div>
             {% if  GRPreQualification  == "CallUs" %}
-                <a href="{% url 'application:callUs' %}" style="text-decoration: none;"> <div class="quickapply link"  style="background-color: {{GRButtonColor}}; color: {{GRButtonTextColor}}";>{{ GRButtonText }}</div></a>
+                <a href="{% url 'application:callUs' %}" style="text-decoration: none;"> <div class="quickapply link"  style="background-color: {{GRButtonColor}}; color: {{GRButtonTextColor}}; font-size: 13px; height:20px;">{{ GRButtonText }}</div></a>
             {% else %}
                 <a href="{% url 'application:GRQuickApply' %}" style="text-decoration: none; text-align: center;"> <div class="quickapply link"  style="background-color: {{GRButtonColor}}; color: {{GRButtonTextColor}}; font-size: 13px; height:20px;">{{ GRButtonText }}</div></a>
             {% endif %}
@@ -217,7 +217,7 @@
 
     <div class="item" style="border: white;"></div>
 
-    <div class="item extraLarge">
+    <div class="item extraLarge" style="padding-left: 3%;">
       <form action="{% url 'dashboard:index' %}" method="post">
         {% csrf_token %}
           <p>Feedback</p>
