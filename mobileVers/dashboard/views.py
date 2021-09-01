@@ -411,10 +411,13 @@ def dashboardGetFoco(request):
         GRButtonColor = "blue"
         GRButtonTextColor = "White"
         GRDisplayActive = ""
+        GRPendingDate = ""
     else:
         GRButtonText = "Quick Apply +"
         GRButtonColor = ""
         GRButtonTextColor = ""
+        GRDisplayActive=""
+        GRPendingDate = ""
 
     if request.user.eligibility.RecreationQualified == QualificationStatus.PENDING.name:
         RECButtonText = "Applied"
@@ -433,6 +436,8 @@ def dashboardGetFoco(request):
         RECButtonText = "Quick Apply +"
         RECButtonColor = ""
         RECButtonTextColor = ""
+        RECDisplayActive = ""
+        RECPendingDate = ""
 
     return render(request, 'dashboard/dashboard_GetFoco.html',{
         "page_title": "Get: FOCO",
@@ -464,7 +469,8 @@ def dashboardGetFoco(request):
         "RECPendingDate": RECPendingDate,
         "GRPendingDate": GRPendingDate,
         
-
+        "clientName": request.user.first_name,
+        "clientEmail": request.user.email,
         })
 
 def ProgramsList(request):
