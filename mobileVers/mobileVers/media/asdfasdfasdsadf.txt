@@ -1,0 +1,8 @@
+update application_eligibility set "GRqualified"='ACTIVE' where user_id_id=21;
+
+account name in dashboard
+account settings 
+automatically run GMA check if theire enrolledin de
+
+change button image
+
