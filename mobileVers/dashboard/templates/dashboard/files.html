@@ -57,6 +57,20 @@
                         {% for option in field %}
                             <option style="background-color: var(--darkblue);" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
                         {% endfor %}
+
+                    {% elif program_string == "SNAP Card, Identification" %}
+                        <option style="background-color: var(--darkblue);" value="SNAP"> SNAP </option>
+                        <option style="background-color: var(--darkblue);" value="Identification"> Identification </option>
+                    {% elif program_string == "PSD Reduced Lunch Approval Letter, Identification" %}
+                        <option style="background-color: var(--darkblue);" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                        <option style="background-color: var(--darkblue);" value="Identification"> Identification </option>
+                    {% elif program_string == "SNAP Card, PSD Reduced Lunch Approval Letter, Identification" %}
+                        {% for option in field %}
+                            <option style="background-color: var(--darkblue);" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
+                        {% endfor %}
+                    
+
+                    
                     {% elif program_string == "1040 Form" %}
                         <option style="background-color: var(--darkblue);" value="1040"> Tax Form </option>
                     <!-- take above and include for Identification-->
@@ -76,6 +90,20 @@
                         {% for option in field %}
                             <option style="background-color: white;" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
                         {% endfor %}
+
+
+                    {% elif program_string == "SNAP Card, Identification" %}
+                        <option style="background-color:white;" value="SNAP"> SNAP </option>
+                        <option style="background-color:white;" value="Identification"> Identification </option>
+                    {% elif program_string == "PSD Reduced Lunch Approval Letter, Identification" %}
+                        <option style="background-color: white;" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                        <option style="background-color:white;" value="Identification"> Identification </option>
+                    {% elif program_string == "SNAP Card, PSD Reduced Lunch Approval Letter, Identification" %}
+                        {% for option in field %}
+                            <option style="background-color: white;" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
+                        {% endfor %}
+                    
+
                     {% elif program_string == "1040 Form" %}
                         <option style="background-color: var(--darkblue);" value="1040"> Tax Form </option>
                     <!-- take above and include for Identification-->

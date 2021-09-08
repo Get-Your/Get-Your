@@ -46,7 +46,7 @@ def files_to_string(file_list):
             else:
                 counter = 2
             list_string += key
-    if list_string == "":
+    if list_string == "Identification":
         list_string = "1040 Form"
     #TODO Incorporate ID card here somewhere...
     #list_string ="ID Card"
