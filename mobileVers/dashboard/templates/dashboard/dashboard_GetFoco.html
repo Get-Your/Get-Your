@@ -27,7 +27,7 @@
         <div class="row" style="align-items: center;">
             <!--CSV HERE-->
             <hprogram style = "color: #4CAD00;margin:0"> 02 </hprogram>
-            <h3 style = "font-weight: 400; margin: 0 0 0 5vw ;" >Programs you may qualify for </h3>
+            <h3 style = "font-weight: 400; margin: 0 0 0 5vw ;" >Programs You May Qualify For </h3>
         </div>
       </div>
     </a>
@@ -79,7 +79,7 @@
         <!--CSV HERE-->
         <hprogram style = "color: #4CAD00;margin:0"> {{QProgramNumber}} </hprogram>
       </a>
-      <p style = "font-weight: 400; padding-left: 15px;">Programs you may qualify for </p>
+      <p style = "font-weight: 400; padding-left: 15px;">Programs You May Qualify For </p>
       <button class="button button2" id="toggle-button1"><img src="{% static 'dashboard/images/downArrow.svg' %}" style="position: absolute; bottom: 10px;right: 10px;"> </button>
     </div>
     
@@ -154,11 +154,15 @@
     <div class="item thin" >
         <!--CSV HERE-->
         <hprogram style = "color: var(--darkblue)"> {{ActiveNumber}} </hprogram>
-        <p style = "font-weight: 400; padding-left: 20px; ">Programs Active </p>
+        <p style = "font-weight: 400; padding-left: 20px; ">Programs Active </p> <button class="button button2" onclick="myFunction()"><img src="{% static 'application/images/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px);"></button>
         <button class="button button2" id="toggle-button2"><img src="{% static 'dashboard/images/downArrow.svg' %}" style="position: absolute; bottom: 10px;right: 10px;"> </button>
     </div>
     <div class="item collapsible active">
-      <p style="font-size: 15px;">Once you are approved by the Get: FoCo application process, you will find the programs you applied for here!</p>
+
+      <div id="myDIV">
+        <p style="font-size: 15px;">Once your information is reviewed by the Get: FoCo team, you will find the programs you are approved for here! Checkback as it gets closer to your application's estimated date and be sure to check your email for communication from us.</p>
+      </div>
+
       <div style="display:{{GRDisplayActive}}">
         <div class = "row" style="margin:0; width:100%">
             <div style="margin:0">
@@ -187,11 +191,6 @@
         </div>
       </div>
     </div>
-
-
-
-
-    
 
     <div class="item large" style="align-content:flex-end">
       <p style = "color: #999999">Upcoming Program Updates </p>
@@ -263,6 +262,21 @@
     document.querySelector('.item.collapsible.qualifyfor').classList.toggle('collapsed');
   });
 </script>
+
+
+<script>
+  function myFunction() {
+    var x = document.getElementById("myDIV");
+    if (x.style.display === "block") {
+      x.style.display = "none";
+    } else {
+      x.style.display = "block";
+    }
+  }
+  </script>
+
+
+
 
 
 

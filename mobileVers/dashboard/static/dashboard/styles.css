@@ -145,10 +145,9 @@
         padding: 10px;
       }
 
-
-
-
-
+      #myDIV {
+          display:none;
+      }
 
 
       
