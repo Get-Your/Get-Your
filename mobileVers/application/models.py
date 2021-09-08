@@ -155,9 +155,9 @@ class addressVerification(TimeStampedModel):
         on_delete=models.CASCADE,
         primary_key=True,
     )
-    Identification = models.BooleanField()
+    #Identification = models.BooleanField()
     Utility = models.BooleanField()
-    freeReducedLunch = models.BooleanField()
+    #freeReducedLunch = models.BooleanField()
 
 class addressLookup(TimeStampedModel):
     address = models.CharField(max_length=100) 

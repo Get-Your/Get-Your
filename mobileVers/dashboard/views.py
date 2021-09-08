@@ -126,9 +126,9 @@ def addressVerification(request):
 
 
 def filesContinued(request):
-    file_list = {   "Identification": request.user.addressverification.Identification,
+    file_list = {   #"Identification": request.user.addressverification.Identification,
                     "Utility Bill": request.user.addressverification.Utility,
-                    "PSD Reduced Lunch Approval Letter": request.user.addressverification.freeReducedLunch,
+                    #"PSD Reduced Lunch Approval Letter": request.user.addressverification.freeReducedLunch,
     }
 
     if request.method == "POST":   
@@ -146,17 +146,18 @@ def filesContinued(request):
 
                 # Check if the user needs to upload another form
                 Forms = request.user.address_files
-                checkAllForms = [not(request.user.addressverification.Identification),not(request.user.addressverification.Utility),not(request.user.addressverification.freeReducedLunch),]
+                checkAllForms = [not(request.user.addressverification.Utility)] #not(request.user.addressverification.Identification), ,not(request.user.addressverification.freeReducedLunch),
                 for group in Forms.all():
+                    if group.document_title == "Utility":
+                        checkAllForms[0] = True
+                        file_list["Utility Bill"] = False
+                ''' 
                     if group.document_title == "Identification":
                         checkAllForms[0] = True
                         file_list["Identification"] = False
-                    if group.document_title == "Utility":
-                        checkAllForms[1] = True
-                        file_list["Utility Bill"] = False
                     if group.document_title == "Free and Reduced Lunch": 
                         checkAllForms[2] = True
-                        file_list["PSD Reduced Lunch Approval Letter"] = False
+                        file_list["PSD Reduced Lunch Approval Letter"] = False'''
 
                 if False in checkAllForms:
                     return render(request, 'dashboard/filesContinued.html', {
@@ -407,19 +408,22 @@ def dashboardGetFoco(request):
         GRButtonTextColor = "White"
         PendingNumber = PendingNumber + 1
         GRDisplayActive = "None"
+        GRDisplayPending = ""
         GRPendingDate = "Estimated Time: October 25th"
     elif request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!"
         GRButtonColor = "blue"
         GRButtonTextColor = "White"
         GRDisplayActive = ""
+        GRDisplayPending = "None"
         GRPendingDate = ""
     else:
         GRButtonText = "Quick Apply +"
         GRButtonColor = ""
         GRButtonTextColor = ""
-        GRDisplayActive=""
+        GRDisplayActive="none"
         GRPendingDate = ""
+        GRDisplayPending = "None"
 
     if request.user.eligibility.RecreationQualified == QualificationStatus.PENDING.name:
         RECButtonText = "Applied"
@@ -427,19 +431,22 @@ def dashboardGetFoco(request):
         RECButtonTextColor = "White"
         PendingNumber = PendingNumber + 1
         RECDisplayActive = "None"
+        RECDisplayPending = ""
         RECPendingDate = "Estimated Time: December 25th"
     elif request.user.eligibility.RecreationQualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!" 
         GRButtonColor = "blue"
         GRButtonTextColor = "White"
         ActiveNumber = ActiveNumber + 1
+        RECDisplayPending = "None"
         RECDisplayActive = ""
     else:
         RECButtonText = "Quick Apply +"
         RECButtonColor = ""
         RECButtonTextColor = ""
-        RECDisplayActive = ""
+        RECDisplayActive = "none"
         RECPendingDate = ""
+        RECDisplayPending = "None"
 
     return render(request, 'dashboard/dashboard_GetFoco.html',{
         "page_title": "Get: FOCO",
@@ -468,6 +475,8 @@ def dashboardGetFoco(request):
         "RECDisplay": RECDisplay,
         "GRDisplayActive": GRDisplayActive,
         "RECDisplayActive": RECDisplayActive,
+        "GRDisplayPending": GRDisplayPending,
+        "RECDisplayPending": RECDisplayPending,
         "RECPendingDate": RECPendingDate,
         "GRPendingDate": GRPendingDate,
         
