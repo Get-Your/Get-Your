@@ -23,6 +23,7 @@ def files(request):
     file_list = {"SNAP Card": request.user.programs.snap,
                 # Have Reduced Lunch be last item in the list if we add more programs
                 "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
+                "Identification": request.user.programs.Identification,
     }
     if request.method == "POST":   
         form = FileForm(request.POST, request.FILES)
@@ -39,7 +40,7 @@ def files(request):
 
                 # Check if the user needs to upload another form
                 Forms = request.user.files
-                checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),] #TODO 4/24 include not(request.user.programs.1040) here not(request.user.programs.Identification),
+                checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.Identification)] #TODO 4/24 include not(request.user.programs.1040) here not(request.user.programs.Identification),
                 for group in Forms.all():
                     if group.document_title == "SNAP":
                         checkAllForms[0] = True
@@ -47,16 +48,17 @@ def files(request):
                     if group.document_title == "Free and Reduced Lunch":
                         checkAllForms[1] = True
                         file_list["PSD Reduced Lunch Approval Letter"] = False
+                    if group.document_title == "Identification":
+                        checkAllForms[2] = True
+                        file_list["Identification"] = False
                     
                     #TODO 4/24 UPDATE TAX BELOW
                     if group.document_title == "1040 Form":
-                        checkAllForms[4] = True
-                        file_list["1040 Tax Form"] = False
-                    '''
-                    if group.document_title == "Identification":
                         checkAllForms[3] = True
-                        file_list["Identification"] = False
-                    '''
+                        file_list["1040 Tax Form"] = False
+                    
+
+                    
 
                 if False in checkAllForms:
                     return render(request, 'dashboard/files.html', {

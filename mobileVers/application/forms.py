@@ -62,10 +62,11 @@ class EligibilityFormPlus(forms.ModelForm):
 class programForm(forms.ModelForm):
     class Meta:
         model = programs
-        fields = ['snap', 'freeReducedLunch',]
+        fields = ['snap', 'freeReducedLunch', 'Identification']
         labels  = { 
             'snap':'Food Assistance (SNAP)',
             'freeReducedLunch':'Free and Reduced Lunch',
+            'Identification':'Identification Card',
         } 
 
 class attestationForm(forms.ModelForm):
