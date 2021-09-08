@@ -1,7 +1,27 @@
 {% extends "dashboard/layout.html" %}
 {% load static %}
-
+<a class="row" onClick="window.history.back();return false;">
+    <div class=fadeSmall><img src="{% static 'application/images/BackArrow-darkblue.svg' %}" alt="back" style="width:max(4.5vw, 16px); margin-right: 300px"></div>
+    <div class=fadeLarge><img src="{% static 'application/images/BackArrow-white.svg' %}" alt="back" style="width:max(4.5vw, 16px); margin-right: 5px;"></div>
+    <p style = "font-weight: 700;">BACK</p>
+</a>
 {% block body %}
+
+{% if program_string == "Identification" %}
+    <div class="sideNav">
+        <p>An identification card can be any of the following:
+        <ul>
+            <p style="color:white">Colorado Driver's License or Colorado Identification card</p>
+            <p style="color:white">A United States Military or Military Dependent's Identification Card</p>
+            <p style="color:white">A United States Coast Guard Merchant Mariner card </p>
+            <p style="color:white">A Native Tribal Document</p>
+            <p style="color:white">Copy of Applicant's Birth Certificate from any States</p>
+            <p style="color:white">United States Passport</p>
+            <p style="color:white">For a list of more acceptable proof of identification, <a href="https://www.colorado.gov/pacific/sites/default/files/CPED_WIWO_Documents-Proof-Lawful-Presence.pdf" style="color:var(--yellow)">please click here</a></p>
+        </ul>
+        </p>
+    </div>
+  {% endif %}
 <script type='text/javascript'>
     function preview_image(event) 
     {
@@ -20,9 +40,9 @@
 <p style="color:var(--lightblue);font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
             
 <div style="margin-top: 3vh;">
-    <p>We need some additional information, such as proof of residency - if you do not have a PSD letter please upload the following:</p>
+    <p>We need some additional information, please upload the following:</p>
     <h3> {{program_string}} </h3>
-    <p style="font-size: max(3.3vw, 12px);">Uploaded documents are secure & not shared with anyone outside of digital equity.</p>
+    <p style="font-size: max(3.3vw, 12px);">Uploaded documents are secure & not shared with anyone outside of Get: FoCo.</p>
     
 </div>
 
