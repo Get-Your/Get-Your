@@ -31,7 +31,7 @@
                   <a style="color: {{ dashboard_color }} ; " href="{% url 'dashboard:dashboard' %}"><li>Dashboard</li></a>
                   <a style="color:{{ program_list_color }}; " href="{% url 'dashboard:ProgramsList' %}"><li>Program List</li></a>
                   <a style="color:{{ FAQ_color }}; " href="{% url 'dashboard:FAQ' %}"><li>FAQ</li></a>
-                  <a style="color:{{ Settings_color }}; " href="{% url 'dashboard:underConstruction' %}"><li>Settings</li></a>
+                  <a style="color:{{ Settings_color }}; " href="{% url 'dashboard:settings' %}"><li>Settings</li></a>
                   <a style="color:{{ Privacy_Policy_color }}; " href="{% url 'application:privacyPolicy' %}"><li>Privacy Policy</li></a>
                   <a style="color:white; " href="{% url 'application:index' %}"><li>Log Out</li></a>
                 
@@ -46,7 +46,7 @@
                   <p> <img src="{% static 'dashboard/images/Dashboard.svg' %}">  <a style="color: {{ dashboard_color }}; text-decoration:none; " href="{% url 'dashboard:dashboard' %}">Dashboard</a></p>
                   <p> <img src="{% static 'dashboard/images/ProgramList.svg' %}"> <a style="color:{{ program_list_color }}; text-decoration:none;" href="{% url 'dashboard:ProgramsList' %}">Programs</a></p>
                   <p> <img src="{% static 'dashboard/images/FAQ.svg' %}">  <a style="color:{{ FAQ_color }}; text-decoration:none;" href="{% url 'dashboard:FAQ' %}">FAQ</a></p>
-                  <p> <img src="{% static 'dashboard/images/Settings.svg' %}">  <a style="color:{{ Settings_color }};text-decoration:none; " href="{% url 'dashboard:underConstruction' %}">Settings</a></p>
+                  <p> <img src="{% static 'dashboard/images/Settings.svg' %}">  <a style="color:{{ Settings_color }};text-decoration:none; " href="{% url 'dashboard:settings' %}">Settings</a></p>
                   <p> <img src="{% static 'dashboard/images/PrivacyPolicy.svg' %}">  <a style="color:{{ Privacy_Policy_color }};text-decoration:none; " href="{% url 'application:privacyPolicy' %}">Privacy Policy</a></p>
                   <p> <img src="{% static 'dashboard/images/LogOut.svg' %}">  <a style="color:white;text-decoration:none; " href="{% url 'application:index' %}">Log Out</a></p>
                   <p style="position: absolute; bottom: 50px; font-size: 15px;"> {{clientEmail}}</p>

@@ -58,6 +58,7 @@ h1 {
 }
 h2 {
     font-size: max(2.5vw, 20px);
+    color:#13467D;
 }
 h3 {
     font-size: max(3vw, 16px);
@@ -266,7 +267,7 @@ input:focus { outline:none; }
 .label{
     /*This pushed the words away*/
     position:absolute;
-    color:white;
+    color:var(--darkblue);
     font-size: 12px;
     left:5px;
     top:20px;
@@ -377,6 +378,7 @@ input.fill:focus ~ label, input.fill:valid ~ label {
     }
     h2 {
         font-size: max(5.5vw, 24px);
+        color:white;
     }
     h3 {
         font-size: max(5vw, 18px);
