@@ -207,12 +207,76 @@ def index(request):
     #})
 
 
+def settings(request):
+    if request.method == "POST":
+
+        firstName = request.POST["firstName"]
+        lastName = request.POST["lastName"]
+        email = request.POST["email"]
+        address = request.POST["address"]
+        address2 = request.POST["address2"]
+        zipCode = request.POST["zipCode"]
+        state = request.POST["state"]
+        password = request.POST["password"]
+
+        
+        obj = request.user
+        #print(request.user.eligibility.GRQualified)
+        if firstName == "":
+            pass
+        else:
+            obj.first_name = firstName
+
+        if lastName == "":
+            pass
+        else:
+            obj.last_name = lastName
+        if email == "":
+            pass
+        else:
+            obj.email = email
+        if address == "":
+            pass
+        else:
+            obj.addresses.address = address
+        if address2 == "":
+            pass
+        else:
+            obj.addresses.address2 = address2
+        
+        if zipCode == "":
+            pass
+        else:
+            obj.addresses.zipCode = zipCode
+        if state == "":
+            pass
+        else:
+            obj.addresses.state = state
+        
+        if password == "":
+            pass
+        else:
+            obj.password = password
+        obj.save()
+  
+    return render(request, 'dashboard/settings.html',{
+        "name": request.user.first_name,
+        "lastName": request.user.last_name,
+        "email": request.user.email,
+        "address": request.user.addresses.address,
+        "address2": request.user.addresses.address2,
+        "zipCode": request.user.addresses.zipCode,
+        "state": request.user.addresses.state,
+        "password": request.user.password,
+    })
+
+
+
 def login_user(request):
     if request.method == "POST":
         # Try to log in user
         email = request.POST["email"]
         password = request.POST["password"]
-
         user = authenticate(username=email, password=password)
         # Check if the authentication was successful
         if user is not None:

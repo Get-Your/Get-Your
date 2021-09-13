@@ -1,0 +1,58 @@
+{% extends "dashboard/layout.html" %}
+
+{% block body %}
+<!--Login Page for GetyourConnexion-->
+
+<!--Login fields-->
+<form action="{% url 'dashboard:settings' %}" method="post" class="verticalContainer">
+    {% csrf_token %}
+
+    <div class="input">
+        <!--Have styling that I like on the forms-->      
+        <input class="fill" type="text" name="firstName" placeholder={{name}} style="width: 100%;" autocomplete="off">
+        <label class="label">First Name</label>    
+    </div>
+    <div class="input">
+        <!--Have styling that I like on the forms-->      
+        <input class="fill" type="text" name="lastName" placeholder={{lastName}} style="width: 100%;" autocomplete="off">
+        <label class="label">Last Name</label>    
+    </div>
+    <div class="input">
+        <!--Have styling that I like on the forms-->      
+        <input class="fill" type="text" name="address" placeholder={{address}} style="width: 100%;" autocomplete="off">
+        <label class="label">Address</label>    
+    </div>
+    <div class="input">
+        <!--Have styling that I like on the forms-->      
+        <input class="fill" type="text" name="address2"  placeholder={{address2}} style="width: 100%;" autocomplete="off">
+        <label class="label">Apartment #, Suite, Etc.</label>    
+    </div>
+    <div class="input">
+        <!--Have styling that I like on the forms-->      
+        <input class="fill" type="text" name="zipCode"  placeholder={{zipCode}} style="width: 100%;" autocomplete="off">
+        <label class="label">Zip Code</label>    
+    </div>
+
+    <div class="input">
+        <!--Have styling that I like on the forms-->      
+        <input class="fill" type="text" name="state"  placeholder={{state}} style="width: 100%;" autocomplete="off">
+        <label class="label">State</label>    
+    </div>
+
+    <div class="input">
+        <!--Have styling that I like on the forms-->      
+        <input class="fill" type="text" name="email" placeholder={{email}} style="width: 100%;" autocomplete="off">
+        <label class="label">Email</label>    
+    </div>
+
+    <div class="input">
+        <!--Have styling that I like on the forms-->        
+        <input class="fill" type="password" name="password" style="width: 100%;" autocomplete="off">
+        <label class="label">Password</label>
+    </div>
+
+        <button class="login" type="submit" style="width: 100%;"><strong>Done</strong></button>
+
+</form>
+
+{% endblock %}
