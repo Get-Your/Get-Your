@@ -94,6 +94,13 @@ h6:after {
     left: 0.5em;
     margin-right: -50%;
 }
+h7 {
+    font-size: max(3vw, 12px);
+    margin-bottom:1px;
+    margin-top: 0px;
+    font-family: Montserrat;
+    font-weight: 400;
+}
 
 p {
     font-size: max(2vw, 14px);
@@ -192,6 +199,20 @@ button {
     width:85%;
 }
 
+.button2{
+    background-color: transparent;
+    border-radius: none;
+    border:none;
+    outline: none;
+    box-shadow: none;
+    color:white;
+    height: 5px;
+}
+#myDIV {
+    display:none;
+}
+
+
 .buttonCheck{
     width:100%;
     font-family: Montserrat;
@@ -256,8 +277,8 @@ input{
     display:block;
     border:none;
     color:var(--yellow);
-    background-color: var(--darkblue);
-    border-bottom:1px solid white;
+    background-color: white;
+    border-bottom:1px solid var(--darkblue);
 }
 input:focus { outline:none; }
 .labelword{
@@ -397,6 +418,13 @@ input.fill:focus ~ label, input.fill:valid ~ label {
         font-weight: 400;
         color: white;
     }
+    h7 {
+        font-size: max(5.9vw, 30px);
+        margin-bottom:1px;
+        margin-top: 0px;
+        font-family: Montserrat;
+        font-weight: 400;
+    }
     h6:before,
     h6:after {
         background-color: #FFF;
@@ -479,6 +507,22 @@ input.fill:focus ~ label, input.fill:valid ~ label {
         font-weight: 700;
         width:85%;
     }
+
+    .button2{
+        background-color: transparent;
+        border-radius: none;
+        border:none;
+        outline: none;
+        box-shadow: none;
+        color:white;
+        height: 5px;
+    }
+
+    #myDIV {
+        display:none;
+    }
+
+
 
     .buttonCheck{
         width:100%;

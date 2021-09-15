@@ -201,7 +201,7 @@
     }
     /*Set up font sizes*/
     h1 {
-        font-size: max(4vw, 25px);
+        font-size: max(5vw, 30px);
         margin-bottom:1px;
         margin-top: 0px;
         font-family: Montserrat;
