@@ -27,16 +27,18 @@ def files(request):
     }
     if request.method == "POST":   
         form = FileForm(request.POST, request.FILES)
+        files = request.FILES.getlist('document')
         if form.is_valid():
             print(form)
             if request.user.is_authenticated:
-                instance = form.save(commit=False)
-                print(instance)
-                instance.user_id = request.user
-                instance.save()
-                
-                file_upload = request.user
-                file_upload.files.add(instance)
+                for f in files:
+                    instance = form.save(commit=False)
+                    print(instance)
+                    instance.user_id = request.user
+                    instance.save()
+                    
+                    file_upload = request.user
+                    file_upload.files.add(instance)
 
                 # Check if the user needs to upload another form
                 Forms = request.user.files

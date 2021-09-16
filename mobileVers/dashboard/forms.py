@@ -1,6 +1,7 @@
 from django import forms
 from .models import Form, Feedback, TaxInformation, residencyForm
 from application.models import addressVerification
+from django.forms import ClearableFileInput
 
  
 class FileForm(forms.ModelForm):
@@ -10,6 +11,9 @@ class FileForm(forms.ModelForm):
         labels  = { 
             'document_title':'Program', 
             'document':'Document Upload',
+        }
+        widgets = {
+            'document': ClearableFileInput(attrs={'multiple': True}),
         }
 
  
@@ -48,7 +52,7 @@ class TaxForm(forms.ModelForm):
 
 
 
-'''need to complete below , tie this and models.py to index.html stars rating'''
+'''need to complete below , tie this and models.py to index.html stars rating and also bug when star is pressed twice...'''
 class FeedbackForm(forms.ModelForm):
     #starRating = forms.ChoiceField(widget=forms.RadioSelect(), label="starRating")
     feedbackComments = forms.CharField(max_length = 500, required=False) 
