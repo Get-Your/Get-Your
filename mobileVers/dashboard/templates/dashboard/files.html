@@ -140,14 +140,48 @@
             </div>
         {% endif %}
     {% endfor %}
-    <br>
-    <div class="preview"> 
-        <img style ="max-width:100%;" id="output_image"/>
+
+
+    <a onclick="myFunction()" > <h2 style="color: var(--yellow); ">Click Here if you need to upload more files.</h2> </a>
+    
+    <div id="myDIV">
+        <div class="upload-btn-wrapper" style ="width:100%; align-items: center; margin-top: 3vh;">
+            <button class="buttonFileUpload">
+                <div class="row" style="justify-content: space-between;">
+                    <img src="{% static 'dashboard/images/upload.svg' %}" alt="back" style="width:15vw; margin-right: 5vw;">
+                    <div style="display:flex; flex-direction:column;align-items:flex-start;">
+                        <p style = "color:white; font-weight: 400;text-align: left; margin-bottom: 5px;">Select the document from your photo library.</p>
+                        <p style = "color:white;font-weight: 200;">PDF, PNG or JPEG</p>
+                    </div>
+                </div>
+            </button>
+            <input type="file" name ="{{field.name}}" id="{{ field.id_for_label }}"/>
+        </div>
     </div>
+        
+
+    <br>
+ <!-- Taking preview out and instead going to replace with "green upload complete button"  
+     <div class="preview"> 
+        <img style ="max-width:100%;" id="output_image"/>
+    </div>-->
     <br>
     <div class="footer">
         <button type ="submit" > CONTINUE </button>
     </div>
 </form>
+
+
+<script>
+    function myFunction() {
+      var x = document.getElementById("myDIV");
+      if (x.style.display === "block") {
+        x.style.display = "none";
+      } else {
+        x.style.display = "block";
+      }
+    }
+</script>
+  
 
 {% endblock %}
