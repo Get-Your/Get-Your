@@ -311,7 +311,7 @@ def notifyRemaining(request):
 
 
 def qualifiedPrograms(request):
-    if request.user.eligibility.DEqualified == QualificationStatus.PENDING.name or request.user.eligibility.DEqualified == QualificationStatus.ACTIVE.name:
+    if request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name:
         text = "True"
     else:
         text = "False"
@@ -382,7 +382,7 @@ def feedback(request):
             print("form is not valid")
     else:
         form = FeedbackForm()
-    if request.user.eligibility.DEqualified == QualificationStatus.PENDING.name or request.user.eligibility.DEqualified == QualificationStatus.ACTIVE.name:
+    if request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name:
         text = "Based on your information, you may qualify! Be on the lookout for an email or phone call."
         text2 = "Based on your information you may also qualify for the city's Grocery Rebate Tax program!"
         text3 = "By clicking on the link below, we can send your information over and quick apply for you."
@@ -448,7 +448,7 @@ def dashboardGetFoco(request):
     QProgramNumber = 0
     ActiveNumber = 0
     PendingNumber = 0
-    if request.user.eligibility.DEqualified == QualificationStatus.PENDING.name or request.user.eligibility.DEqualified == QualificationStatus.ACTIVE.name:
+    if request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name:
         text = "True"
         QProgramNumber = QProgramNumber + 1
         GRDisplay = ""

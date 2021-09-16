@@ -105,6 +105,7 @@ class Eligibility(TimeStampedModel):
     dependents = models.IntegerField(100)
     dependentsAge = models.IntegerField(100, default=0)
     DEqualified = models.CharField(max_length=20)
+    GenericQualified = models.CharField(max_length=20)
     GRqualified = models.CharField(max_length=20)
     RecreationQualified = models.CharField(max_length=20)
     #TODO 5/13/2021
@@ -163,6 +164,5 @@ class addressLookup(TimeStampedModel):
     address = models.CharField(max_length=100) 
 
 class futureEmails(TimeStampedModel):
-    email = models.EmailField(unique=True)
-    connexionCommunication = models.BooleanField(default=False)
+    connexionCommunication = models.BooleanField(default=True, blank=True)
 

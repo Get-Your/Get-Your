@@ -89,8 +89,7 @@ class addressLookupForm(forms.ModelForm):
 class futureEmailsForm(forms.ModelForm):
     class Meta:
         model = futureEmails
-        fields = ['email', 'connexionCommunication']
-        labels  = { 
-            'email':'Email Address', 
-            'connexionCommunication':'By checking this box, I agree to receive communications from Fort Collins Connexion. I understand I may opt out at any time.'
+        fields = ['connexionCommunication']
+        labels  = {
+            'connexionCommunication':'Subscribe me to service updates! By checking this box, I agree to receive communications from Fort Collins Connexion. I understand I may opt out at any time.'
         } 
