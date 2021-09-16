@@ -263,9 +263,9 @@ def moreInfoNeeded(request):
         
             print("SAVING")
             instance.save()
-            # If DEqualified is not blank (either PENDING or ACTIVE),
+            # If GenericQualified is not blank (either PENDING or ACTIVE),
             # go to the financial information page
-            if instance.DEqualified == QualificationStatus.PENDING.name or instance.DEqualified == QualificationStatus.ACTIVE.name:
+            if instance.GenericQualified == QualificationStatus.PENDING.name or instance.GenericQualified == QualificationStatus.ACTIVE.name:
                     return redirect(reverse("application:mayQualify"))
             else:
                     return redirect(reverse("dashboard:addressVerification"))
@@ -298,31 +298,31 @@ def finances(request):
                 if qualification(form['dependents'].value(),) >= 19800:
                     # Set to 'PENDING' (for pending enrollment). Never set to 
                     # 'ACTIVE' from Django
-                    instance.DEqualified = QualificationStatus.PENDING.name
+                    instance.GenericQualified = QualificationStatus.PENDING.name
                 else:
-                    instance.DEqualified = QualificationStatus.NOTQUALIFIED.name
+                    instance.GenericQualified = QualificationStatus.NOTQUALIFIED.name
             elif form['grossAnnualHouseholdIncome'].value() == '$19,800 ~ $32,800':
                 print("GAHI is between 19,800 and 32,800")
                 if 19800 <= qualification(form['dependents'].value(),) <= 32800:
                     # Set to 'PENDING' (for pending enrollment). Never set to 
                     # 'ACTIVE' from Django
-                    instance.DEqualified = QualificationStatus.PENDING.name
+                    instance.GenericQualified = QualificationStatus.PENDING.name
                 else:
-                    instance.DEqualified = QualificationStatus.NOTQUALIFIED.name
+                    instance.GenericQualified = QualificationStatus.NOTQUALIFIED.name
             elif form['grossAnnualHouseholdIncome'].value() == 'Over $32,800':
                 print("GAHI is above 32,800")
                 if qualification(form['dependents'].value(),) >= 32800:
                     # Set to 'PENDING' (for pending enrollment). Never set to 
                     # 'ACTIVE' from Django
-                    instance.DEqualified = QualificationStatus.PENDING.name
+                    instance.GenericQualified = QualificationStatus.PENDING.name
                 else:
-                    instance.DEqualified = QualificationStatus.NOTQUALIFIED.name                      
+                    instance.GenericQualified = QualificationStatus.NOTQUALIFIED.name                      
                 
             print("SAVING")
             instance.save()
-            # If DEqualified is not blank (either PENDING or ACTIVE),
+            # If GenericQualified is not blank (either PENDING or ACTIVE),
             # go to the financial information page
-            if instance.DEqualified == QualificationStatus.PENDING.name or instance.DEqualified == QualificationStatus.ACTIVE.name:
+            if instance.GenericQualified == QualificationStatus.PENDING.name or instance.GenericQualified == QualificationStatus.ACTIVE.name:
                 return redirect(reverse("application:mayQualify"))
             else:
                 return redirect(reverse("application:programs"))
@@ -437,14 +437,14 @@ def quickNotAvailable(request):
 def quickNotFound(request):
     return render(request, 'application/quickNotFound.html',) 
 
-def quickComingSoon(request):
+def quickComingSoon(request): 
     
     if request.method == "POST": 
         form = futureEmailsForm(request.POST or None)
         if form.is_valid():
             try:
                 form.save()
-                return redirect(reverse("application:index"))
+                return redirect(reverse("application:account"))
             except AttributeError:
                 print("Error Email Saving")
     
