@@ -12,6 +12,8 @@ from py_models.qualification_status import QualificationStatus
 import logging
 import usaddress
 
+from django.http import HttpResponseRedirect
+
 
 formPageNum = 6
 
@@ -165,11 +167,16 @@ def addressCorrection(request):
             "zipcode": str(request.user.addresses.zipCode),})
         dict_address = validateUSPS(q)
         print(dict_address['AddressValidateResponse']['Address'])
+        
+        # Kick back to the user if the USPS API needs more information
+        if 'ReturnText' in dict_address['AddressValidateResponse']['Address'].keys():
+            raise TypeError()
+        
         program_string_2 = [dict_address['AddressValidateResponse']['Address']['Address2'], 
                             dict_address['AddressValidateResponse']['Address']['Address1'],
                             dict_address['AddressValidateResponse']['Address']['City'] + " "+ dict_address['AddressValidateResponse']['Address']['State'] +" "+  str(dict_address['AddressValidateResponse']['Address']['Zip5'])]
-    except TypeError or RelatedObjectDoesNotExist:
-        program_string_2 = ["Sorry, we couldn't verify this address through USPS."]
+    except KeyError or TypeError or RelatedObjectDoesNotExist:
+        program_string_2 = ["Sorry, we couldn't verify this address through USPS.", "Please press 'back' and re-enter."]
         print("USPS couldn't figure it out!")
     program_string = [request.user.addresses.address, request.user.addresses.address2, request.user.addresses.city + " " + request.user.addresses.state + " " + str(request.user.addresses.zipCode)]
     return render(request, 'application/addressCorrection.html',  {
@@ -204,10 +211,16 @@ def takeUSPSaddress(request):
         instance.hasConnexion = hasConnexion
         
         instance.save()
-    except TypeError or RelatedObjectDoesNotExist:
+    except KeyError or TypeError or RelatedObjectDoesNotExist:
+        
         print("USPS couldn't figure it out!")
+        # HTTP_REFERER sends this button press back to the same page
+        # (e.g. removes the button functionality)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        # return redirect(reverse("application:address"))
 
-    return redirect(reverse("application:inServiceArea"))
+    else:
+        return redirect(reverse("application:inServiceArea"))
 
 
 
@@ -263,9 +276,9 @@ def moreInfoNeeded(request):
         
             print("SAVING")
             instance.save()
-            # If DEqualified is not blank (either PENDING or ACTIVE),
+            # If GenericQualified is not blank (either PENDING or ACTIVE),
             # go to the financial information page
-            if instance.DEqualified == QualificationStatus.PENDING.name or instance.DEqualified == QualificationStatus.ACTIVE.name:
+            if instance.GenericQualified == QualificationStatus.PENDING.name or instance.GenericQualified == QualificationStatus.ACTIVE.name:
                     return redirect(reverse("application:mayQualify"))
             else:
                     return redirect(reverse("dashboard:addressVerification"))
@@ -298,31 +311,31 @@ def finances(request):
                 if qualification(form['dependents'].value(),) >= 19800:
                     # Set to 'PENDING' (for pending enrollment). Never set to 
                     # 'ACTIVE' from Django
-                    instance.DEqualified = QualificationStatus.PENDING.name
+                    instance.GenericQualified = QualificationStatus.ACTIVE.name
                 else:
-                    instance.DEqualified = QualificationStatus.NOTQUALIFIED.name
+                    instance.GenericQualified = QualificationStatus.NOTQUALIFIED.name
             elif form['grossAnnualHouseholdIncome'].value() == '$19,800 ~ $32,800':
                 print("GAHI is between 19,800 and 32,800")
                 if 19800 <= qualification(form['dependents'].value(),) <= 32800:
                     # Set to 'PENDING' (for pending enrollment). Never set to 
                     # 'ACTIVE' from Django
-                    instance.DEqualified = QualificationStatus.PENDING.name
+                    instance.GenericQualified = QualificationStatus.ACTIVE.name
                 else:
-                    instance.DEqualified = QualificationStatus.NOTQUALIFIED.name
+                    instance.GenericQualified = QualificationStatus.NOTQUALIFIED.name
             elif form['grossAnnualHouseholdIncome'].value() == 'Over $32,800':
                 print("GAHI is above 32,800")
                 if qualification(form['dependents'].value(),) >= 32800:
                     # Set to 'PENDING' (for pending enrollment). Never set to 
                     # 'ACTIVE' from Django
-                    instance.DEqualified = QualificationStatus.PENDING.name
+                    instance.GenericQualified = QualificationStatus.ACTIVE.name
                 else:
-                    instance.DEqualified = QualificationStatus.NOTQUALIFIED.name                      
+                    instance.GenericQualified = QualificationStatus.NOTQUALIFIED.name                      
                 
             print("SAVING")
             instance.save()
-            # If DEqualified is not blank (either PENDING or ACTIVE),
+            # If GenericQualified is not blank (either PENDING or ACTIVE),
             # go to the financial information page
-            if instance.DEqualified == QualificationStatus.PENDING.name or instance.DEqualified == QualificationStatus.ACTIVE.name:
+            if instance.GenericQualified == QualificationStatus.PENDING.name or instance.GenericQualified == QualificationStatus.ACTIVE.name:
                 return redirect(reverse("application:mayQualify"))
             else:
                 return redirect(reverse("application:programs"))
@@ -337,24 +350,61 @@ def finances(request):
         'formPageNum':formPageNum,
     })
 
+def ConnexionQuickApply(request):
+    obj = request.user.eligibility
+    addr = request.user.addresses
+    print(obj.ConnexionQualified)
+    #print(request.user.eligibility.GRQualified)
+    if obj.GenericQualified == QualificationStatus.ACTIVE.name:
+        obj.ConnexionQualified = QualificationStatus.PENDING.name
+        print(obj.ConnexionQualified)
+        obj.save()
+        
+        ## Check for Connexion services
+        # Recreate the relevant parts of addressDict as if from validateUSPS()
+        addressDict = {
+            'AddressValidateResponse': {
+                'Address': {
+                    'Address2': addr.address,
+                    'Zip5': addr.zipCode,
+                    },
+                },
+            }
+        isInGMA, hasConnexion = addressCheck(addressDict)
+        # Connexion status unknown, but since isInGMA==True at this point in
+        # the application, Connexion will be available at some point
+        if not hasConnexion:    # this covers both None and False
+            return redirect(reverse("application:comingSoon"))
+        else:  # hasConnexion==True is the only remaining option
+            return render(request, "application/quickApply_connexion.html",)
+    else:
+        obj.ConnexionQualified = QualificationStatus.NOTQUALIFIED.name
+        print(obj.ConnexionQualified)
+        obj.save()
 
 def GRQuickApply(request):
     obj = request.user.eligibility
     print(obj.GRqualified)
     #print(request.user.eligibility.GRQualified)
-    obj.GRqualified = QualificationStatus.PENDING.name
+    if obj.GenericQualified == QualificationStatus.ACTIVE.name:
+        obj.GRqualified = QualificationStatus.PENDING.name
+    else:
+        obj.GRqualified = QualificationStatus.NOTQUALIFIED.name
     print(obj.GRqualified)
     obj.save()
-    return render(request, "application/GRQuickApply.html",)
+    return render(request, "application/quickApply_grocery.html",)
 
 def RecreationQuickApply(request):
     obj = request.user.eligibility
     print(obj.RecreationQualified)
     #print(request.user.eligibility.GRQualified)
-    obj.RecreationQualified = QualificationStatus.PENDING.name
+    if obj.GenericQualified == QualificationStatus.ACTIVE.name:
+        obj.RecreationQualified = QualificationStatus.PENDING.name
+    else:
+        obj.RecreationQualified = QualificationStatus.NOTQUALIFIED.name
     print(obj.RecreationQualified)
     obj.save()
-    return render(request, "application/RecreationQuickApply.html",)
+    return render(request, "application/quickApply_recreation.html",)
 
 
 def attestation(request):
@@ -437,20 +487,38 @@ def quickNotAvailable(request):
 def quickNotFound(request):
     return render(request, 'application/quickNotFound.html',) 
 
-def quickComingSoon(request):
+def quickComingSoon(request): 
     
     if request.method == "POST": 
         form = futureEmailsForm(request.POST or None)
         if form.is_valid():
             try:
                 form.save()
-                return redirect(reverse("application:index"))
+                return redirect(reverse("application:account"))
             except AttributeError:
                 print("Error Email Saving")
     
     form = futureEmailsForm()
     return render(request, 'application/quickComingSoon.html', {
             'form':form,
+            'model_url': reverse("application:quickComingSoon"),
+        })
+
+def comingSoon(request): 
+    
+    if request.method == "POST": 
+        form = futureEmailsForm(request.POST or None)
+        if form.is_valid():
+            try:
+                form.save()
+                return render(request, "application/quickApply_connexion.html",)
+            except AttributeError:
+                print("Error Email Saving")
+    
+    form = futureEmailsForm()
+    return render(request, 'application/comingSoon.html', {
+            'form':form,
+            'model_url': reverse("application:comingSoon"),
         })
 
 def privacyPolicy(request):
