@@ -12,6 +12,8 @@ from py_models.qualification_status import QualificationStatus
 import logging
 import usaddress
 
+from django.http import HttpResponseRedirect
+
 
 formPageNum = 6
 
@@ -165,11 +167,16 @@ def addressCorrection(request):
             "zipcode": str(request.user.addresses.zipCode),})
         dict_address = validateUSPS(q)
         print(dict_address['AddressValidateResponse']['Address'])
+        
+        # Kick back to the user if the USPS API needs more information
+        if 'ReturnText' in dict_address['AddressValidateResponse']['Address'].keys():
+            raise TypeError()
+        
         program_string_2 = [dict_address['AddressValidateResponse']['Address']['Address2'], 
                             dict_address['AddressValidateResponse']['Address']['Address1'],
                             dict_address['AddressValidateResponse']['Address']['City'] + " "+ dict_address['AddressValidateResponse']['Address']['State'] +" "+  str(dict_address['AddressValidateResponse']['Address']['Zip5'])]
-    except TypeError or RelatedObjectDoesNotExist:
-        program_string_2 = ["Sorry, we couldn't verify this address through USPS."]
+    except KeyError or TypeError or RelatedObjectDoesNotExist:
+        program_string_2 = ["Sorry, we couldn't verify this address through USPS.", "Please press 'back' and re-enter."]
         print("USPS couldn't figure it out!")
     program_string = [request.user.addresses.address, request.user.addresses.address2, request.user.addresses.city + " " + request.user.addresses.state + " " + str(request.user.addresses.zipCode)]
     return render(request, 'application/addressCorrection.html',  {
@@ -204,10 +211,16 @@ def takeUSPSaddress(request):
         instance.hasConnexion = hasConnexion
         
         instance.save()
-    except TypeError or RelatedObjectDoesNotExist:
+    except KeyError or TypeError or RelatedObjectDoesNotExist:
+        
         print("USPS couldn't figure it out!")
+        # HTTP_REFERER sends this button press back to the same page
+        # (e.g. removes the button functionality)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        # return redirect(reverse("application:address"))
 
-    return redirect(reverse("application:inServiceArea"))
+    else:
+        return redirect(reverse("application:inServiceArea"))
 
 
 
@@ -336,7 +349,6 @@ def finances(request):
         'step':3,
         'formPageNum':formPageNum,
     })
-
 
 def GRQuickApply(request):
     obj = request.user.eligibility
