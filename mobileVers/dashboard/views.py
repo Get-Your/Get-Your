@@ -223,7 +223,7 @@ def settings(request):
 
         
         obj = request.user
-        #print(request.user.eligibility.GRQualified)
+        #print(request.user.eligibility.GRqualified)
         if firstName == "":
             pass
         else:
@@ -313,7 +313,7 @@ def notifyRemaining(request):
 
 
 def qualifiedPrograms(request):
-    if request.user.eligibility.DEqualified == QualificationStatus.PENDING.name or request.user.eligibility.DEqualified == QualificationStatus.ACTIVE.name:
+    if request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name:
         text = "True"
     else:
         text = "False"
@@ -324,6 +324,23 @@ def qualifiedPrograms(request):
         text2 = "True"
     else:
         text2 = "False"
+        
+    if request.user.eligibility.ConnexionQualified == QualificationStatus.PENDING.name:
+        ConnexionButtonText = "Applied"
+        ConnexionButtonColor = "green"
+        ConnexionButtonTextColor = "White"
+    elif request.user.eligibility.ConnexionQualified == QualificationStatus.ACTIVE.name:
+        ConnexionButtonText = "Enrolled!"
+        ConnexionButtonColor = "blue"
+        ConnexionButtonTextColor = "White"
+    elif request.user.eligibility.ConnexionQualified == QualificationStatus.NOTQUALIFIED.name:
+        ConnexionButtonText = "Cannot Enroll"
+        ConnexionButtonColor = "red"
+        ConnexionButtonTextColor = "black"
+    else:
+        ConnexionButtonText = "Quick Apply +"
+        ConnexionButtonColor = ""
+        ConnexionButtonTextColor = ""
 
     if request.user.eligibility.GRqualified == QualificationStatus.PENDING.name:
         GRButtonText = "Applied"
@@ -333,6 +350,10 @@ def qualifiedPrograms(request):
         GRButtonText = "Enrolled!"
         GRButtonColor = "blue"
         GRButtonTextColor = "White"
+    elif request.user.eligibility.GRqualified == QualificationStatus.NOTQUALIFIED.name:
+        ConnexionButtonText = "Cannot Enroll"
+        ConnexionButtonColor = "red"
+        ConnexionButtonTextColor = "black"
     else:
         GRButtonText = "Quick Apply +"
         GRButtonColor = ""
@@ -346,6 +367,10 @@ def qualifiedPrograms(request):
         GRButtonText = "Enrolled!" 
         GRButtonColor = "blue"
         GRButtonTextColor = "White"
+    elif request.user.eligibility.RecreationQualified == QualificationStatus.NOTQUALIFIED.name:
+        ConnexionButtonText = "Cannot Enroll"
+        ConnexionButtonColor = "red"
+        ConnexionButtonTextColor = "black"
     else:
         RECButtonText = "Quick Apply +"
         RECButtonColor = ""
@@ -358,6 +383,10 @@ def qualifiedPrograms(request):
         "FAQ_color": "white",
         "Settings_color": "white",
         "Privacy_Policy_color": "white",
+
+        "ConnexionButtonText": ConnexionButtonText,
+        "ConnexionButtonColor": ConnexionButtonColor,
+        "ConnexionButtonTextColor": ConnexionButtonTextColor,
 
         "GRButtonText": GRButtonText,
         "GRButtonColor": GRButtonColor,
@@ -384,7 +413,7 @@ def feedback(request):
             print("form is not valid")
     else:
         form = FeedbackForm()
-    if request.user.eligibility.DEqualified == QualificationStatus.PENDING.name or request.user.eligibility.DEqualified == QualificationStatus.ACTIVE.name:
+    if request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name:
         text = "Based on your information, you may qualify! Be on the lookout for an email or phone call."
         text2 = "Based on your information you may also qualify for the city's Grocery Rebate Tax program!"
         text3 = "By clicking on the link below, we can send your information over and quick apply for you."
@@ -450,7 +479,7 @@ def dashboardGetFoco(request):
     QProgramNumber = 0
     ActiveNumber = 0
     PendingNumber = 0
-    if request.user.eligibility.DEqualified == QualificationStatus.PENDING.name or request.user.eligibility.DEqualified == QualificationStatus.ACTIVE.name:
+    if request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name:
         text = "True"
         QProgramNumber = QProgramNumber + 1
         GRDisplay = ""
