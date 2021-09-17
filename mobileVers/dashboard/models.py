@@ -1,6 +1,8 @@
 from django.db import models
 from application.models import User
 
+from django.core.validators import FileExtensionValidator
+
 # Create your models here.s
 
 class TimeStampedModel(models.Model):
@@ -25,7 +27,7 @@ class Form(TimeStampedModel):
         max_length=30,
         choices=form_titles,
     )
-    document = models.FileField()
+    document = models.FileField(validators=[FileExtensionValidator(['pdf','jpg','png'],)])
 
 class residencyForm(TimeStampedModel):
     user_id = models.ForeignKey(User, related_name ="UserResidencyFiles", on_delete=models.CASCADE, blank=False)
