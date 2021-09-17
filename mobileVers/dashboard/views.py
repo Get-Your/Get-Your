@@ -221,7 +221,7 @@ def settings(request):
 
         
         obj = request.user
-        #print(request.user.eligibility.GRQualified)
+        #print(request.user.eligibility.GRqualified)
         if firstName == "":
             pass
         else:
@@ -322,6 +322,23 @@ def qualifiedPrograms(request):
         text2 = "True"
     else:
         text2 = "False"
+        
+    if request.user.eligibility.ConnexionQualified == QualificationStatus.PENDING.name:
+        ConnexionButtonText = "Applied"
+        ConnexionButtonColor = "green"
+        ConnexionButtonTextColor = "White"
+    elif request.user.eligibility.ConnexionQualified == QualificationStatus.ACTIVE.name:
+        ConnexionButtonText = "Enrolled!"
+        ConnexionButtonColor = "blue"
+        ConnexionButtonTextColor = "White"
+    elif request.user.eligibility.ConnexionQualified == QualificationStatus.NOTQUALIFIED.name:
+        ConnexionButtonText = "Cannot Enroll"
+        ConnexionButtonColor = "red"
+        ConnexionButtonTextColor = "black"
+    else:
+        ConnexionButtonText = "Quick Apply +"
+        ConnexionButtonColor = ""
+        ConnexionButtonTextColor = ""
 
     if request.user.eligibility.GRqualified == QualificationStatus.PENDING.name:
         GRButtonText = "Applied"
@@ -331,6 +348,10 @@ def qualifiedPrograms(request):
         GRButtonText = "Enrolled!"
         GRButtonColor = "blue"
         GRButtonTextColor = "White"
+    elif request.user.eligibility.GRqualified == QualificationStatus.NOTQUALIFIED.name:
+        ConnexionButtonText = "Cannot Enroll"
+        ConnexionButtonColor = "red"
+        ConnexionButtonTextColor = "black"
     else:
         GRButtonText = "Quick Apply +"
         GRButtonColor = ""
@@ -344,6 +365,10 @@ def qualifiedPrograms(request):
         GRButtonText = "Enrolled!" 
         GRButtonColor = "blue"
         GRButtonTextColor = "White"
+    elif request.user.eligibility.RecreationQualified == QualificationStatus.NOTQUALIFIED.name:
+        ConnexionButtonText = "Cannot Enroll"
+        ConnexionButtonColor = "red"
+        ConnexionButtonTextColor = "black"
     else:
         RECButtonText = "Quick Apply +"
         RECButtonColor = ""
@@ -356,6 +381,10 @@ def qualifiedPrograms(request):
         "FAQ_color": "white",
         "Settings_color": "white",
         "Privacy_Policy_color": "white",
+
+        "ConnexionButtonText": ConnexionButtonText,
+        "ConnexionButtonColor": ConnexionButtonColor,
+        "ConnexionButtonTextColor": ConnexionButtonTextColor,
 
         "GRButtonText": GRButtonText,
         "GRButtonColor": GRButtonColor,

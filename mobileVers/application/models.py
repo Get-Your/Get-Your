@@ -106,6 +106,7 @@ class Eligibility(TimeStampedModel):
     dependentsAge = models.IntegerField(100, default=0)
     DEqualified = models.CharField(max_length=20)
     GenericQualified = models.CharField(max_length=20)
+    ConnexionQualified = models.CharField(max_length=20)
     GRqualified = models.CharField(max_length=20)
     RecreationQualified = models.CharField(max_length=20)
     #TODO 5/13/2021
