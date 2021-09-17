@@ -1,25 +1,16 @@
 {% extends 'application/availability_base.html' %}
 
 {% block content %}
-    <h1 style="overflow: hidden; padding: auto;"><b>Your address is in the Get:FoCo service area but Connexion is not quite ready.</b></h1>
-    <p style="margin-top: 2vh;">Subscribe for updates when Connexion will be available for your address, and/or continue to the application to enroll.</p>  
+    {% block maintext %}
+    {% endblock %}
 
-    <form action="{% url 'application:quickComingSoon' %}" method="post" autocomplete="false" enctype="multipart/form-data">
+    <form action="{{ model_url }}" method="post" autocomplete="false" enctype="multipart/form-data">
         {% csrf_token %}
-        <div class="input" style = "width:100%; margin-top:5vh;">
-            <!--TODO: change this to dropdown menu with data-->
-            <input class="fill" name="{{ form.email.name }}"
-                id="{{ form.email.id_for_label }}"
-                maxlength="{{ form.email.max_length }}"
-                type="text" 
-                style="width:100%;border-bottom:1px solid #999999;" 
-                required  
-                autocomplete="off">
-            <label class="label" style="color:#999999">{{ form.email.label }}</label>    
-        </div>
+
+        <br/><br/>
         
         <label for="{{ form.connexionCommunication.id_for_label }}" style="word-wrap: break-word;">
-            <input type="checkbox" id="{{ form.connexionCommunication.id_for_label }}" name="{{ form.connexionCommunication.name}}"required style="vertical-align: middle; display: inline-block;">
+            <input type="checkbox" id="{{ form.connexionCommunication.id_for_label }}" name="{{ form.connexionCommunication.name}}" style="vertical-align: middle; display: inline-block;">
             {{ form.connexionCommunication.label}}
         </label>
 
