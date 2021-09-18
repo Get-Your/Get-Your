@@ -307,6 +307,8 @@ def enroll_connexion_updates(request):
     }
     response = requests.post(url, data=payload, headers=headers)
     
+    # raise AssertionError('error test')
+    
     # This seems to rely on the 'errors' return rather than status code, so
     # need to verify both (kick back an error if either are not good)
     if response.status_code != requests.codes.okay or response.json()['errors'] != '':

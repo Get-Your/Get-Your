@@ -541,8 +541,9 @@ def comingSoon(request):
             try:
                 form.save()
                 
+                doEnroll = form.cleaned_data['connexionCommunication']
                 enrollFailure = False
-                if form.cleaned_data['connexionCommunication'] is True:
+                if doEnroll is True:
                     try:
                         enroll_connexion_updates(request)
                     except AssertionError:
@@ -553,6 +554,7 @@ def comingSoon(request):
                     "application/quickApply_connexion.html",
                     {
                         'enroll_failure': enrollFailure,
+                        'is_enrolled': doEnroll,
                         },
                     )
 
@@ -565,8 +567,9 @@ def comingSoon(request):
         addr = request.user.addresses
         if request.session['address_dict']['address'] == addr.address and request.session['address_dict']['zipCode'] == str(addr.zipCode):
             
+            doEnroll = request.session['connexion_communication']
             enrollFailure = False
-            if request.session['connexion_communication'] is True:
+            if doEnroll is True:
                 try:
                     enroll_connexion_updates(request)
                 except AssertionError:
@@ -581,6 +584,7 @@ def comingSoon(request):
                 "application/quickApply_connexion.html",
                 {
                     'enroll_failure': enrollFailure,
+                    'is_enrolled': doEnroll,
                     },
                 )
         
