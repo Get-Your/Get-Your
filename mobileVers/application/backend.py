@@ -4,6 +4,9 @@ import re
 import requests
 from django import http  # used for type checks
 
+import urllib.parse
+import requests
+
 #Andrew backend code for Twilio
 from twilio.rest import Client
 from django.conf import settings    
@@ -260,7 +263,55 @@ def gma_lookup(coord_string):
         return True
     else:
         return False
+    
+def enroll_connexion_updates(request):
+    """
+    Enroll a user in Connexion service update emails.
 
+    Parameters
+    ----------
+    request : django.core.handlers.wsgi.WSGIRequest
+        User request for the calling page, to be passed through to this
+        function.
+
+    Raises
+    ------
+    AssertionError
+        Designates a failure when writing to the Connexion-update service.
+
+    Returns
+    -------
+    None. No return designates a successful write to the service.
+
+    """
+    
+    usr = request.user
+    addr = request.user.addresses
+    
+    print(usr.email)
+    print(usr.phone_number.national_number)
+    print("{ad}, {zc}".format(ad=addr.address, zc=addr.zipCode))
+
+    url = "https://www.fcgov.com/webservices/codeforamerica/"
+    params = {
+        'email': usr.email,
+        # Retrieve just the 10-digit phone number
+        'phone': usr.phone_number.national_number,
+        # Create an address string recognized by the City system
+        'address': "{ad}, {zc}".format(ad=addr.address, zc=addr.zipCode),
+        }
+    payload = urllib.parse.urlencode(params)
+    
+    headers = {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    response = requests.post(url, data=payload, headers=headers)
+    
+    # This seems to rely on the 'errors' return rather than status code, so
+    # need to verify both (kick back an error if either are not good)
+    if response.status_code != requests.codes.okay or response.json()['errors'] != '':
+        print(response.json()['errors'])
+        raise AssertionError('subscription request could not be completed')
 
 #1) open file csv containing AMI information
 #2) compare dependents number to file, find right "row"

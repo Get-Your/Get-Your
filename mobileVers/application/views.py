@@ -4,7 +4,7 @@ from django.contrib.auth import login, logout
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from .forms import UserForm, AddressForm, EligibilityForm, programForm, addressLookupForm, futureEmailsForm, EligibilityFormPlus,attestationForm
-from .backend import addressCheck, validateUSPS, qualification
+from .backend import addressCheck, validateUSPS, qualification, enroll_connexion_updates
 from django.http import QueryDict
 
 from py_models.qualification_status import QualificationStatus
@@ -111,6 +111,12 @@ def index(request):
                     # Connexion status unknown, but since isInGMA==True, it
                     # will be available at some point
                     if not hasConnexion:    # this covers both None and False
+                        # Write a dictionary to the session var with 'address'
+                        # and 'zipCode' for use when quick-applying for Connexion
+                        request.session['address_dict'] = {
+                            'address': addressDict['AddressValidateResponse']['Address']['Address2'],
+                            'zipCode': addressDict['AddressValidateResponse']['Address']['Zip5'],
+                            }
                         return redirect(reverse("application:quickComingSoon"))
                         
                     else:  # hasConnexion==True is the only remaining option
@@ -494,9 +500,12 @@ def quickComingSoon(request):
         if form.is_valid():
             try:
                 form.save()
-                return redirect(reverse("application:account"))
             except AttributeError:
                 print("Error Email Saving")
+            else:
+                request.session['connexion_communication'] = form.cleaned_data['connexionCommunication']
+                return redirect(reverse("application:account"))
+                
     
     form = futureEmailsForm()
     return render(request, 'application/quickComingSoon.html', {
@@ -505,16 +514,52 @@ def quickComingSoon(request):
         })
 
 def comingSoon(request): 
-    
+
     if request.method == "POST": 
         form = futureEmailsForm(request.POST or None)
         if form.is_valid():
             try:
                 form.save()
-                return render(request, "application/quickApply_connexion.html",)
+                
+                enrollFailure = False
+                if form.cleaned_data['connexionCommunication'] is True:
+                    try:
+                        enroll_connexion_updates(request)
+                    except AssertionError:
+                        enrollFailure = True
+                        
+                return render(
+                    request,
+                    "application/quickApply_connexion.html",
+                    {
+                        'enroll_failure': enrollFailure,
+                        },
+                    )
+
             except AttributeError:
                 print("Error Email Saving")
     
+    # If this application was started with quickComingSoon and the address
+    # entered there matches the application, skip to quickApply_connexion.html
+    if 'address_dict' in request.session.keys() and 'connexion_communication' in request.session.keys():
+        addr = request.user.addresses
+        if request.session['address_dict']['address'] == addr.address and request.session['address_dict']['zipCode'] == str(addr.zipCode):
+            
+            enrollFailure = False
+            if request.session['connexion_communication'] is True:
+                try:
+                    enroll_connexion_updates(request)
+                except AssertionError:
+                    enrollFailure = True
+                    
+            return render(
+                request,
+                "application/quickApply_connexion.html",
+                {
+                    'enroll_failure': enrollFailure,
+                    },
+                )
+        
     form = futureEmailsForm()
     return render(request, 'application/comingSoon.html', {
             'form':form,
