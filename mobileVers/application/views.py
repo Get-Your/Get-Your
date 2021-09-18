@@ -181,26 +181,47 @@ def addressCorrection(request):
         program_string_2 = [dict_address['AddressValidateResponse']['Address']['Address2'], 
                             dict_address['AddressValidateResponse']['Address']['Address1'],
                             dict_address['AddressValidateResponse']['Address']['City'] + " "+ dict_address['AddressValidateResponse']['Address']['State'] +" "+  str(dict_address['AddressValidateResponse']['Address']['Zip5'])]
+        
     except KeyError or TypeError or RelatedObjectDoesNotExist:
         program_string_2 = ["Sorry, we couldn't verify this address through USPS.", "Please press 'back' and re-enter."]
         print("USPS couldn't figure it out!")
-    program_string = [request.user.addresses.address, request.user.addresses.address2, request.user.addresses.city + " " + request.user.addresses.state + " " + str(request.user.addresses.zipCode)]
-    return render(request, 'application/addressCorrection.html',  {
-        'step':2,
-        'formPageNum':formPageNum,
-        'program_string': program_string,
-        'program_string_2': program_string_2,
-    })
+        
+    else:
+        request.session['usps_address_validate'] = dict_address
+        print(q)
+        print(dict_address)                   
+        
+    # If validation was successful and all address parts are case-insensitive
+    # exact matches between entered and validation, skip addressCorrection()
+    
+    # Rewrite any blank values in q to match '-' from USPS API
+    q = {key: q[key] if q[key]!='' else '-' for key in q.keys()}
+    if 'usps_address_validate' in request.session.keys() and \
+        dict_address['AddressValidateResponse']['Address']['Address2'].lower() == q['address'].lower() and \
+            dict_address['AddressValidateResponse']['Address']['Address1'].lower() == q['address2'].lower() and \
+                dict_address['AddressValidateResponse']['Address']['City'].lower() == q['city'].lower() and \
+                    dict_address['AddressValidateResponse']['Address']['State'].lower() == q['state'].lower() and \
+                        str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q['zipcode'].lower():         
+        
+        print('Exact (case-insensitive) address match!')
+        return redirect(reverse("application:takeUSPSaddress"))
+    
+    else:
+        print('Address match not found - proceeding to addressCorrection')
+                            
+        program_string = [request.user.addresses.address, request.user.addresses.address2, request.user.addresses.city + " " + request.user.addresses.state + " " + str(request.user.addresses.zipCode)]
+        return render(request, 'application/addressCorrection.html',  {
+            'step':2,
+            'formPageNum':formPageNum,
+            'program_string': program_string,
+            'program_string_2': program_string_2,
+        })
 
 def takeUSPSaddress(request):
     try:
-        q = QueryDict('', mutable=True)
-        q.update({"address": request.user.addresses.address, 
-            "address2": request.user.addresses.address2, 
-            "city": request.user.addresses.city,
-            "state": request.user.addresses.state,
-            "zipcode": str(request.user.addresses.zipCode),})
-        dict_address = validateUSPS(q)
+        # Use the session var created in addressCorrection(), then remove it
+        dict_address = request.session['usps_address_validate']
+        del request.session['usps_address_validate']
         
         # Check for and store GMA and Connexion status
         isInGMA, hasConnexion = addressCheck(dict_address)
@@ -223,7 +244,6 @@ def takeUSPSaddress(request):
         # HTTP_REFERER sends this button press back to the same page
         # (e.g. removes the button functionality)
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-        # return redirect(reverse("application:address"))
 
     else:
         return redirect(reverse("application:inServiceArea"))
@@ -551,6 +571,10 @@ def comingSoon(request):
                     enroll_connexion_updates(request)
                 except AssertionError:
                     enrollFailure = True
+                    
+            # Remove the session vars after use
+            del request.session['address_dict']
+            del request.session['connexion_communication']
                     
             return render(
                 request,
