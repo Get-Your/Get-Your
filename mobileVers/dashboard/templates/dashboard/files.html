@@ -13,9 +13,13 @@
         output.src = reader.result;
         }
         
+        document.getElementById("toggleColorButton").style.backgroundColor = 'Green';
         reader.readAsDataURL(event.target.files[0]);
 
     }
+
+
+
 </script>
 <div class=sideNav>
     <div class=fadeSmall>
@@ -127,7 +131,7 @@
             </div>
         {% elif field.label == "Document Upload" %}
             <div class="upload-btn-wrapper" style ="width:100%; align-items: center; margin-top: 3vh;">
-                <button class="buttonFileUpload">
+                <button class="buttonFileUpload" id="toggleColorButton">
                     <div class="row" style="justify-content: space-between;">
                         <img src="{% static 'dashboard/images/upload.svg' %}" alt="back" style="width:15vw; margin-right: 5vw;">
                         <div style="display:flex; flex-direction:column;align-items:flex-start;">
@@ -143,9 +147,10 @@
 
     <br>
  <!-- Taking preview out and instead going to replace with "green upload complete button"  also need to mess with field.name, etc. to make sure second upload is actually captured...
-     <div class="preview"> 
+    <div class="preview"> 
         <img style ="max-width:100%;" id="output_image"/>
-    </div>-->
+    </div>
+-->
     <br>
     <div class="footer">
         <button type ="submit" > CONTINUE </button>
