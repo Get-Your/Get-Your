@@ -27,16 +27,16 @@ def files(request):
     }
     if request.method == "POST":   
         form = FileForm(request.POST, request.FILES)
-        files = request.FILES.getlist('document')
         if form.is_valid():
             print(form)
             if request.user.is_authenticated:
-                for f in files:
-                    instance = form.save(commit=False)
-                    print(instance)
-                    instance.user_id = request.user
-                    instance.save()
-                    
+                #print(str(request.FILES.getlist('document')))
+                instance = form.save(commit=False)
+                instance.user_id = request.user
+                instance.save()
+
+                for f in request.FILES.getlist('document'):
+                    instance.document.save(str(f),f) #this line allows us to save multiple files, there's a BUG though, extra last file is saved...
                     file_upload = request.user
                     file_upload.files.add(instance)
 
