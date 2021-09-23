@@ -53,7 +53,7 @@ def files_to_string(file_list, request):
     print(request.user.programs.freeReducedLunch)
     print(request.user.programs.Identification)
     if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False:
-        list_string = "1040 Form "
+        list_string = "1040 Form"
     #TODO Incorporate ID card here somewhere...
     #list_string ="ID Card"
     return list_string
