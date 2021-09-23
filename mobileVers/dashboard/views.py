@@ -58,15 +58,11 @@ def files(request):
                     if group.document_title == "1040 Form":
                         checkAllForms[3] = True
                         file_list["1040 Tax Form"] = False
-                    
-
-                    
-
                 if False in checkAllForms:
                     return render(request, 'dashboard/files.html', {
                             'form':form,
                             'programs': file_list,
-                            'program_string': files_to_string(file_list),
+                            'program_string': files_to_string(file_list, request),
                             'step':5,
                             'formPageNum':6,
                         })
@@ -84,7 +80,7 @@ def files(request):
     return render(request, 'dashboard/files.html', {
     'form':form,
     'programs': file_list,
-    'program_string': files_to_string(file_list),
+    'program_string': files_to_string(file_list, request),
     'step':5,
     'formPageNum':6,
     })

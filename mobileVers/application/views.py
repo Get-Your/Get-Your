@@ -472,10 +472,13 @@ def programs(request):
         if form.is_valid():
             print(form.data)
             print(request.session)
+            # TODO 9/22 Tax code for when client does not have qualifying programs
+            # if form.data[Identification] == True && form.data[SNAP Card] == False && form.data[PSD Reduced Lunch Approval Letter] == False
+                #form.data[Tax] == True
             try:
                 instance = form.save(commit=False)
                 instance.user_id = request.user
-                instance.save()
+                instance.save()    
                 return redirect(reverse("dashboard:files"))
             except IntegrityError:
                 print("User already has information filled out for this section")

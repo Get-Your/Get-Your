@@ -28,7 +28,7 @@ def get_user(self, user_id):
     except UserModel.DoesNotExist:
         return None
 
-def files_to_string(file_list):
+def files_to_string(file_list, request):
     list_string = ""
     counter = 0
 
@@ -46,8 +46,14 @@ def files_to_string(file_list):
             else:
                 counter = 2
             list_string += key
-    if list_string == "":
-        list_string = "1040 Form"
+
+
+    print("printing chosen programs... ")
+    print(request.user.programs.snap)
+    print(request.user.programs.freeReducedLunch)
+    print(request.user.programs.Identification)
+    if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False:
+        list_string = "1040 Form "
     #TODO Incorporate ID card here somewhere...
     #list_string ="ID Card"
     return list_string
