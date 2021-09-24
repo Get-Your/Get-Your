@@ -19,19 +19,15 @@ from py_models.qualification_status import QualificationStatus
 # first index page we come into
 
 
-def files(request):
+def files(request): 
+    if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False:
+        request.user.programs.form1040 = True
     file_list = {"SNAP Card": request.user.programs.snap,
                 # Have Reduced Lunch be last item in the list if we add more programs
                 "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
                 "Identification": request.user.programs.Identification,
                 "1040 Form": request.user.programs.form1040,
     }
-
-    if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False:
-        print("hello i am in programs and just printed request.session printing 1040 form status...")
-        print(request.user.programs.form1040)
-        request.user.programs.form1040 = True
-        print(request.user.programs.form1040)
 
     if request.method == "POST":   
         form = FileForm(request.POST, request.FILES)
