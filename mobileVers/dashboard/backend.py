@@ -47,11 +47,6 @@ def files_to_string(file_list, request):
                 counter = 2
             list_string += key
 
-
-    print("printing chosen programs... ")
-    print(request.user.programs.snap)
-    print(request.user.programs.freeReducedLunch)
-    print(request.user.programs.Identification)
     if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False:
         list_string = "1040 Form"
     #TODO Incorporate ID card here somewhere...
