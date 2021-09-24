@@ -32,6 +32,9 @@ def files_to_string(file_list, request):
     list_string = ""
     counter = 0
 
+
+    if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False:
+        list_string = "1040 Form, "
     # Get File_List into easy to read list to print out in template
     for key, value in file_list.items():
         # only add things to the list_string if its true
@@ -47,8 +50,7 @@ def files_to_string(file_list, request):
                 counter = 2
             list_string += key
 
-    if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False:
-        list_string = "1040 Form"
+
     #TODO Incorporate ID card here somewhere...
     #list_string ="ID Card"
     return list_string
