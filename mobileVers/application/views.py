@@ -472,12 +472,11 @@ def programs(request):
         if form.is_valid():
             print(form.data)
             print(request.session)
-            
-            if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False:
-                print("hello i am in programs and just printed request.session")
-                # TODO 9/22 Tax code for when client does not have qualifying programs
-                # if form.data[Identification] == True && form.data[SNAP Card] == False && form.data[PSD Reduced Lunch Approval Letter] == False
-                    #form.data[Tax] == True
+            '''if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False:
+                print("hello i am in programs and just printed request.session printing 1040 form status...")
+                print(request.user.programs.form1040)
+                request.user.programs.form1040 = True
+                print(request.user.programs.form1040)'''
             try:
                 instance = form.save(commit=False)
                 instance.user_id = request.user
