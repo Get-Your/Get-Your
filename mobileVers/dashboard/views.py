@@ -161,7 +161,7 @@ def filesContinued(request):
                     return render(request, 'dashboard/filesContinued.html', {
                             'form':form,
                             'programs': file_list,
-                            'program_string': files_to_string(file_list),
+                            'program_string': files_to_string(file_list, request),
                             'step':2,
                             'formPageNum':2,
                         })
@@ -176,7 +176,7 @@ def filesContinued(request):
     return render(request, 'dashboard/filesContinued.html', {
     'form':form,
     'programs': file_list,
-    'program_string': files_to_string(file_list),
+    'program_string': files_to_string(file_list, request),
     'step':3,
     'formPageNum':3,
     })
@@ -506,6 +506,7 @@ def dashboardGetFoco(request):
         GRButtonColor = "blue"
         GRButtonTextColor = "White"
         GRDisplayActive = ""
+        ActiveNumber = ActiveNumber + 1
         GRDisplayPending = "None"
         GRPendingDate = ""
     else:
