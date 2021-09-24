@@ -21,7 +21,7 @@ class Form(TimeStampedModel):
     form_titles = (
         ('SNAP', 'SNAP'),
         ('Free and Reduced Lunch', 'Free and Reduced Lunch'),
-        ('1040', '1040'),
+        ('1040 Form', '1040 Form'),
         ('Identification', 'Identification'),
         )
     document_title = models.CharField(

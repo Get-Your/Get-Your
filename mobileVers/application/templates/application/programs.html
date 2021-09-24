@@ -34,6 +34,28 @@
       </label>
     </div>
 
+    {% elif field.label == "1040 Form" %}
+    <div style="display: none;">
+      <input style="display: none;" id="{{ field.id_for_label}}" type="checkbox" name="{{ field.name}}">
+      <label class="checklabel" for="{{ field.id_for_label}}">
+    
+        <style>  
+          input:not(.checked)~ label span.buttonCheck {
+            color: white;
+          }
+          /*TODO: FIX COLORING*/
+          input:checked~ label span.buttonCheck {
+            <!--color:yellow;-->
+          }
+    
+        </style>
+        
+        <span class=buttonCheck >{{field.label}}</span>
+      </label>
+    </div>
+
+
+
     {% else %}
     <input style="display: none;" id="{{ field.id_for_label}}" type="checkbox" name="{{ field.name}}">
     <label class="checklabel" for="{{ field.id_for_label}}">
