@@ -334,7 +334,7 @@ def qualifiedPrograms(request):
         ConnexionButtonColor = "blue"
         ConnexionButtonTextColor = "White"
     elif request.user.eligibility.ConnexionQualified == QualificationStatus.NOTQUALIFIED.name:
-        ConnexionButtonText = "Cannot Enroll"
+        ConnexionButtonText = "Can't Enroll"
         ConnexionButtonColor = "red"
         ConnexionButtonTextColor = "black"
     else:
@@ -351,7 +351,7 @@ def qualifiedPrograms(request):
         GRButtonColor = "blue"
         GRButtonTextColor = "White"
     elif request.user.eligibility.GRqualified == QualificationStatus.NOTQUALIFIED.name:
-        ConnexionButtonText = "Cannot Enroll"
+        ConnexionButtonText = "Can't Enroll"
         ConnexionButtonColor = "red"
         ConnexionButtonTextColor = "black"
     else:
@@ -368,7 +368,7 @@ def qualifiedPrograms(request):
         GRButtonColor = "blue"
         GRButtonTextColor = "White"
     elif request.user.eligibility.RecreationQualified == QualificationStatus.NOTQUALIFIED.name:
-        ConnexionButtonText = "Cannot Enroll"
+        ConnexionButtonText = "Can't Enroll"
         ConnexionButtonColor = "red"
         ConnexionButtonTextColor = "black"
     else:
