@@ -37,4 +37,6 @@ urlpatterns = [
     path('privacyPolicy', views.privacyPolicy, name='privacyPolicy'),
     path('dependentInfo', views.dependentInfo, name='dependentInfo'),
     
+    path('ajax/load-gahi/', views.load_gahi_selector, name='ajax_load_gahi'),
+    
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #this is needed to get file uploads to work! 

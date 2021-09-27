@@ -15,12 +15,12 @@
 <div class=fadeLarge><h2 style="font-weight: 700; margin:5vh 0"> Please share basic information about your income </h2></div>
 
 
-<form action="{% url 'application:finances' %}" method="post" autocomplete="false">
+<form action="{% url 'application:finances' %}" method="post" autocomplete="false" id="eligibilityForm" gahi-selector-url="{% url 'application:ajax_load_gahi' %}" novalidate>
     {% csrf_token %}
     <!-- TODO: Make it yes or no not checkbox-->
     <div class="input" style="padding-top:0">
         <label class="labelword">Do you currently rent or own your home?</label>
-        <div class="row" style="justify-content:left; padding-top:5%">
+        <div class="row" style="justify-content:right; padding-top:5%">
             {% for choice in form.rent %}
                 <label for="{{choice.id_for_label}}" class="row" style="padding-right: 5%;">
                     <span class="radio">{{ choice.tag }}</span>
@@ -39,22 +39,45 @@
             <h1 class="animate__animated animate__bounce">An animated element</h1>
             -->
             <label class="labelword"style="position:relative">How many individuals are in your household?</label>  <a href="{% url 'application:dependentInfo' %}"><img src="{% static 'application/images/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px);"></a>
-            <input class="fill" type="text" name="{{ field.name }}" id="{{ field.id_for_label}}" value ="1" style="height: 3vh;">
+            <select name="{{ field.name }}" id="{{ field.id_for_label}}">
+                {% for option in field %}
+                    <option style="background-color: var(--white);" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
+                {% endfor %}
+            </select>
         </div>
         {% else %}
         <div class="input">
             <label class="labelword" style="position:relative">How much is your gross annual household income?</label> 
             <br>
             <select name="{{ field.name }}" id="{{ field.id_for_label}}">
-            {% for option in field %}
-                <option style="background-color: var(--white);" value="{{ option.choice_label }}"> {{ option.choice_label }} </option>
-            {% endfor %}
             </select>
         </div>
+
         {% endif %}
     {% endfor %}
+
     <div class="footer">
         <button type="submit"> CONTINUE </button>
     </div>
 </form>
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script>
+$("#id_dependents").change(function () {
+  var url = $("#eligibilityForm").attr("gahi-selector-url");  // get the url of the `load_cities` view
+  var dependentsId = $(this).val();  // get the selected country ID from the HTML input
+
+  $.ajax({                       // initialize an AJAX request
+    url: '{% url 'application:ajax_load_gahi' %}',                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+    data: {
+      'dependents': dependentsId       // add the country id to the GET parameters
+    },
+    success: function (data) {   // `data` is the return of the `load_cities` view function
+      $("#id_grossAnnualHouseholdIncome").html(data);  // replace the contents of the city input with the data that came from the server
+    }
+  });
+
+});
+</script>
+
 {% endblock %}
