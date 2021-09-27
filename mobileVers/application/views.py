@@ -3,20 +3,110 @@ from django.contrib.auth import login, logout
 
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
-from .forms import UserForm, AddressForm, EligibilityForm, programForm, addressLookupForm, futureEmailsForm, EligibilityFormPlus,attestationForm
-from .backend import addressCheck, validateUSPS, qualification, enroll_connexion_updates
+from .forms import UserForm, AddressForm, EligibilityForm, programForm, addressLookupForm, futureEmailsForm, EligibilityFormPlus, attestationForm
+from .backend import addressCheck, validateUSPS, enroll_connexion_updates
+from .models import AMI, iqProgramQualifications
 from django.http import QueryDict
 
 from py_models.qualification_status import QualificationStatus
 
 import logging
 import usaddress
+from decimal import *
 
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect 
 
 
 formPageNum = 6
 
+class GAHIBuilder:
+    """
+    
+    This class builds and displays the Gross Annual Household Income
+    brackets.
+    
+    """
+    
+    # Run the program AMI qualifications here (when the site loads) instead
+    # of on class instantiation, to save time
+    amiCutoffs = iqProgramQualifications.objects.all().values(
+        'percentAmi'
+        ).distinct()
+    # List of floats of ami percentages (prepend zero for the bottom end)
+    amiCutoffPc = [Decimal('0')]+sorted(
+        [x['percentAmi'] for x in list(amiCutoffs)]
+        )
+    
+    # iqProgramQualifications.objects.order_by(
+    #     'percentAmi',
+    #     ).values_list(
+    #         'percentAmi',
+    #         flat=True,
+    #         ).distinct('percentAmi')  
+    
+    def __init__(self, request):
+        """
+        Take the lookup AMI value and program AMI limits and output the
+        selections to the user.
+
+        Parameters
+        ----------
+        ami : int
+            Area Median Income, a lookup value from the application_ami table
+            based on the user-input household size in the webapp.
+
+        Returns
+        -------
+        List of elements for the user to select for Gross Annual Household
+        Income.
+
+        """
+        
+        dependent_id = request.GET.get('dependents')
+        print(dependent_id,'individuals in household')
+        ami = AMI.objects.filter(
+            householdNum=dependent_id,
+            active=True,
+            ).order_by('ami').first().ami
+        print('AMI is',ami) 
+        
+        amiCutoffVals = [ami*x for x in self.amiCutoffPc]
+        print('AMI cutoffs are',amiCutoffVals)
+        self.list = []
+        maxIdx = len(self.amiCutoffPc)
+        for idx,itm in enumerate(amiCutoffVals):
+            if idx == 0:
+                self.list.append(
+                    GAHIVal(
+                        f"{self.amiCutoffPc[idx]}^{self.amiCutoffPc[idx+1]}",
+                        f"Below ${amiCutoffVals[idx+1]:06,.0f}",
+                        ),
+                    )
+            elif idx == maxIdx-1:
+                self.list.append(
+                    GAHIVal(
+                        f"{self.amiCutoffPc[idx]}^1",
+                        f"Over ${itm:06,.0f}",
+                        ),
+                    )
+            else:
+                self.list.append(
+                    GAHIVal(
+                        f"{self.amiCutoffPc[idx]}^{self.amiCutoffPc[idx+1]}",
+                        f"${itm:06,.0f} ~ ${amiCutoffVals[idx+1]:06,.0f}",
+                        ),
+                    )
+            
+        print(self.list)
+        
+class GAHIVal:
+    """ Class to store the text and passable value for each GAHI amount. """
+    
+    def __init__(self, val, text):
+
+        self.val = val
+        self.text = text
+        
 # first index page we come into
 def index(request):
     
@@ -302,23 +392,34 @@ def moreInfoNeeded(request):
         
             print("SAVING")
             instance.save()
-            # If GenericQualified is not blank (either PENDING or ACTIVE),
+            # If GenericQualified is 'ACTIVE',
             # go to the financial information page
-            if instance.GenericQualified == QualificationStatus.PENDING.name or instance.GenericQualified == QualificationStatus.ACTIVE.name:
-                    return redirect(reverse("application:mayQualify"))
+            if instance.GenericQualified == QualificationStatus.ACTIVE.name:
+                return redirect(reverse("application:mayQualify"))
             else:
-                    return redirect(reverse("dashboard:addressVerification"))
+                return redirect(reverse("dashboard:addressVerification"))
         else:
             print(form.data)
     else:
         form = EligibilityFormPlus()
      
+    householdNum = AMI.objects.filter(
+            householdNum=request.user.eligibility.dependents_id,
+            active=True,
+            ).values('householdNum').first()['householdNum']
     return render(request, "application/moreInfoNeeded.html",{
         'step':1,
-        'dependent':request.user.eligibility.dependents,
-        'list':list(range(request.user.eligibility.dependents)),
+        'dependent': householdNum,
+        'list':list(range(householdNum)),
         'formPageNum':3,
     })
+
+def load_gahi_selector(request):
+    """ Load the Gross Annual Household Income selection list. """
+    
+    print('Loaded GAHI selector!')
+    gahiList = GAHIBuilder(request).list
+    return render(request, 'hr/income_dropdown_list_options.html', {'gahiList': gahiList})
 
 def finances(request):
     if request.method == "POST":
@@ -331,37 +432,24 @@ def finances(request):
             print(form.data)
             instance = form.save(commit=False)
             instance.user_id = request.user       
-            #take dependent information, compare that AMI level number with the client's income selection and determine if qualified or not, flag this
-            if form['grossAnnualHouseholdIncome'].value() == 'Below $19,800':
-                print("GAHI is below 19,800")
-                if qualification(form['dependents'].value(),) >= 19800:
-                    # Set to 'PENDING' (for pending enrollment). Never set to 
-                    # 'ACTIVE' from Django
-                    instance.GenericQualified = QualificationStatus.ACTIVE.name
-                else:
-                    instance.GenericQualified = QualificationStatus.NOTQUALIFIED.name
-            elif form['grossAnnualHouseholdIncome'].value() == '$19,800 ~ $32,800':
-                print("GAHI is between 19,800 and 32,800")
-                if 19800 <= qualification(form['dependents'].value(),) <= 32800:
-                    # Set to 'PENDING' (for pending enrollment). Never set to 
-                    # 'ACTIVE' from Django
-                    instance.GenericQualified = QualificationStatus.ACTIVE.name
-                else:
-                    instance.GenericQualified = QualificationStatus.NOTQUALIFIED.name
-            elif form['grossAnnualHouseholdIncome'].value() == 'Over $32,800':
-                print("GAHI is above 32,800")
-                if qualification(form['dependents'].value(),) >= 32800:
-                    # Set to 'PENDING' (for pending enrollment). Never set to 
-                    # 'ACTIVE' from Django
-                    instance.GenericQualified = QualificationStatus.ACTIVE.name
-                else:
-                    instance.GenericQualified = QualificationStatus.NOTQUALIFIED.name                      
+            
+            # Parse the 'value' (carat-delimited) from the GAHIBuilder output
+            instance.AmiRange_min, instance.AmiRange_max = [
+                Decimal(x) for x in form.cleaned_data['grossAnnualHouseholdIncome'].split('^')
+                ]
+            
+            # Ensure AmiRange_max < 1 (that's all we need for GenericQualified)
+            if instance.AmiRange_max < Decimal('1'):
+                print("GAHI is below program AMI ranges")
+                instance.GenericQualified = QualificationStatus.ACTIVE.name
+            else:
+                print("GAHI is greater than program AMI ranges")
+                instance.GenericQualified = QualificationStatus.NOTQUALIFIED.name                  
                 
             print("SAVING")
             instance.save()
-            # If GenericQualified is not blank (either PENDING or ACTIVE),
-            # go to the financial information page
-            if instance.GenericQualified == QualificationStatus.PENDING.name or instance.GenericQualified == QualificationStatus.ACTIVE.name:
+            # If GenericQualified is 'ACTIVE', go to the financial information page
+            if instance.GenericQualified == QualificationStatus.ACTIVE.name:
                 return redirect(reverse("application:mayQualify"))
             else:
                 return redirect(reverse("application:programs"))
@@ -381,7 +469,14 @@ def ConnexionQuickApply(request):
     addr = request.user.addresses
     print(obj.ConnexionQualified)
     #print(request.user.eligibility.GRQualified)
-    if obj.GenericQualified == QualificationStatus.ACTIVE.name:
+    
+    # Calculate if within the qualification range
+    qualifyAmiPc = iqProgramQualifications.objects.filter(name='connexion').values(
+        'percentAmi'
+        ).first()['percentAmi']
+    print(obj.AmiRange_max)
+    print('Connexion max AMI %:',qualifyAmiPc)
+    if obj.GenericQualified == QualificationStatus.ACTIVE.name and obj.AmiRange_max <= qualifyAmiPc:
         obj.ConnexionQualified = QualificationStatus.PENDING.name
         print(obj.ConnexionQualified)
         obj.save()
@@ -402,35 +497,67 @@ def ConnexionQuickApply(request):
         if not hasConnexion:    # this covers both None and False
             return redirect(reverse("application:comingSoon"))
         else:  # hasConnexion==True is the only remaining option
-            return render(request, "application/quickApply_connexion.html",)
+            return render(
+                request,
+                "application/quickApply.html",
+                {'programName': 'Reduced-Rate Connexion'},
+                )
     else:
         obj.ConnexionQualified = QualificationStatus.NOTQUALIFIED.name
         print(obj.ConnexionQualified)
         obj.save()
+        
+        return render(
+            request,
+            'application/notQualify.html',
+            {'programName': 'Reduced-Rate Connexion'},
+            )
 
 def GRQuickApply(request):
     obj = request.user.eligibility
     print(obj.GRqualified)
     #print(request.user.eligibility.GRQualified)
-    if obj.GenericQualified == QualificationStatus.ACTIVE.name:
+    
+    # Calculate if within the qualification range
+    qualifyAmiPc = iqProgramQualifications.objects.filter(name='grocery').values(
+        'percentAmi'
+        ).first()['percentAmi']  
+    print('Grocery max AMI %:',qualifyAmiPc)
+    if obj.GenericQualified == QualificationStatus.ACTIVE.name and obj.AmiRange_max <= qualifyAmiPc:
         obj.GRqualified = QualificationStatus.PENDING.name
     else:
         obj.GRqualified = QualificationStatus.NOTQUALIFIED.name
     print(obj.GRqualified)
+    
     obj.save()
-    return render(request, "application/quickApply_grocery.html",)
+    return render(
+        request,
+        "application/quickApply.html",
+        {'programName': 'Grocery Tax Rebate'},
+        )
 
 def RecreationQuickApply(request):
     obj = request.user.eligibility
     print(obj.RecreationQualified)
     #print(request.user.eligibility.GRQualified)
-    if obj.GenericQualified == QualificationStatus.ACTIVE.name:
+    
+    # Calculate if within the qualification range
+    qualifyAmiPc = iqProgramQualifications.objects.filter(name='recreation').values(
+        'percentAmi'
+        ).first()['percentAmi']
+    print('Recreation max AMI %:',qualifyAmiPc)
+    if obj.GenericQualified == QualificationStatus.ACTIVE.name and obj.AmiRange_max <= qualifyAmiPc:
         obj.RecreationQualified = QualificationStatus.PENDING.name
     else:
         obj.RecreationQualified = QualificationStatus.NOTQUALIFIED.name
+        
     print(obj.RecreationQualified)
     obj.save()
-    return render(request, "application/quickApply_recreation.html",)
+    return render(
+        request,
+        "application/quickApply.html",
+        {'programName': 'Recreation'},
+        )
 
 
 def attestation(request):
@@ -551,8 +678,9 @@ def comingSoon(request):
                         
                 return render(
                     request,
-                    "application/quickApply_connexion.html",
+                    "application/quickApply.html",
                     {
+                        'programName': 'Reduced-Rate Connexion',
                         'enroll_failure': enrollFailure,
                         'is_enrolled': doEnroll,
                         },
@@ -562,7 +690,7 @@ def comingSoon(request):
                 print("Error Email Saving")
     
     # If this application was started with quickComingSoon and the address
-    # entered there matches the application, skip to quickApply_connexion.html
+    # entered there matches the application, skip to quickApply.html
     if 'address_dict' in request.session.keys() and 'connexion_communication' in request.session.keys():
         addr = request.user.addresses
         if request.session['address_dict']['address'] == addr.address and request.session['address_dict']['zipCode'] == str(addr.zipCode):
@@ -581,8 +709,9 @@ def comingSoon(request):
                     
             return render(
                 request,
-                "application/quickApply_connexion.html",
+                "application/quickApply.html",
                 {
+                    'programName': 'Reduced-Rate Connexion',
                     'enroll_failure': enrollFailure,
                     'is_enrolled': doEnroll,
                     },
@@ -611,4 +740,3 @@ def callUs(request):
         'step':3,
         'formPageNum':formPageNum,
     })
-
