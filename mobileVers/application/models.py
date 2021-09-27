@@ -163,7 +163,7 @@ class programs(TimeStampedModel): #incomeVerificationPrograms
     snap = models.BooleanField()
     freeReducedLunch = models.BooleanField()
     Identification = models.BooleanField()
-    #1040 = models.BooleanField() TODO include for 1040 filechecking
+    form1040 = models.BooleanField()
 
 class attestations(TimeStampedModel):
     user_id = models.OneToOneField(
