@@ -91,6 +91,39 @@ choices = (
     ('Rent', 'Rent'),
     ('Own', 'Own')
 )
+
+class AMI(TimeStampedModel):
+    """ Model class to store the Area Median Income values.
+    
+    Note that these values are separated by number in household.
+    
+    The 'active' field designates if the record is currently in use; only
+    'active' records should be displayed in the webapp.
+    
+    """
+    
+    householdNum = models.IntegerField(100, primary_key=True)
+    active = models.BooleanField()
+    
+    ami = models.IntegerField()
+    
+    def __str__(self):
+        return str(self.householdNum)
+    
+class iqProgramQualifications(TimeStampedModel):
+    """ Model class to store the IQ program qualifications.
+    
+    The program names specified here will be used in the remainder of the
+    app's backend.
+    
+    """
+    
+    name = models.CharField(max_length=40, primary_key=True)
+    percentAmi = models.DecimalField(max_digits=10, decimal_places=4)
+    
+    def __str__(self):
+        return str(self.percentAmi)
+
 # Eligibility model class attached to user (will delete as user account is deleted too)
 class Eligibility(TimeStampedModel):
     user_id = models.OneToOneField(
@@ -102,7 +135,7 @@ class Eligibility(TimeStampedModel):
     rent = models.CharField(choices=choices, max_length=10)
 
     #TODO: possibly add field for how many total individuals are in the household
-    dependents = models.IntegerField(100)
+    dependents = models.ForeignKey(AMI, on_delete=models.RESTRICT)
     dependentsAge = models.IntegerField(100, default=0)
     DEqualified = models.CharField(max_length=20)
     GenericQualified = models.CharField(max_length=20)
@@ -114,20 +147,11 @@ class Eligibility(TimeStampedModel):
     #xQualified = models.CharField(max_length=20)
     #utilitiesQualified = models.CharField(max_length=20)
 
-    # Income Levels
-    LOW = 'Below $19,800'
-    MED = '$19,800 ~ $32,800'
-    HIGH = 'Over $32,800'
-    INCOME_LEVELS = (
-        (LOW, 'Below $19,800'),
-        (MED, '$19,800 ~ $32,800'),
-        (HIGH, 'Over $32,800'),
-    )
-    grossAnnualHouseholdIncome = models.CharField(
-        max_length=20,
-        choices=INCOME_LEVELS,
-        default=LOW,
-    )
+    grossAnnualHouseholdIncome = models.CharField(max_length=20)    
+    # Define the min and max Gross Annual Household Income as a fraction of 
+    # AMI (which is a function of number of individuals in household)
+    AmiRange_min = models.DecimalField(max_digits=5, decimal_places=4)
+    AmiRange_max = models.DecimalField(max_digits=5, decimal_places=4)
 
 # Programs model class attached to user (will delete as user account is deleted too)
 class programs(TimeStampedModel): #incomeVerificationPrograms
@@ -166,4 +190,5 @@ class addressLookup(TimeStampedModel):
 
 class futureEmails(TimeStampedModel):
     connexionCommunication = models.BooleanField(default=True, blank=True)
+
 
