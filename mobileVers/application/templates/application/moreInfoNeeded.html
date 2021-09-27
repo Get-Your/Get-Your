@@ -19,7 +19,7 @@
     {% csrf_token %}
     <!-- TODO: Make it yes or no not checkbox-->
     <div class="input" style="padding-top:0">
-        <label class="labelword">You indicated you had {{dependent}} number of individuals in your household, if they are children, what are their ages? If no children press continue!</label>
+        <label class="labelword">You indicated you had {{dependent}} number of individuals in your household, if they are children, what are their birthdates? If no children press continue!</label>
     </div>
     {% for number in list %}
         <div class="input">

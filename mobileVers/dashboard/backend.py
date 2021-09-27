@@ -28,10 +28,11 @@ def get_user(self, user_id):
     except UserModel.DoesNotExist:
         return None
 
-def files_to_string(file_list):
+def files_to_string(file_list, request):
     list_string = ""
     counter = 0
 
+    print(counter)
     # Get File_List into easy to read list to print out in template
     for key, value in file_list.items():
         # only add things to the list_string if its true
@@ -46,8 +47,6 @@ def files_to_string(file_list):
             else:
                 counter = 2
             list_string += key
-    if list_string == "":
-        list_string = "1040 Form"
     #TODO Incorporate ID card here somewhere...
     #list_string ="ID Card"
     return list_string
