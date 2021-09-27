@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, reverse
 from .forms import FileForm, FeedbackForm, TaxForm, addressVerificationForm, AddressForm
+from decimal import Decimal
 
 from .models import User, Form
 from application.models import Eligibility
@@ -316,8 +317,9 @@ def qualifiedPrograms(request):
     else:
         text = "False"
     # apply for other dynamic income work etc.
-    if request.user.eligibility.grossAnnualHouseholdIncome == '$19,800 ~ $32,800':
+    if request.user.eligibility.AmiRange_max == Decimal('0.5') and request.user.eligibility.AmiRange_min == Decimal('0.3'):
         text ="CallUs"
+        
     if request.user.programs.snap == True or request.user.programs.freeReducedLunch == True:
         text2 = "True"
     else:
@@ -485,8 +487,9 @@ def dashboardGetFoco(request):
         text = "False"
         GRDisplay = "none"
     # apply for other dynamic income work etc.
-    if request.user.eligibility.grossAnnualHouseholdIncome == '$19,800 ~ $32,800':
+    if request.user.eligibility.AmiRange_max == Decimal('0.5') and request.user.eligibility.AmiRange_min == Decimal('0.3'):
         text ="CallUs"
+        
     if request.user.programs.snap == True or request.user.programs.freeReducedLunch == True:
         text2 = "True"
         QProgramNumber = QProgramNumber + 1
