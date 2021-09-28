@@ -102,7 +102,7 @@ class AMI(TimeStampedModel):
     
     """
     
-    householdNum = models.IntegerField(100, primary_key=True)
+    householdNum = models.CharField(max_length=15, primary_key=True)
     active = models.BooleanField()
     
     ami = models.IntegerField()
@@ -135,7 +135,7 @@ class Eligibility(TimeStampedModel):
     rent = models.CharField(choices=choices, max_length=10)
 
     #TODO: possibly add field for how many total individuals are in the household
-    dependents = models.ForeignKey(AMI, on_delete=models.RESTRICT)
+    dependents = models.IntegerField(100, default=1)
     dependentsAge = models.IntegerField(100, default=0)
     DEqualified = models.CharField(max_length=20)
     GenericQualified = models.CharField(max_length=20)
