@@ -449,7 +449,11 @@ def feedback(request):
 
 def manualVerifyIncome(request):
     if request.method == "POST": 
-        form = TaxForm(request.POST)
+        try:
+            existing = request.user.TaxInformation
+            form = TaxForm(request.POST,instance = existing)
+        except AttributeError or ObjectDoesNotExist:
+            form = TaxForm(request.POST or None)
         if form.is_valid():
             print(form.data)
             print(request.session)
@@ -457,7 +461,7 @@ def manualVerifyIncome(request):
                 instance = form.save(commit=False)
                 instance.user_id = request.user
                 instance.save()
-                return redirect(reverse("dashboard:broadcast"))
+                return redirect(reverse("application:attestation"))
             except IntegrityError:
                 print("User already has information filled out for this section")
         else:
