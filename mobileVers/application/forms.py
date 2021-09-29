@@ -1,5 +1,7 @@
 # All of the forms built from models are here 
 from django import forms
+from django.db.models.fields import DateField
+from django.forms import widgets
 
 from .models import User, Addresses, Eligibility, programs, choices, addressLookup, futureEmails, attestations
 
@@ -52,11 +54,25 @@ class EligibilityForm(forms.ModelForm):
 class EligibilityFormPlus(forms.ModelForm):
     class Meta:
         model = Eligibility
-        fields = ['dependentsAge',]
+        fields = [ 'dependentsFirstName', 'dependentsLastName','dependentsBirthdate',]
         labels  = {
-            'dependentsAge':'Age of Dependents', 
+            'dependentsFirstName': 'First Name of Dependent',
+            'dependentsLastName': 'Last Name of Dependent',
+            'dependentsBirthdate':'Birthdate of Dependent', 
         } 
+        
+        widgets = {
+            'dependentsBirthdate': forms.DateInput(format='%d/%m/%Y',attrs={
+            'type': 'date',
+            }),
 
+            'dependentsFirstName': forms.TextInput(attrs={
+                'style': 'max-width: 100;',}),
+            'dependentsLastName': forms.TextInput(attrs={
+                'style': 'max-width: 100;',}),
+           
+        }
+ 
 
 # programs they are available for
 class programForm(forms.ModelForm):

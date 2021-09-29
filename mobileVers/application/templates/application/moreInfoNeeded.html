@@ -19,19 +19,27 @@
     {% csrf_token %}
     <!-- TODO: Make it yes or no not checkbox-->
     <div class="input" style="padding-top:0">
-        <label class="labelword">You indicated you had {{dependent}} number of individuals in your household, if they are children, what are their birthdates? If no children press continue!</label>
+        <label class="labelword">You indicated you had {{ dependent }} number of individuals in your household, if they are children, what are their birthdates? If no children press continue!</label>
     </div>
     {% for number in list %}
+        Dependent number {{ number }}
+        <br>
+        <br>
+        {{form}}
+        <br>
+        <br>
+    <!--
         <div class="input">
             <input type="checkbox" id="notChild{{forloop.counter}}" name="notChild" onclick="toggle()" style="vertical-align: middle; display: inline-block;"> Click here if over 18 years old.
             <input class="fill" type="date" name="{{ field.name }}" id="{{forloop.counter}} " style="height: 3vh;"> 
         </div>
+    -->
     {% endfor %}
-
+    <div class="footer" style="width:100%">
+        <button onclick="location.href='{% url 'dashboard:addressVerification' %}'"> CONTINUE </button>
+    </div>
+    
 </form>
-<div class="footer" style="width:100%">
-    <button onclick="location.href='{% url 'dashboard:addressVerification' %}'"> CONTINUE </button>
-</div>
 
 
 <script>

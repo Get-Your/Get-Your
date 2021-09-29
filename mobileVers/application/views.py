@@ -440,7 +440,6 @@ def moreInfoNeeded(request):
             print(form.data)
             instance = form.save
             instance.user_id = request.user
-        
             print("SAVING")
             instance.save()
             # If GenericQualified is 'ACTIVE',
@@ -454,14 +453,17 @@ def moreInfoNeeded(request):
     else:
         form = EligibilityFormPlus()
      
-    householdNum = AMI.objects.filter(
+    """householdNum = AMI.objects.filter(
             householdNum=request.user.eligibility.dependents_id,
             active=True,
-            ).values('householdNum').first()['householdNum']
+            ).values('householdNum').first()['householdNum']"""
     return render(request, "application/moreInfoNeeded.html",{
         'step':1,
-        'dependent': householdNum,
-        'list':list(range(householdNum)),
+        #"""'dependent': householdNum,
+        #'list':list(range(householdNum)),"""
+        'dependent': str(request.user.eligibility.dependents),
+        'list':list(range(request.user.eligibility.dependents)),
+        'form':form,
         'formPageNum':3,
     })
 
