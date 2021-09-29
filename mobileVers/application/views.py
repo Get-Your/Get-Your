@@ -19,144 +19,144 @@ from django.http import HttpResponseRedirect
 
 formPageNum = 6
 
-# class GAHIBuilder:
-#     """
+class GAHIBuilder:
+    """
     
-#     This class builds and displays the Gross Annual Household Income
-#     brackets.
+    This class builds and displays the Gross Annual Household Income
+    brackets.
     
-#     The idea behind this class is that it links the min and max AMI range
-#     values to the applicant without actually linking the `application_ami`
-#     table. The fields in this table are supposed to be added to and the old
-#     values marked inactive, but that may not happen properly and doing it
-#     this way ensures the AMI range values won't be messed up if that table
-#     isn't updated properly.
+    The idea behind this class is that it links the min and max AMI range
+    values to the applicant without actually linking the `application_ami`
+    table. The fields in this table are supposed to be added to and the old
+    values marked inactive, but that may not happen properly and doing it
+    this way ensures the AMI range values won't be messed up if that table
+    isn't updated properly.
     
-#     """
+    """
     
-#     # Run the program AMI qualifications here (when the site loads) instead
-#     # of on class instantiation, to save time
-#     amiCutoffs = iqProgramQualifications.objects.all().values(
-#         'percentAmi'
-#         ).distinct()    # distince() returns only the unique values (no dups)
-#     # List of floats of ami percentages (prepend zero for the bottom end)
-#     amiCutoffPc = [Decimal('0')]+sorted(
-#         [x['percentAmi'] for x in list(amiCutoffs)]
-#         )
+    # Run the program AMI qualifications here (when the site loads) instead
+    # of on class instantiation, to save time
+    amiCutoffs = iqProgramQualifications.objects.all().values(
+        'percentAmi'
+        ).distinct()    # distince() returns only the unique values (no dups)
+    # List of floats of ami percentages (prepend zero for the bottom end)
+    amiCutoffPc = [Decimal('0')]+sorted(
+        [x['percentAmi'] for x in list(amiCutoffs)]
+        )
 
-#     def __init__(self, request):
-#         """
-#         Take the lookup AMI value and program AMI limits and output the
-#         selections to the user.
+    def __init__(self, request):
+        """
+        Take the lookup AMI value and program AMI limits and output the
+        selections to the user.
 
-#         Parameters
-#         ----------
-#         ami : int
-#             Area Median Income, a lookup value from the application_ami table
-#             based on the user-input household size in the webapp.
+        Parameters
+        ----------
+        ami : int
+            Area Median Income, a lookup value from the application_ami table
+            based on the user-input household size in the webapp.
 
-#         Returns
-#         -------
-#         List of elements for the user to select for Gross Annual Household
-#         Income.
+        Returns
+        -------
+        List of elements for the user to select for Gross Annual Household
+        Income.
 
-#         """
+        """
         
-#         self.list = []
-#         self.valid = False  # default to invalid result
+        self.list = []
+        self.valid = False  # default to invalid result
         
-#         dependentsStr = request.GET.get('dependents')
-#         try:
-#             try:
-#                 # Return the AMI value for the number entered
-#                 ami = AMI.objects.filter(
-#                     householdNum=dependentsStr,
-#                     active=True,
-#                     ).order_by('ami').first().ami
-#             except AttributeError:  # catch error of 'dependents' value not found
-#                 # If number in household is invalid, display that instead of a
-#                 # dropdown (if dependents cannot be converted to int, a
-#                 # ValueError will be raised before the if statement).
-#                 dependents = int(dependentsStr)
-#                 if dependents < 1:
-#                     raise ValueError
-#                 else:
-#                     print(dependents,'individuals in household')
+        dependentsStr = request.GET.get('dependents')
+        try:
+            try:
+                # Return the AMI value for the number entered
+                ami = AMI.objects.filter(
+                    householdNum=dependentsStr,
+                    active=True,
+                    ).order_by('ami').first().ami
+            except AttributeError:  # catch error of 'dependents' value not found
+                # If number in household is invalid, display that instead of a
+                # dropdown (if dependents cannot be converted to int, a
+                # ValueError will be raised before the if statement).
+                dependents = int(dependentsStr)
+                if dependents < 1:
+                    raise ValueError
+                else:
+                    print(dependents,'individuals in household')
                     
-#                     # Find the max defined number in household, and compare it
-#                     # to the input - anything greater than max will have the
-#                     # 'Each Additional' value added
-#                     maxHousehold = int(
-#                         AMI.objects.filter(
-#                             active=True,
-#                             ).order_by('-householdNum')[1].householdNum
-#                         )
-#                     ami = AMI.objects.filter(
-#                         householdNum=maxHousehold,
-#                         active=True,
-#                         ).order_by('ami').first().ami + \
-#                         (dependents - maxHousehold) * \
-#                             AMI.objects.filter(
-#                                 householdNum='Each Additional',
-#                                 active=True,
-#                                 ).order_by('ami').first().ami
-#                     # print('Base is',AMI.objects.filter(householdNum=maxHousehold,active=True).order_by('ami').first().ami,'Additional is',(dependents - maxHousehold)*AMI.objects.filter(householdNum='Each Additional',active=True).order_by('ami').first().ami)
+                    # Find the max defined number in household, and compare it
+                    # to the input - anything greater than max will have the
+                    # 'Each Additional' value added
+                    maxHousehold = int(
+                        AMI.objects.filter(
+                            active=True,
+                            ).order_by('-householdNum')[1].householdNum
+                        )
+                    ami = AMI.objects.filter(
+                        householdNum=maxHousehold,
+                        active=True,
+                        ).order_by('ami').first().ami + \
+                        (dependents - maxHousehold) * \
+                            AMI.objects.filter(
+                                householdNum='Each Additional',
+                                active=True,
+                                ).order_by('ami').first().ami
+                    # print('Base is',AMI.objects.filter(householdNum=maxHousehold,active=True).order_by('ami').first().ami,'Additional is',(dependents - maxHousehold)*AMI.objects.filter(householdNum='Each Additional',active=True).order_by('ami').first().ami)
                 
-#         # Catch invalid dependents
-#         except ValueError:
-#             print("Invalid number of individuals")
-#             self.list.append(
-#                 GAHIVal(
-#                     'INVALID',
-#                     'Enter a whole number for individuals in household',
-#                     ),
-#                 )
+        # Catch invalid dependents
+        except ValueError:
+            print("Invalid number of individuals")
+            self.list.append(
+                GAHIVal(
+                    'INVALID',
+                    'Enter a whole number for individuals in household',
+                    ),
+                )
             
-#         else:
-#             self.valid = True
-#             print('AMI is',ami) 
+        else:
+            self.valid = True
+            print('AMI is',ami) 
             
-#             # Transform percentages to values using the calculated AMI
-#             amiCutoffVals = [ami*x for x in self.amiCutoffPc]
-#             print('AMI cutoffs are',amiCutoffVals)
+            # Transform percentages to values using the calculated AMI
+            amiCutoffVals = [ami*x for x in self.amiCutoffPc]
+            print('AMI cutoffs are',amiCutoffVals)
             
-#             # Build the list, using each distinct monetary cutoff.
-#             # Database values are "<low %>^<high %>"
-#             # Display values are "$<low value> ~ $<high value>", except at the
-#             # top and bottom ends
-#             maxIdx = len(self.amiCutoffPc)
-#             for idx,itm in enumerate(amiCutoffVals):
-#                 if idx == 0:
-#                     self.list.append(
-#                         GAHIVal(
-#                             f"{self.amiCutoffPc[idx]}^{self.amiCutoffPc[idx+1]}",
-#                             f"Below ${amiCutoffVals[idx+1]:06,.0f}",
-#                             ),
-#                         )
-#                 elif idx == maxIdx-1:
-#                     self.list.append(
-#                         GAHIVal(
-#                             f"{self.amiCutoffPc[idx]}^1",
-#                             f"Over ${itm:06,.0f}",
-#                             ),
-#                         )
-#                 else:
-#                     self.list.append(
-#                         GAHIVal(
-#                             f"{self.amiCutoffPc[idx]}^{self.amiCutoffPc[idx+1]}",
-#                             f"${itm:06,.0f} ~ ${amiCutoffVals[idx+1]:06,.0f}",
-#                             ),
-#                         )
+            # Build the list, using each distinct monetary cutoff.
+            # Database values are "<low %>^<high %>"
+            # Display values are "$<low value> ~ $<high value>", except at the
+            # top and bottom ends
+            maxIdx = len(self.amiCutoffPc)
+            for idx,itm in enumerate(amiCutoffVals):
+                if idx == 0:
+                    self.list.append(
+                        GAHIVal(
+                            f"{self.amiCutoffPc[idx]}^{self.amiCutoffPc[idx+1]}",
+                            f"Below ${amiCutoffVals[idx+1]:06,.0f}",
+                            ),
+                        )
+                elif idx == maxIdx-1:
+                    self.list.append(
+                        GAHIVal(
+                            f"{self.amiCutoffPc[idx]}^1",
+                            f"Over ${itm:06,.0f}",
+                            ),
+                        )
+                else:
+                    self.list.append(
+                        GAHIVal(
+                            f"{self.amiCutoffPc[idx]}^{self.amiCutoffPc[idx+1]}",
+                            f"${itm:06,.0f} ~ ${amiCutoffVals[idx+1]:06,.0f}",
+                            ),
+                        )
                 
-#         # print(self.list)
+        # print(self.list)
         
-# class GAHIVal:
-#     """ Class to store the text and passable value for each GAHI amount. """
+class GAHIVal:
+    """ Class to store the text and passable value for each GAHI amount. """
     
-#     def __init__(self, val, text):
+    def __init__(self, val, text):
 
-#         self.val = val
-#         self.text = text
+        self.val = val
+        self.text = text
         
 # first index page we come into
 def index(request):
