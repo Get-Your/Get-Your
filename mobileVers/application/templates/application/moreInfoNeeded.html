@@ -19,10 +19,10 @@
     {% csrf_token %}
     <!-- TODO: Make it yes or no not checkbox-->
     <div class="input" style="padding-top:0">
-        <label class="labelword">You indicated you had {{ dependent }} number of individuals in your household, if they are children, what are their birthdates? If no children press continue!</label>
+        <label class="labelword">You indicated you had {{ dependent }} individual(s) in your household, what are their birthdates?</label>
     </div>
     {% for number in list %}
-        Dependent number {{ number }}
+        Information of Individual {{ dependent }}
         <br>
         <br>
         {{form}}
@@ -35,12 +35,12 @@
         </div>
     -->
     {% endfor %}
-    <div class="footer" style="width:100%">
-        <button onclick="location.href='{% url 'dashboard:addressVerification' %}'"> CONTINUE </button>
-    </div>
-    
+
 </form>
 
+<div class="footer" style="width:100%">
+    <button onclick="location.href='{% url 'dashboard:addressVerification' %}'"> CONTINUE </button>
+</div>
 
 <script>
     function toggle() {
