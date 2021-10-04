@@ -56,9 +56,9 @@ class EligibilityFormPlus(forms.ModelForm):
         model = Eligibility
         fields = [ 'dependentsFirstName', 'dependentsLastName','dependentsBirthdate',]
         labels  = {
-            'dependentsFirstName': 'First Name of Dependent',
-            'dependentsLastName': 'Last Name of Dependent',
-            'dependentsBirthdate':'Birthdate of Dependent', 
+            'dependentsFirstName': 'First Name of Individual',
+            'dependentsLastName': 'Last Name of Individual',
+            'dependentsBirthdate':'Birthdate of Individual', 
         } 
         
         widgets = {
@@ -70,7 +70,6 @@ class EligibilityFormPlus(forms.ModelForm):
                 'style': 'max-width: 100;',}),
             'dependentsLastName': forms.TextInput(attrs={
                 'style': 'max-width: 100;',}),
-           
         }
  
 

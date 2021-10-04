@@ -139,6 +139,7 @@ class Eligibility(TimeStampedModel):
     dependentsBirthdate = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
     dependentsFirstName = models.CharField(max_length=20)
     dependentsLastName = models.CharField(max_length=20)
+    
     DEqualified = models.CharField(max_length=20)
     GenericQualified = models.CharField(max_length=20)
     ConnexionQualified = models.CharField(max_length=20)
