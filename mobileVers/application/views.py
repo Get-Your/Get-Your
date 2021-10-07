@@ -3,7 +3,7 @@ from django.contrib.auth import login, logout
 
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
-from .forms import UserForm, AddressForm, EligibilityForm, programForm, addressLookupForm, futureEmailsForm, EligibilityFormPlus, attestationForm
+from .forms import UserForm, AddressForm, EligibilityForm, programForm, addressLookupForm, futureEmailsForm, MoreInfoForm, attestationForm
 from .backend import addressCheck, validateUSPS, enroll_connexion_updates
 from .models import AMI, iqProgramQualifications
 from django.http import QueryDict
@@ -290,7 +290,6 @@ def address(request):
         if form.is_valid():
             instance = form.save(commit=False)
             instance.user_id = request.user
-
             instance.save()            
             return redirect(reverse("application:addressCorrection"))
     else:
@@ -432,26 +431,30 @@ def account(request):
 def moreInfoNeeded(request):
     if request.method =="POST":
         try:
-            existing = request.user.eligibility
-            form = EligibilityFormPlus(request.POST,instance = existing)
+            existing = request.user.MoreInfo
+            form = MoreInfoForm(request.POST,instance = existing)
         except AttributeError or ObjectDoesNotExist:
-            form = EligibilityFormPlus(request.POST or None)
+            form = MoreInfoForm(request.POST or None)
         if form.is_valid():
-            print(form.data)
-            instance = form.save
-            instance.user_id = request.user
-            print("SAVING")
-            instance.save()
-            # If GenericQualified is 'ACTIVE',
-            # go to the financial information page
-            if instance.GenericQualified == QualificationStatus.ACTIVE.name:
-                return redirect(reverse("application:mayQualify"))
-            else:
+            try:
+                instance = form.save(commit=False)
+                instance.user_id = request.user
+                instance.save()
+                print(vars(instance))
+                #TODO @Tim commented this out and was able to save successfully to database, though having issues saving the dynamic form data...
+                # If GenericQualified is 'ACTIVE',
+                # go to the financial information page
+                #if instance.GenericQualified == QualificationStatus.ACTIVE.name:
+                    #return redirect(reverse("application:mayQualify"))
+                #else:
                 return redirect(reverse("dashboard:addressVerification"))
+            except IntegrityError:
+                print("User already has information filled out for this section")
+                return redirect(reverse("application:available"))
         else:
             print(form.data)
     else:
-        form = EligibilityFormPlus()
+        form = MoreInfoForm()
      
     """householdNum = AMI.objects.filter(
             householdNum=request.user.eligibility.dependents_id,
@@ -659,11 +662,6 @@ def programs(request):
         if form.is_valid():
             print(form.data)
             print(request.session)
-            '''if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False:
-                print("hello i am in programs and just printed request.session printing 1040 form status...")
-                print(request.user.programs.form1040)
-                request.user.programs.form1040 = True
-                print(request.user.programs.form1040)'''
             try:
                 instance = form.save(commit=False)
                 instance.user_id = request.user
