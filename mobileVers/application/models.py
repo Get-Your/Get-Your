@@ -136,10 +136,7 @@ class Eligibility(TimeStampedModel):
 
     #TODO: possibly add field for how many total individuals are in the household
     dependents = models.IntegerField(100, default=1)
-    dependentsBirthdate = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    dependentsFirstName = models.CharField(max_length=20)
-    dependentsLastName = models.CharField(max_length=20)
-    
+
     DEqualified = models.CharField(max_length=20)
     GenericQualified = models.CharField(max_length=20)
     ConnexionQualified = models.CharField(max_length=20)
@@ -155,6 +152,14 @@ class Eligibility(TimeStampedModel):
     # AMI (which is a function of number of individuals in household)
     AmiRange_min = models.DecimalField(max_digits=5, decimal_places=4)
     AmiRange_max = models.DecimalField(max_digits=5, decimal_places=4)
+
+
+
+class MoreInfo(TimeStampedModel):
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    dependent = models.IntegerField()
+    dependentsBirthdate = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    dependentsName = models.CharField(max_length=20)
 
 # Programs model class attached to user (will delete as user account is deleted too)
 class programs(TimeStampedModel): #incomeVerificationPrograms

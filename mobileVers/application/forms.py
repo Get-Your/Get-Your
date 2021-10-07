@@ -3,7 +3,7 @@ from django import forms
 from django.db.models.fields import DateField
 from django.forms import widgets
 
-from .models import User, Addresses, Eligibility, programs, choices, addressLookup, futureEmails, attestations
+from .models import User, Addresses, Eligibility, programs, choices, addressLookup, futureEmails, attestations, MoreInfo
 
 # form for user account creation
 class UserForm(forms.ModelForm):
@@ -51,13 +51,12 @@ class EligibilityForm(forms.ModelForm):
         } 
 
 # form for basic finance eligibility
-class EligibilityFormPlus(forms.ModelForm):
+class MoreInfoForm(forms.ModelForm):
     class Meta:
-        model = Eligibility
-        fields = [ 'dependentsFirstName', 'dependentsLastName','dependentsBirthdate',]
+        model = MoreInfo
+        fields = [ 'dependentsName','dependentsBirthdate', 'dependent']
         labels  = {
-            'dependentsFirstName': 'First Name of Individual',
-            'dependentsLastName': 'Last Name of Individual',
+            'dependentsName': 'Name of Individual',
             'dependentsBirthdate':'Birthdate of Individual', 
         } 
         
@@ -66,9 +65,7 @@ class EligibilityFormPlus(forms.ModelForm):
             'type': 'date',
             }),
 
-            'dependentsFirstName': forms.TextInput(attrs={
-                'style': 'max-width: 100;',}),
-            'dependentsLastName': forms.TextInput(attrs={
+            'dependentsName': forms.TextInput(attrs={
                 'style': 'max-width: 100;',}),
         }
  

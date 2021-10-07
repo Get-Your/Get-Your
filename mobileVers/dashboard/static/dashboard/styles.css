@@ -7,6 +7,80 @@
     --gray: #999999;
 }
 
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+    border: 1px solid rgba(85, 161, 211, 0.3);
+    width:auto;
+    display: grid;
+    place-items: center;
+    padding-bottom: 5px;
+}
+
+td {
+	padding: 0;
+}
+
+.calendar-container {
+    position: absolute; top: 0;
+}
+
+.calendar-container header {
+	border-radius: 10px 10px 0 0;
+	background: #e66b6b;
+	color: #fff;
+	padding: 3em 2em;
+    
+}
+
+.day {
+	font-size: 25px;
+	font-weight: 900;
+	line-height: 1em;
+}
+
+.month {
+	font-size: 30px;
+	line-height: 1em;
+	text-transform: lowercase;
+}
+
+.calendar {
+	border-radius: 0 0 1em 1em;
+
+	color: #555;
+	display: inline-block;
+	
+}
+
+.calendar thead {
+	color: #e66b6b;
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+.calendar td {
+	padding-left: 9px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    padding-right: 9px;
+	text-align: center;
+}
+
+.calendar tbody td:hover {
+	background: #cacaca;
+	color: #fff;
+}
+
+.current-day {
+	color: #e66b6b;
+}
+
+.prev-month,
+.next-month {
+	color: #cacaca;
+}
+
 
 @media screen and (min-width : 768px) {
     .fadeLarge{
@@ -52,7 +126,7 @@
         /*border: 2px solid #CCCCCC;*/
         width: 74%;
         margin-left: 400px;
-        height: 50vw;
+        height: 41vw;
         display: flex;
         flex-flow: column wrap; /* Shorthand – you could use ‘flex-direction: column’ and ‘flex-wrap: wrap’ instead */
         justify-content: flex-start;
@@ -75,8 +149,8 @@
         width: 31%;
         margin: 1%;
         padding: 10px;
-
       }
+      
       .item.extraLarge {
        /* background-color: yellow;*/
         height: 500px;

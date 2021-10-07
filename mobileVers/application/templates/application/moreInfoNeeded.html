@@ -22,7 +22,7 @@
         <label class="labelword">You indicated you had {{ dependent }} individual(s) in your household, what are their birthdates?</label>
     </div>
     {% for number in list %}
-        Information of Individual {{ dependent }}
+        Information of Individual {{ number }}
         <br>
         <br>
         {{form}}
@@ -36,11 +36,12 @@
     -->
     {% endfor %}
 
+    <div class="footer">
+        <button type ="submit" > CONTINUE </button>
+    </div>
 </form>
 
-<div class="footer" style="width:100%">
-    <button onclick="location.href='{% url 'dashboard:addressVerification' %}'"> CONTINUE </button>
-</div>
+
 
 <script>
     function toggle() {
