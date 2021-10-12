@@ -3,6 +3,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.postgres.fields import JSONField
 
 # Create custom user manager class (because django only likes to use usernames as usernames not email)
 class CustomUserManager(BaseUserManager):
@@ -157,9 +158,10 @@ class Eligibility(TimeStampedModel):
 
 class MoreInfo(TimeStampedModel):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    dependent = models.IntegerField()
-    dependentsBirthdate = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    dependentsName = models.CharField(max_length=20)
+    #dependent = models.IntegerField()
+    #dependentsBirthdate = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    #dependentsName = models.CharField(max_length=20)
+    dependentInformation = JSONField(null=True,blank=True)
 
 # Programs model class attached to user (will delete as user account is deleted too)
 class programs(TimeStampedModel): #incomeVerificationPrograms
