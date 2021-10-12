@@ -52,22 +52,20 @@ class EligibilityForm(forms.ModelForm):
 
 # form for basic finance eligibility
 class MoreInfoForm(forms.ModelForm):
-    class Meta:
-        model = MoreInfo
-        fields = [ 'dependentsName','dependentsBirthdate', 'dependent']
-        labels  = {
-            'dependentsName': 'Name of Individual',
-            'dependentsBirthdate':'Birthdate of Individual', 
-        } 
-        
-        widgets = {
-            'dependentsBirthdate': forms.DateInput(format='%d/%m/%Y',attrs={
-            'type': 'date',
-            }),
+    fields = [ 'dependentsName','dependentsBirthdate', 'dependent',]
+    labels  = {
+        'dependentsName': 'Name of Individual',
+        'dependentsBirthdate':'Birthdate of Individual', 
+    } 
+    
+    widgets = {
+        'dependentsBirthdate': forms.DateInput(format='%d/%m/%Y',attrs={
+        'type': 'date',
+        }),
 
-            'dependentsName': forms.TextInput(attrs={
-                'style': 'max-width: 100;',}),
-        }
+        'dependentsName': forms.TextInput(attrs={
+            'style': 'max-width: 100;',}),
+    }
  
 
 # programs they are available for
