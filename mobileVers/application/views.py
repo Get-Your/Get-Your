@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login, logout
+from django.forms.models import modelformset_factory
 
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from .forms import UserForm, AddressForm, EligibilityForm, programForm, addressLookupForm, futureEmailsForm, MoreInfoForm, attestationForm
 from .backend import addressCheck, validateUSPS, enroll_connexion_updates
-from .models import AMI, iqProgramQualifications
+from .models import AMI, MoreInfo, iqProgramQualifications
 from django.http import QueryDict
 
 from py_models.qualification_status import QualificationStatus
@@ -439,8 +440,10 @@ def moreInfoNeeded(request):
             try:
                 instance = form.save(commit=False)
                 instance.user_id = request.user
+                instance.dependentInformation = str(form.data)
                 instance.save()
-                print(vars(instance))
+                #print(vars(instance))
+                #print(instance.dependentsName)
                 #TODO @Tim commented this out and was able to save successfully to database, though having issues saving the dynamic form data...
                 # If GenericQualified is 'ACTIVE',
                 # go to the financial information page
@@ -450,7 +453,7 @@ def moreInfoNeeded(request):
                 return redirect(reverse("dashboard:addressVerification"))
             except IntegrityError:
                 print("User already has information filled out for this section")
-                return redirect(reverse("application:available"))
+                return redirect(reverse("dashboard:addressVerification"))
         else:
             print(form.data)
     else:
@@ -469,6 +472,21 @@ def moreInfoNeeded(request):
         'form':form,
         'formPageNum':3,
     })
+     
+    """householdNum = AMI.objects.filter(
+            householdNum=request.user.eligibility.dependents_id,
+            active=True,
+            ).values('householdNum').first()['householdNum']"""
+    return render(request, "application/moreInfoNeeded.html",{
+        'step':1,
+        #"""'dependent': householdNum,
+        #'list':list(range(householdNum)),"""
+        'dependent': str(request.user.eligibility.dependents),
+        'list':list(range(request.user.eligibility.dependents)),
+        'form':form,
+        'formPageNum':3,
+    })
+
 
 def load_gahi_selector(request):
     """ Load the Gross Annual Household Income selection list. """
