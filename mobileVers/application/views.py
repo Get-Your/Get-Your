@@ -442,9 +442,6 @@ def moreInfoNeeded(request):
                 instance.user_id = request.user
                 instance.dependentInformation = str(form.data)
                 instance.save()
-                #print(vars(instance))
-                #print(instance.dependentsName)
-                #TODO @Tim commented this out and was able to save successfully to database, though having issues saving the dynamic form data...
                 # If GenericQualified is 'ACTIVE',
                 # go to the financial information page
                 #if instance.GenericQualified == QualificationStatus.ACTIVE.name:
