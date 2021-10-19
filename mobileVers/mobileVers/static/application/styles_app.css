@@ -8,6 +8,11 @@
     --gray: #999999;
 }
 
+input[type="checkbox"]{
+    height:20px;
+    width:20px;
+}
+
 @media screen and (min-width : 768px) {
     .fadeLarge{
         display:none;
@@ -44,7 +49,7 @@
     }
     /*Set up font sizes*/
     h1 {
-        font-size:max(4vw, 25px);
+        font-size:max(3vw, 25px);
         margin-bottom:1px;
         margin-top: 0px;
         font-family: Montserrat;
@@ -94,7 +99,7 @@
     }
     
     p {
-        font-size: max(2vw, 14px);
+        font-size: max(10px, 20px);
         padding:0;
         margin:0;
         color: var(--darkblue);
@@ -206,6 +211,13 @@
         background-color: green;
     }
     
+    label,input{
+        display: inline-block;
+        vertical-align: center;
+        color: var(--darkblue);
+        overflow: hidden;
+        font-size: 20px;
+    }
     
     
     .footer{
@@ -388,7 +400,7 @@
 
 
     p {
-        font-size: max(3.8vw, 16px);
+        font-size: max(1vw, 16px);
         padding:0;
         margin:0;
         color:white; 
@@ -459,7 +471,12 @@
         background-color: green;
     }
 
-
+    label,input{
+        display: inline-block;
+        vertical-align: middle;
+        color: white;
+    }
+    
 
     .footer{
         display: flex;
@@ -470,7 +487,7 @@
         width:90%;
         height:12vh;
     }
-
+    
     /*TODO: Do we want to make the link highlights disappear?*/
     .noselect {
         -webkit-touch-callout: none; /* iOS Safari */
