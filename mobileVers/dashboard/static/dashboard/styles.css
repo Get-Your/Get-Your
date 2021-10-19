@@ -8,9 +8,6 @@
 }
 
 table {
-	border-collapse: collapse;
-	border-spacing: 0;
-    border: 1px solid rgba(85, 161, 211, 0.3);
     width:auto;
     display: grid;
     place-items: center;
@@ -26,16 +23,15 @@ td {
 }
 
 .calendar-container header {
-	border-radius: 10px 10px 0 0;
-	background: #e66b6b;
-	color: #fff;
-	padding: 3em 2em;
-    
+	background: transparent;
+	color: #13467D;
+	padding: 1em 1em;
+    text-align: center;
 }
 
 .day {
 	font-size: 25px;
-	font-weight: 900;
+	font-weight: 600;
 	line-height: 1em;
 }
 
@@ -55,8 +51,8 @@ td {
 
 .calendar thead {
 	color: #e66b6b;
-	font-weight: 700;
-	text-transform: uppercase;
+	font-weight: 500;
+	text-transform:capitalize;
 }
 
 .calendar td {

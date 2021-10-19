@@ -7,6 +7,76 @@
     --gray: #999999;
 }
 
+table {
+    width:auto;
+    display: grid;
+    place-items: center;
+    padding-bottom: 5px;
+}
+
+td {
+	padding: 0;
+}
+
+.calendar-container {
+    position: absolute; top: 0;
+}
+
+.calendar-container header {
+	background: transparent;
+	color: #13467D;
+	padding: 1em 1em;
+    text-align: center;
+}
+
+.day {
+	font-size: 25px;
+	font-weight: 600;
+	line-height: 1em;
+}
+
+.month {
+	font-size: 30px;
+	line-height: 1em;
+	text-transform: lowercase;
+}
+
+.calendar {
+	border-radius: 0 0 1em 1em;
+
+	color: #555;
+	display: inline-block;
+	
+}
+
+.calendar thead {
+	color: #e66b6b;
+	font-weight: 500;
+	text-transform:capitalize;
+}
+
+.calendar td {
+	padding-left: 9px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    padding-right: 9px;
+	text-align: center;
+}
+
+.calendar tbody td:hover {
+	background: #cacaca;
+	color: #fff;
+}
+
+.current-day {
+	color: #e66b6b;
+}
+
+.prev-month,
+.next-month {
+	color: #cacaca;
+}
+
 
 @media screen and (min-width : 768px) {
     .fadeLarge{
@@ -47,17 +117,24 @@
       }
       
       .container {
-        background-color: #ffffff;
+        background-color: #FFFFFF;
         padding:10px;
         /*border: 2px solid #CCCCCC;*/
         width: 74%;
         margin-left: 400px;
-        height: 50vw;
+        height: 41vw;
         display: flex;
         flex-flow: column wrap; /* Shorthand – you could use ‘flex-direction: column’ and ‘flex-wrap: wrap’ instead */
         justify-content: flex-start;
         align-items: flex-start;
         overflow-x: scroll;
+      }
+      .divider{
+        border-top-style: solid; 
+        color:rgba(85, 161, 211, 0.3); 
+        border-top-width: thin; 
+        margin-top:20px; 
+        margin-bottom: 20px;
       }
       
       .item {
@@ -68,8 +145,8 @@
         width: 31%;
         margin: 1%;
         padding: 10px;
-
       }
+      
       .item.extraLarge {
        /* background-color: yellow;*/
         height: 500px;
@@ -88,22 +165,62 @@
         justify-content: left;
         align-items: top;
       }
+
+
+
+
       .item.small {
         /*background-color: violet;*/
-        height: 150px;
+        height:auto;
+        max-height: 150px;
         overflow:hidden;
         display: flex;
         justify-content: left;
         align-items: top;
+        margin-bottom: -1%;
       } 
+
+
+
+
+
+
       .item.thin {
         /*background-color: green;*/
-        height: 100px;
+        height:auto;
+        max-height: 150px;
         overflow:hidden;
         display: flex;
         justify-content: left;
         align-items: top;
+        transition: max-height 5s ease-out;
+        margin-bottom:1%;
       } 
+
+      .item.collapsed {
+        max-height:0px;
+        margin-top:0;
+        display:none;
+      }
+      .item.collapsible{
+        border-top-left-radius: 0px;  
+        border-top-right-radius: 0px;        
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        border: 1px solid rgba(85, 161, 211, 0.3);
+        border-top: none;
+        height: auto;
+        width: 31%;
+        margin-top: -1.75%;
+        padding: 10px;
+      }
+
+      #myDIV {
+          display:none;
+      }
+
+
+      
     .column {
         float: left;
         width: 50%
@@ -154,7 +271,7 @@
     }
     /*Set up font sizes*/
     h1 {
-        font-size: max(4vw, 25px);
+        font-size: max(5vw, 30px);
         margin-bottom:1px;
         margin-top: 0px;
         font-family: Montserrat;
@@ -180,7 +297,6 @@
         font-size: max(1vw, 20px);
         color: var(--darkblue);
     }
-    
 
     /*button background*/
     button {
@@ -194,6 +310,17 @@
         height: 6vh;
         font-size: max(2vw, 14px);
     }
+
+    .button2{
+        background-color: transparent;
+        background-image: url('/static/dashboard/images/downArrow.svg') no-repeat;
+        border-radius: none;
+        border:none;
+        outline: none;
+        box-shadow: none;
+        color:white;
+        height: 5px;
+    }
     .desktop {
         width: 50%;
         margin-left: auto;
@@ -204,8 +331,9 @@
         background-color: white;
         border-radius: 3vw;
         border: 1px solid var(--darkblue);
-        padding: 5px 10px;
+        padding: 1px 15px;
         color:var(--darkblue);
+        text-align: center;
         height:max(3.2vw, 16px);
         font-size: max(3vw, 12px);
     }
