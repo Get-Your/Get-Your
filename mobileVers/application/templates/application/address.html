@@ -6,20 +6,6 @@
         <h1> <b>Provide your address so we can find programs you may qualify for!</b></h1>
     </div>
 </div>
-<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js'></script>
-<script type="text/javascript"> 
-  $(document).ready(function(){
-        $("#confirm").on('change',function() {
-            var slidepos = $(this).val();
-            if(slidepos > 99){
-                // User slided the slider
-            $("#confirm").fadeOut();
-            $(".delete-notice").fadeIn();
-            }
-        });
-    });
-</script>
-
 
 <h2 style="font-weight: 700;color:white; margin:5vh 0"> What is your address? </h2>
 
@@ -78,17 +64,11 @@
     {% endif %}
 {% endfor %}
 
+<div class="footer">
+    <button type ="submit" > CONTINUE </button>
+</div>
 
-<section id="alertbox">
-    <p style="color:#F9B316"><strong> I am lawfully present in the United States and/or am only applying on behalf of ONLY applying on behalf on my children (under 18 years of age) who are lawfully present.
-    </strong></p>
-    <div class="confirmation-slider">
-      <div id="status"  style="overflow-y: hidden;">
-            <input id="confirm" type="range" value="0" min="0" max="100" />
-        <span class="delete-notice"><button type="submit" style="background-color: #13467D;"> CONTINUE </button></span>
-      </div>
-    </div>
-  </section>
+
 
 </form>
 {% endblock %}
