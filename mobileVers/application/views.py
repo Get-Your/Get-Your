@@ -596,6 +596,7 @@ def GRQuickApply(request):
     print(obj.GRqualified)
     #print(request.user.eligibility.GRQualified)
     
+    
     # Calculate if within the qualification range
     qualifyAmiPc = iqProgramQualifications.objects.filter(name='grocery').values(
         'percentAmi'

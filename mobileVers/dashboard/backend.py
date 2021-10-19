@@ -53,29 +53,30 @@ def files_to_string(file_list, request):
 
 # redirect user to whatever page they need to go to every time by checking which steps they've
 # completed in the application process
-def what_page(user):
+def what_page(user,request):
     if user.is_authenticated:
+        #for some reason, none of these login correctly... reviewing this now
         try:
-            value = user.addresses
+            value = request.user.addresses
         except AttributeError:
             return "application:address"
 
         try:
-            value = user.eligibility
+            value = request.user.eligibility
         except AttributeError:
             return "application:finances"
         
         try:
-            value = user.programs
+            value = request.user.programs
         except AttributeError or ObjectDoesNotExist:
             return "application:programs"
         
         try:
-            value = user.forms
+            value = request.user.files
         except AttributeError:
             return "dashboard:files"
         
-        return "dashboard:index"
+        return "dashboard:dashboard"
 
     else:
         return "application:account"

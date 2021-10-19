@@ -282,11 +282,10 @@ def login_user(request):
         # Check if the authentication was successful
         if user is not None:
             login(request, user)
-            
-            
             # Push user to correct page
-            page = what_page(request.user)
-            if what_page(request.user) == "dashboard:index":
+            print(what_page(request.user, request))
+            page = what_page(request.user, request)
+            if what_page(request.user, request) == "dashboard:index":
                 return redirect(reverse("dashboard:index"))
             else:
                 return redirect(reverse("dashboard:notifyRemaining"))
@@ -298,14 +297,14 @@ def login_user(request):
     
     # If it turns out user is already logged in but is trying to log in again redirect to user's homepage
     if request.method == "GET" and request.user.is_authenticated:
-        return redirect(reverse("dashboard:index"))
+        return redirect(reverse("dashboard:dashboard"))
 
     # Just give back log in page if none of the above is true
     else:
         return render(request, "dashboard/login.html",{})
 
 def notifyRemaining(request):    
-    page = what_page(request.user)
+    page = what_page(request.user, request)
     return render(request, "dashboard/notifyRemaining.html",{
         "next_page": page,
     })
@@ -406,8 +405,6 @@ def feedback(request):
         form = FeedbackForm(request.POST)
         if form.is_valid():
             form.save()
-            print(form.cleaned_data['starRating'])
-            print(form.cleaned_data['feedbackComments'])
             return redirect(reverse("dashboard:feedbackReceived"))
         else:
             print("form is not valid")
