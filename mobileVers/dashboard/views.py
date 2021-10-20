@@ -202,7 +202,6 @@ def index(request):
     return render(request, 'dashboard/index.html', #{
    #     "active_program_count": active_program_count}
     )
-    #current_user = request.user
     #return render(request, 'dashboard/index.html', {
     #    'program_string':current_user.email
     #})
@@ -285,8 +284,8 @@ def login_user(request):
             # Push user to correct page
             print(what_page(request.user, request))
             page = what_page(request.user, request)
-            if what_page(request.user, request) == "dashboard:index":
-                return redirect(reverse("dashboard:index"))
+            if what_page(request.user, request) == "dashboard:dashboard":
+                return redirect(reverse("dashboard:dashboard"))
             else:
                 return redirect(reverse("dashboard:notifyRemaining"))
 

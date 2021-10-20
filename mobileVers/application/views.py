@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login, logout
 from django.forms.models import modelformset_factory
+from django.contrib.auth.models import AnonymousUser
 
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
@@ -161,7 +162,6 @@ class GAHIVal:
         
 # first index page we come into
 def index(request):
-    
     if request.method == "POST": 
         form = addressLookupForm(request.POST or None)
         if form.is_valid():
@@ -273,7 +273,7 @@ def index(request):
                 return(redirect(reverse("application:quickNotFound")))
     
     form = addressLookupForm() 
-    logout(request)
+    #logout(request)
     return render(request, 'application/index.html', {
             'form':form,
         })
