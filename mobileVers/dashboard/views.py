@@ -114,7 +114,7 @@ def addressVerification(request):
     return render(request, 'dashboard/addressVerification.html', {
     'form':form,
     'step':2,
-    'formPageNum':3,
+    'formPageNum':"3 - Recreation Reduced Fee",
     })
 
 #    else:
@@ -181,7 +181,7 @@ def filesContinued(request):
     'programs': file_list,
     'program_string': files_to_string(file_list, request),
     'step':3,
-    'formPageNum':3,
+    'formPageNum':"3 - Recreation Reduced Fee",
     })
 
 def broadcast(request):

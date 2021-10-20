@@ -273,7 +273,7 @@ def index(request):
                 return(redirect(reverse("application:quickNotFound")))
     
     form = addressLookupForm() 
-    #logout(request)
+    logout(request)
     return render(request, 'application/index.html', {
             'form':form,
         })
@@ -467,7 +467,7 @@ def moreInfoNeeded(request):
         'dependent': str(request.user.eligibility.dependents),
         'list':list(range(request.user.eligibility.dependents)),
         'form':form,
-        'formPageNum':3,
+        'formPageNum':"3 - Recreation Reduced Fee" ,
     })
      
     """householdNum = AMI.objects.filter(
