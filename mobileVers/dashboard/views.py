@@ -113,8 +113,8 @@ def addressVerification(request):
 
     return render(request, 'dashboard/addressVerification.html', {
     'form':form,
-    'step':2,
-    'formPageNum':"3 - Recreation Reduced Fee",
+    'step':1,
+    'formPageNum':"2 - Recreation Reduced Fee",
     })
 
 #    else:

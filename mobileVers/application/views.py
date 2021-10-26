@@ -447,10 +447,10 @@ def moreInfoNeeded(request):
                 #if instance.GenericQualified == QualificationStatus.ACTIVE.name:
                     #return redirect(reverse("application:mayQualify"))
                 #else:
-                return redirect(reverse("dashboard:addressVerification"))
+                return redirect(reverse("application:programs"))
             except IntegrityError:
                 print("User already has information filled out for this section")
-                return redirect(reverse("dashboard:addressVerification"))
+                return redirect(reverse("application:programs"))
         else:
             print(form.data)
     else:
@@ -461,13 +461,13 @@ def moreInfoNeeded(request):
             active=True,
             ).values('householdNum').first()['householdNum']"""
     return render(request, "application/moreInfoNeeded.html",{
-        'step':1,
+        'step':3,
         #"""'dependent': householdNum,
         #'list':list(range(householdNum)),"""
         'dependent': str(request.user.eligibility.dependents),
         'list':list(range(request.user.eligibility.dependents)),
         'form':form,
-        'formPageNum':"3 - Recreation Reduced Fee" ,
+        'formPageNum':6,
     })
      
     """householdNum = AMI.objects.filter(
@@ -530,7 +530,7 @@ def finances(request):
             if instance.GenericQualified == QualificationStatus.ACTIVE.name:
                 return redirect(reverse("application:mayQualify"))
             else:
-                return redirect(reverse("application:programs"))
+                return redirect(reverse("application:moreInfoNeeded"))
         else:
             print(form.data)
     else:
