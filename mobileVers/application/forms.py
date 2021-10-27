@@ -59,8 +59,8 @@ class MoreInfoForm(forms.ModelForm):
     dependentsBirthdate = forms.DateField(label="Individual's Birthdate", widget=forms.widgets.DateInput(attrs={'type': 'date'}))
     class Meta:
         model = MoreInfo
-        fields = ['dependent', 'dependentsBirthdate','dependentsName','dependentInformation']
-        widgets = {'dependentInformation': forms.HiddenInput()}
+        fields = ['dependentsBirthdate','dependentsName','dependentInformation']
+        widgets = {'dependentInformation': forms.HiddenInput(),}
 
  
 
