@@ -21,5 +21,9 @@ urlpatterns = [
     path('ProgramsList', views.ProgramsList, name='ProgramsList'),
     path('FAQ', views.FAQ, name='FAQ'),
     path('settings', views.settings, name='settings'),
+    path('passwordReset', views.passwordReset, name='passwordReset'),
+    path('passwordResetDone', views.passwordResetDone, name='passwordResetDone'),
+    path('passwordResetConfirm', views.passwordResetConfirm, name='passwordResetConfirm'),
+    path('passwordResetComplete', views.passwordResetComplete, name='passwordResetComplete'),
     # Available/NotAvailable Digital equity in your area
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #this is needed to get file uploads to work! 
