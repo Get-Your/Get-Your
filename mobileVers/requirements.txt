@@ -10,6 +10,7 @@ twilio
 django-phonenumber-field[phonenumbers]
 django-environ
 psycopg2-binary
+django-crispy-forms
 
 #pytesseract
 #tesseract need to system install, not pip install... i think

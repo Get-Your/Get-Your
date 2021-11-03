@@ -271,6 +271,16 @@ def settings(request):
     })
 
 
+def passwordReset(request):
+    return render(request, 'dashboard/PasswordReset/passwordReset.html',)
+
+def passwordResetConfirm(request):
+    return render(request, 'dashboard/PasswordReset/passwordResetConfirm.html',)
+
+def passwordResetDone(request):
+    return render(request, 'dashboard/PasswordReset/passwordResetDone.html',)
+def passwordResetComplete(request):
+    return render(request, 'dashboard/PasswordReset/passwordResetComplete.html',)
 
 def login_user(request):
     if request.method == "POST":
