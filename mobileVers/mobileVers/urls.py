@@ -18,6 +18,7 @@ from django.urls import path, include
 
 from application import views
 
+from django.contrib.auth import views as auth_views #import this
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,4 +28,11 @@ urlpatterns = [
     path('application/', include(('application.urls', 'application'),namespace='application')),
     path('dashboard/', include(('dashboard.urls', 'dashboard'),namespace='dashboard')),
 
+
+    path('accounts/', include('django.contrib.auth.urls')),
+    #path('passwordResetDone', views.passwordResetDone, name='passwordResetDone'),
+    path('password_reset/', auth_views.PasswordResetView.as_view(template_name='dashboard/PasswordReset/passwordReset.html'), name='passwordReset'),
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='dashboard/PasswordReset/passwordResetDone.html'), name='passwordResetDone'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name="dashboard/PasswordReset/passwordResetConfirm.html"), name='passwordResetConfirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='dashboard/PasswordReset/passwordResetComplete.html'), name='passwordResetComplete'),      
 ]
