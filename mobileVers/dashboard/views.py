@@ -535,19 +535,58 @@ def dashboardGetFoco(request):
         text2 = "True"
         QProgramNumber = QProgramNumber + 1
         RECDisplay = ""
+        QProgramNumber = QProgramNumber + 1
+        CONDisplay = ""
     else:
         text2 = "False"
         RECDisplay = "none"
+        CONDisplay = "none"
+
+    if request.user.eligibility.ConnexionQualified == QualificationStatus.PENDING.name:
+        ConnexionButtonText = "Applied"
+        ConnexionButtonColor = "green"
+        ConnexionButtonTextColor = "White"
+        PendingNumber = PendingNumber + 1
+        QProgramNumber = QProgramNumber - 1
+        CONDisplayActive = "none"
+        CONDisplayPending = ""
+        CONDisplay = "none"
+
+    if request.user.eligibility.ConnexionQualified == QualificationStatus.ACTIVE.name:
+        ConnexionButtonText = "Enrolled!"
+        ConnexionButtonColor = "blue"
+        ConnexionButtonTextColor = "White"
+        CONDisplayActive = ""
+        ActiveNumber = ActiveNumber + 1
+        CONDisplayPending = "None"
+        CONDisplay = "none"
+    else:
+        ConnexionButtonText = "Quick Apply +"
+        ConnexionButtonColor = ""
+        ConnexionButtonTextColor = ""
+        CONDisplayActive="none"
+
+    if request.user.eligibility.ConnexionQualified == QualificationStatus.NOTQUALIFIED.name:
+        ConnexionButtonText = "Can't Enroll"
+        ConnexionButtonColor = "red"
+        ConnexionButtonTextColor = "black"
+    else:
+        ConnexionButtonText = "Quick Apply +"
+        ConnexionButtonColor = ""
+        ConnexionButtonTextColor = ""
+
 
     if request.user.eligibility.GRqualified == QualificationStatus.PENDING.name:
         GRButtonText = "Applied"
         GRButtonColor = "green"
         GRButtonTextColor = "White"
         PendingNumber = PendingNumber + 1
+        QProgramNumber = QProgramNumber - 1
         GRDisplayActive = "None"
         GRDisplayPending = ""
         GRDisplay = "none"
         GRPendingDate = "Estimated Time: October 25th"
+
     elif request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!"
         GRButtonColor = "blue"
@@ -570,6 +609,7 @@ def dashboardGetFoco(request):
         RECButtonColor = "green"
         RECButtonTextColor = "White"
         PendingNumber = PendingNumber + 1
+        QProgramNumber = QProgramNumber - 1
         RECDisplayActive = "None"
         RECDisplayPending = ""
         RECPendingDate = "Estimated Time: December 25th"
@@ -605,6 +645,11 @@ def dashboardGetFoco(request):
         "RECButtonText" : RECButtonText,
         "RECButtonColor" : RECButtonColor,
         "RECButtonTextColor" : RECButtonTextColor,
+
+        "ConnexionButtonText": ConnexionButtonText,
+        "ConnexionButtonColor": ConnexionButtonColor,
+        "ConnexionButtonTextColor": ConnexionButtonTextColor,
+
         
         "GRPreQualification": text,
         "RecreationPreQualification": text2,
@@ -615,10 +660,16 @@ def dashboardGetFoco(request):
 
         "GRDisplay": GRDisplay,
         "RECDisplay": RECDisplay,
+        "CONDisplay": CONDisplay,
+
         "GRDisplayActive": GRDisplayActive,
         "RECDisplayActive": RECDisplayActive,
+        "CONDisplayActive": CONDisplayActive,
+
         "GRDisplayPending": GRDisplayPending,
         "RECDisplayPending": RECDisplayPending,
+        "CONDisplayPending": CONDisplayPending,
+
         "RECPendingDate": RECPendingDate,
         "GRPendingDate": GRPendingDate,
         
