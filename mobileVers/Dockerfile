@@ -38,6 +38,7 @@ RUN apt-get remove -y curl
 RUN mkdir /code
 WORKDIR /code
 ADD . /code/
+RUN apt-get install libmagic1
 RUN pip install pip --upgrade
 RUN pip install -r requirements.txt
 RUN pip install gunicorn

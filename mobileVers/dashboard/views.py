@@ -26,6 +26,11 @@ from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 
+import magic
+import os 
+from pathlib import Path
+from django.core.files.storage import default_storage
+
 
 
 
@@ -56,9 +61,16 @@ def files(request):
                 instance.save()
 
                 for f in request.FILES.getlist('document'):
+
                     instance.document.save(str(f),f) #this line allows us to save multiple files, there's a BUG though, extra last file is saved...
+ 
                     file_upload = request.user
                     file_upload.files.add(instance)
+                    
+                    print("printing file type...")
+                    open (file_upload.files)
+                    #magic.from_file(file_upload.files.add(instance))
+
 
                 # Check if the user needs to upload another form
                 Forms = request.user.files
@@ -159,7 +171,10 @@ def filesContinued(request):
                 
                 file_upload = request.user
                 file_upload.address_files.add(instance)
-
+                #f = default_storage.open('samplebill.jpg', 'r')
+                #magic.from_file(f)
+                #f.close()
+                magic.from_file(file_upload.address_files.read())
                 # Check if the user needs to upload another form
                 Forms = request.user.address_files
                 checkAllForms = [not(request.user.addressverification.Utility)] #not(request.user.addressverification.Identification), ,not(request.user.addressverification.freeReducedLunch),
