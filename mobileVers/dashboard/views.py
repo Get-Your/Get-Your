@@ -12,7 +12,7 @@ from application.backend import broadcast_email, broadcast_sms
 from django.db import IntegrityError
 
 from py_models.qualification_status import QualificationStatus
-
+import logging
 
 
 from django.shortcuts import render, redirect
@@ -27,9 +27,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 
 import magic
-import os 
-from pathlib import Path
-from django.core.files.storage import default_storage
+from django.core.exceptions import ValidationError
+from django.contrib import messages
 
 
 
@@ -171,10 +170,33 @@ def filesContinued(request):
                 
                 file_upload = request.user
                 file_upload.address_files.add(instance)
-                #f = default_storage.open('samplebill.jpg', 'r')
-                #magic.from_file(f)
-                #f.close()
-                magic.from_file(file_upload.address_files.read())
+                
+                #file validation using magic found below...
+
+                #print("printing file name...")
+                #print(instance.document)
+                #print("printing url....")
+                #print(instance.document.url)
+                #print("printing magic....")
+                filetype = magic.from_file("mobileVers/" + instance.document.url)
+                print(filetype)
+                if "PNG" in filetype:
+                    pass
+                elif "JPEG" in filetype:
+                    pass
+                elif "PDF" in filetype:
+                    pass
+                else:
+                    logging.error("File is not a valid file type. file is: " + filetype)
+                    return render(request, "dashboard/filesContinued.html", {
+                        "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
+                        'form':form,
+                        'programs': file_list,
+                        'program_string': files_to_string(file_list, request),
+                        'step':2,
+                        'formPageNum':2,})
+
+
                 # Check if the user needs to upload another form
                 Forms = request.user.address_files
                 checkAllForms = [not(request.user.addressverification.Utility)] #not(request.user.addressverification.Identification), ,not(request.user.addressverification.freeReducedLunch),
