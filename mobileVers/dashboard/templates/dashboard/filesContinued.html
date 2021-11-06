@@ -27,6 +27,10 @@
     }
     </script>
 
+{% if message %}
+    <div style="color:red;">{{ message }} </div>
+{% endif %}
+
 <p style="color:var(--lightblue);font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
             
 <div style="margin-top: 3vh;">
