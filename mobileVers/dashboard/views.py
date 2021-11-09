@@ -57,20 +57,30 @@ def files(request):
                 #print(str(request.FILES.getlist('document')))
                 instance = form.save(commit=False)
                 instance.user_id = request.user
-                instance.save()
 
                 for f in request.FILES.getlist('document'):
-
                     instance.document.save(str(f),f) #this line allows us to save multiple files, there's a BUG though, extra last file is saved...
- 
                     file_upload = request.user
                     file_upload.files.add(instance)
-                    
-                    print("printing file type...")
-                    open (file_upload.files)
-                    #magic.from_file(file_upload.files.add(instance))
-
-
+                    filetype = magic.from_file("mobileVers/" + instance.document.url)
+                    logging.info(filetype)
+                    if "PNG" in filetype:
+                        pass
+                    elif "JPEG" in filetype:
+                        pass
+                    elif "PDF" in filetype:
+                        pass
+                    else:
+                        logging.error("File is not a valid file type. file is: " + filetype)
+                        return render(request, 'dashboard/files.html', {
+                            "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
+                            'form':form,
+                            'programs': file_list,
+                            'program_string': files_to_string(file_list, request),
+                            'step':5,
+                            'formPageNum':6,
+                            })
+                            
                 # Check if the user needs to upload another form
                 Forms = request.user.files
                 checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.Identification),not(request.user.programs.form1040)] #TODO 4/24 include not(request.user.programs.1040) here not(request.user.programs.Identification),
@@ -172,14 +182,13 @@ def filesContinued(request):
                 file_upload.address_files.add(instance)
                 
                 #file validation using magic found below...
-
                 #print("printing file name...")
                 #print(instance.document)
                 #print("printing url....")
                 #print(instance.document.url)
                 #print("printing magic....")
                 filetype = magic.from_file("mobileVers/" + instance.document.url)
-                print(filetype)
+                logging.info(filetype)
                 if "PNG" in filetype:
                     pass
                 elif "JPEG" in filetype:
