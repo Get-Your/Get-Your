@@ -59,7 +59,7 @@ def files(request):
                 instance.user_id = request.user
 
                 for f in request.FILES.getlist('document'):
-                    instance.document.save(str(f),f) #this line allows us to save multiple files, there's a BUG though, extra last file is saved...
+                    instance.document.save(str(f),f) # this line allows us to save multiple files
                     file_upload = request.user
                     file_upload.files.add(instance)
                     filetype = magic.from_file("mobileVers/" + instance.document.url)
