@@ -17,9 +17,6 @@
         reader.readAsDataURL(event.target.files[0]);
 
     }
-
-
-
 </script>
 <div class=sideNav>
     <div class=fadeSmall>
@@ -40,6 +37,12 @@
     </div>
 </div>
 <p style="color:var(--lightblue);font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
+
+
+{% if message %}
+    <div style="color:red; margin-bottom: 5%;">{{ message }} </div>
+{% endif %}
+
             
 <div style="margin-top: 3vh;">
     <p>To get verified, please upload your</p>
