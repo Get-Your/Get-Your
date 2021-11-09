@@ -12,6 +12,25 @@ from application.backend import broadcast_email, broadcast_sms
 from django.db import IntegrityError
 
 from py_models.qualification_status import QualificationStatus
+import logging
+
+
+from django.shortcuts import render, redirect
+from django.core.mail import send_mail, BadHeaderError
+from django.http import HttpResponse
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.models import User
+from django.template.loader import render_to_string
+from django.db.models.query_utils import Q
+from django.utils.http import urlsafe_base64_encode
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+
+import magic
+from django.core.exceptions import ValidationError
+from django.contrib import messages
+
+
 
 
 
@@ -38,13 +57,30 @@ def files(request):
                 #print(str(request.FILES.getlist('document')))
                 instance = form.save(commit=False)
                 instance.user_id = request.user
-                instance.save()
 
                 for f in request.FILES.getlist('document'):
-                    instance.document.save(str(f),f) #this line allows us to save multiple files, there's a BUG though, extra last file is saved...
+                    instance.document.save(str(f),f) # this line allows us to save multiple files
                     file_upload = request.user
                     file_upload.files.add(instance)
-
+                    filetype = magic.from_file("mobileVers/" + instance.document.url)
+                    logging.info(filetype)
+                    if "PNG" in filetype:
+                        pass
+                    elif "JPEG" in filetype:
+                        pass
+                    elif "PDF" in filetype:
+                        pass
+                    else:
+                        logging.error("File is not a valid file type. file is: " + filetype)
+                        return render(request, 'dashboard/files.html', {
+                            "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
+                            'form':form,
+                            'programs': file_list,
+                            'program_string': files_to_string(file_list, request),
+                            'step':5,
+                            'formPageNum':6,
+                            })
+                            
                 # Check if the user needs to upload another form
                 Forms = request.user.files
                 checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.Identification),not(request.user.programs.form1040)] #TODO 4/24 include not(request.user.programs.1040) here not(request.user.programs.Identification),
@@ -144,6 +180,31 @@ def filesContinued(request):
                 
                 file_upload = request.user
                 file_upload.address_files.add(instance)
+                
+                #file validation using magic found below...
+                #print("printing file name...")
+                #print(instance.document)
+                #print("printing url....")
+                #print(instance.document.url)
+                #print("printing magic....")
+                filetype = magic.from_file("mobileVers/" + instance.document.url)
+                logging.info(filetype)
+                if "PNG" in filetype:
+                    pass
+                elif "JPEG" in filetype:
+                    pass
+                elif "PDF" in filetype:
+                    pass
+                else:
+                    logging.error("File is not a valid file type. file is: " + filetype)
+                    return render(request, "dashboard/filesContinued.html", {
+                        "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
+                        'form':form,
+                        'programs': file_list,
+                        'program_string': files_to_string(file_list, request),
+                        'step':2,
+                        'formPageNum':2,})
+
 
                 # Check if the user needs to upload another form
                 Forms = request.user.address_files
@@ -271,7 +332,33 @@ def settings(request):
     })
 
 
-
+def password_reset_request(request):
+	if request.method == "POST":
+		password_reset_form = PasswordResetForm(request.POST)
+		if password_reset_form.is_valid():
+			data = password_reset_form.cleaned_data['email']
+			associated_users = User.objects.filter(Q(email=data))
+			if associated_users.exists():
+				for user in associated_users:
+					subject = "Password Reset Requested"
+					email_template_name = "main/password/password_reset_email.txt"
+					c = {
+					"email":user.email,
+					'domain':'127.0.0.1:8000',
+					'site_name': 'Website',
+					"uid": urlsafe_base64_encode(force_bytes(user.pk)),
+					"user": user,
+					'token': default_token_generator.make_token(user),
+					'protocol': 'http',
+					}
+					email = render_to_string(email_template_name, c)
+					try:
+						send_mail(subject, email, 'admin@example.com' , [user.email], fail_silently=False)
+					except BadHeaderError:
+						return HttpResponse('Invalid header found.')
+					return redirect ("/password_reset/done/")
+	password_reset_form = PasswordResetForm()
+	return render(request=request, template_name="main/password/password_reset.html", context={"password_reset_form":password_reset_form})
 def login_user(request):
     if request.method == "POST":
         # Try to log in user
@@ -494,19 +581,58 @@ def dashboardGetFoco(request):
         text2 = "True"
         QProgramNumber = QProgramNumber + 1
         RECDisplay = ""
+        QProgramNumber = QProgramNumber + 1
+        CONDisplay = ""
     else:
         text2 = "False"
         RECDisplay = "none"
+        CONDisplay = "none"
+
+    if request.user.eligibility.ConnexionQualified == QualificationStatus.PENDING.name:
+        ConnexionButtonText = "Applied"
+        ConnexionButtonColor = "green"
+        ConnexionButtonTextColor = "White"
+        PendingNumber = PendingNumber + 1
+        QProgramNumber = QProgramNumber - 1
+        CONDisplayActive = "none"
+        CONDisplayPending = ""
+        CONDisplay = "none"
+
+    if request.user.eligibility.ConnexionQualified == QualificationStatus.ACTIVE.name:
+        ConnexionButtonText = "Enrolled!"
+        ConnexionButtonColor = "blue"
+        ConnexionButtonTextColor = "White"
+        CONDisplayActive = ""
+        ActiveNumber = ActiveNumber + 1
+        CONDisplayPending = "None"
+        CONDisplay = "none"
+    else:
+        ConnexionButtonText = "Quick Apply +"
+        ConnexionButtonColor = ""
+        ConnexionButtonTextColor = ""
+        CONDisplayActive="none"
+
+    if request.user.eligibility.ConnexionQualified == QualificationStatus.NOTQUALIFIED.name:
+        ConnexionButtonText = "Can't Enroll"
+        ConnexionButtonColor = "red"
+        ConnexionButtonTextColor = "black"
+    else:
+        ConnexionButtonText = "Quick Apply +"
+        ConnexionButtonColor = ""
+        ConnexionButtonTextColor = ""
+
 
     if request.user.eligibility.GRqualified == QualificationStatus.PENDING.name:
         GRButtonText = "Applied"
         GRButtonColor = "green"
         GRButtonTextColor = "White"
         PendingNumber = PendingNumber + 1
+        QProgramNumber = QProgramNumber - 1
         GRDisplayActive = "None"
         GRDisplayPending = ""
         GRDisplay = "none"
         GRPendingDate = "Estimated Time: October 25th"
+
     elif request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!"
         GRButtonColor = "blue"
@@ -529,6 +655,7 @@ def dashboardGetFoco(request):
         RECButtonColor = "green"
         RECButtonTextColor = "White"
         PendingNumber = PendingNumber + 1
+        QProgramNumber = QProgramNumber - 1
         RECDisplayActive = "None"
         RECDisplayPending = ""
         RECPendingDate = "Estimated Time: December 25th"
@@ -564,6 +691,11 @@ def dashboardGetFoco(request):
         "RECButtonText" : RECButtonText,
         "RECButtonColor" : RECButtonColor,
         "RECButtonTextColor" : RECButtonTextColor,
+
+        "ConnexionButtonText": ConnexionButtonText,
+        "ConnexionButtonColor": ConnexionButtonColor,
+        "ConnexionButtonTextColor": ConnexionButtonTextColor,
+
         
         "GRPreQualification": text,
         "RecreationPreQualification": text2,
@@ -574,10 +706,16 @@ def dashboardGetFoco(request):
 
         "GRDisplay": GRDisplay,
         "RECDisplay": RECDisplay,
+        "CONDisplay": CONDisplay,
+
         "GRDisplayActive": GRDisplayActive,
         "RECDisplayActive": RECDisplayActive,
+        "CONDisplayActive": CONDisplayActive,
+
         "GRDisplayPending": GRDisplayPending,
         "RECDisplayPending": RECDisplayPending,
+        "CONDisplayPending": CONDisplayPending,
+
         "RECPendingDate": RECPendingDate,
         "GRPendingDate": GRPendingDate,
         
