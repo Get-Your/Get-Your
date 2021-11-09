@@ -1,4 +1,7 @@
-from django.urls import path
+from django.urls import path, include
+from django.contrib import admin
+from django.contrib.auth import views as auth_views #import this
+
 from django.conf.urls.static import static
 from django.conf import settings
 from . import views
@@ -21,5 +24,9 @@ urlpatterns = [
     path('ProgramsList', views.ProgramsList, name='ProgramsList'),
     path('FAQ', views.FAQ, name='FAQ'),
     path('settings', views.settings, name='settings'),
+
+    path("password_reset", views.password_reset_request, name="password_reset")
+
+
     # Available/NotAvailable Digital equity in your area
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #this is needed to get file uploads to work! 
