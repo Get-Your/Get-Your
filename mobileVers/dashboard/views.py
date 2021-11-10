@@ -27,8 +27,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 
 import magic
-from django.core.exceptions import ValidationError
-from django.contrib import messages
+from django.core.files.storage import FileSystemStorage
 
 
 
@@ -72,6 +71,7 @@ def files(request):
                         pass
                     else:
                         logging.error("File is not a valid file type. file is: " + filetype)
+                        instance.document.delete()
                         return render(request, 'dashboard/files.html', {
                             "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
                             'form':form,
@@ -197,6 +197,7 @@ def filesContinued(request):
                     pass
                 else:
                     logging.error("File is not a valid file type. file is: " + filetype)
+                    instance.document.delete()
                     return render(request, "dashboard/filesContinued.html", {
                         "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
                         'form':form,
@@ -204,8 +205,6 @@ def filesContinued(request):
                         'program_string': files_to_string(file_list, request),
                         'step':2,
                         'formPageNum':2,})
-
-
                 # Check if the user needs to upload another form
                 Forms = request.user.address_files
                 checkAllForms = [not(request.user.addressverification.Utility)] #not(request.user.addressverification.Identification), ,not(request.user.addressverification.freeReducedLunch),
@@ -611,6 +610,7 @@ def dashboardGetFoco(request):
         ConnexionButtonColor = ""
         ConnexionButtonTextColor = ""
         CONDisplayActive="none"
+        CONDisplayPending = "none"
 
     if request.user.eligibility.ConnexionQualified == QualificationStatus.NOTQUALIFIED.name:
         ConnexionButtonText = "Can't Enroll"
