@@ -159,8 +159,8 @@ class Eligibility(TimeStampedModel):
 class MoreInfo(TimeStampedModel):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     dependentInformation = JSONField(null=True,blank=True)
-    dependentsBirthdate = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    dependentsName = models.CharField(max_length=20)
+    #dependentsBirthdate = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    #dependentsName = models.CharField(max_length=20)
     
 
 # Programs model class attached to user (will delete as user account is deleted too)
