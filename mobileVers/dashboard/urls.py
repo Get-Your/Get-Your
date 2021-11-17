@@ -26,7 +26,4 @@ urlpatterns = [
     path('settings', views.settings, name='settings'),
 
     path("password_reset", views.password_reset_request, name="password_reset")
-
-
-    # Available/NotAvailable Digital equity in your area
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #this is needed to get file uploads to work! 
