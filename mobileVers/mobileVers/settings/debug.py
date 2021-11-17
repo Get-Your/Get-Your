@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     'crispy_forms'
 ]
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -119,6 +120,8 @@ TEMPLATES = [
 #AUTHENTICATION_BACKENDS = (
 #        'django.contrib.auth.backends.ModelBackend',
 #    )
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 WSGI_APPLICATION = 'mobileVers.wsgi.application'
 
