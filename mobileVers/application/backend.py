@@ -12,6 +12,7 @@ from twilio.rest import Client
 from django.conf import settings    
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from django.template.loader import render_to_string
 
 
 def broadcast_sms(phone_Number):
@@ -355,6 +356,23 @@ def broadcast_email(email):
         to_emails=email)
     
     message.template_id = TEMPLATE_ID
+    try:
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        response = sg.send(message)
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+    except Exception as e:
+        print(e.message)
+
+def broadcast_email_pw_reset(email, message):
+    message = Mail(
+        subject="Password Reset Requested",
+        from_email='ahernandez@codeforamerica.org',
+        to_emails=email,
+        html_content = message,
+        )
+    
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)

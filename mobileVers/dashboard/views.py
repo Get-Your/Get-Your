@@ -7,7 +7,7 @@ from application.models import Eligibility
 
 from .backend import authenticate, files_to_string, what_page
 from django.contrib.auth import get_user_model, login, authenticate, logout
-from application.backend import broadcast_email, broadcast_sms
+from application.backend import broadcast_email, broadcast_sms, broadcast_email_pw_reset
 
 from django.db import IntegrityError
 
@@ -339,32 +339,35 @@ def settings(request):
 
 
 def password_reset_request(request):
-	if request.method == "POST":
-		password_reset_form = PasswordResetForm(request.POST)
-		if password_reset_form.is_valid():
-			data = password_reset_form.cleaned_data['email']
-			associated_users = User.objects.filter(Q(email=data))
-			if associated_users.exists():
-				for user in associated_users:
-					subject = "Password Reset Requested"
-					email_template_name = "main/password/password_reset_email.txt"
-					c = {
-					"email":user.email,
-					'domain':'127.0.0.1:8000',
-					'site_name': 'Website',
-					"uid": urlsafe_base64_encode(force_bytes(user.pk)),
-					"user": user,
-					'token': default_token_generator.make_token(user),
-					'protocol': 'http',
+    User = get_user_model()
+    if request.method == "POST":
+        password_reset_form = PasswordResetForm(request.POST)
+        if password_reset_form.is_valid():
+            data = password_reset_form.cleaned_data['email']
+            associated_users = User.objects.filter(Q(email=data))
+            if associated_users.exists():
+                for user in associated_users:
+                    subject = "Password Reset Requested"
+                    email_template_name = "dashboard/PasswordReset/password_reset_email.txt"
+                    c = {
+                        "email":user.email,
+                        'domain':'127.0.0.1:8000',
+                        'site_name': 'Website',
+                        "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                        "user": user,
+                        'token': default_token_generator.make_token(user),
+                        'protocol': 'http',
 					}
-					email = render_to_string(email_template_name, c)
-					try:
-						send_mail(subject, email, 'admin@example.com' , [user.email], fail_silently=False)
-					except BadHeaderError:
-						return HttpResponse('Invalid header found.')
-					return redirect ("/password_reset/done/")
-	password_reset_form = PasswordResetForm()
-	return render(request=request, template_name="main/password/password_reset.html", context={"password_reset_form":password_reset_form})
+                    email = render_to_string(email_template_name, c)
+                    broadcast_email_pw_reset(user.email, email)
+                    try:
+                        send_mail(subject, email, 'admin@example.com' , [user.email], fail_silently=False)
+                    except BadHeaderError:
+                        return HttpResponse('Invalid header found.')
+                    return redirect ("/password_reset/done/")
+    password_reset_form = PasswordResetForm()
+    return render(request,"dashboard/PasswordReset/passwordReset.html",{"password_reset_form":password_reset_form})
+
 def login_user(request):
     if request.method == "POST":
         # Try to log in user
