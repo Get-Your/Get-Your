@@ -240,8 +240,8 @@ def filesContinued(request):
     'form':form,
     'programs': file_list,
     'program_string': files_to_string(file_list, request),
-    'step':3,
-    'formPageNum':"3 - Recreation Reduced Fee",
+    'step':2,
+    'formPageNum':"2 - Recreation Reduced Fee",
     })
 
 def broadcast(request):
@@ -249,7 +249,10 @@ def broadcast(request):
     #Andrew Twilio functions found below!
     broadcast_email(current_user.email)
     phone = str(current_user.phone_number)
-    broadcast_sms(phone)      
+    try:
+        broadcast_sms(phone)
+    except:
+        logging.error("Twilio servers may be down")      
     return render(request, 'dashboard/broadcast.html', {
             'program_string': current_user.email,
             'step':6,

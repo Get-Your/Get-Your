@@ -71,7 +71,7 @@ class programForm(forms.ModelForm):
         fields = ['snap', 'freeReducedLunch', 'Identification', 'form1040']
         labels  = { 
             'snap':'Food Assistance (SNAP)',
-            'freeReducedLunch':'Free and Reduced Lunch',
+            'freeReducedLunch': 'Poudre School District Free and Reduced Lunch',
             'Identification':'Identification Card',
             'form1040':'1040 Form',
         } 
