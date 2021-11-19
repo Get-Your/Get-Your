@@ -613,7 +613,7 @@ def dashboardGetFoco(request):
         ConnexionButtonColor = ""
         ConnexionButtonTextColor = ""
         CONDisplayActive="none"
-        CONDisplayPending = "none"
+        CONDisplayPending = ""
 
     if request.user.eligibility.ConnexionQualified == QualificationStatus.NOTQUALIFIED.name:
         ConnexionButtonText = "Can't Enroll"
