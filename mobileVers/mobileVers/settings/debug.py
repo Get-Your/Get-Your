@@ -59,6 +59,7 @@ USPS_SID = env("USPS_SID")
 POSTGRESQLPW = env("POSTGRESQLPW")
 SENDGRID_API_KEY = env('SENDGRID_API_KEY')
 TEMPLATE_ID = env("TEMPLATE_ID")
+TEMPLATE_ID_PW_RESET = env("TEMPLATE_ID_PW_RESET")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!

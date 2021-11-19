@@ -365,14 +365,18 @@ def broadcast_email(email):
     except Exception as e:
         print(e.message)
 
-def broadcast_email_pw_reset(email, message):
+def broadcast_email_pw_reset(email, content):
+    TEMPLATE_ID_PW_RESET = settings.TEMPLATE_ID_PW_RESET
     message = Mail(
-        subject="Password Reset Requested",
+        subject='Password Reset Requested',
         from_email='ahernandez@codeforamerica.org',
         to_emails=email,
-        html_content = message,
         )
-    
+    message.dynamic_template_data = {
+        'subject': 'Password Reset Requested',
+        'html_content': content,
+    }
+    message.template_id = TEMPLATE_ID_PW_RESET
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
