@@ -63,7 +63,7 @@ TEMPLATE_ID_PW_RESET = env("TEMPLATE_ID_PW_RESET")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # ANDREW: Make sure to change this later!
 ALLOWED_HOSTS = ["*", "192.168.0.15","localhost"]
