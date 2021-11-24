@@ -246,13 +246,17 @@ def filesContinued(request):
 
 def broadcast(request):
     current_user = request.user
-    #Andrew Twilio functions found below!
-    broadcast_email(current_user.email)
+    try:    
+        broadcast_email(current_user.email)
+    except:
+        logging.error("there was a problem with sending the email / sendgrid")
+        #TODO store / save for later: client getting feedback that SendGrid may be down 
     phone = str(current_user.phone_number)
     try:
         broadcast_sms(phone)
     except:
-        logging.error("Twilio servers may be down")      
+        logging.error("Twilio servers may be down")
+        #TODO store / save for later: client getting feedback that twilio may be down 
     return render(request, 'dashboard/broadcast.html', {
             'program_string': current_user.email,
             'step':6,
@@ -407,7 +411,7 @@ def qualifiedPrograms(request):
     if request.user.eligibility.AmiRange_max == Decimal('0.5') and request.user.eligibility.AmiRange_min == Decimal('0.3'):
         text ="CallUs"
         
-    if request.user.programs.snap == True or request.user.programs.freeReducedLunch == True:
+    if (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True) and (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name):
         text2 = "True"
     else:
         text2 = "False"
@@ -572,23 +576,23 @@ def dashboardGetFoco(request):
         text = "True"
         QProgramNumber = QProgramNumber + 1
         GRDisplay = ""
+        QProgramNumber = QProgramNumber + 1
+        CONDisplay = ""
     else:
         text = "False"
         GRDisplay = "none"
+        CONDisplay = "none"
     # apply for other dynamic income work etc.
     if request.user.eligibility.AmiRange_max == Decimal('0.5') and request.user.eligibility.AmiRange_min == Decimal('0.3'):
         text ="CallUs"
         
-    if request.user.programs.snap == True or request.user.programs.freeReducedLunch == True:
+    if (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True) and ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name):
         text2 = "True"
         QProgramNumber = QProgramNumber + 1
         RECDisplay = ""
-        QProgramNumber = QProgramNumber + 1
-        CONDisplay = ""
     else:
         text2 = "False"
         RECDisplay = "none"
-        CONDisplay = "none"
 
     if request.user.eligibility.ConnexionQualified == QualificationStatus.PENDING.name:
         ConnexionButtonText = "Applied"
