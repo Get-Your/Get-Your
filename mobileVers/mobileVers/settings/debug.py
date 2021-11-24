@@ -59,6 +59,7 @@ USPS_SID = env("USPS_SID")
 POSTGRESQLPW = env("POSTGRESQLPW")
 SENDGRID_API_KEY = env('SENDGRID_API_KEY')
 TEMPLATE_ID = env("TEMPLATE_ID")
+TEMPLATE_ID_PW_RESET = env("TEMPLATE_ID_PW_RESET")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -83,6 +84,7 @@ INSTALLED_APPS = [
     'phonenumber_field',
     'crispy_forms'
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -119,6 +121,8 @@ TEMPLATES = [
 #AUTHENTICATION_BACKENDS = (
 #        'django.contrib.auth.backends.ModelBackend',
 #    )
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 WSGI_APPLICATION = 'mobileVers.wsgi.application'
 
