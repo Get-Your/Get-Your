@@ -336,6 +336,7 @@ td {
         text-align: center;
         height:max(3.2vw, 16px);
         font-size: max(3vw, 12px);
+        overflow: hidden;
     }
 
     /*Backgrounds for homepage*/
@@ -706,8 +707,11 @@ td {
         border: 1px solid var(--darkblue);
         padding: 5px 10px;
         color:var(--darkblue);
+        text-align: center;
         height:max(3.2vw, 16px);
+        width:max-content;
         font-size: max(3vw, 12px);
+        overflow: hidden;
     }
 
     /*Backgrounds for homepage*/

@@ -22,7 +22,7 @@
         <label class="labelword">You indicated you had {{ dependent }} individual(s) in your household, what are their birthdates?</label>
     </div>
     {% for number in list %}
-        Information of Individual {{ forloop.counter }}
+        <label class ="labelword">Individual {{ forloop.counter }}</label>
         <br>
         <br>
         {{form}}

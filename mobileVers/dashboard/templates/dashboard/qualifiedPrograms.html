@@ -16,7 +16,7 @@
     <div class="modulequickApply" id="connexionRebate">
         <div class = "row" style="margin:0; width:100%">
             <div style="margin:0">
-                <p style ="font-weight: 550; margin: 0">Reduced-Rate Connexion </p>
+                <p style ="font-weight: 550; margin: 0">Reduced-Rate Connexion</p>
                 <p style = "margin-top:3px;"> Connexion Assistance </p>
             </div>
             <a href="{% url 'application:ConnexionQuickApply' %}" style="text-decoration: none"> <div class="quickapply link" style="background-color: {{ConnexionButtonColor}}; color: {{ConnexionButtonTextColor}}">{{ ConnexionButtonText }}</div></a> 
@@ -75,10 +75,10 @@
 
 
 <div class="fadeSmall" style="padding-left: 300px;">
-    <div class="modulequickApply" id="connexionRebate">
+    <div class="modulequickApply" id="connexionRebateDesktop">
         <div class = "row" style="margin:0; width:100%">
             <div style="margin:0">
-                <p style ="font-weight: 550; margin: 0">Reduced-Rate Connexion </p>
+                <p style ="font-weight: 550; margin: 0">Reduced-Rate Connexion</p>
                 <p style = "margin-top:3px;"> Connexion Assistance </p>
             </div>
             <a href="{% url 'application:ConnexionQuickApply' %}" style="text-decoration: none"> <div class="quickapply link" style="background-color: {{ConnexionButtonColor}}; color: {{ConnexionButtonTextColor}}">{{ ConnexionButtonText }}</div></a> 
@@ -91,7 +91,7 @@
         </div>
     </div>
 
-    <div class="modulequickApply" id="groceryRebate">
+    <div class="modulequickApply" id="groceryRebateDesktop">
         <div class = "row" style="margin:0; width:100%">
             <div style="margin:0">
                 <p style ="font-weight: 550; margin: 0">Grocery Tax Rebate </p>
@@ -118,7 +118,7 @@
     -->
 
 
-    <div class="modulequickApply" id="recreationRebate">
+    <div class="modulequickApply" id="recreationRebateDesktop">
         <div class = "row" style="margin:0; width:100%">
             <div style="margin:0">
                 <p style ="font-weight: 550; margin: 0">Recreation Reduced Fee </p>
@@ -162,7 +162,7 @@
 <!-- Logic for hiding quick apply below -->
 <!-- Grocery Rebate-->
 {% if  GRPreQualification  == "False" %}
-<body onload="toggleGrocery()"></body>
+    <body onload="toggleConnexion(), toggleGrocery()"></body>
 {% endif %}
 
 {% if  RecreationPreQualification  == "False" %}
@@ -170,16 +170,20 @@
 {% else %}
 {% endif %}
 
-<!-- Recreation Rebate-->
-
-
 <script>
     function toggleGrocery() {
       var x = document.getElementById("groceryRebate");
+      var y = document.getElementById("groceryRebateDesktop")
       if (x.style.display === "none") {
         x.style.display = "block";
       } else {
         x.style.display = "none";
+      }
+
+      if (y.style.display === "none") {
+        y.style.display = "block";
+      } else {
+        y.style.display = "none";
       }
     }
 </script>
@@ -187,12 +191,38 @@
 <script>
     function toggleRecreation() {
       var x = document.getElementById("recreationRebate");
+      var y = document.getElementById("recreationRebateDesktop")
       if (x.style.display === "none") {
         x.style.display = "block";
       } else {
         x.style.display = "none";
       }
+
+      if (y.style.display === "none") {
+        y.style.display = "block";
+      } else {
+        y.style.display = "none";
+      }
     }
 </script>
+
+<script>
+    function toggleConnexion() {
+      var x = document.getElementById("connexionRebate");
+      var y = document.getElementById("connexionRebateDesktop")
+      if (x.style.display === "none") {
+        x.style.display = "block";
+      } else {
+        x.style.display = "none";
+      }
+
+      if (y.style.display === "none") {
+        y.style.display = "block";
+      } else {
+        y.style.display = "none";
+      }
+    }
+</script>
+
 
 {% endblock %}
