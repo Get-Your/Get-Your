@@ -55,7 +55,7 @@ class TaxForm(forms.ModelForm):
 class FeedbackForm(forms.ModelForm):
     #starRating = forms.ChoiceField(widget=forms.RadioSelect(), label="starRating")
     feedbackComments = forms.CharField(max_length = 500, required=False) 
-    starRating = forms.CharField(max_length=1, required=True)
+    starRating = forms.CharField(max_length=1, required=False)
     class Meta:
         model = Feedback
         fields = ['feedbackComments','starRating']

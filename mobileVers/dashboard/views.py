@@ -731,7 +731,7 @@ def dashboardGetFoco(request):
         })
 
 def ProgramsList(request):
-    return render(request, 'dashboard/qualifiedPrograms.html',{
+    return render(request, 'dashboard/ProgramsList.html',{
         "page_title": "Programs List",
         "dashboard_color": "white",
         "program_list_color": "var(--yellow)",

@@ -45,7 +45,7 @@
                   <p style="color: var(--yellow); font-weight: 700; font-size: 25px;">Get: <p.1 style="color: white">FoCo</p></p>
                   <p> <img src="{% static 'dashboard/images/Dashboard.svg' %}">  <a style="color: {{ dashboard_color }}; text-decoration:none; " href="{% url 'dashboard:dashboard' %}">Dashboard</a></p>
                   <p> <img src="{% static 'dashboard/images/ProgramList.svg' %}"> <a style="color:{{ program_list_color }}; text-decoration:none;" href="{% url 'dashboard:ProgramsList' %}">Programs</a></p>
-                  <p> <img src="{% static 'dashboard/images/FAQ.svg' %}">  <a style="color:{{ FAQ_color }}; text-decoration:none;" href="{% url 'dashboard:FAQ' %}">FAQ</a></p>
+                  <!-- <p> <img src="{% static 'dashboard/images/FAQ.svg' %}">  <a style="color:{{ FAQ_color }}; text-decoration:none;" href="{% url 'dashboard:FAQ' %}">FAQ</a></p> -->
                   <p> <img src="{% static 'dashboard/images/Settings.svg' %}">  <a style="color:{{ Settings_color }};text-decoration:none; " href="{% url 'dashboard:settings' %}">Settings</a></p>
                   <p> <img src="{% static 'dashboard/images/PrivacyPolicy.svg' %}">  <a style="color:{{ Privacy_Policy_color }};text-decoration:none; " href="{% url 'application:privacyPolicy' %}">Privacy Policy</a></p>
                   <p> <img src="{% static 'dashboard/images/LogOut.svg' %}">  <a style="color:white;text-decoration:none; " href="{% url 'application:index' %}">Log Out</a></p>
