@@ -1,0 +1,139 @@
+<!-- This brings in the CSS-->
+{% extends "dashboard/layout_dashboard.html" %}
+
+{% load static %}
+<link href="{% static 'dashboard/styles.css' %}" rel="stylesheet">
+{% block body %}
+
+<!--Back to dashboard button-->
+<a class="row" href="{% url 'dashboard:dashboard' %}" style="text-decoration: none;justify-content: start;align-items: center;">
+    <img src="{% static 'dashboard/images/Path 1083.svg' %}" alt="back" style="height: 3vw; margin-right: 5px;color:black">
+    <p style = "color:var(--lightblue);margin-left: 3%;">Back to Dashboard</p>
+</a>
+
+<!-- example of qualified program-->
+<div class="fadeLarge">
+    <div class="modulequickApply" id="connexionRebate">
+        <div class = "row" style="margin:0; width:100%">
+            <div style="margin:0">
+                <p style ="font-weight: 550; margin: 0">Reduced-Rate Connexion</p>
+                <p style = "margin-top:3px;"> Connexion Assistance </p>
+                <p style = "margin-top:3px;"> As Connexion comes online in neighborhoods across our community, the City of Fort Collins is committed to fast, affordable internet. Digital Access & Equity is an income-qualified rate of $19.95 per month for 1 gig-speed of internet plus wireless</p>
+            </div>
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/connexion/digital-equity" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue)"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 3vw; margin-left: 5px;color:black">
+            </a>
+            <p style = "color:#999999;margin-top:0;text-align: right;" >Applications accepted all year</p>
+        </div>
+    </div>
+
+    <div class="modulequickApply" id="groceryRebate">
+        <div class = "row" style="margin:0; width:100%">
+            <div style="margin:0">
+                <p style ="font-weight: 550; margin: 0">Grocery Tax Rebate </p>
+                <p style = "margin-top:3px;"> Food Assistance </p>
+                <p style = "margin-top:3px;"> The Grocery Rebate Tax is an annual cash payment to low-income individuals and families living in the City of Fort Collins and its Growth Management Area. It provides your family with direct assistance in exchange for the taxes you spend on food.  </p>
+            </div>
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/rebate/" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue)"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 3vw; margin-left: 5px;color:black">
+            </a>
+            <p style = "color:#999999;margin-top:0;text-align: right;" >Apply by October 31st</p>
+        </div>
+    </div>
+
+    <!-- 
+        for loop put up here to be used for when we have more programs
+        can change Grocery Tax Rebate, Food Assistance Line, 4 days left apply from the database (CMS) side
+    -->
+
+
+    <div class="modulequickApply" id="recreationRebate">
+        <div class = "row" style="margin:0; width:100%">
+            <div style="margin:0">
+                <p style ="font-weight: 550; margin: 0">Recreation Reduced Fee </p>
+                <p style = "margin-top:3px;"> Recreation Assistance </p>
+                <p style = "margin-top:3px;"> The Recreation Reduced Fee program provides income-eligible families and residents reduced cost access to recreation programs, classes, and facilities across the community. </p>
+            </div>
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/recreation/reducedfeeprogram" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue)"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 3vw; margin-left: 5px;color:black">
+            </a>
+            <p style = "color:#999999;margin-top:0;text-align: right;" >Applications accepted all year</p>
+        </div>
+    </div>
+</div>
+
+
+<div class="fadeSmall" style="padding-left: 300px;">
+    <div class="modulequickApply" id="connexionRebateDesktop">
+        <div class = "row" style="margin:0; width:100%">
+            <div style="margin:0">
+                <p style ="font-weight: 550; margin: 0">Reduced-Rate Connexion</p>
+                <p style = "margin-top:3px;"> Connexion Assistance </p>
+                <p style = "margin-top:3px;"> As Connexion comes online in neighborhoods across our community, the City of Fort Collins is committed to fast, affordable internet. Digital Access & Equity is an income-qualified rate of $19.95 per month for 1 gig-speed of internet plus wireless </p>
+            </div>
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/connexion/digital-equity" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue)"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 3vw; margin-left: 5px;color:black">
+            </a>
+            <p style = "color:#999999;margin-top:0;text-align: right;" >Applications accepted all year</p>
+        </div>
+    </div>
+
+    <div class="modulequickApply" id="groceryRebateDesktop">
+        <div class = "row" style="margin:0; width:100%">
+            <div style="margin:0">
+                <p style ="font-weight: 550; margin: 0">Grocery Tax Rebate </p>
+                <p style = "margin-top:3px;"> Food Assistance </p>
+                <p style = "margin-top:3px;"> The Grocery Rebate Tax is an annual cash payment to low-income individuals and families living in the City of Fort Collins and its Growth Management Area. It provides your family with direct assistance in exchange for the taxes you spend on food.  </p>
+            </div>
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/rebate/" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue)"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 3vw; margin-left: 5px;color:black">
+            </a>
+            <p style = "color:#999999;margin-top:0;text-align: right;" >Apply by October 31st</p>
+        </div>
+    </div>
+
+    <!-- 
+        for loop put up here to be used for when we have more programs
+        can change Grocery Tax Rebate, Food Assistance Line, 4 days left apply from the database (CMS) side
+    -->
+
+
+    <div class="modulequickApply" id="recreationRebateDesktop">
+        <div class = "row" style="margin:0; width:100%">
+            <div style="margin:0">
+                <p style ="font-weight: 550; margin: 0">Recreation Reduced Fee </p>
+                <p style = "margin-top:3px;"> Recreation Assistance </p>
+                <p style = "margin-top:3px;"> The Recreation Reduced Fee program provides income-eligible families and residents reduced cost access to recreation programs, classes, and facilities across the community. </p>
+            </div>
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/recreation/reducedfeeprogram" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue)"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 3vw; margin-left: 5px;color:black">
+            </a>
+            <p style = "color:#999999;margin-top:0;text-align: right;" >Applications accepted all year</p>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="extraspace"></div>
+
+
+{% endblock %}
