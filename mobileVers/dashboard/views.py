@@ -574,9 +574,8 @@ def dashboardGetFoco(request):
     PendingNumber = 0
     if request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name:
         text = "True"
-        QProgramNumber = QProgramNumber + 1
+        QProgramNumber = QProgramNumber + 2
         GRDisplay = ""
-        QProgramNumber = QProgramNumber + 1
         CONDisplay = ""
     else:
         text = "False"
@@ -604,12 +603,13 @@ def dashboardGetFoco(request):
         CONDisplayPending = ""
         CONDisplay = "none"
 
-    if request.user.eligibility.ConnexionQualified == QualificationStatus.ACTIVE.name:
+    elif request.user.eligibility.ConnexionQualified == QualificationStatus.ACTIVE.name:
         ConnexionButtonText = "Enrolled!"
         ConnexionButtonColor = "blue"
         ConnexionButtonTextColor = "White"
         CONDisplayActive = ""
         ActiveNumber = ActiveNumber + 1
+        QProgramNumber = QProgramNumber - 1
         CONDisplayPending = "None"
         CONDisplay = "none"
     else:
@@ -617,8 +617,9 @@ def dashboardGetFoco(request):
         ConnexionButtonColor = ""
         ConnexionButtonTextColor = ""
         CONDisplayActive="none"
-        CONDisplayPending = ""
-
+        CONDisplayPending = "none" #TODO WHY ARE YOU DOING THIS TO ME
+        #TODO bug about pending... if set to active pending is what it needs to be for connexion is not set to anything then it shows up on connexion... just changed condisplay pending on line 20 to none to see if it works... test case in this case is too much money is being made for a person so it shouldn't pop up, see what happens if they apply for it?
+        #may have fixed this bug because needed to make line 606 elif!
     if request.user.eligibility.ConnexionQualified == QualificationStatus.NOTQUALIFIED.name:
         ConnexionButtonText = "Can't Enroll"
         ConnexionButtonColor = "red"
@@ -646,6 +647,7 @@ def dashboardGetFoco(request):
         GRButtonTextColor = "White"
         GRDisplayActive = ""
         ActiveNumber = ActiveNumber + 1
+        QProgramNumber = QProgramNumber - 1
         GRDisplayPending = "None"
         GRPendingDate = ""
         GRDisplay = "none"
@@ -672,6 +674,7 @@ def dashboardGetFoco(request):
         GRButtonColor = "blue"
         GRButtonTextColor = "White"
         ActiveNumber = ActiveNumber + 1
+        QProgramNumber = QProgramNumber - 1
         RECDisplayPending = "None"
         RECDisplayActive = ""
         RECDisplay ="none"
