@@ -58,7 +58,7 @@ class EligibilityForm(forms.ModelForm):
 class DateInput(forms.DateInput):
     input_type ='date'
 class MoreInfoForm(forms.ModelForm):
-    dependentsName = forms.CharField(label='Name of Individual')
+    dependentsName = forms.CharField(label='First & Last Name of Individual')
     dependentsBirthdate = forms.DateField(label="Individual's Birthdate", widget=forms.widgets.DateInput(attrs={'type': 'date'}))
     class Meta:
         model = MoreInfo
