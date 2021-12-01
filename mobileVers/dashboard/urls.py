@@ -8,7 +8,7 @@ from . import views
 
 # Need to specify my urls to be used within this project
 urlpatterns = [
-    path('', views.feedback, name='index'), #path('', views.index, name='index'),
+    path('', views.feedback, name='index'), #path('', views.index, name='index'), #TODO need to rename this to feedback instead of index... because views.feedback contains the feedback code!
     # Pages for forms
     path('files', views.files, name='files'),
     path('filesContinued', views.filesContinued, name='filesContinued'),

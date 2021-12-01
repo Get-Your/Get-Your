@@ -9,7 +9,7 @@ from .models import User, Addresses, Eligibility, programs, choices, addressLook
 class UserForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['first_name','last_name', 'email', 'password','phone_number']
+        fields = ['first_name','last_name', 'email','password','phone_number'] #password between email and phone number
         labels  = { 
             'first_name':'First Name', 
             'last_name':'Last Name', 
@@ -17,6 +17,9 @@ class UserForm(forms.ModelForm):
             'email':'Email',
             'phone_number':'Phone Number',
         }
+
+
+
     def save(self, commit=True):
         user = super(UserForm, self).save(commit=False)
         user.set_password(user.password) # set password properly before commit
@@ -55,7 +58,7 @@ class EligibilityForm(forms.ModelForm):
 class DateInput(forms.DateInput):
     input_type ='date'
 class MoreInfoForm(forms.ModelForm):
-    dependentsName = forms.CharField(label='Name of Individual')
+    dependentsName = forms.CharField(label='First & Last Name of Individual')
     dependentsBirthdate = forms.DateField(label="Individual's Birthdate", widget=forms.widgets.DateInput(attrs={'type': 'date'}))
     class Meta:
         model = MoreInfo
@@ -71,7 +74,7 @@ class programForm(forms.ModelForm):
         fields = ['snap', 'freeReducedLunch', 'Identification', 'form1040']
         labels  = { 
             'snap':'Food Assistance (SNAP)',
-            'freeReducedLunch':'Free and Reduced Lunch',
+            'freeReducedLunch': 'Poudre School District Free and Reduced Lunch',
             'Identification':'Identification Card',
             'form1040':'1040 Form',
         } 
