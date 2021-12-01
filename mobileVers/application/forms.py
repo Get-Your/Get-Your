@@ -9,7 +9,7 @@ from .models import User, Addresses, Eligibility, programs, choices, addressLook
 class UserForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['first_name','last_name', 'email', 'password','phone_number']
+        fields = ['first_name','last_name', 'email','password','phone_number'] #password between email and phone number
         labels  = { 
             'first_name':'First Name', 
             'last_name':'Last Name', 
@@ -17,6 +17,9 @@ class UserForm(forms.ModelForm):
             'email':'Email',
             'phone_number':'Phone Number',
         }
+
+
+
     def save(self, commit=True):
         user = super(UserForm, self).save(commit=False)
         user.set_password(user.password) # set password properly before commit

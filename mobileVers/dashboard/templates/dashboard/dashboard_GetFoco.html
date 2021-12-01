@@ -235,7 +235,7 @@
       </div>
     </div>
 
-        
+<!-- Start Calendar
     <div class="item extraLarge" style="vertical-align: top;">
       <div class="calendar-container">
         <header id="monthAndYear">
@@ -323,8 +323,9 @@
               <option value=2029>2029</option>
               <option value=2030>2030</option>
             </select></form>
-      </div> <!-- end calendar-container -->
+      </div> 
     </div>
+    <!-- end calendar-container -->
     
     <div class="item large" style="align-content:flex-end">
       <p style = "color: #999999">Upcoming Program Updates </p>
@@ -334,11 +335,11 @@
       <a href="{% url 'dashboard:dashboard' %}" style="text-decoration: none; color:#55A1D3">Show More   <img src="{% static 'dashboard/images/rightArrow.svg' %}" > </a>
     </div>
 
-    
+    <!-- News Section 
     <div class="item large">
       <p style = "color: #999999">City News & Events </p>
 
-    <!--CSV HERE / Also template for printing out all updates-->
+      <!--CSV HERE / Also template for printing out all updates
       <div>
         <p style = "margin-bottom:0;"> The Coloradoan </p>
         <p style="font-weight: 550; margin: 5px 0">Its application season: new rounds of applications begin this week. </p>
@@ -351,6 +352,9 @@
         <p style = "color:#999999;margin-top:0;" >2 days ago</p>
       </div>
     </div>
+    -->
+
+    <!-- Feedback section -->
     <div class="item extraLarge" style="padding-left: 3%;">
       <form action="{% url 'dashboard:index' %}" method="post">
         {% csrf_token %}
