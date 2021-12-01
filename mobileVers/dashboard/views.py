@@ -279,12 +279,13 @@ def settings(request):
 
         firstName = request.POST["firstName"]
         lastName = request.POST["lastName"]
-        email = request.POST["email"]
-        address = request.POST["address"]
-        address2 = request.POST["address2"]
-        zipCode = request.POST["zipCode"]
-        state = request.POST["state"]
-        password = request.POST["password"]
+        phoneNumber = request.POST["phoneNumber"]
+        #email = request.POST["email"]
+        #address = request.POST["address"]
+        #address2 = request.POST["address2"]
+        #zipCode = request.POST["zipCode"]
+        #state = request.POST["state"]
+        #password = request.POST["password"]
 
         
         obj = request.user
@@ -298,7 +299,12 @@ def settings(request):
             pass
         else:
             obj.last_name = lastName
-        if email == "":
+        
+        if phoneNumber == "":
+            pass
+        else:
+            obj.phone_number = phoneNumber
+        '''if email == "":
             pass
         else:
             obj.email = email
@@ -324,6 +330,7 @@ def settings(request):
             pass
         else:
             obj.password = password
+            '''
         obj.save()
   
     return render(request, 'dashboard/settings.html',{
@@ -335,6 +342,7 @@ def settings(request):
         "zipCode": request.user.addresses.zipCode,
         "state": request.user.addresses.state,
         "password": request.user.password,
+        "phoneNumber": request.user.phone_number,
     })
 
 
