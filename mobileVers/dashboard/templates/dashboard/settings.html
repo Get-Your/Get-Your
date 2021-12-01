@@ -1,92 +1,102 @@
-{% extends "dashboard/layout.html" %}
+<!-- This brings in the CSS-->
 {% load static %}
 
-{% block body %}
-<!--Login Page for GetyourConnexion-->
+<!DOCTYPE html>
+<html lang="en">
+    <!--Get the various stylesheets I need like my fonts and CSS-->
+    <head>
+        <title>Get:FoCo</title>
+        <link href="{% static 'dashboard/styles_app.css' %}" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&display=swap" rel="stylesheet">
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
 
-<h1>{{name}}</h1> 
-<h1 style="margin-bottom: 3%;">{{lastName}} <a onclick="myFunction()" style="color: var(--yellow); margin-left: 30%; "> <h7>Edit</h7> </a></h1> 
-
-<div class="input" style="margin-top: 10%;">
-    <!--Have styling that I like on the forms-->      
-    <input class="fill" type="text" name="email" placeholder={{email}} style="width: 100%;" autocomplete="off">
-    <label class="label">Email</label>    
-</div>
-
-<div class="input">
-    <!--Have styling that I like on the forms-->        
-    <input class="fill" type="password" name="password" style="width: 100%;" autocomplete="off">
-    <label class="label">Password</label>
-</div>
-
-
-<div id="myDIV">
-<!--Login fields-->
-    <form action="{% url 'dashboard:settings' %}" method="post" class="verticalContainer">
-        {% csrf_token %}
-
-        <div class="input">
-            <!--Have styling that I like on the forms-->      
-            <input class="fill" type="text" name="firstName" placeholder="{{name}}" style="width: 100%;" autocomplete="off">
-            <label class="label">First Name</label>    
+    <body style="height:100vh;">
+        <div class=nav>
+            <a class="row" onClick="window.history.back();return false;">
+                <div class=fadeSmall><img src="{% static 'application/images/BackArrow-darkblue.svg' %}" alt="back" style="width:max(4.5vw, 16px); margin-right: 5px"></div>
+                <div class=fadeLarge><img src="{% static 'application/images/BackArrow-white.svg' %}" alt="back" style="width:max(4.5vw, 16px); margin-right: 5px;"></div>
+                <p style = "font-weight: 700;">BACK</p>
+            </a>
         </div>
-        <div class="input">
-            <!--Have styling that I like on the forms-->      
-            <input class="fill" type="text" name="lastName" placeholder="{{lastName}}" style="width: 100%;" autocomplete="off">
-            <label class="label">Last Name</label>    
+        <div class="marginauto content desktop" style="height:150vh;">
+
+            <!--Login Page for GetyourConnexion-->
+
+            <h1>{{name}}</h1> 
+            <h1 style="margin-bottom: 3%;">{{lastName}}</h1> 
+
+            <div class="input" style="margin-top: 10%;">
+                <!--Have styling that I like on the forms-->      
+                <input class="fill" type="text" name="email" placeholder={{email}} style="width: 100%;" autocomplete="off">
+                <label class="label">Email</label>    
+            </div>
+
+            <div class="input">
+                <!--Have styling that I like on the forms-->        
+                <input class="fill" type="password" name="password" style="width: 100%;" autocomplete="off">
+                <label class="label">Password</label>
+            </div>
+
+
+            <!--Login fields-->
+            <form action="{% url 'dashboard:settings' %}" method="post" class="verticalContainer">
+                {% csrf_token %}
+
+                <div class="input">
+                    <!--Have styling that I like on the forms-->      
+                    <input class="fill" type="text" name="firstName" placeholder="{{name}}" style="width: 100%;" autocomplete="off">
+                    <label class="label">First Name</label>    
+                </div>
+                <div class="input">
+                    <!--Have styling that I like on the forms-->      
+                    <input class="fill" type="text" name="lastName" placeholder="{{lastName}}" style="width: 100%;" autocomplete="off">
+                    <label class="label">Last Name</label>    
+                </div>
+
+                <!--
+                <div class="input">
+                        
+                    <input class="fill" type="text" name="address" placeholder= "{{address}}" style="width: 100%;" autocomplete="off">
+                    <label class="label">Address</label>    
+                </div>
+                <div class="input">
+                        
+                    <input class="fill" type="text" name="address2"  placeholder= "{{address2}}" style="width: 100%;" autocomplete="off">
+                    <label class="label">Apartment #, Suite, Etc.</label>    
+                </div>
+                <div class="input">
+                            
+                    <input class="fill" type="text" name="zipCode"  placeholder= "{{zipCode}}" style="width: 100%;" autocomplete="off">
+                    <label class="label">Zip Code</label>    
+                </div>
+
+                <div class="input">
+                        
+                    <input class="fill" type="text" name="state"  placeholder={{state}} style="width: 100%;" autocomplete="off">
+                    <label class="label">State</label>    
+                </div>
+                -->
+
+
+                <div class="input">
+                    <!--Have styling that I like on the forms-->      
+                    <label class="label">File Upload</label>    
+                    <br>
+                    <p style="color: var(--yellow); margin-left: 1%;">Coming Soon</p>
+                </div>
+
+
+            </form>
+
+            <button class="login" type="submit" style="width: 100%; margin-top: 20%;"><strong>Done</strong></button>
+
+
         </div>
-
-        <!--
-        <div class="input">
-             
-            <input class="fill" type="text" name="address" placeholder= "{{address}}" style="width: 100%;" autocomplete="off">
-            <label class="label">Address</label>    
-        </div>
-        <div class="input">
-             
-            <input class="fill" type="text" name="address2"  placeholder= "{{address2}}" style="width: 100%;" autocomplete="off">
-            <label class="label">Apartment #, Suite, Etc.</label>    
-        </div>
-        <div class="input">
-                  
-            <input class="fill" type="text" name="zipCode"  placeholder= "{{zipCode}}" style="width: 100%;" autocomplete="off">
-            <label class="label">Zip Code</label>    
-        </div>
-
-        <div class="input">
-              
-            <input class="fill" type="text" name="state"  placeholder={{state}} style="width: 100%;" autocomplete="off">
-            <label class="label">State</label>    
-        </div>
-        -->
+        
+    </body>
+</html>
 
 
-        <div class="input">
-            <!--Have styling that I like on the forms-->      
-            <label class="label">File Upload</label>    
-            <br>
-            <p style="color: var(--yellow); margin-left: 1%;">Coming Soon</p>
-        </div>
-
-
-    </form>
-
-</div>
-
-<button class="login" type="submit" style="width: 100%; margin-top: 20%;"><strong>Done</strong></button>
-
-
-
-
-<script>
-    function myFunction() {
-      var x = document.getElementById("myDIV");
-      if (x.style.display === "block") {
-        x.style.display = "none";
-      } else {
-        x.style.display = "block";
-      }
-    }
-</script>
-  
-{% endblock %}
