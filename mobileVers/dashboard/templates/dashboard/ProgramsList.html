@@ -18,14 +18,15 @@
             <div style="margin:0">
                 <p style ="font-weight: 550; margin: 0">Reduced-Rate Connexion</p>
                 <p style = "margin-top:3px;"> Connexion Assistance </p>
+                <p style = "margin-top:3px;"> As Connexion comes online in neighborhoods across our community, the City of Fort Collins is committed to fast, affordable internet. Digital Access & Equity is an income-qualified rate of $19.95 per month for 1 gig-speed of internet plus wireless</p>
             </div>
-            <a href="{% url 'application:ConnexionQuickApply' %}" style="text-decoration: none"> <div class="quickapply link" style="background-color: {{ConnexionButtonColor}}; color: {{ConnexionButtonTextColor}}">{{ ConnexionButtonText }}</div></a> 
         </div>
         <div class = "row" style="margin:0;width:100%">
             <a class="row" href="https://www.fcgov.com/connexion/digital-equity" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
                 <p style = "margin: 0;color:var(--lightblue)"> Learn More </p>
                 <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 3vw; margin-left: 5px;color:black">
             </a>
+            <p style = "color:#999999;margin-top:0;text-align: right;" >Applications accepted all year</p>
         </div>
     </div>
 
@@ -34,12 +35,8 @@
             <div style="margin:0">
                 <p style ="font-weight: 550; margin: 0">Grocery Tax Rebate </p>
                 <p style = "margin-top:3px;"> Food Assistance </p>
+                <p style = "margin-top:3px;"> The Grocery Rebate Tax is an annual cash payment to low-income individuals and families living in the City of Fort Collins and its Growth Management Area. It provides your family with direct assistance in exchange for the taxes you spend on food.  </p>
             </div>
-            {% if  GRPreQualification  == "CallUs" %}
-                <a href="{% url 'application:callUs' %}" style="text-decoration: none"> <div class="quickapply link"  style="background-color: {{GRButtonColor}}; color: {{GRButtonTextColor}}">{{ GRButtonText }}</div></a>
-            {% else %}
-                <a href="{% url 'application:GRQuickApply' %}" style="text-decoration: none"> <div class="quickapply link"  style="background-color: {{GRButtonColor}}; color: {{GRButtonTextColor}}">{{ GRButtonText }}</div></a>
-            {% endif %}
         </div>
         <div class = "row" style="margin:0;width:100%">
             <a class="row" href="https://www.fcgov.com/rebate/" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
@@ -61,14 +58,15 @@
             <div style="margin:0">
                 <p style ="font-weight: 550; margin: 0">Recreation Reduced Fee </p>
                 <p style = "margin-top:3px;"> Recreation Assistance </p>
+                <p style = "margin-top:3px;"> The Recreation Reduced Fee program provides income-eligible families and residents reduced cost access to recreation programs, classes, and facilities across the community. </p>
             </div>
-            <a href="{% url 'dashboard:addressVerification' %}" style="text-decoration: none"> <div class="quickapply link" style="background-color: {{RECButtonColor}}; color: {{RECButtonTextColor}}">{{ RECButtonText }}</div></a> 
         </div>
         <div class = "row" style="margin:0;width:100%">
             <a class="row" href="https://www.fcgov.com/recreation/reducedfeeprogram" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
                 <p style = "margin: 0;color:var(--lightblue)"> Learn More </p>
                 <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 3vw; margin-left: 5px;color:black">
             </a>
+            <p style = "color:#999999;margin-top:0;text-align: right;" >Applications accepted all year</p>
         </div>
     </div>
 </div>
@@ -80,14 +78,15 @@
             <div style="margin:0">
                 <p style ="font-weight: 550; margin: 0">Reduced-Rate Connexion</p>
                 <p style = "margin-top:3px;"> Connexion Assistance </p>
+                <p style = "margin-top:3px;"> As Connexion comes online in neighborhoods across our community, the City of Fort Collins is committed to fast, affordable internet. Digital Access & Equity is an income-qualified rate of $19.95 per month for 1 gig-speed of internet plus wireless </p>
             </div>
-            <a href="{% url 'application:ConnexionQuickApply' %}" style="text-decoration: none"> <div class="quickapply link" style="background-color: {{ConnexionButtonColor}}; color: {{ConnexionButtonTextColor}}">{{ ConnexionButtonText }}</div></a> 
         </div>
         <div class = "row" style="margin:0;width:100%">
             <a class="row" href="https://www.fcgov.com/connexion/digital-equity" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
                 <p style = "margin: 0;color:var(--lightblue)"> Learn More </p>
                 <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 3vw; margin-left: 5px;color:black">
             </a>
+            <p style = "color:#999999;margin-top:0;text-align: right;" >Applications accepted all year</p>
         </div>
     </div>
 
@@ -96,12 +95,8 @@
             <div style="margin:0">
                 <p style ="font-weight: 550; margin: 0">Grocery Tax Rebate </p>
                 <p style = "margin-top:3px;"> Food Assistance </p>
+                <p style = "margin-top:3px;"> The Grocery Rebate Tax is an annual cash payment to low-income individuals and families living in the City of Fort Collins and its Growth Management Area. It provides your family with direct assistance in exchange for the taxes you spend on food.  </p>
             </div>
-            {% if  GRPreQualification  == "CallUs" %}
-                <a href="{% url 'application:callUs' %}" style="text-decoration: none"> <div class="quickapply link"  style="background-color: {{GRButtonColor}}; color: {{GRButtonTextColor}}">{{ GRButtonText }}</div></a>
-            {% else %}
-                <a href="{% url 'application:GRQuickApply' %}" style="text-decoration: none"> <div class="quickapply link"  style="background-color: {{GRButtonColor}}; color: {{GRButtonTextColor}};">{{ GRButtonText }}</div></a>
-            {% endif %}
         </div>
         <div class = "row" style="margin:0;width:100%">
             <a class="row" href="https://www.fcgov.com/rebate/" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
@@ -123,106 +118,22 @@
             <div style="margin:0">
                 <p style ="font-weight: 550; margin: 0">Recreation Reduced Fee </p>
                 <p style = "margin-top:3px;"> Recreation Assistance </p>
+                <p style = "margin-top:3px;"> The Recreation Reduced Fee program provides income-eligible families and residents reduced cost access to recreation programs, classes, and facilities across the community. </p>
             </div>
-            <a href="{% url 'dashboard:addressVerification' %}" style="text-decoration: none"> <div class="quickapply link" style="background-color: {{RECButtonColor}}; color: {{RECButtonTextColor}}">{{ RECButtonText }}</div></a> 
         </div>
         <div class = "row" style="margin:0;width:100%">
             <a class="row" href="https://www.fcgov.com/recreation/reducedfeeprogram" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
                 <p style = "margin: 0;color:var(--lightblue)"> Learn More </p>
                 <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 3vw; margin-left: 5px;color:black">
             </a>
+            <p style = "color:#999999;margin-top:0;text-align: right;" >Applications accepted all year</p>
         </div>
     </div>
 </div>
 
 
-<!-- example of qualified program-->
-<!--
-<div class="modulequickApply" id="template">
-    <div class = "row" style="margin:0; width:100%">
-        <div style="margin:0">
-            <p style ="font-weight: 550; margin: 0">Template Rebate </p>
-            <p style = "font-size: max(3vw, 12px);margin-top:3px;"> Template "Something" Assistance </p>
-        </div>
-        <a href="{% url 'application:GRQuickApply' %}" style="text-decoration: none"> <div class="quickapply" >Quick Apply +</div></a>
-    </div>
-    <div class = "row" style="margin:0;width:100%">
-        <a class="row" href="{% url 'dashboard:dashboard' %}" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
-            <p style = "font-size: max(3vw, 12px);margin: 0;color:var(--lightblue)"> Learn More </p>
-            <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 3vw; margin-left: 5px;color:black">
-        </a>
-        <p style = "font-size: max(3vw, 12px);color:#999999;margin-top:0;text-align: right;" >"X" days left to apply</p>
-    </div>
-</div>
--->
 
 <div class="extraspace"></div>
-
-
-<!-- Logic for hiding quick apply below -->
-<!-- Grocery Rebate-->
-{% if  GRPreQualification  == "False" %}
-    <body onload="toggleConnexion(), toggleGrocery()"></body>
-{% endif %}
-
-{% if  RecreationPreQualification  == "False" %}
-<body onload="toggleRecreation()"></body>
-{% else %}
-{% endif %}
-
-<script>
-    function toggleGrocery() {
-      var x = document.getElementById("groceryRebate");
-      var y = document.getElementById("groceryRebateDesktop")
-      if (x.style.display === "none") {
-        x.style.display = "block";
-      } else {
-        x.style.display = "none";
-      }
-
-      if (y.style.display === "none") {
-        y.style.display = "block";
-      } else {
-        y.style.display = "none";
-      }
-    }
-</script>
-
-<script>
-    function toggleRecreation() {
-      var x = document.getElementById("recreationRebate");
-      var y = document.getElementById("recreationRebateDesktop")
-      if (x.style.display === "none") {
-        x.style.display = "block";
-      } else {
-        x.style.display = "none";
-      }
-
-      if (y.style.display === "none") {
-        y.style.display = "block";
-      } else {
-        y.style.display = "none";
-      }
-    }
-</script>
-
-<script>
-    function toggleConnexion() {
-      var x = document.getElementById("connexionRebate");
-      var y = document.getElementById("connexionRebateDesktop")
-      if (x.style.display === "none") {
-        x.style.display = "block";
-      } else {
-        x.style.display = "none";
-      }
-
-      if (y.style.display === "none") {
-        y.style.display = "block";
-      } else {
-        y.style.display = "none";
-      }
-    }
-</script>
 
 
 {% endblock %}

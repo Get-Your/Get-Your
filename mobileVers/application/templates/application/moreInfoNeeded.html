@@ -22,7 +22,7 @@
         <label class="labelword">You indicated you had {{ dependent }} individual(s) in your household, what are their birthdates?</label>
     </div>
     {% for number in list %}
-        Information of Individual {{ forloop.counter }}
+        <label class ="labelword">Individual {{ forloop.counter }}</label>
         <br>
         <br>
         {{form}}
@@ -36,9 +36,7 @@
     -->
     {% endfor %}
 
-    <div class="footer">
-        <button type ="submit" > CONTINUE </button>
-    </div>
+    <button type ="submit" style="display: flex; justify-content: center; position: absolute;" > CONTINUE </button>
 </form>
 
 

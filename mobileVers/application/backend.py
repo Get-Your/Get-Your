@@ -16,7 +16,7 @@ from django.template.loader import render_to_string
 
 
 def broadcast_sms(phone_Number):
-    message_to_broadcast = ("We have received your application for GetYourConnection! We'll keep in touch")
+    message_to_broadcast = ("We have received your application for Get:FoCo! We'll keep in touch")
     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
     client.messages.create(to=phone_Number,
                             from_=settings.TWILIO_NUMBER,

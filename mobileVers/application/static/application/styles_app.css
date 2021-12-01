@@ -485,7 +485,7 @@ input[type="checkbox"]{
         position: fixed;
         bottom: 0;
         width:90%;
-        height:12vh;
+        height:8vh;
     }
     
     /*TODO: Do we want to make the link highlights disappear?*/

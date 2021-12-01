@@ -240,16 +240,23 @@ def filesContinued(request):
     'form':form,
     'programs': file_list,
     'program_string': files_to_string(file_list, request),
-    'step':3,
-    'formPageNum':"3 - Recreation Reduced Fee",
+    'step':2,
+    'formPageNum':"2 - Recreation Reduced Fee",
     })
 
 def broadcast(request):
     current_user = request.user
-    #Andrew Twilio functions found below!
-    broadcast_email(current_user.email)
+    try:    
+        broadcast_email(current_user.email)
+    except:
+        logging.error("there was a problem with sending the email / sendgrid")
+        #TODO store / save for later: client getting feedback that SendGrid may be down 
     phone = str(current_user.phone_number)
-    broadcast_sms(phone)      
+    try:
+        broadcast_sms(phone)
+    except:
+        logging.error("Twilio servers may be down")
+        #TODO store / save for later: client getting feedback that twilio may be down 
     return render(request, 'dashboard/broadcast.html', {
             'program_string': current_user.email,
             'step':6,
@@ -407,7 +414,7 @@ def qualifiedPrograms(request):
     if request.user.eligibility.AmiRange_max == Decimal('0.5') and request.user.eligibility.AmiRange_min == Decimal('0.3'):
         text ="CallUs"
         
-    if request.user.programs.snap == True or request.user.programs.freeReducedLunch == True:
+    if (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True) and (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name):
         text2 = "True"
     else:
         text2 = "False"
@@ -570,25 +577,24 @@ def dashboardGetFoco(request):
     PendingNumber = 0
     if request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name:
         text = "True"
-        QProgramNumber = QProgramNumber + 1
+        QProgramNumber = QProgramNumber + 2
         GRDisplay = ""
+        CONDisplay = ""
     else:
         text = "False"
         GRDisplay = "none"
+        CONDisplay = "none"
     # apply for other dynamic income work etc.
     if request.user.eligibility.AmiRange_max == Decimal('0.5') and request.user.eligibility.AmiRange_min == Decimal('0.3'):
         text ="CallUs"
         
-    if request.user.programs.snap == True or request.user.programs.freeReducedLunch == True:
+    if (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True) and ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name):
         text2 = "True"
         QProgramNumber = QProgramNumber + 1
         RECDisplay = ""
-        QProgramNumber = QProgramNumber + 1
-        CONDisplay = ""
     else:
         text2 = "False"
         RECDisplay = "none"
-        CONDisplay = "none"
 
     if request.user.eligibility.ConnexionQualified == QualificationStatus.PENDING.name:
         ConnexionButtonText = "Applied"
@@ -600,12 +606,13 @@ def dashboardGetFoco(request):
         CONDisplayPending = ""
         CONDisplay = "none"
 
-    if request.user.eligibility.ConnexionQualified == QualificationStatus.ACTIVE.name:
+    elif request.user.eligibility.ConnexionQualified == QualificationStatus.ACTIVE.name:
         ConnexionButtonText = "Enrolled!"
         ConnexionButtonColor = "blue"
         ConnexionButtonTextColor = "White"
         CONDisplayActive = ""
         ActiveNumber = ActiveNumber + 1
+        QProgramNumber = QProgramNumber - 1
         CONDisplayPending = "None"
         CONDisplay = "none"
     else:
@@ -613,8 +620,9 @@ def dashboardGetFoco(request):
         ConnexionButtonColor = ""
         ConnexionButtonTextColor = ""
         CONDisplayActive="none"
-        CONDisplayPending = "none"
-
+        CONDisplayPending = "none" #TODO WHY ARE YOU DOING THIS TO ME
+        #TODO bug about pending... if set to active pending is what it needs to be for connexion is not set to anything then it shows up on connexion... just changed condisplay pending on line 20 to none to see if it works... test case in this case is too much money is being made for a person so it shouldn't pop up, see what happens if they apply for it?
+        #may have fixed this bug because needed to make line 606 elif!
     if request.user.eligibility.ConnexionQualified == QualificationStatus.NOTQUALIFIED.name:
         ConnexionButtonText = "Can't Enroll"
         ConnexionButtonColor = "red"
@@ -642,6 +650,7 @@ def dashboardGetFoco(request):
         GRButtonTextColor = "White"
         GRDisplayActive = ""
         ActiveNumber = ActiveNumber + 1
+        QProgramNumber = QProgramNumber - 1
         GRDisplayPending = "None"
         GRPendingDate = ""
         GRDisplay = "none"
@@ -668,6 +677,7 @@ def dashboardGetFoco(request):
         GRButtonColor = "blue"
         GRButtonTextColor = "White"
         ActiveNumber = ActiveNumber + 1
+        QProgramNumber = QProgramNumber - 1
         RECDisplayPending = "None"
         RECDisplayActive = ""
         RECDisplay ="none"
@@ -727,7 +737,7 @@ def dashboardGetFoco(request):
         })
 
 def ProgramsList(request):
-    return render(request, 'dashboard/qualifiedPrograms.html',{
+    return render(request, 'dashboard/ProgramsList.html',{
         "page_title": "Programs List",
         "dashboard_color": "white",
         "program_list_color": "var(--yellow)",

@@ -527,8 +527,9 @@ def finances(request):
             print("SAVING")
             instance.save()
             # If GenericQualified is 'ACTIVE', go to the financial information page
+            #TODO talk to the team about if they make too much money... if they do do we want them to still go through the application or to go to contact us page?
             if instance.GenericQualified == QualificationStatus.ACTIVE.name:
-                return redirect(reverse("application:mayQualify"))
+                return redirect(reverse("application:moreInfoNeeded"))
             else:
                 return redirect(reverse("application:moreInfoNeeded"))
         else:
@@ -604,16 +605,21 @@ def GRQuickApply(request):
     print('Grocery max AMI %:',qualifyAmiPc)
     if obj.GenericQualified == QualificationStatus.ACTIVE.name and obj.AmiRange_max <= qualifyAmiPc:
         obj.GRqualified = QualificationStatus.PENDING.name
+        obj.save()
+        return render(
+            request,
+            "application/quickApply.html",
+            {'programName': 'Grocery Tax Rebate'},
+            )
     else:
         obj.GRqualified = QualificationStatus.NOTQUALIFIED.name
+        obj.save()
+        return render(
+            request,
+            "application/notQualify.html",
+            {'programName': 'Grocery Tax Rebate'},
+            )
     print(obj.GRqualified)
-    
-    obj.save()
-    return render(
-        request,
-        "application/quickApply.html",
-        {'programName': 'Grocery Tax Rebate'},
-        )
 
 def RecreationQuickApply(request):
     obj = request.user.eligibility
@@ -627,16 +633,21 @@ def RecreationQuickApply(request):
     print('Recreation max AMI %:',qualifyAmiPc)
     if obj.GenericQualified == QualificationStatus.ACTIVE.name and obj.AmiRange_max <= qualifyAmiPc:
         obj.RecreationQualified = QualificationStatus.PENDING.name
+        obj.save()
+        return render(
+            request,
+            "application/quickApply.html",
+            {'programName': 'Recreation'},
+            )
     else:
-        obj.RecreationQualified = QualificationStatus.NOTQUALIFIED.name
-        
-    print(obj.RecreationQualified)
-    obj.save()
-    return render(
-        request,
-        "application/quickApply.html",
-        {'programName': 'Recreation'},
-        )
+        obj.RecreationQualified = QualificationStatus.NOTQUALIFIED.name        
+        print(obj.RecreationQualified)
+        obj.save()
+        return render(
+            request,
+            "application/notQualify.html",
+            {'programName': 'Recreation'},
+            )
 
 
 def attestation(request):
