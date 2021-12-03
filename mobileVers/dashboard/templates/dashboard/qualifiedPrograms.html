@@ -162,12 +162,7 @@
 <!-- Logic for hiding quick apply below -->
 <!-- Grocery Rebate-->
 {% if  GRPreQualification  == "False" %}
-    <body onload="toggleConnexion(), toggleGrocery()"></body>
-{% endif %}
-
-{% if  RecreationPreQualification  == "False" %}
-<body onload="toggleRecreation()"></body>
-{% else %}
+    <body onload="toggleConnexion(), toggleGrocery(), toggleRecreation()"></body>
 {% endif %}
 
 <script>

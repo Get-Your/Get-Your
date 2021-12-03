@@ -67,6 +67,8 @@ def files(request):
                         pass
                     elif "JPEG" in filetype:
                         pass
+                    elif "JPG" in filetype:
+                        pass
                     elif "PDF" in filetype:
                         pass
                     else:
