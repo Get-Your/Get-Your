@@ -18,10 +18,50 @@ input[type="checkbox"]{
         display:none;
     }
 
+    .modal {
+        display:none;
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        padding-left: 250px;
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      }
+
+      /* Modal Content */
+        .modal-content {
+        display: block;
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 50%;
+    }
+
+    /* The Close Button for Modal*/
+        .close {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+
     select {
-        background-color: var(--darkblue);
+        background-color: white;
         color: var(--darkblue);
-        background: url('http://www.free-icons-download.net/images/small-down-arrow-icon-15593.png');
         width: 50%;
         height:10vh;
         font-size: 1vw;
@@ -167,6 +207,8 @@ input[type="checkbox"]{
         margin:5vw;
         height:70vh;
     }
+
+
     button {
         font-family: Montserrat;
         background-color: var(--lightblue);
@@ -181,6 +223,7 @@ input[type="checkbox"]{
         font-weight: 700;
         width: 85%;
     }
+    
     
     
     .buttonCheck{
@@ -319,10 +362,47 @@ input[type="checkbox"]{
     .fadeSmall{
             display:none;
         }
+
+    .modal {
+        display: none;
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      }
+
+      /* Modal Content */
+    .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+    }
+
+    /* The Close Button for Modal*/
+    .close {
+        color: #aaaaaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+    
+    .close:hover,
+    .close:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
     select {
         background-color: var(--darkblue);
         color: white;
-        background: url('http://www.free-icons-download.net/images/small-down-arrow-icon-15593.png');
         width: 50%;
         height: 6vh;
         border: none;
@@ -330,7 +410,6 @@ input[type="checkbox"]{
         border-bottom-width: thin;
         border-bottom-color: #FFF;
     }
-
     html,body {
         font-family: Montserrat;
         font-style: normal;
@@ -485,7 +564,7 @@ input[type="checkbox"]{
         position: fixed;
         bottom: 0;
         width:90%;
-        height:12vh;
+        height:8vh;
     }
     
     /*TODO: Do we want to make the link highlights disappear?*/
