@@ -1,6 +1,24 @@
 {% extends "application/layout.html" %}
 {% load static %}
 {% block body %}
+
+<div id="myModal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <p style="color: var(--darkblue);">Drop down bar not appearing? Make sure you enter how many individuals are in your household <b>first</b> to reveal the drop down bar. <br><br>
+        If you are on iOS be sure to click on "Done" after entering the number of individuals.</p>
+
+        <br>
+        <br>
+        <br>
+        <div class="fadeSmall"><img src="{% static 'application/images/Step3Instructions.gif' %}"></div>
+        <div class="fadeLarge"><img src="{% static 'application/images/Step3InstructionsMobile.gif' %}"></div>
+
+    </div>
+</div>
+
+
 <div class=sideNav>
     <div class=fadeSmall>
         <h1 style="font-weight: 700; margin:5vh 0; padding-top: 20px;"> Share basic information about your income </h1>
@@ -47,12 +65,12 @@
             <div id="foo">This is foo</div>
             <h1 class="animate__animated animate__bounce">An animated element</h1>
             -->
-            <label class="labelword"style="position:relative">How many individuals are in your household?</label>  <a href="{% url 'application:dependentInfo' %}"><img src="{% static 'application/images/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px);"></a>
+            <label class="labelword"style="position:relative">How many individuals are in your household?</label>  <a href="{% url 'application:dependentInfo' %}"><img src="{% static 'application/images/clipart249308.png' %}" alt="info" style="width:min(4.5vw,20px);"></a>
             <input class="fill" type="text" name="{{ field.name }}" id="{{ field.id_for_label}}" value="" style="height: 3vh;">
         </div>
         {% else %}
         <div class="input">
-            <label class="labelword" style="position:relative">How much is your gross annual household income?</label> 
+            <label class="labelword" style="position:relative">How much is your gross annual household income? <buttonQuestion  id="myBtn"><img id src="{% static 'application/images/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px); display: inline;"></buttonQuestion></label>
             <br>
             <div name="gahiDiv" id="gahiDiv">
             </div>
@@ -85,4 +103,36 @@ $("#id_dependents").change(function () {
 });
 </script>
 
+<script>
+    // Get the modal
+    var modal = document.getElementById("myModal");
+    
+    // Get the button that opens the modal
+    var btn = document.getElementById("myBtn");
+    
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+    
+    // When the user clicks the button, open the modal 
+    btn.onclick = function() {
+      modal.style.display = "block";
+    }
+    
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+      modal.style.display = "none";
+    }
+    
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+    </script>
+    
+  
+
 {% endblock %}
+
+
