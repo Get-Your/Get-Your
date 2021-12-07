@@ -208,6 +208,12 @@ button {
     color:white;
     height: 5px;
 }
+
+
+.files{
+    background-color: white;
+}
+
 #myDIV {
     display:none;
 }
@@ -518,6 +524,11 @@ input.fill:focus ~ label, input.fill:valid ~ label {
         height: 5px;
     }
 
+
+    .files{
+        background-color: var(--darkblue);
+    }
+    
     #myDIV {
         display:none;
     }
