@@ -18,11 +18,27 @@
 
     }
 </script>
+
+<div id="myModal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <p style="color: var(--darkblue);">If you are uploading multiple files, be sure to click and <b>hold</b> the Ctrl key on your keyboard and click on each file. See an example below!</p>
+
+        <br>
+        <br>
+        <br>
+        <div class="fadeSmall"><img src="{% static 'application/images/Step5InstructionsDesktop.gif' %}"></div>
+
+    </div>
+</div>
+
+
 <div class=sideNav>
     <div class=fadeSmall>
         <h1><b>Almost Done!</b></h1>
         <p><b>Why are you asking for these documents?</b></p>
-        <p>The documents that you upload will help verify your address. They’ll also help us further validate which programs you may be eligible for.</p>
+        <p>The documents that you upload will help verify your address and further validate which programs you may be eligible for.</p>
         <p>An identification card can be any of the following:
             <ul>
                 <p style="color:white">Colorado Driver's License or Colorado Identification card</p>
@@ -47,12 +63,17 @@
 <div style="margin-top: 3vh;">
     <p>To get verified, please upload your</p>
     <h3> {{program_string}} </h3>
-    <p >Uploaded documents are secure & not shared with anyone outside of Fort Collins.</p>
+    <br>
+    <br>
+    <p >Uploaded documents are secure & not shared with anyone outside of Fort Collins' income eligible programs. </p>
     
 </div>
 
 <div class=fadeLarge><h6> Upload Files Below:</h6></div>
-
+<div class=fadeSmall>
+    <br>
+    <br>
+</div>
 <form action="{% url 'dashboard:files' %}" method="post" autocomplete="false" enctype="multipart/form-data">
     {% csrf_token %}
     {% for field in form %}
@@ -65,7 +86,8 @@
         {% endif %}
         {% if field.label == "Program" %}
             <div class="row" style="justify-content: space-between;">
-                <p style="font-weight: 800;">Files: </p> 
+                <div class=fadeLarge><p style="font-weight: 800;">Files:</p></div>
+                <div class=fadeSmall><p style="font-weight: 800;">Files: <buttonQuestion  id="myBtn"><img id src="{% static 'application/images/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px); display: inline;"></buttonQuestion> </p>  </div>
                 <select name="{{ field.name }}" id="{{ field.id_for_label}}">
                 {% if program_string == "SNAP Card" %}
                     <option class="option files" value="SNAP"> SNAP </option>
@@ -95,47 +117,14 @@
                 {% endif %}
                 </select>
             </div>
-        <!--
-            <div class="fadeSmall">
-                <div class="row" style="justify-content: space-between;">
-                    <p style="font-weight: 800;">Files: </p> 
-                    <select name="{{ field.name }}" id="{{ field.id_for_label}}">
-                    {% if program_string == "SNAP Card" %}
-                        <option style="background-color:white;" value="SNAP"> SNAP </option>
-                    {% elif program_string == "PSD Reduced Lunch Approval Letter" %}
-                        <option style="background-color: white;" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
-                    {% elif program_string == "SNAP Card, PSD Reduced Lunch Approval Letter" %}
-                        <option style="background-color:white;" value="SNAP"> SNAP </option>
-                        <option style="background-color: white;" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
-                    {% elif program_string == "SNAP Card, Identification" %}
-                        <option style="background-color:white;" value="SNAP"> SNAP </option>
-                        <option style="background-color:white;" value="Identification"> Identification </option>
-                    {% elif program_string == "PSD Reduced Lunch Approval Letter, Identification" %}
-                        <option style="background-color: white;" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
-                        <option style="background-color:white;" value="Identification"> Identification </option>
-                    {% elif program_string == "SNAP Card, PSD Reduced Lunch Approval Letter, Identification" %}
-                        <option style="background-color:white;" value="SNAP"> SNAP </option>
-                        <option style="background-color: white;" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
-                        <option style="background-color: white;" value="Identification"> Identification </option>
-                    {% elif program_string == "Identification" %}
-                        <option style="background-color: white;" value="Identification"> Identification </option>
-                    {% elif program_string == "1040 Form" %}
-                        <option style="background-color: white;" value="1040 Form"> Tax Form </option>
-                    {% elif program_string == "Identification, 1040 Form" %}
-                        <option style="background-color: white;" value="1040 Form"> Tax Form </option>
-                        <option style="background-color: white;" value="Identification"> Identification </option>
-                    {% endif %}
-                    </select>
-                </div>
-            </div> 
-        -->
         {% elif field.label == "Document Upload" %}
             <div class="upload-btn-wrapper" style ="width:100%; align-items: center; margin-top: 3vh;">
                 <button class="buttonFileUpload" id="toggleColorButton">
                     <div class="row" style="justify-content: space-between;">
                         <img src="{% static 'dashboard/images/upload.svg' %}" alt="back" style="width:15vw; margin-right: 5vw;">
                         <div style="display:flex; flex-direction:column;align-items:flex-start;">
-                            <p style = "color:white; font-weight: 400;text-align: left; margin-bottom: 5px;">Upload Documents: Upload multiple files by pressing Ctrl and clicking each file. </p>
+                            <div class=fadeSmall><p style = "color:white; font-weight: 400;text-align: left; margin-bottom: 5px;">Upload Documents: Upload multiple files by pressing Ctrl and clicking each file. </p></div>
+                            <div class=fadeLarge><p style = "color:white; font-weight: 400;text-align: left; margin-bottom: 5px;">Upload Documents </p></div>
                             <p style = "color:white;font-weight: 200;">PDF, PNG or JPEG</p>
                         </div>
                     </div>
@@ -156,5 +145,36 @@
         <button type ="submit" > CONTINUE </button>
     </div>
 </form>
+
+<script>
+    // Get the modal
+    var modal = document.getElementById("myModal");
+    
+    // Get the button that opens the modal
+    var btn = document.getElementById("myBtn");
+    
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+    
+    // When the user clicks the button, open the modal 
+    btn.onclick = function() {
+      modal.style.display = "block";
+    }
+    
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+      modal.style.display = "none";
+    }
+    
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+    </script>
+    
+  
+
 
 {% endblock %}

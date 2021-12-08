@@ -34,8 +34,8 @@ class AddressForm(forms.ModelForm):
         fields = ['address', 'address2', 'city', 'state', 'zipCode']
         labels  = { 
             'user_id': 'user_id',
-            'address':'Address',
-            'address2':'Apt, Suite, etc',
+            'address':'Street Address',
+            'address2':'Apt, Suite, etc.',
             'city':'City', 
             'state':'State', 
             'zipCode':'Zip Code',
@@ -59,10 +59,10 @@ class DateInput(forms.DateInput):
     input_type ='date'
 class MoreInfoForm(forms.ModelForm):
     dependentsName = forms.CharField(label='First & Last Name of Individual')
-    dependentsBirthdate = forms.DateField(label="Individual's Birthdate", widget=forms.widgets.DateInput(attrs={'type': 'date'}))
+    dependentsBirthdate = forms.DateField(label="Their Birthdate", widget=forms.widgets.DateInput(attrs={'type': 'date'}))
     class Meta:
         model = MoreInfo
-        fields = ['dependentsBirthdate','dependentsName','dependentInformation']
+        fields = ['dependentsName','dependentsBirthdate','dependentInformation']
         widgets = {'dependentInformation': forms.HiddenInput(),}
 
  
@@ -73,7 +73,7 @@ class programForm(forms.ModelForm):
         model = programs
         fields = ['snap', 'freeReducedLunch', 'Identification', 'form1040']
         labels  = { 
-            'snap':'Food Assistance (SNAP)',
+            'snap':'Supplemental Nutrition Assistance Program (SNAP)',
             'freeReducedLunch': 'Poudre School District Free and Reduced Lunch',
             'Identification':'Identification Card',
             'form1040':'1040 Form',
