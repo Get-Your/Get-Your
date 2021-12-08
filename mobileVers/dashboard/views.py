@@ -652,7 +652,7 @@ def dashboardGetFoco(request):
         GRDisplayActive = "None"
         GRDisplayPending = ""
         GRDisplay = "none"
-        GRPendingDate = "Estimated Time: October 25th"
+        GRPendingDate = "Estimated Notification Time: October 25th"
 
     elif request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!"
@@ -680,7 +680,7 @@ def dashboardGetFoco(request):
         QProgramNumber = QProgramNumber - 1
         RECDisplayActive = "None"
         RECDisplayPending = ""
-        RECPendingDate = "Estimated Time: December 25th"
+        RECPendingDate = "Estimated Notification Time: December 25th"
         RECDisplay ="none"
     elif request.user.eligibility.RecreationQualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!" 
