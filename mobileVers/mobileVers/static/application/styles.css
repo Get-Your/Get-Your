@@ -100,7 +100,7 @@
         outline: none;
         box-shadow: none;
         color:white;
-        height: 47px;
+        height: 55px;
         font-size: max(2vw, 14px);
     }
     .quickapply {
@@ -423,7 +423,7 @@
         outline: none;
         box-shadow: none;
         color:white;
-        height: 47px;
+        height: 45px;
         font-size: max(3.8vw, 16px);
     }
     .quickapply {
