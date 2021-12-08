@@ -139,7 +139,7 @@ input[type="checkbox"]{
     }
     
     p {
-        font-size: max(10px, 20px);
+        font-size: max(10px, 30px);
         padding:0;
         margin:0;
         color: var(--darkblue);
@@ -257,7 +257,7 @@ input[type="checkbox"]{
         vertical-align: center;
         color: var(--darkblue);
         overflow: hidden;
-        font-size: 20px;
+        font-size: 25px;
     }
     
     
