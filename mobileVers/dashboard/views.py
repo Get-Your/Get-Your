@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, reverse
 from .forms import FileForm, FeedbackForm, TaxForm, addressVerificationForm, AddressForm
 from decimal import Decimal
 
-import re
 from .models import User, Form
 from application.models import Eligibility
 
@@ -27,7 +26,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 
-import magic
+import magic, datetime, re
 from django.core.files.storage import FileSystemStorage
 
 
@@ -54,17 +53,17 @@ def files(request):
         if form.is_valid():
             print(form)
             if request.user.is_authenticated:
-                #print(str(request.FILES.getlist('document')))
                 instance = form.save(commit=False)
                 instance.user_id = request.user
                 fileList=[]
                 fileAmount = 0
                 for f in request.FILES.getlist('document'):
                     fileAmount += 1
-                    fileList.append("File" + str(fileAmount))
-                    instance.document.save(str(f),f) # this line allows us to save multiple files (name of file, actual file)
+                    fileList.append(str(fileAmount))
+                    instance.document.save(str(request.user.email) + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files (name of file, actual file)
                     file_upload = request.user
                     file_upload.files.add(instance)
+                    
                     filetype = magic.from_file("mobileVers/" + instance.document.url)
                     logging.info(filetype)
                     if "PNG" in filetype:
@@ -87,7 +86,7 @@ def files(request):
                             'formPageNum':6,
                             })
                 #below the code to update the database to allow for MULTIPLE files!
-                instance.document = str(fileList)
+                instance.document = str(request.user.email)+  str(fileList)
                 instance.save()
                 
                 
@@ -154,6 +153,7 @@ def addressVerification(request):
             except IntegrityError:
                 print("User already has information filled out for this section")
             return redirect(reverse("application:available"))
+
     else:
         form = addressVerificationForm()
 
@@ -184,37 +184,42 @@ def filesContinued(request):
             print(form)  
             if request.user.is_authenticated:
                 instance = form.save(commit=False)
-                print(instance)
                 instance.user_id = request.user
+                fileList = []
+                fileAmount = 0
+                
+                for f in request.FILES.getlist('document'):
+                    fileAmount += 1
+                    fileList.append(str(fileAmount))
+                    instance.document.save(str(request.user.email) + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files (name of file, actual file)
+                    file_upload = request.user
+                    file_upload.address_files.add(instance)
+
+                    #file validation using magic found below...
+                    filetype = magic.from_file("mobileVers/" + instance.document.url)
+                    logging.info(filetype)
+                    if "PNG" in filetype:
+                        pass
+                    elif "JPEG" in filetype:
+                        pass
+                    elif "JPG" in filetype:            
+                        pass
+                    elif "PDF" in filetype:
+                        pass
+                    else:
+                        logging.error("File is not a valid file type. file is: " + filetype)
+                        instance.document.delete()
+                        return render(request, "dashboard/filesContinued.html", {
+                            "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
+                            'form':form,
+                            'programs': file_list,
+                            'program_string': files_to_string(file_list, request),
+                            'step':2,
+                            'formPageNum':2,})
+                
+                #below the code to update the database to allow for MULTIPLE files!
+                instance.document = str(request.user.email)+  str(fileList)
                 instance.save()
-                
-                file_upload = request.user
-                file_upload.address_files.add(instance)
-                
-                #file validation using magic found below...
-                #print("printing file name...")
-                #print(instance.document)
-                #print("printing url....")
-                #print(instance.document.url)
-                #print("printing magic....")
-                filetype = magic.from_file("mobileVers/" + instance.document.url)
-                logging.info(filetype)
-                if "PNG" in filetype:
-                    pass
-                elif "JPEG" in filetype:
-                    pass
-                elif "PDF" in filetype:
-                    pass
-                else:
-                    logging.error("File is not a valid file type. file is: " + filetype)
-                    instance.document.delete()
-                    return render(request, "dashboard/filesContinued.html", {
-                        "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
-                        'form':form,
-                        'programs': file_list,
-                        'program_string': files_to_string(file_list, request),
-                        'step':2,
-                        'formPageNum':2,})
                 # Check if the user needs to upload another form
                 Forms = request.user.address_files
                 checkAllForms = [not(request.user.addressverification.Utility)] #not(request.user.addressverification.Identification), ,not(request.user.addressverification.freeReducedLunch),
