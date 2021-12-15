@@ -57,8 +57,11 @@ def files(request):
                 #print(str(request.FILES.getlist('document')))
                 instance = form.save(commit=False)
                 instance.user_id = request.user
-
+                fileList=[]
+                fileAmount = 0
                 for f in request.FILES.getlist('document'):
+                    fileAmount += 1
+                    fileList.append("File" + str(fileAmount))
                     instance.document.save(str(f),f) # this line allows us to save multiple files (name of file, actual file)
                     file_upload = request.user
                     file_upload.files.add(instance)
@@ -84,9 +87,7 @@ def files(request):
                             'formPageNum':6,
                             })
                 #below the code to update the database to allow for MULTIPLE files!
-                exc = re.compile(r"(<InMemoryUploadedFile:|>|)")
-                finalDocument = re.sub(exc, '', str(request.FILES.getlist('document')))
-                instance.document = finalDocument
+                instance.document = str(fileList)
                 instance.save()
                 
                 
