@@ -19,21 +19,26 @@
     }
 </script>
 
-<div class="fadeSmall">
-    <div id="myModal" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-        <span class="close">&times;</span>
-        <p style="color: var(--darkblue);">If you are uploading multiple files, be sure to click and <b>hold</b> the Ctrl key on your keyboard and click on each file. See an example below!</p>
+
+<div id="myModal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <div class ="fadeSmall"><p style="color: var(--darkblue);">If you are uploading multiple files, be sure to click and <b>hold</b> the Ctrl key on your keyboard and click on each file. See an example below!</p></div>
+
+      <div class ="fadeLarge"><p style="color: var(--darkblue);">Be sure to take your pictures first and then choose gallery or similar and long press or hold on each item to upload multiple files. See an example below!</p></div>
 
             <br>
             <br>
             <br>
-            <img src="{% static 'application/images/Step5InstructionsDesktop.gif' %}">
+            <div class="fadeSmall"><img src="{% static 'application/images/Step5InstructionsDesktop.gif' %}"></div>
+            <div class="fadeLarge"><img src="{% static 'application/images/Step5InstructionsMobile.gif' %}" width="300px" height=auto></div>
 
         </div>
-    </div>
 </div>
+
+
+
 
 <div class=sideNav>
     <div class=fadeSmall>
@@ -87,8 +92,7 @@
         {% endif %}
         {% if field.label == "Program" %}
             <div class="row" style="justify-content: space-between;">
-                <div class=fadeLarge><p style="font-weight: 800;">Files:</p></div>
-                <div class=fadeSmall><p style="font-weight: 800;">Files: <buttonQuestion  id="myBtn"><img id src="{% static 'application/images/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px); display: inline;"></buttonQuestion> </p>  </div>
+                <p style="font-weight: 800;">Files: <buttonQuestion  id="myBtn"><img id src="{% static 'application/images/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px); display: inline;"></buttonQuestion> </p>
                 <select name="{{ field.name }}" id="{{ field.id_for_label}}">
                 {% if program_string == "SNAP Card" %}
                     <option class="option files" value="SNAP"> SNAP </option>
