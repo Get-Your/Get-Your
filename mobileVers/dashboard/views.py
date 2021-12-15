@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, reverse
 from .forms import FileForm, FeedbackForm, TaxForm, addressVerificationForm, AddressForm
 from decimal import Decimal
 
+import re
 from .models import User, Form
 from application.models import Eligibility
 
@@ -58,7 +59,7 @@ def files(request):
                 instance.user_id = request.user
 
                 for f in request.FILES.getlist('document'):
-                    instance.document.save(str(f),f) # this line allows us to save multiple files
+                    instance.document.save(str(f),f) # this line allows us to save multiple files (name of file, actual file)
                     file_upload = request.user
                     file_upload.files.add(instance)
                     filetype = magic.from_file("mobileVers/" + instance.document.url)
@@ -82,7 +83,13 @@ def files(request):
                             'step':5,
                             'formPageNum':6,
                             })
-                            
+                #below the code to update the database to allow for MULTIPLE files!
+                exc = re.compile(r"(<InMemoryUploadedFile:|>|)")
+                finalDocument = re.sub(exc, '', str(request.FILES.getlist('document')))
+                instance.document = finalDocument
+                instance.save()
+                
+                
                 # Check if the user needs to upload another form
                 Forms = request.user.files
                 checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.Identification),not(request.user.programs.form1040)] #TODO 4/24 include not(request.user.programs.1040) here not(request.user.programs.Identification),
@@ -247,6 +254,7 @@ def filesContinued(request):
     })
 
 def broadcast(request):
+    print(request.user.files.all()[0])
     current_user = request.user
     try:    
         broadcast_email(current_user.email)
