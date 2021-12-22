@@ -3,6 +3,7 @@ from usps import USPSApi, Address
 import re
 import requests
 from django import http  # used for type checks
+import logging
 
 import urllib.parse
 import requests

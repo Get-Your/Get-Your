@@ -38,7 +38,7 @@ from django.core.files.storage import FileSystemStorage
 # first index page we come into
 
 
-def files(request): 
+def files(request):
     if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False:
         request.user.programs.form1040 = True
     file_list = {"SNAP Card": request.user.programs.snap,
@@ -56,11 +56,13 @@ def files(request):
                 instance = form.save(commit=False)
                 instance.user_id = request.user
                 fileList=[]
+                fileNames=[]
                 fileAmount = 0
                 for f in request.FILES.getlist('document'):
                     fileAmount += 1
                     fileList.append(str(fileAmount))
-                    instance.document.save(str(request.user.email) + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files (name of file, actual file)
+                    instance.document.save(str(request.user.email) + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files: format = email_n_fileName...  (f,f) = (name of file, actual file)
+                    fileNames.append(str(instance.document))
                     file_upload = request.user
                     file_upload.files.add(instance)
                     
@@ -85,8 +87,9 @@ def files(request):
                             'step':5,
                             'formPageNum':6,
                             })
-                #below the code to update the database to allow for MULTIPLE files!
-                instance.document = str(request.user.email)+  str(fileList)
+                #below the code to update the database to allow for MULTIPLE files AND change the name of the database upload!
+                #instance.document = str(request.user.email)+  str(fileList) this saves with email appeneded to number of files
+                instance.document = str(fileNames)
                 instance.save()
                 
                 
@@ -186,12 +189,14 @@ def filesContinued(request):
                 instance = form.save(commit=False)
                 instance.user_id = request.user
                 fileList = []
+                fileNames=[]
                 fileAmount = 0
                 
                 for f in request.FILES.getlist('document'):
                     fileAmount += 1
                     fileList.append(str(fileAmount))
-                    instance.document.save(str(request.user.email) + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files (name of file, actual file)
+                    fileNames.append(str(instance.document))
+                    instance.document.save(str(request.user.email) + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files (name of file, actual file) to the media folder
                     file_upload = request.user
                     file_upload.address_files.add(instance)
 
@@ -217,9 +222,11 @@ def filesContinued(request):
                             'step':2,
                             'formPageNum':2,})
                 
-                #below the code to update the database to allow for MULTIPLE files!
-                instance.document = str(request.user.email)+  str(fileList)
+                #below the code to update the database to allow for MULTIPLE files AND change the name of the database upload!
+                #instance.document = str(request.user.email)+  str(fileList) this saves with email appeneded to number of files
+                instance.document = str(fileNames) 
                 instance.save()
+                
                 # Check if the user needs to upload another form
                 Forms = request.user.address_files
                 checkAllForms = [not(request.user.addressverification.Utility)] #not(request.user.addressverification.Identification), ,not(request.user.addressverification.freeReducedLunch),
