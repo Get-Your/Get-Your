@@ -405,7 +405,9 @@ def password_reset_request(request):
                         return HttpResponse('Invalid header found.')
                     return redirect ("/password_reset/done/")
     password_reset_form = PasswordResetForm()
+
     return render(request,"dashboard/PasswordReset/passwordReset.html",{"password_reset_form":password_reset_form, 'Title': "Password Reset Request"})
+
 
 def login_user(request):
     if request.method == "POST":
