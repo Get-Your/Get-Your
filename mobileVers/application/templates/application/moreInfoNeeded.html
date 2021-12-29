@@ -3,8 +3,8 @@
 {% block body %}
 <div class=sideNav>
     <div class=fadeSmall>
-        <h1 style="font-weight: 700; margin:5vh 0; padding-top: 20px;"> Share basic information about your income or household information </h1>
-        <p>These questions are not stored or shared with anyone. They are meant to determine potential assistance programs you may qualify for.</p>
+        <h1 style="font-weight: 700; margin:2vh 0; padding-top: 1px;"> Share basic information about your income or household information </h1>
+        <p>Your information will not be shared with anyone outside of the departments of City of Fort Collins' income eligible programs. They are meant to determine potential assistance programs you may qualify for.</p>
         <p><a href="{% url 'dashboard:dashboard' %}"><img src="{% static 'application/images/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px);"></a> 
             “Household” means the applicant and any other people claimed on your federal tax return.
             <br>
@@ -19,15 +19,16 @@
     {% csrf_token %}
     <!-- TODO: Make it yes or no not checkbox-->
     <div class="input" style="padding-top:0">
-        <label class="labelword">You indicated you had {{ dependent }} individual(s) in your household, what are their birthdates?</label>
+        <label class="labelword">You indicated you had {{ dependent }} individual(s) in your household, what are their names and birthdates?</label>
     </div>
     {% for number in list %}
-        <label class ="labelword">Individual {{ forloop.counter }}</label>
         <br>
         <br>
         {{form}}
         <br>
         <br>
+        <br>
+        <Br>
     <!--
         <div class="input">
             <input type="checkbox" id="notChild{{forloop.counter}}" name="notChild" onclick="toggle()" style="vertical-align: middle; display: inline-block;"> Click here if over 18 years old.

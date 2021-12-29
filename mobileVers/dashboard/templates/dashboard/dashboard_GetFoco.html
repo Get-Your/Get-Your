@@ -3,6 +3,19 @@
 {% load static %}
 
 {% block body %}
+<!-- The Modal -->
+<div id="modalDashboard" class="modal Dashboard">
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    {% if  GRPreQualification  == "False" %}
+      <p>We're sorry, currently you do not qualify for any programs. If you think this is an error please <a href="mailto: GetFoCo@fcgov.com?subject=Income Qualification Question - Get:FoCo&body=Hello Get:FoCo team, I seem to be having an issue with qualification, can you help clarify the qualifications for the available progrms?" style="font-style: none;">contact us</a>. <br> <br> Furthermore, you may click on <a style = "display: inline;" href="{% url 'dashboard:ProgramsList' %}">Programs</a> to view our available programs and their qualifications. </p>
+    {% else %}
+      <p>Congrats on creating an account! <br> <br> With the information you provided we gathered all the programs you may qualify for! All you need to do now is to click on Quick Apply + for programs you may be interested in to apply.</p>
+    {% endif %}
+  </div>
+</div>
+
 <div class="content">
   <div class=fadeLarge>
   <!--Program number blocks - information section-->
@@ -72,6 +85,7 @@
   </div>
 </div>
 
+<!-- content for desktop!-->
 <div class="fadeSmall">
   <div class="container">
     <div class="item thin">
@@ -362,17 +376,17 @@
           <div class="column" style="margin:0; width:100%;">
             <p style="font-weight: 600;">How would you rate your experience so far using the Connexion portal? </p>
             <div class="column" style="margin:0; width:100%;">
-              <clearButton name="starRating" value="1" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star1" style="width:min(10vw, 50px);" onclick="fillStar(1)"> </clearButton>
-              <clearButton name="starRating" value="2" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star2" style="width:min(10vw, 50px);" onclick="fillStar(2)"> </clearButton>
-              <clearButton name="starRating" value="3" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star3" style="width:min(10vw, 50px);" onclick="fillStar(3)"> </clearButton>
-              <clearButton name="starRating" value="4" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star4" style="width:min(10vw, 50px);" onclick="fillStar(4)"> </clearButton>
-              <clearButton name="starRating" value="5" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star5" style="width:min(10vw, 50px);" onclick="fillStar(5)"> </clearButton>
+              <clearButton name="starRating" value="1" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star1D" style="width:min(10vw, 50px);" onclick="fillStarD(1)"> </clearButton>
+              <clearButton name="starRating" value="2" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star2D" style="width:min(10vw, 50px);" onclick="fillStarD(2)"> </clearButton>
+              <clearButton name="starRating" value="3" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star3D" style="width:min(10vw, 50px);" onclick="fillStarD(3)"> </clearButton>
+              <clearButton name="starRating" value="4" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star4D" style="width:min(10vw, 50px);" onclick="fillStarD(4)"> </clearButton>
+              <clearButton name="starRating" value="5" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star5D" style="width:min(10vw, 50px);" onclick="fillStarD(5)"> </clearButton>
             </div>
         </div>
         <div class="column" style="width:100%; margin:0; justify-content: flex-start;">
               <p style="font-weight: 800; margin-top: 50px;">How can we do better?</p> 
               <textarea class="feedback" placeholder="Tell us how we're doing!"id="" name="feedbackComments" maxlength="500" style="border-radius: 2vh;"></textarea>
-            <button name="starRating" value = "" id="submit" style="width:90%"> <b>Share Feedback</b> </button>
+            <button name="starRating" value = "" id="submitD" style="width:90%"> <b>Share Feedback</b> </button>
         </div>
       </form> 
     </div>
@@ -502,9 +516,123 @@
 </script>
 
 
+<script>
+  var image6 =  document.getElementById("star1D");
+  var image7 =  document.getElementById("star2D");
+  var image8 =  document.getElementById("star3D");
+  var image9 =  document.getElementById("star4D");
+  var image10 =  document.getElementById("star5D");
+  function fillStarD(value)
+  {
+    switch (value)
+    {
+        case 1:
+        if (image6.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
+        {
+          image6.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+          document.getElementById("submitD").value = value;
+          return value;
+        }
+        else if((image7.getAttribute('src') || image8.getAttribute('src') || image9.getAttribute('src') || image10.getAttribute('src')) == "{% static 'dashboard/images/reviewStarFilled.svg' %}")
+        {
+          image10.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
+          image9.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
+          image8.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
+          image7.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
+        }
+        break;
 
+        case 2: 
+          if (image7.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
+          {
+            image7.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+            image6.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+            document.getElementById("submitD").value = value;
+            return value;
+            
+          }
+          else if((image8.getAttribute('src') || image9.getAttribute('src') || image10.getAttribute('src')) == "{% static 'dashboard/images/reviewStarFilled.svg' %}")
+          {
+            image10.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
+            image9.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
+            image8.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
+          }
 
+        break;
+      
 
+        case 3: 
+        if (image8.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
+        {
+          image8.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+          image7.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+          image6.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+          document.getElementById("submitD").value = value;
+          return value;
+        }
+        else if((image9.getAttribute('src') || image10.getAttribute('src')) == "{% static 'dashboard/images/reviewStarFilled.svg' %}")
+        {
+          image10.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
+          image9.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
+        }
+
+        break;
+
+        case 4: 
+        if (image9.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
+        {
+          image9.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+          image8.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+          image7.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+          image6.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+          document.getElementById("submitD").value = value;
+          return value;
+        }
+        else if(image10.getAttribute('src') == "{% static 'dashboard/images/reviewStarFilled.svg' %}")
+        {
+          image10.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
+        }
+
+        break;
+
+        case 5: 
+        if (image10.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
+        {
+          image10.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+          image9.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+          image8.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+          image7.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+          image6.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
+          document.getElementById("submitD").value = value;
+          return value;
+        }
+
+        break;
+      } 
+  }
+</script>
+
+<script>
+  // Get the modal
+  var modal = document.getElementById("modalDashboard");
+  
+
+  // Get the <span> element that closes the modal
+  var span = document.getElementsByClassName("close")[0];
+  
+
+  // When the user clicks on <span> (x), close the modal
+  span.onclick = function() {
+    modal.style.display = "none";
+  }
+  
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
+</script>
 
 
 

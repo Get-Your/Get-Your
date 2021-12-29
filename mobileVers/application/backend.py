@@ -3,6 +3,7 @@ from usps import USPSApi, Address
 import re
 import requests
 from django import http  # used for type checks
+import logging
 
 import urllib.parse
 import requests
@@ -16,7 +17,7 @@ from django.template.loader import render_to_string
 
 
 def broadcast_sms(phone_Number):
-    message_to_broadcast = ("We have received your application for Get:FoCo! We'll keep in touch")
+    message_to_broadcast = ("Thank you for creating an account with Get:FoCo! Be sure to review the programs you qualify for on your dashboard and click on Quick Apply to finish the application process!")
     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
     client.messages.create(to=phone_Number,
                             from_=settings.TWILIO_NUMBER,

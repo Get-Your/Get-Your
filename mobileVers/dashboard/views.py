@@ -26,7 +26,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 
-import magic
+import magic, datetime, re
 from django.core.files.storage import FileSystemStorage
 
 
@@ -38,7 +38,7 @@ from django.core.files.storage import FileSystemStorage
 # first index page we come into
 
 
-def files(request): 
+def files(request):
     if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False:
         request.user.programs.form1040 = True
     file_list = {"SNAP Card": request.user.programs.snap,
@@ -53,19 +53,26 @@ def files(request):
         if form.is_valid():
             print(form)
             if request.user.is_authenticated:
-                #print(str(request.FILES.getlist('document')))
                 instance = form.save(commit=False)
                 instance.user_id = request.user
-
+                fileList=[]
+                fileNames=[]
+                fileAmount = 0
                 for f in request.FILES.getlist('document'):
-                    instance.document.save(str(f),f) # this line allows us to save multiple files
+                    fileAmount += 1
+                    fileList.append(str(fileAmount))
+                    instance.document.save(str(request.user.email) + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files: format = email_n_fileName...  (f,f) = (name of file, actual file)
+                    fileNames.append(str(instance.document))
                     file_upload = request.user
                     file_upload.files.add(instance)
+                    
                     filetype = magic.from_file("mobileVers/" + instance.document.url)
                     logging.info(filetype)
                     if "PNG" in filetype:
                         pass
                     elif "JPEG" in filetype:
+                        pass
+                    elif "JPG" in filetype:
                         pass
                     elif "PDF" in filetype:
                         pass
@@ -79,8 +86,14 @@ def files(request):
                             'program_string': files_to_string(file_list, request),
                             'step':5,
                             'formPageNum':6,
+                            'Title': "Files"
                             })
-                            
+                #below the code to update the database to allow for MULTIPLE files AND change the name of the database upload!
+                #instance.document = str(request.user.email)+  str(fileList) this saves with email appeneded to number of files
+                instance.document = str(fileNames)
+                instance.save()
+                
+                
                 # Check if the user needs to upload another form
                 Forms = request.user.files
                 checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.Identification),not(request.user.programs.form1040)] #TODO 4/24 include not(request.user.programs.1040) here not(request.user.programs.Identification),
@@ -104,6 +117,7 @@ def files(request):
                             'program_string': files_to_string(file_list, request),
                             'step':5,
                             'formPageNum':6,
+                            'Title': "Files"
                         })
                 if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True:
                     return redirect(reverse("dashboard:manualVerifyIncome"))
@@ -122,6 +136,7 @@ def files(request):
     'program_string': files_to_string(file_list, request),
     'step':5,
     'formPageNum':6,
+    'Title': "Files"
     })
 
 
@@ -144,6 +159,7 @@ def addressVerification(request):
             except IntegrityError:
                 print("User already has information filled out for this section")
             return redirect(reverse("application:available"))
+
     else:
         form = addressVerificationForm()
 
@@ -151,6 +167,7 @@ def addressVerification(request):
     'form':form,
     'step':1,
     'formPageNum':"2 - Recreation Reduced Fee",
+    'Title': "Address Verification"
     })
 
 #    else:
@@ -174,37 +191,47 @@ def filesContinued(request):
             print(form)  
             if request.user.is_authenticated:
                 instance = form.save(commit=False)
-                print(instance)
                 instance.user_id = request.user
+                fileList = []
+                fileNames=[]
+                fileAmount = 0
+                
+                for f in request.FILES.getlist('document'):
+                    fileAmount += 1
+                    fileList.append(str(fileAmount))
+                    fileNames.append(str(instance.document))
+                    instance.document.save(str(request.user.email) + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files (name of file, actual file) to the media folder
+                    file_upload = request.user
+                    file_upload.address_files.add(instance)
+
+                    #file validation using magic found below...
+                    filetype = magic.from_file("mobileVers/" + instance.document.url)
+                    logging.info(filetype)
+                    if "PNG" in filetype:
+                        pass
+                    elif "JPEG" in filetype:
+                        pass
+                    elif "JPG" in filetype:            
+                        pass
+                    elif "PDF" in filetype:
+                        pass
+                    else:
+                        logging.error("File is not a valid file type. file is: " + filetype)
+                        instance.document.delete()
+                        return render(request, "dashboard/filesContinued.html", {
+                            "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
+                            'form':form,
+                            'programs': file_list,
+                            'program_string': files_to_string(file_list, request),
+                            'step':2,
+                            'formPageNum':2,
+                            'Title': "Files Continued"})
+                
+                #below the code to update the database to allow for MULTIPLE files AND change the name of the database upload!
+                #instance.document = str(request.user.email)+  str(fileList) this saves with email appeneded to number of files
+                instance.document = str(fileNames) 
                 instance.save()
                 
-                file_upload = request.user
-                file_upload.address_files.add(instance)
-                
-                #file validation using magic found below...
-                #print("printing file name...")
-                #print(instance.document)
-                #print("printing url....")
-                #print(instance.document.url)
-                #print("printing magic....")
-                filetype = magic.from_file("mobileVers/" + instance.document.url)
-                logging.info(filetype)
-                if "PNG" in filetype:
-                    pass
-                elif "JPEG" in filetype:
-                    pass
-                elif "PDF" in filetype:
-                    pass
-                else:
-                    logging.error("File is not a valid file type. file is: " + filetype)
-                    instance.document.delete()
-                    return render(request, "dashboard/filesContinued.html", {
-                        "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
-                        'form':form,
-                        'programs': file_list,
-                        'program_string': files_to_string(file_list, request),
-                        'step':2,
-                        'formPageNum':2,})
                 # Check if the user needs to upload another form
                 Forms = request.user.address_files
                 checkAllForms = [not(request.user.addressverification.Utility)] #not(request.user.addressverification.Identification), ,not(request.user.addressverification.freeReducedLunch),
@@ -227,6 +254,7 @@ def filesContinued(request):
                             'program_string': files_to_string(file_list, request),
                             'step':2,
                             'formPageNum':2,
+                            'Title': "Files Continued"
                         })
                 return redirect(reverse("application:RecreationQuickApply")) 
             else:
@@ -242,9 +270,11 @@ def filesContinued(request):
     'program_string': files_to_string(file_list, request),
     'step':2,
     'formPageNum':"2 - Recreation Reduced Fee",
+    'Title': "Files Continued",
     })
 
 def broadcast(request):
+    print(request.user.files.all()[0])
     current_user = request.user
     try:    
         broadcast_email(current_user.email)
@@ -261,6 +291,7 @@ def broadcast(request):
             'program_string': current_user.email,
             'step':6,
             'formPageNum':6,
+            'Title': "Broadcast"
         })
 
 
@@ -279,12 +310,13 @@ def settings(request):
 
         firstName = request.POST["firstName"]
         lastName = request.POST["lastName"]
-        email = request.POST["email"]
-        address = request.POST["address"]
-        address2 = request.POST["address2"]
-        zipCode = request.POST["zipCode"]
-        state = request.POST["state"]
-        password = request.POST["password"]
+        phoneNumber = request.POST["phoneNumber"]
+        #email = request.POST["email"]
+        #address = request.POST["address"]
+        #address2 = request.POST["address2"]
+        #zipCode = request.POST["zipCode"]
+        #state = request.POST["state"]
+        #password = request.POST["password"]
 
         
         obj = request.user
@@ -298,7 +330,12 @@ def settings(request):
             pass
         else:
             obj.last_name = lastName
-        if email == "":
+        
+        if phoneNumber == "":
+            pass
+        else:
+            obj.phone_number = phoneNumber
+        '''if email == "":
             pass
         else:
             obj.email = email
@@ -324,6 +361,7 @@ def settings(request):
             pass
         else:
             obj.password = password
+            '''
         obj.save()
   
     return render(request, 'dashboard/settings.html',{
@@ -335,6 +373,7 @@ def settings(request):
         "zipCode": request.user.addresses.zipCode,
         "state": request.user.addresses.state,
         "password": request.user.password,
+        "phoneNumber": request.user.phone_number,
     })
 
 
@@ -366,7 +405,9 @@ def password_reset_request(request):
                         return HttpResponse('Invalid header found.')
                     return redirect ("/password_reset/done/")
     password_reset_form = PasswordResetForm()
-    return render(request,"dashboard/PasswordReset/passwordReset.html",{"password_reset_form":password_reset_form})
+
+    return render(request,"dashboard/PasswordReset/passwordReset.html",{"password_reset_form":password_reset_form, 'Title': "Password Reset Request"})
+
 
 def login_user(request):
     if request.method == "POST":
@@ -387,7 +428,8 @@ def login_user(request):
 
         else:
             return render(request, "dashboard/login.html", {
-                "message": "Invalid username and/or password"
+                "message": "Invalid username and/or password",
+                'Title': "Login",
             })
     
     # If it turns out user is already logged in but is trying to log in again redirect to user's homepage
@@ -396,12 +438,13 @@ def login_user(request):
 
     # Just give back log in page if none of the above is true
     else:
-        return render(request, "dashboard/login.html",{})
+        return render(request, "dashboard/login.html",{'Title': "Login"})
 
 def notifyRemaining(request):    
     page = what_page(request.user, request)
     return render(request, "dashboard/notifyRemaining.html",{
         "next_page": page,
+        'Title': "Notify Remaining Steps"
     })
 
 
@@ -471,7 +514,7 @@ def qualifiedPrograms(request):
         RECButtonTextColor = ""
 
     return render(request, 'dashboard/qualifiedPrograms.html',{
-        "page_title": "Qualified Programs",
+        "Title": "Qualified Programs",
         "dashboard_color": "white",
         "program_list_color": "var(--yellow)",
         "FAQ_color": "white",
@@ -536,6 +579,7 @@ def feedback(request):
         "program_string5": text5,
         "program_string6": text6,
         "program_string7": text7,
+        'Title': "Feedback"
         })
 
 
@@ -561,14 +605,15 @@ def manualVerifyIncome(request):
     return render(request, "dashboard/manualVerifyIncome.html", {
     'step':5,
     'formPageNum':6,
+    'Title': "Input Income"
 })
 
 def feedbackReceived(request):
-    return render(request, "dashboard/feedbackReceived.html",)
+    return render(request, "dashboard/feedbackReceived.html", {'Title': "Feedback Received"})
 
 def underConstruction(request):
-    return render(request, "dashboard/underConstruction.html",)
-
+    return render(request, "dashboard/underConstruction.html", {{'Title': "Under Construction"}})
+    
 
 # Everything under here is for new dashboard
 def dashboardGetFoco(request):
@@ -642,7 +687,7 @@ def dashboardGetFoco(request):
         GRDisplayActive = "None"
         GRDisplayPending = ""
         GRDisplay = "none"
-        GRPendingDate = "Estimated Time: October 25th"
+        GRPendingDate = "Estimated Notification Time: October 25th"
 
     elif request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!"
@@ -670,7 +715,7 @@ def dashboardGetFoco(request):
         QProgramNumber = QProgramNumber - 1
         RECDisplayActive = "None"
         RECDisplayPending = ""
-        RECPendingDate = "Estimated Time: December 25th"
+        RECPendingDate = "Estimated Notification Time: December 25th"
         RECDisplay ="none"
     elif request.user.eligibility.RecreationQualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!" 
@@ -690,7 +735,7 @@ def dashboardGetFoco(request):
         RECDisplayPending = "None"
 
     return render(request, 'dashboard/dashboard_GetFoco.html',{
-        "page_title": "Get: FOCO",
+        "Title": "Get: FoCo Dashboard",
         "dashboard_color": "var(--yellow)",
         "program_list_color": "white",
         "FAQ_color": "white",
@@ -743,7 +788,8 @@ def ProgramsList(request):
         "program_list_color": "var(--yellow)",
         "FAQ_color": "white",
         "Settings_color": "white",
-        "Privacy_Policy_color": "white",})
+        "Privacy_Policy_color": "white",
+        'Title': "Programs List"})
 
 
 def FAQ(request):
@@ -753,4 +799,5 @@ def FAQ(request):
         "program_list_color": "white",
         "FAQ_color": "var(--yellow)",
         "Settings_color": "white",
-        "Privacy_Policy_color": "white",})
+        "Privacy_Policy_color": "white",
+        'Title': "FAQ"})

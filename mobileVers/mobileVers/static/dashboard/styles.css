@@ -109,6 +109,48 @@ td {
         margin:20px;
     } 
 
+    .modal {
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        padding-left: 300px;
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      }
+
+      /* Modal Content */
+        .modal-content {
+        display: block;
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+    }
+
+    /* The Close Button for Modal*/
+    .close {
+        color: #aaaaaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+    
+    .close:hover,
+    .close:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+
+
     * {
         box-sizing: border-box;
         font-size: 22px;
@@ -255,7 +297,7 @@ td {
         position: relative;
         margin:0;
         padding:0;
-        overflow-y: hidden;
+        overflow-y: auto;
     }
 
     /*Keep floating contents inside respective parents*/
@@ -307,7 +349,7 @@ td {
         outline: none;
         box-shadow: none;
         color:white;
-        height: 6vh;
+        height: 55px;
         font-size: max(2vw, 14px);
     }
 
@@ -336,6 +378,7 @@ td {
         text-align: center;
         height:max(3.2vw, 16px);
         font-size: max(3vw, 12px);
+        overflow: hidden;
     }
 
     /*Backgrounds for homepage*/
@@ -687,6 +730,45 @@ td {
         color: var(--darkblue);
     }
 
+    .modal {
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      }
+
+      /* Modal Content */
+        .modal-content {
+        display: block;
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+    }
+
+    /* The Close Button for Modal*/
+    .close {
+        color: #aaaaaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+    
+    .close:hover,
+    .close:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
     /*button background*/
     button {
         background-color: var(--lightblue);
@@ -696,7 +778,7 @@ td {
         outline: none;
         box-shadow: none;
         color:white;
-        height: 6vh;
+        height: 45px;
         font-size: max(3.8vw, 16px);
     }
 
@@ -706,8 +788,11 @@ td {
         border: 1px solid var(--darkblue);
         padding: 5px 10px;
         color:var(--darkblue);
+        text-align: center;
         height:max(3.2vw, 16px);
+        width:max-content;
         font-size: max(3vw, 12px);
+        overflow: hidden;
     }
 
     /*Backgrounds for homepage*/

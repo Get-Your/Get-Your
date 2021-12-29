@@ -1,9 +1,11 @@
 from django.db import models
 from application.models import User
+import datetime
 
 from django.core.validators import FileExtensionValidator
 
-# Create your models here.s
+# Create your models here.
+
 
 class TimeStampedModel(models.Model):
     """
@@ -17,7 +19,7 @@ class TimeStampedModel(models.Model):
 
 class Form(TimeStampedModel):
     user_id = models.ForeignKey(User, related_name ="UserFiles", on_delete=models.CASCADE)
-    document = models.FileField(validators=[FileExtensionValidator(['pdf','jpg','png'],)])
+    document = models.FileField(validators=[FileExtensionValidator(['pdf','jpg','png'],)], max_length=5000, upload_to="mobileVers/uploads/" + str(datetime.date.today()) + "/")
     form_titles = (
         ('SNAP', 'SNAP'),
         ('Free and Reduced Lunch', 'Free and Reduced Lunch'),
@@ -42,7 +44,7 @@ class residencyForm(TimeStampedModel):
         max_length=30,
         choices=form_titles,
     )
-    document = models.FileField()
+    document = models.FileField(validators=[FileExtensionValidator(['pdf','jpg','png'],)],max_length=5000,  upload_to="mobileVers/uploads/" + str(datetime.date.today()) + "/")
 
 
 class TaxInformation(TimeStampedModel):

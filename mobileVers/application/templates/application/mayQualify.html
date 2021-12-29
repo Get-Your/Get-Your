@@ -5,12 +5,21 @@
 <html lang="en">
     <!--Get the various stylesheets I need like my fonts and CSS-->
     <head>
-        <title>Get:FoCo</title>
+        <title>May Qualify</title>
         <link href="{% static 'application/styles_app.css' %}" rel="stylesheet">
         <link rel="preconnect" href="https://fonts.gstatic.com">
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&display=swap" rel="stylesheet">
         <meta http-equiv="X-UA-Compatible" content="IE=Edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-SL59NNQRH0"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-SL59NNQRH0');
+        </script>
     </head>
 
     <body>
@@ -21,7 +30,7 @@
                     <div class=fadeLarge><img src="{% static 'application/images/BackArrow-white.svg' %}" alt="back" style="width:max(4.5vw, 16px); margin-right: 5px;"></div>
                     <p style = " font-weight: 700;">BACK</p>
                 </a>
-                <p class=p2 alt="back" style=" margin-right: 5px;" onclick="location.href='{% url 'application:index' %}'">Save & Exit</p>
+                <p class=p2 alt="back" style=" margin-right: 5px;" onclick="location.href='{% url 'application:index' %}'">Save & Logout</p>
             </div>
         </div>
         <div class="fadeSmall">
@@ -32,7 +41,7 @@
                     <p style = " font-weight: 700;">BACK</p>
                 </a>
                 <div class=fadeLarge><img src="{% static 'application/images/X_white.svg' %}" alt="back" style="width:max(2.6vw, 16px); margin-right: 5px;" onclick="location.href='{% url 'application:index' %}'"></div>
-                <div class=fadeSmall><p class=p2 alt="back" style=" margin-right: 5px;" onclick="location.href='{% url 'application:index' %}'">Save & Exit</p></div>
+                <div class=fadeSmall><p class=p2 alt="back" style=" margin-right: 5px;" onclick="location.href='{% url 'application:index' %}'">Save & Logout</p></div>
             </div>
         </div>
         <div class="content spaceAround" style="padding: 0 0 0 3vw;">
