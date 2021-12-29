@@ -297,7 +297,7 @@ input[type="checkbox"]{
         font-weight: 700;
         display:block;
         border:none;
-        color:var(--yellow);
+        color:var(--darkblue);
         background-color: white;
         border-bottom:1px solid var(--darkblue);
     }
