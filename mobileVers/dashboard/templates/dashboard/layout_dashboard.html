@@ -7,15 +7,26 @@
 
     <!--Get the various stylesheets I need like my fonts and CSS-->
     <head>
-        <title>Get:FoCo</title>
+        <title>{{ Title }}</title>
         <link href="{% static 'dashboard/styles.css' %}" rel="stylesheet">
         <link rel="preconnect" href="https://fonts.gstatic.com">
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&display=swap" rel="stylesheet">
         <meta http-equiv="X-UA-Compatible" content="IE=Edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-SL59NNQRH0"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-SL59NNQRH0');
+        </script>
     </head>
 
     <body>
+      <!-- Top Navigation Row-->
       <div class="topNavRow" style="text-align: center; position:fixed; background-color: white;z-index: 99;">
           <nav role="navigation" style="width: 3vh;">
             <div class="fadeLarge">
@@ -38,7 +49,7 @@
                 </ul>
               </div>
             </div>
-
+            <!--Side Navigation Column, for desktops and larger than phone devices-->
             <div class="fadeSmall">
               <div class=sideNav style="padding-left: 0;">
                 <ul>
@@ -118,10 +129,7 @@
                     image3.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
                     image2.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
                   }
-                  else
-                  {
-                    image1.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  }
+
                   break;
   
                   case 2: 
@@ -139,11 +147,7 @@
                       image4.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
                       image3.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
                     }
-                    else
-                    {
-                      image2.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                      image1.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                    }
+
                   break;
                 
   
@@ -161,12 +165,7 @@
                     image5.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
                     image4.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
                   }
-                  else
-                  {
-                    image3.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                    image2.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                    image1.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  }
+
                   break;
   
                   case 4: 
@@ -183,13 +182,7 @@
                   {
                     image5.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
                   }
-                  else
-                  {
-                    image4.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                    image3.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                    image2.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                    image1.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  }
+
                   break;
   
                   case 5: 
@@ -202,14 +195,6 @@
                     image1.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
                     document.getElementById("submit").value = value;
                     return value;
-                  }
-                  else
-                  {
-                    image5.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                    image4.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                    image3.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                    image2.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                    image1.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
                   }
                   break;
                 } 

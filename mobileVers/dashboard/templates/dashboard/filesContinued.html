@@ -89,7 +89,7 @@
                         </div>
                     </div>
                 </button>
-                <input type="file" name ="{{field.name}}" id="{{ field.id_for_label }}" onchange="preview_image(event)" required/>
+                <input type="file" name ="{{field.name}}" id="{{ field.id_for_label }}" onchange="preview_image(event)" required multiple/>
             </div>
         {% endif %}
     {% endfor %}
@@ -100,7 +100,7 @@
     -->
     <br>
     <div class="footer">
-        <button type ="submit" > CONTINUE </button>
+        <button type ="submit" > UPLOAD FILES </button>
     </div>
 </form>
 
