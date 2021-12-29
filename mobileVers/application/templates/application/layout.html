@@ -35,7 +35,7 @@
             <p class=p2 alt="back" style=" margin-right: 5px;" onclick="location.href='{% url 'application:index' %}'">Save & Logout</p>
         </div>
         <div class="content desktop" style="height:150vh">
-            <p style="color:var(--lightblue);font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
+            <p style="font-weight: 700;"> STEP {{ step }} OF {{ formPageNum }} </p>
                 <!--Whatever I need in the other pages, I can enter it here-->
             {% block body %}
             {% endblock %}
