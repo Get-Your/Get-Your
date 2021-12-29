@@ -86,6 +86,7 @@ def files(request):
                             'program_string': files_to_string(file_list, request),
                             'step':5,
                             'formPageNum':6,
+                            'Title': "Files"
                             })
                 #below the code to update the database to allow for MULTIPLE files AND change the name of the database upload!
                 #instance.document = str(request.user.email)+  str(fileList) this saves with email appeneded to number of files
@@ -116,6 +117,7 @@ def files(request):
                             'program_string': files_to_string(file_list, request),
                             'step':5,
                             'formPageNum':6,
+                            'Title': "Files"
                         })
                 if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True:
                     return redirect(reverse("dashboard:manualVerifyIncome"))
@@ -134,6 +136,7 @@ def files(request):
     'program_string': files_to_string(file_list, request),
     'step':5,
     'formPageNum':6,
+    'Title': "Files"
     })
 
 
@@ -164,6 +167,7 @@ def addressVerification(request):
     'form':form,
     'step':1,
     'formPageNum':"2 - Recreation Reduced Fee",
+    'Title': "Address Verification"
     })
 
 #    else:
@@ -220,7 +224,8 @@ def filesContinued(request):
                             'programs': file_list,
                             'program_string': files_to_string(file_list, request),
                             'step':2,
-                            'formPageNum':2,})
+                            'formPageNum':2,
+                            'Title': "Files Continued"})
                 
                 #below the code to update the database to allow for MULTIPLE files AND change the name of the database upload!
                 #instance.document = str(request.user.email)+  str(fileList) this saves with email appeneded to number of files
@@ -249,6 +254,7 @@ def filesContinued(request):
                             'program_string': files_to_string(file_list, request),
                             'step':2,
                             'formPageNum':2,
+                            'Title': "Files Continued"
                         })
                 return redirect(reverse("application:RecreationQuickApply")) 
             else:
@@ -264,6 +270,7 @@ def filesContinued(request):
     'program_string': files_to_string(file_list, request),
     'step':2,
     'formPageNum':"2 - Recreation Reduced Fee",
+    'Title': "Files Continued",
     })
 
 def broadcast(request):
@@ -284,6 +291,7 @@ def broadcast(request):
             'program_string': current_user.email,
             'step':6,
             'formPageNum':6,
+            'Title': "Broadcast"
         })
 
 
@@ -397,7 +405,7 @@ def password_reset_request(request):
                         return HttpResponse('Invalid header found.')
                     return redirect ("/password_reset/done/")
     password_reset_form = PasswordResetForm()
-    return render(request,"dashboard/PasswordReset/passwordReset.html",{"password_reset_form":password_reset_form})
+    return render(request,"dashboard/PasswordReset/passwordReset.html",{"password_reset_form":password_reset_form, 'Title': "Password Reset Request"})
 
 def login_user(request):
     if request.method == "POST":
@@ -418,7 +426,8 @@ def login_user(request):
 
         else:
             return render(request, "dashboard/login.html", {
-                "message": "Invalid username and/or password"
+                "message": "Invalid username and/or password",
+                'Title': "Login",
             })
     
     # If it turns out user is already logged in but is trying to log in again redirect to user's homepage
@@ -427,12 +436,13 @@ def login_user(request):
 
     # Just give back log in page if none of the above is true
     else:
-        return render(request, "dashboard/login.html",{})
+        return render(request, "dashboard/login.html",{'Title': "Login"})
 
 def notifyRemaining(request):    
     page = what_page(request.user, request)
     return render(request, "dashboard/notifyRemaining.html",{
         "next_page": page,
+        'Title': "Notify Remaining Steps"
     })
 
 
@@ -502,7 +512,7 @@ def qualifiedPrograms(request):
         RECButtonTextColor = ""
 
     return render(request, 'dashboard/qualifiedPrograms.html',{
-        "page_title": "Qualified Programs",
+        "Title": "Qualified Programs",
         "dashboard_color": "white",
         "program_list_color": "var(--yellow)",
         "FAQ_color": "white",
@@ -567,6 +577,7 @@ def feedback(request):
         "program_string5": text5,
         "program_string6": text6,
         "program_string7": text7,
+        'Title': "Feedback"
         })
 
 
@@ -592,14 +603,15 @@ def manualVerifyIncome(request):
     return render(request, "dashboard/manualVerifyIncome.html", {
     'step':5,
     'formPageNum':6,
+    'Title': "Input Income"
 })
 
 def feedbackReceived(request):
-    return render(request, "dashboard/feedbackReceived.html",)
+    return render(request, "dashboard/feedbackReceived.html", {'Title': "Feedback Received"})
 
 def underConstruction(request):
-    return render(request, "dashboard/underConstruction.html",)
-
+    return render(request, "dashboard/underConstruction.html", {{'Title': "Under Construction"}})
+    
 
 # Everything under here is for new dashboard
 def dashboardGetFoco(request):
@@ -721,7 +733,7 @@ def dashboardGetFoco(request):
         RECDisplayPending = "None"
 
     return render(request, 'dashboard/dashboard_GetFoco.html',{
-        "page_title": "Get: FOCO",
+        "Title": "Get: FoCo Dashboard",
         "dashboard_color": "var(--yellow)",
         "program_list_color": "white",
         "FAQ_color": "white",
@@ -774,7 +786,8 @@ def ProgramsList(request):
         "program_list_color": "var(--yellow)",
         "FAQ_color": "white",
         "Settings_color": "white",
-        "Privacy_Policy_color": "white",})
+        "Privacy_Policy_color": "white",
+        'Title': "Programs List"})
 
 
 def FAQ(request):
@@ -784,4 +797,5 @@ def FAQ(request):
         "program_list_color": "white",
         "FAQ_color": "var(--yellow)",
         "Settings_color": "white",
-        "Privacy_Policy_color": "white",})
+        "Privacy_Policy_color": "white",
+        'Title': "FAQ"})

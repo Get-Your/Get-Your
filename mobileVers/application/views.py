@@ -301,6 +301,7 @@ def address(request):
         'step':2,
         'request.user':request.user,
         'formPageNum':formPageNum,
+        'Title': "Address"
         })
 
 
@@ -356,6 +357,7 @@ def addressCorrection(request):
             'formPageNum':formPageNum,
             'program_string': program_string,
             'program_string_2': program_string_2,
+            'Title': "Address Correction"
         })
 
 def takeUSPSaddress(request):
@@ -425,6 +427,7 @@ def account(request):
     'form':form,
     'step':1,
     'formPageNum':formPageNum,
+    'Title': "Account"
     })
 #    else:
 #        return redirect(reverse(page))
@@ -468,9 +471,10 @@ def moreInfoNeeded(request):
         'list':list(range(request.user.eligibility.dependents)),
         'form':form,
         'formPageNum':6,
+        'Title': "More Info Needed"
     })
      
-    """householdNum = AMI.objects.filter(
+    '''"""householdNum = AMI.objects.filter(
             householdNum=request.user.eligibility.dependents_id,
             active=True,
             ).values('householdNum').first()['householdNum']"""
@@ -482,7 +486,7 @@ def moreInfoNeeded(request):
         'list':list(range(request.user.eligibility.dependents)),
         'form':form,
         'formPageNum':3,
-    })
+    })'''
 
 
 def load_gahi_selector(request):
@@ -541,6 +545,7 @@ def finances(request):
         'form':form,
         'step':3,
         'formPageNum':formPageNum,
+        'Title': "Finances"
     })
 
 def ConnexionQuickApply(request):
@@ -579,7 +584,8 @@ def ConnexionQuickApply(request):
             return render(
                 request,
                 "application/quickApply.html",
-                {'programName': 'Reduced-Rate Connexion'},
+                {'programName': 'Reduced-Rate Connexion',
+                'Title': "Reduced-Rate Connexion Quick Apply Complete"},
                 )
     else:
         obj.ConnexionQualified = QualificationStatus.NOTQUALIFIED.name
@@ -589,7 +595,8 @@ def ConnexionQuickApply(request):
         return render(
             request,
             'application/notQualify.html',
-            {'programName': 'Reduced-Rate Connexion'},
+            {'programName': 'Reduced-Rate Connexion',
+            'Title': "Reduced-Rate Connexion Not Qualified"},
             )
 
 def GRQuickApply(request):
@@ -609,7 +616,8 @@ def GRQuickApply(request):
         return render(
             request,
             "application/quickApply.html",
-            {'programName': 'Grocery Tax Rebate'},
+            {'programName': 'Grocery Tax Rebate',
+            'Title': "Grocery Tax Rebate Quick Apply Complete"},
             )
     else:
         obj.GRqualified = QualificationStatus.NOTQUALIFIED.name
@@ -617,7 +625,8 @@ def GRQuickApply(request):
         return render(
             request,
             "application/notQualify.html",
-            {'programName': 'Grocery Tax Rebate'},
+            {'programName': 'Grocery Tax Rebate',
+            'Title': "Grocery Tax Rebate Not Qualified"},
             )
     print(obj.GRqualified)
 
@@ -637,7 +646,8 @@ def RecreationQuickApply(request):
         return render(
             request,
             "application/quickApply.html",
-            {'programName': 'Recreation'},
+            {'programName': 'Recreation',
+            'Title': "Recreation Quick Apply Complete"},
             )
     else:
         obj.RecreationQualified = QualificationStatus.NOTQUALIFIED.name        
@@ -646,7 +656,8 @@ def RecreationQuickApply(request):
         return render(
             request,
             "application/notQualify.html",
-            {'programName': 'Recreation'},
+            {'programName': 'Recreation',
+            'Title': "Recreation Not Qualified"},
             )
 
 
@@ -675,6 +686,7 @@ def attestation(request):
         'form':form,
         'step':6,
         'formPageNum':formPageNum,
+        'Title': "Attestation"
     })
 
 
@@ -705,6 +717,7 @@ def programs(request):
     'form':form,
     'step':4,
     'formPageNum':formPageNum,
+    'Title': "Programs"
     })
 
 #    else:
@@ -719,16 +732,16 @@ def programs(request):
 
 
 def notAvailable(request):
-    return render(request, 'application/notAvailable.html',)
+    return render(request, 'application/notAvailable.html',{'Title': "Address Not in GMA"})
 
 def quickAvailable(request):
-    return render(request, 'application/quickAvailable.html',)
+    return render(request, 'application/quickAvailable.html', {'Title': "Quick Connexion Available"})
 
 def quickNotAvailable(request):
-    return render(request, 'application/quickNotAvailable.html',) 
+    return render(request, 'application/quickNotAvailable.html', {'Title': "Quick Connexion Not Available"}) 
 
 def quickNotFound(request):
-    return render(request, 'application/quickNotFound.html',) 
+    return render(request, 'application/quickNotFound.html',{'Title': "Quick Connexion Not Found"}) 
 
 def quickComingSoon(request): 
     
@@ -748,6 +761,7 @@ def quickComingSoon(request):
     return render(request, 'application/quickComingSoon.html', {
             'form':form,
             'model_url': reverse("application:quickComingSoon"),
+            'Title': "Quick Connexion Coming Soon"
         })
 
 def comingSoon(request): 
@@ -773,6 +787,7 @@ def comingSoon(request):
                         'programName': 'Reduced-Rate Connexion',
                         'enroll_failure': enrollFailure,
                         'is_enrolled': doEnroll,
+                        'Title': "Reduced-Rate Connexion Quick Apply Complete"
                         },
                     )
 
@@ -804,6 +819,7 @@ def comingSoon(request):
                     'programName': 'Reduced-Rate Connexion',
                     'enroll_failure': enrollFailure,
                     'is_enrolled': doEnroll,
+                    'Title': "Reduced-Rate Connexion Quick Apply Complete"
                     },
                 )
         
@@ -811,6 +827,7 @@ def comingSoon(request):
     return render(request, 'application/comingSoon.html', {
             'form':form,
             'model_url': reverse("application:comingSoon"),
+            'Title': "Reduced-Rate Connexion Communication"
         })
 
 def privacyPolicy(request):
@@ -823,6 +840,7 @@ def mayQualify(request):
     return render(request, 'application/mayQualify.html',{
         'step':3,
         'formPageNum':formPageNum,
+        'Title': "May Qualify for Programs"
     })
 
 def callUs(request):
