@@ -81,7 +81,7 @@
                   {% csrf_token %}
                     <p>Feedback</p>
                     <div class="column" style="margin:0; width:100%;">
-                      <p style="font-weight: 800;">How would you rate your experience so far using the Connexion portal? </p>
+                      <p style="font-weight: 800;">How would you rate your experience so far using the Get:FoCo portal? </p>
                       <div class="column" style="margin:0; width:100%;">
                         <clearButton name="starRating" value="1" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star1" style="width:min(10vw, 50px);margin-right: 3vw;" onclick="fillStar(1)"> </clearButton>
                         <clearButton name="starRating" value="2" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star2" style="width:min(10vw, 50px);margin-right: 3vw;" onclick="fillStar(2)"> </clearButton>
@@ -91,7 +91,7 @@
                       </div>
                   </div>
                   <div class="column" style="width:100%; margin:0; justify-content: flex-start;">
-                        <p style="font-weight: 800; margin-top: 50px;">How can we do better?</p> 
+                        <p style="font-weight: 800; margin-top: 25px;">How can we do better? Don't worry, your feedback is anonymous!</p> 
                         <textarea class="feedback" placeholder="Tell us how we're doing!"id="" name="feedbackComments" maxlength="500" style="border-radius: 2vh;"></textarea>
                       <button name="starRating" value = "" id="submit" style="width:100%"> <b>Share Feedback</b> </button>
                       <br>

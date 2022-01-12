@@ -15,6 +15,7 @@ class FileForm(forms.ModelForm):
         widgets = {
             'document': ClearableFileInput(attrs={'multiple': True}),
         }
+        
  
 class AddressForm(forms.ModelForm):
     class Meta:

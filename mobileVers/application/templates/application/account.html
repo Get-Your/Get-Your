@@ -12,12 +12,20 @@
 {% csrf_token %}
 {% for field in form %}
     {% if form.errors %}
-    {% for error in field.errors %}
-    <div class="alert alert-danger">
-        <strong>{{ error|escape }}</strong>
-    </div>
-    {% endfor %}
+        {% for error in field.errors %}
+        <div class="alert alert-danger">
+            <p style="color: red;"><strong>{{ error|escape }}</strong> </p> 
+        </div>
+        {% endfor %}
+    
+        {% for error in form.non_field_errors %}
+        <div class="alert alert-danger">
+            <p style="color: red;"><strong>{{ error|escape }}</strong> </p> 
+        </div>
+        {% endfor %}
     {% endif %}
+
+
     {% if field.label == "First Name" %}
         <div class ="row">
             <div class="input">
@@ -47,17 +55,31 @@
     <!--Probably not the best way, but I needed to get rid of the last name-->
     {% elif field.label == "Last Name" %}
     {% elif field.label == "Password" %}
-    <div class="input">
-        <!--Have styling that I like on the forms-->        
-        <input class="fill" name="{{ field.name }}"
-        id="{{ field.id_for_label }}"
-        maxlength="{{ field.max_length }}"
-        type="password" 
-        style="width:100%;"
-        required  
-        autocomplete="off">
-        <label class="label">{{field.label}}</label>    
-    </div>
+        <p style="color: red;"><strong> {{ passwordError }} </strong> </p> 
+        <div class="input">
+            <!--Have styling that I like on the forms-->        
+            <input class="fill" name="{{ field.name }}"
+            id="{{ field.id_for_label }}"
+            maxlength="{{ field.max_length }}"
+            type="password" 
+            style="width:100%;"
+            required  
+            autocomplete="off">
+            <label class="label">{{field.label}}</label>    
+        </div>
+
+    {% elif field.label == "Enter Password Again" %}
+        <div class="input">
+            <!--Have styling that I like on the forms-->        
+            <input class="fill" name="{{ field.name }}"
+            id="{{ field.id_for_label }}"
+            maxlength="{{ field.max_length }}"
+            type="password" 
+            style="width:100%;"
+            required  
+            autocomplete="off">
+            <label class="label">{{field.label}}</label>    
+        </div>
     {% else %}
     <div class="input">
         <!--Have styling that I like on the forms-->        
