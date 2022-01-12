@@ -2,14 +2,17 @@
 from django import forms
 from django.db.models.fields import DateField
 from django.forms import widgets
+from django.contrib.auth.password_validation import validate_password
 
 from .models import User, Addresses, Eligibility, programs, choices, addressLookup, futureEmails, attestations, MoreInfo
 
 # form for user account creation
 class UserForm(forms.ModelForm):
+    password2 = forms.CharField(label='Enter Password Again',
+                               widget=forms.PasswordInput())
     class Meta:
         model = User
-        fields = ['first_name','last_name', 'email','password','phone_number'] #password between email and phone number
+        fields = ['first_name','last_name', 'email','phone_number','password'] #password between email and phone number
         labels  = { 
             'first_name':'First Name', 
             'last_name':'Last Name', 
@@ -18,7 +21,18 @@ class UserForm(forms.ModelForm):
             'phone_number':'Phone Number',
         }
 
-
+    def passwordCheck(self):
+        password = self.cleaned_data['password']
+        try:
+            validate_password(password, user = None, password_validators=None)
+        except Exception as e:
+            return str(e)
+    
+    def passwordCheckDuplicate(self):
+        cd = self.cleaned_data
+        if cd['password'] != cd['password2']:
+            return 'Passwords don\'t match.'
+        return cd['password']
 
     def save(self, commit=True):
         user = super(UserForm, self).save(commit=False)
