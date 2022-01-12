@@ -2,9 +2,11 @@ from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login, logout
 from django.forms.models import modelformset_factory
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.password_validation import validate_password
+from django.contrib import messages
 
 from django.db import IntegrityError
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from .forms import UserForm, AddressForm, EligibilityForm, programForm, addressLookupForm, futureEmailsForm, MoreInfoForm, attestationForm
 from .backend import addressCheck, validateUSPS, enroll_connexion_updates
 from .models import AMI, MoreInfo, iqProgramQualifications
@@ -412,7 +414,31 @@ def account(request):
         if form.is_valid():
             # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
             # Make sure password isn't getting saved twice
-            print(form.data)
+            passwordCheck = form.passwordCheck()
+            passwordCheckDuplicate = form.passwordCheckDuplicate()
+            if passwordCheck != None:
+                return render(request, 'application/account.html', {
+                'form':form,
+                'step':1,
+                'formPageNum':formPageNum,
+                'Title': "Account",
+                'passwordError': passwordCheck
+                })   
+            else:
+                logging.info("password passes all validation checks...")
+                
+
+            if str(passwordCheckDuplicate) == str(form.cleaned_data['password']):
+                logging.info("password is the same password entered twice...")
+            else:
+                logging.error("passwords are not the same...")
+                return render(request, 'application/account.html', {
+                'form':form,
+                'step':1,
+                'formPageNum':formPageNum,
+                'Title': "Account",
+                'passwordError': passwordCheckDuplicate
+                })   
             try:
                 user = form.save()
                 login(request,user)
@@ -427,7 +453,7 @@ def account(request):
     'form':form,
     'step':1,
     'formPageNum':formPageNum,
-    'Title': "Account"
+    'Title': "Account",
     })
 #    else:
 #        return redirect(reverse(page))
