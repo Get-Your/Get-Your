@@ -30,7 +30,7 @@
       <div class="module" style="margin-left: 1.5vw;margin-right:0;padding: 1vw ;">
           
           <!--CSV HERE-->
-          <hprogram style = "color: var(--yellow)"> {{PendingNumber}} </hprogram>
+          <hprogram style = "color: var(--darkblue)"> {{PendingNumber}} </hprogram>
           <h3 style = "font-weight: 400; margin: 0;">Pending Approval </h3>
       </div>
     </div>
@@ -154,7 +154,7 @@
     <div class="item thin" >
       <!--CSV HERE-->
       <hprogram style = "color: var(--darkblue)"> {{PendingNumber}} </hprogram>
-      <p style = "font-weight: 400; padding-left: 20px; ">Pending Approval</p>
+      <p style = "font-weight: 400; padding-left: 20px;  ">Pending Approval</p>
       <button class="button button2" id="toggle-button"><img src="{% static 'dashboard/images/downArrow.svg' %}" style="position: absolute; bottom: 10px;right: 10px;"> </button>
     </div>
     <div class="item collapsible pending">
@@ -374,7 +374,7 @@
         {% csrf_token %}
           <p>Feedback</p>
           <div class="column" style="margin:0; width:100%;">
-            <p style="font-weight: 600;">How would you rate your experience so far using the Connexion portal? </p>
+            <p style="font-weight: 600;">How would you rate your experience so far using the Get:FoCo portal? </p>
             <div class="column" style="margin:0; width:100%;">
               <clearButton name="starRating" value="1" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star1D" style="width:min(10vw, 50px);" onclick="fillStarD(1)"> </clearButton>
               <clearButton name="starRating" value="2" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star2D" style="width:min(10vw, 50px);" onclick="fillStarD(2)"> </clearButton>
@@ -384,7 +384,7 @@
             </div>
         </div>
         <div class="column" style="width:100%; margin:0; justify-content: flex-start;">
-              <p style="font-weight: 800; margin-top: 50px;">How can we do better?</p> 
+              <p style="font-weight: 800; margin-top: 25px;">How can we do better? Don't worry, your feedback is anonymous!</p> 
               <textarea class="feedback" placeholder="Tell us how we're doing!"id="" name="feedbackComments" maxlength="500" style="border-radius: 2vh;"></textarea>
             <button name="starRating" value = "" id="submitD" style="width:90%"> <b>Share Feedback</b> </button>
         </div>

@@ -1,0 +1,491 @@
+[11/Jan/2022 16:39:08] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[11/Jan/2022 16:39:08] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[11/Jan/2022 16:39:40] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 5625
+[11/Jan/2022 16:39:40] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 5625
+[11/Jan/2022 16:39:40] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[11/Jan/2022 16:39:40] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[11/Jan/2022 16:41:04] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 5459
+[11/Jan/2022 16:41:04] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 5459
+[11/Jan/2022 16:42:53] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 5508
+[11/Jan/2022 16:42:53] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 5508
+[11/Jan/2022 16:42:54] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 16122
+[11/Jan/2022 16:42:54] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 16122
+[11/Jan/2022 16:42:54] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[11/Jan/2022 16:42:54] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[11/Jan/2022 16:42:54] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[11/Jan/2022 16:42:54] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[11/Jan/2022 16:42:55] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 16:42:55] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 16:42:55] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 16:42:55] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 16:43:22] INFO [root:428] password passes all validation checks...
+[11/Jan/2022 16:43:22] INFO [root:432] password is the same password entered twice...
+[11/Jan/2022 16:43:23] INFO [django.server:157] "POST /application/account HTTP/1.1" 302 0
+[11/Jan/2022 16:43:23] INFO [django.server:157] "POST /application/account HTTP/1.1" 302 0
+[11/Jan/2022 16:43:23] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 5302
+[11/Jan/2022 16:43:23] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 5302
+[11/Jan/2022 16:43:27] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 5338
+[11/Jan/2022 16:43:27] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 5338
+[11/Jan/2022 16:43:48] INFO [root:428] password passes all validation checks...
+[11/Jan/2022 16:43:48] ERROR [root:434] passwords are not the same...
+[11/Jan/2022 16:43:48] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 5365
+[11/Jan/2022 16:43:48] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 5365
+[11/Jan/2022 16:58:04] INFO [django.server:157] "GET / HTTP/1.1" 200 13852
+[11/Jan/2022 16:58:04] INFO [django.server:157] "GET / HTTP/1.1" 200 13852
+[11/Jan/2022 16:58:05] INFO [django.server:157] "GET /static/application/styles.css HTTP/1.1" 200 14220
+[11/Jan/2022 16:58:05] INFO [django.server:157] "GET /static/application/styles.css HTTP/1.1" 200 14220
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/WelcomeIllustration.svg HTTP/1.1" 200 16662
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/WelcomeIllustration.svg HTTP/1.1" 200 16662
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/control.png HTTP/1.1" 200 4946
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/control.png HTTP/1.1" 200 4946
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/control.svg HTTP/1.1" 200 3985
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/control.svg HTTP/1.1" 200 3985
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/save.png HTTP/1.1" 200 5850
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/save.png HTTP/1.1" 200 5850
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/save.svg HTTP/1.1" 200 4815
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/save.svg HTTP/1.1" 200 4815
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/forget.png HTTP/1.1" 200 6121
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/forget.png HTTP/1.1" 200 6121
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/forget.svg HTTP/1.1" 200 8904
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/forget.svg HTTP/1.1" 200 8904
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/know.png HTTP/1.1" 200 5775
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/know.png HTTP/1.1" 200 5775
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/know.svg HTTP/1.1" 200 8645
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/know.svg HTTP/1.1" 200 8645
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/X_gray.svg HTTP/1.1" 200 461
+[11/Jan/2022 16:58:06] INFO [django.server:157] "GET /static/application/images/X_gray.svg HTTP/1.1" 200 461
+[11/Jan/2022 16:58:10] WARNING [django.request:224] Not Found: /requestProvider.js.map
+[11/Jan/2022 16:58:10] WARNING [django.request:224] Not Found: /requestProvider.js.map
+[11/Jan/2022 16:58:10] WARNING [django.server:157] "GET /requestProvider.js.map HTTP/1.1" 404 2911
+[11/Jan/2022 16:58:10] WARNING [django.server:157] "GET /requestProvider.js.map HTTP/1.1" 404 2911
+[11/Jan/2022 16:58:21] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 5338
+[11/Jan/2022 16:58:21] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 5338
+[11/Jan/2022 16:58:22] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[11/Jan/2022 16:58:22] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[11/Jan/2022 16:58:22] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[11/Jan/2022 16:58:22] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[11/Jan/2022 16:58:51] INFO [root:428] password passes all validation checks...
+[11/Jan/2022 16:58:51] INFO [root:432] password is the same password entered twice...
+[11/Jan/2022 16:58:51] INFO [django.server:157] "POST /application/account HTTP/1.1" 302 0
+[11/Jan/2022 16:58:51] INFO [django.server:157] "POST /application/account HTTP/1.1" 302 0
+[11/Jan/2022 16:58:52] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 5302
+[11/Jan/2022 16:58:52] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 5302
+[11/Jan/2022 16:58:52] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[11/Jan/2022 16:58:52] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[11/Jan/2022 16:58:52] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[11/Jan/2022 16:58:52] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[11/Jan/2022 16:59:19] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[11/Jan/2022 16:59:19] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[11/Jan/2022 16:59:21] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3992
+[11/Jan/2022 16:59:21] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3992
+[11/Jan/2022 16:59:21] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[11/Jan/2022 16:59:21] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[11/Jan/2022 16:59:21] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[11/Jan/2022 16:59:21] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[11/Jan/2022 16:59:26] INFO [django.server:157] "GET /application/takeUSPSaddress HTTP/1.1" 302 0
+[11/Jan/2022 16:59:26] INFO [django.server:157] "GET /application/takeUSPSaddress HTTP/1.1" 302 0
+[11/Jan/2022 16:59:27] INFO [django.server:157] "GET /application/inServiceArea HTTP/1.1" 302 0
+[11/Jan/2022 16:59:27] INFO [django.server:157] "GET /application/inServiceArea HTTP/1.1" 302 0
+[11/Jan/2022 16:59:27] INFO [django.server:157] "GET /application/finances HTTP/1.1" 200 8122
+[11/Jan/2022 16:59:27] INFO [django.server:157] "GET /application/finances HTTP/1.1" 200 8122
+[11/Jan/2022 16:59:27] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[11/Jan/2022 16:59:27] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[11/Jan/2022 16:59:27] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[11/Jan/2022 16:59:27] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[11/Jan/2022 16:59:27] INFO [django.server:157] "GET /static/application/images/Step3Instructions.gif HTTP/1.1" 200 182476
+[11/Jan/2022 16:59:27] INFO [django.server:157] "GET /static/application/images/Step3Instructions.gif HTTP/1.1" 200 182476
+[11/Jan/2022 16:59:27] INFO [django.server:157] "GET /static/application/images/Step3InstructionsMobile.gif HTTP/1.1" 200 117524
+[11/Jan/2022 16:59:27] INFO [django.server:157] "GET /static/application/images/Step3InstructionsMobile.gif HTTP/1.1" 200 117524
+[11/Jan/2022 16:59:27] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 16:59:27] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 16:59:35] INFO [django.server:157] "GET /application/ajax/load-gahi/?dependents=1 HTTP/1.1" 200 365
+[11/Jan/2022 16:59:35] INFO [django.server:157] "GET /application/ajax/load-gahi/?dependents=1 HTTP/1.1" 200 365
+[11/Jan/2022 16:59:38] INFO [django.server:157] "POST /application/finances HTTP/1.1" 302 0
+[11/Jan/2022 16:59:38] INFO [django.server:157] "POST /application/finances HTTP/1.1" 302 0
+[11/Jan/2022 16:59:39] INFO [django.server:157] "GET /application/moreInfoNeeded HTTP/1.1" 200 5024
+[11/Jan/2022 16:59:39] INFO [django.server:157] "GET /application/moreInfoNeeded HTTP/1.1" 200 5024
+[11/Jan/2022 16:59:40] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[11/Jan/2022 16:59:40] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[11/Jan/2022 16:59:40] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[11/Jan/2022 16:59:40] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[11/Jan/2022 17:00:16] INFO [django.server:157] "POST /application/moreInfoNeeded HTTP/1.1" 302 0
+[11/Jan/2022 17:00:16] INFO [django.server:157] "POST /application/moreInfoNeeded HTTP/1.1" 302 0
+[11/Jan/2022 17:00:16] INFO [django.server:157] "GET /application/programs HTTP/1.1" 200 5589
+[11/Jan/2022 17:00:16] INFO [django.server:157] "GET /application/programs HTTP/1.1" 200 5589
+[11/Jan/2022 17:00:16] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[11/Jan/2022 17:00:16] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[11/Jan/2022 17:00:16] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[11/Jan/2022 17:00:16] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[11/Jan/2022 17:00:22] INFO [django.server:157] "POST /application/programs HTTP/1.1" 302 0
+[11/Jan/2022 17:00:22] INFO [django.server:157] "POST /application/programs HTTP/1.1" 302 0
+[11/Jan/2022 17:00:22] INFO [django.server:157] "GET /dashboard/files HTTP/1.1" 200 8136
+[11/Jan/2022 17:00:22] INFO [django.server:157] "GET /dashboard/files HTTP/1.1" 200 8136
+[11/Jan/2022 17:00:22] INFO [django.server:157] "GET /static/dashboard/styles_app.css HTTP/1.1" 200 16043
+[11/Jan/2022 17:00:22] INFO [django.server:157] "GET /static/dashboard/styles_app.css HTTP/1.1" 200 16043
+[11/Jan/2022 17:00:23] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:00:23] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:00:23] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:00:23] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:00:23] INFO [django.server:157] "GET /static/dashboard/images/upload.svg HTTP/1.1" 200 1005
+[11/Jan/2022 17:00:23] INFO [django.server:157] "GET /static/dashboard/images/upload.svg HTTP/1.1" 200 1005
+[11/Jan/2022 17:00:23] INFO [django.server:157] "GET /static/application/images/Step5InstructionsDesktop.gif HTTP/1.1" 200 650133
+[11/Jan/2022 17:00:23] INFO [django.server:157] "GET /static/application/images/Step5InstructionsDesktop.gif HTTP/1.1" 200 650133
+[11/Jan/2022 17:00:23] INFO [django.server:157] "GET /static/application/images/Step5InstructionsMobile.gif HTTP/1.1" 200 2314862
+[11/Jan/2022 17:00:23] INFO [django.server:157] "GET /static/application/images/Step5InstructionsMobile.gif HTTP/1.1" 200 2314862
+[11/Jan/2022 17:00:45] INFO [root:70] PNG image data, 450 x 284, 8-bit/color RGBA, non-interlaced
+[11/Jan/2022 17:00:45] INFO [django.server:157] "POST /dashboard/files HTTP/1.1" 200 8047
+[11/Jan/2022 17:00:45] INFO [django.server:157] "POST /dashboard/files HTTP/1.1" 200 8047
+[11/Jan/2022 17:00:46] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:00:46] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:00:46] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:00:46] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:00:52] INFO [root:70] PNG image data, 1029 x 651, 8-bit/color RGBA, interlaced
+[11/Jan/2022 17:00:52] INFO [django.server:157] "POST /dashboard/files HTTP/1.1" 302 0
+[11/Jan/2022 17:00:52] INFO [django.server:157] "POST /dashboard/files HTTP/1.1" 302 0
+[11/Jan/2022 17:00:52] INFO [django.server:157] "GET /application/attestation HTTP/1.1" 200 3787
+[11/Jan/2022 17:00:52] INFO [django.server:157] "GET /application/attestation HTTP/1.1" 200 3787
+[11/Jan/2022 17:00:53] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[11/Jan/2022 17:00:53] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[11/Jan/2022 17:00:53] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[11/Jan/2022 17:00:53] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[11/Jan/2022 17:00:58] INFO [django.server:157] "POST /application/attestation HTTP/1.1" 302 0
+[11/Jan/2022 17:00:58] INFO [django.server:157] "POST /application/attestation HTTP/1.1" 302 0
+[11/Jan/2022 17:01:00] INFO [twilio.http_client:79] POST Request: https://api.twilio.com/2010-04-01/Accounts/ACac5816609e68f28715ad6e61e5cf3211/Messages.json
+[11/Jan/2022 17:01:00] INFO [twilio.http_client:81] PAYLOAD: {'To': '+16503388955', 'From': '+19703943034', 'Body': 'Thank you for creating an account with Get:FoCo! Be sure to review the programs you qualify for on your dashboard and click on Quick Apply to finish the application process!'}
+[11/Jan/2022 17:01:01] INFO [twilio.http_client:97] POST Response: 201 {"sid": "SM22873a96ac5142a2ab3da1bed6d83c32", "date_created": "Wed, 12 Jan 2022 01:01:01 +0000", "date_updated": "Wed, 12 Jan 2022 01:01:01 +0000", "date_sent": null, "account_sid": "ACac5816609e68f28715ad6e61e5cf3211", "to": "+16503388955", "from": "+19703943034", "messaging_service_sid": null, "body": "Thank you for creating an account with Get:FoCo! Be sure to review the programs you qualify for on your dashboard and click on Quick Apply to finish the application process!", "status": "queued", "num_segments": "2", "num_media": "0", "direction": "outbound-api", "api_version": "2010-04-01", "price": null, "price_unit": "USD", "error_code": null, "error_message": null, "uri": "/2010-04-01/Accounts/ACac5816609e68f28715ad6e61e5cf3211/Messages/SM22873a96ac5142a2ab3da1bed6d83c32.json", "subresource_uris": {"media": "/2010-04-01/Accounts/ACac5816609e68f28715ad6e61e5cf3211/Messages/SM22873a96ac5142a2ab3da1bed6d83c32/Media.json"}}
+[11/Jan/2022 17:01:01] INFO [django.server:157] "GET /dashboard/broadcast HTTP/1.1" 200 3470
+[11/Jan/2022 17:01:01] INFO [django.server:157] "GET /dashboard/broadcast HTTP/1.1" 200 3470
+[11/Jan/2022 17:01:01] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:01:01] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:01:01] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:01:01] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38584
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38584
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:01:07] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:01:07] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:01:07] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:01:07] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:01:07] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:01:16] INFO [django.server:157] "GET /static/dashboard/images/reviewStarFilled.svg HTTP/1.1" 200 672
+[11/Jan/2022 17:01:16] INFO [django.server:157] "GET /static/dashboard/images/reviewStarFilled.svg HTTP/1.1" 200 672
+[11/Jan/2022 17:02:49] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38596
+[11/Jan/2022 17:02:49] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38596
+[11/Jan/2022 17:02:49] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:02:49] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:02:50] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:02:50] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:02:50] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:02:50] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:02:50] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:02:50] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:02:50] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:02:50] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:02:50] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:03:09] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38597
+[11/Jan/2022 17:03:09] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38597
+[11/Jan/2022 17:03:09] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:03:09] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:03:10] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:03:10] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:03:10] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:03:10] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:03:10] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:03:10] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:03:10] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:03:10] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:03:10] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:03:20] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38585
+[11/Jan/2022 17:03:20] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38585
+[11/Jan/2022 17:03:20] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:03:20] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:03:20] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:03:20] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:03:20] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:03:20] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:03:21] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:03:21] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:03:21] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:03:21] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:03:21] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:03:35] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38554
+[11/Jan/2022 17:03:35] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38554
+[11/Jan/2022 17:03:35] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:03:35] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:03:35] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:03:35] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:03:35] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:03:35] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:03:36] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:03:36] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:03:36] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:03:36] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:03:36] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:03:51] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38587
+[11/Jan/2022 17:03:51] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38587
+[11/Jan/2022 17:03:51] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:03:51] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:03:52] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:03:52] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:03:52] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:03:52] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:03:52] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:03:52] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:03:52] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:03:52] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:03:52] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:18:28] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38585
+[11/Jan/2022 17:18:28] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38585
+[11/Jan/2022 17:19:34] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38612
+[11/Jan/2022 17:19:34] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38612
+[11/Jan/2022 17:19:34] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:19:34] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:19:35] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:19:35] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:19:35] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:19:35] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:19:35] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38667
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38667
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:20:12] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:20:13] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:20:13] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:20:13] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:20:13] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:20:28] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:20:28] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:20:28] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:20:28] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:20:39] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:20:39] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[11/Jan/2022 17:20:39] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:20:39] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38667
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38667
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:21:00] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:21:00] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:21:00] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:21:00] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:21:00] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:21:25] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38667
+[11/Jan/2022 17:21:25] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38667
+[11/Jan/2022 17:21:25] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:21:25] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[11/Jan/2022 17:21:26] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[11/Jan/2022 17:21:26] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:21:26] WARNING [django.request:224] Not Found: /favicon.ico
+[11/Jan/2022 17:21:26] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[11/Jan/2022 17:21:26] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
