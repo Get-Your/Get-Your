@@ -17,9 +17,10 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
 
+
 class Form(TimeStampedModel):
     user_id = models.ForeignKey(User, related_name ="UserFiles", on_delete=models.CASCADE)
-    document = models.FileField(validators=[FileExtensionValidator(['pdf','jpg','png'],)], max_length=5000, upload_to="mobileVers/uploads/" + str(datetime.date.today()) + "/")
+    document = models.FileField(validators=[FileExtensionValidator(['pdf','jpg','png'],)], max_length=5000, upload_to="mobileVers/uploads/" + str(datetime.date.today()) + "/") #upload_to="mobileVers/uploads/" + str(datetime.date.today()) + "/" this uploads file to date and time of day
     form_titles = (
         ('SNAP', 'SNAP'),
         ('Free and Reduced Lunch', 'Free and Reduced Lunch'),

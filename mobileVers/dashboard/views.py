@@ -66,6 +66,7 @@ def files(request):
                     file_upload = request.user
                     file_upload.files.add(instance)
                     
+                    #fileValidation found below
                     filetype = magic.from_file("mobileVers/" + instance.document.url)
                     logging.info(filetype)
                     if "PNG" in filetype:
