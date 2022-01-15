@@ -445,10 +445,6 @@ input[type="checkbox"]{
         background-color: #2a588a;
     }
     
-    #message p{
-        color: var(--yellow);
-    }
-    
     /* Add a green text color and a checkmark when the requirements are right */
     .valid {
         color: green;
