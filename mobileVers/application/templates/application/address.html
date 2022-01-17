@@ -32,25 +32,26 @@
                         style="width:80%;" 
                         required  
                         autocomplete="off"
-                        onblur="stateNameToAbbreviation()">
+                        onblur="stateNameToAbbreviation() ">
                 <label class="label">{{field.label}}</label>    
             </div>
             <div class="input" style = "width:100%">
                 <!--TODO: change this to dropdown menu with data-->
                 <input class="fill" name="{{ form.zipCode.name }}"
-                    id="{{ form.zipCode.id_for_label }}"
+                    id="zipCode"
                     maxlength="{{ form.zipCode.max_length }}"
-                    type="text" 
+                    type="number" 
                     style="width:100%;" 
                     required  
-                    autocomplete="off">
+                    autocomplete="off"
+                    onblur="zipCheck()"
+                    >
                 <label class="label">{{ form.zipCode.label }}</label>    
             </div>
         </div>
 
     <!--Probably not the best way, but I needed to get rid of the zip code at the very end-->
     {% elif field.label == "Zip Code" or field.label == "N2n" %}
-    
     {% else %}
     <div class="input">
         <!--Have styling that I like on the forms-->        
@@ -75,7 +76,7 @@
 
 <script>
     function stateNameToAbbreviation() {
-      var x = document.getElementById("state");
+      var stateName = document.getElementById("state");
       //x.value = x.value.toUpperCase();
       
       var states = {
@@ -135,17 +136,85 @@
                 "northern mariana islands": "MP",
                 "puerto rico": "PR",
                 "us virgin islands": "VI",
-                "us minor outlying islands": "UM"
+                "us minor outlying islands": "UM",
+
+                "az": "AZ",
+                "al": "AL",
+                "ak": "AK",
+                "ar": "AR",
+                "ca": "CA",
+                "co": "CO",
+                "ct": "CT",
+                "dc": "DC",
+                "de": "DE",
+                "fl": "FL",
+                "ga": "GA",
+                "hi": "HI",
+                "id": "ID",
+                "il": "IL",
+                "in": "IN",
+                "ia": "IA",
+                "ks": "KS",
+                "ky": "KY",
+                "la": "LA",
+                "me": "ME",
+                "md": "MD",
+                "ma": "MA",
+                "mi": "MI",
+                "mn": "MN",
+                "ms": "MS",
+                "mo": "MO",
+                "mt": "MT",
+                "ne": "NE",
+                "nv": "NV",
+                "nh": "NH",
+                "nj": "NJ",
+                "nm": "NM",
+                "ny": "NY",
+                "nc": "NC",
+                "nd ": "ND",
+                "oh": "OH",
+                "ok": "OK",
+                "or": "OR",
+                "pa": "PA",
+                "ri ": "RI",
+                "sc ": "SC",
+                "sd ": "SD",
+                "tn": "TN",
+                "tx": "TX",
+                "ut": "UT",
+                "vt": "VT",
+                "va": "VA",
+                "wa": "WA",
+                "wv ": "WV",
+                "wi": "WI",
+                "wy": "WY",
+                "as": "AS",
+                "gu": "GU",
+                "mp  ": "MP",
+                "pr ": "PR",
+                "vi": "VI",
+                "um": "UM"
             }
             
-               //x.value = "reddit"
-            //let a = x.value.trim().replace(/[^\w ]/g, "").toUpperCase(); 
-            x.value = x.value.trim().replace(/[^\w ]/g, "").toLowerCase(); 
+            stateName.value = stateName.value.trim().replace(/[^\w ]/g, "").toLowerCase(); 
             //Trim, remove all non-word characters with the exception of spaces, and convert to lowercase
-            if(x.value != null) {
-                x.value =  states[x.value];
+            if(stateName.value != null) {
+                stateName.value =  states[stateName.value];
+            }
+            if(stateName.value == "undefined") {  
+            alert("Please re-enter your state again")
             }
     }
 </script>
+
+<script>
+    function zipCheck(){
+      if(zipCode.value.length != 5) {  
+        alert("Please enter a 5 digit Zip Code ")
+      }
+    }
+</script>
+
 
 {% endblock %}

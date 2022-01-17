@@ -1,6 +1,6 @@
 # All of the forms built from models are here 
 from django import forms
-from django.db.models.fields import DateField
+from django.db.models.fields import CharField, DateField, TextField
 from django.forms import widgets
 from django.contrib.auth.password_validation import validate_password
 
@@ -54,6 +54,11 @@ class AddressForm(forms.ModelForm):
             'state':'State', 
             'zipCode':'Zip Code',
         }
+        #widgets = {
+            #'zipCode':TextField(attrs={'type':'number'}),
+            #'document': ClearableFileInput(attrs={'multiple': True}),
+            #=forms.widgets.DateInput(attrs={'type': 'date'})
+        #} 
 
 # form for basic finance eligibility
 class EligibilityForm(forms.ModelForm):

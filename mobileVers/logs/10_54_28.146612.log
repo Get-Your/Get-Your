@@ -1,0 +1,20 @@
+[15/Jan/2022 10:54:28] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[15/Jan/2022 10:54:28] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[15/Jan/2022 10:54:35] INFO [django.server:157] "GET / HTTP/1.1" 200 13852
+[15/Jan/2022 10:54:35] INFO [django.server:157] "GET / HTTP/1.1" 200 13852
+[15/Jan/2022 10:54:35] INFO [django.server:157] "GET /static/application/styles.css HTTP/1.1" 304 0
+[15/Jan/2022 10:54:35] INFO [django.server:157] "GET /static/application/styles.css HTTP/1.1" 304 0
+[15/Jan/2022 10:54:36] WARNING [django.request:224] Not Found: /favicon.ico
+[15/Jan/2022 10:54:36] WARNING [django.request:224] Not Found: /favicon.ico
+[15/Jan/2022 10:54:36] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[15/Jan/2022 10:54:36] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[15/Jan/2022 10:54:40] INFO [django.server:157] "GET /dashboard/login HTTP/1.1" 200 2860
+[15/Jan/2022 10:54:40] INFO [django.server:157] "GET /dashboard/login HTTP/1.1" 200 2860
+[15/Jan/2022 10:54:40] INFO [django.server:157] "GET /static/dashboard/styles_app.css HTTP/1.1" 304 0
+[15/Jan/2022 10:54:40] INFO [django.server:157] "GET /static/dashboard/styles_app.css HTTP/1.1" 304 0
+[15/Jan/2022 10:54:42] INFO [django.server:157] "GET / HTTP/1.1" 200 13852
+[15/Jan/2022 10:54:42] INFO [django.server:157] "GET / HTTP/1.1" 200 13852
+[15/Jan/2022 10:54:44] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[15/Jan/2022 10:54:44] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[15/Jan/2022 10:54:44] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[15/Jan/2022 10:54:44] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0

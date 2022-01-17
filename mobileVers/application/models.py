@@ -80,8 +80,8 @@ class Addresses(TimeStampedModel):
     address2 = models.CharField(max_length=200, blank=True, default="")
 
     # Try to get past the things that should be the same for every applicant
-    city = models.CharField(max_length=64, default="Fort Collins")
-    state = models.CharField(max_length=2, default="CO")
+    city = models.CharField(max_length=64,)
+    state = models.CharField(max_length=2,default="")
 
     zipCode = models.DecimalField(max_digits=5, decimal_places=0)    
     
