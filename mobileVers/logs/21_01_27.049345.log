@@ -1,0 +1,154 @@
+[14/Jan/2022 21:01:27] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[14/Jan/2022 21:01:27] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[14/Jan/2022 21:01:30] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9838
+[14/Jan/2022 21:01:30] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9838
+[14/Jan/2022 21:01:31] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 21:01:31] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 21:01:31] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 21:01:31] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 21:01:31] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 21:01:31] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 21:01:31] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 21:01:31] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 21:01:31] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 21:01:31] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 21:01:39] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9838
+[14/Jan/2022 21:01:39] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9838
+[14/Jan/2022 21:01:39] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 21:01:39] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 21:01:39] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 21:01:39] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 21:01:39] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 21:01:39] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 21:01:39] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 21:01:39] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 21:01:39] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 21:01:39] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 21:01:44] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 21:01:44] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 21:01:44] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 21:01:44] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 21:02:13] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9838
+[14/Jan/2022 21:02:13] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9838
+[14/Jan/2022 21:02:13] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 21:02:13] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 21:02:14] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 21:02:14] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 21:02:14] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 21:02:14] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 21:02:14] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 21:02:14] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 21:02:14] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 21:02:14] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 21:02:14] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 21:02:14] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 21:02:14] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 21:02:14] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 21:02:24] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[14/Jan/2022 21:02:24] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[14/Jan/2022 21:02:26] ERROR [django.request:224] Internal Server Error: /application/addressCorrection
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py", line 318, in addressCorrection
+    dict_address = validateUSPS(q)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\backend.py", line 341, in validateUSPS
+    validation = usps.validate_address(address)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 43, in validate_address
+    return AddressValidate(self, *args, **kwargs)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 59, in __init__
+    self.result = usps.send_request('validate', xml)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 39, in send_request
+    raise USPSApiError(response['Error']['Description'])
+usps.usps.USPSApiError: XML Syntax Error: Please check the XML request to see if it can be parsed.(B)
+[14/Jan/2022 21:02:26] ERROR [django.request:224] Internal Server Error: /application/addressCorrection
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py", line 318, in addressCorrection
+    dict_address = validateUSPS(q)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\backend.py", line 341, in validateUSPS
+    validation = usps.validate_address(address)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 43, in validate_address
+    return AddressValidate(self, *args, **kwargs)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 59, in __init__
+    self.result = usps.send_request('validate', xml)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 39, in send_request
+    raise USPSApiError(response['Error']['Description'])
+usps.usps.USPSApiError: XML Syntax Error: Please check the XML request to see if it can be parsed.(B)
+[14/Jan/2022 21:02:26] ERROR [django.server:157] "GET /application/addressCorrection HTTP/1.1" 500 90762
+[14/Jan/2022 21:02:26] ERROR [django.server:157] "GET /application/addressCorrection HTTP/1.1" 500 90762
+[14/Jan/2022 21:02:26] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 21:02:26] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 21:02:26] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 21:02:26] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 21:02:45] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9838
+[14/Jan/2022 21:02:45] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9838
+[14/Jan/2022 21:02:54] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[14/Jan/2022 21:02:54] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[14/Jan/2022 21:02:55] ERROR [django.request:224] Internal Server Error: /application/addressCorrection
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py", line 318, in addressCorrection
+    dict_address = validateUSPS(q)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\backend.py", line 341, in validateUSPS
+    validation = usps.validate_address(address)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 43, in validate_address
+    return AddressValidate(self, *args, **kwargs)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 59, in __init__
+    self.result = usps.send_request('validate', xml)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 39, in send_request
+    raise USPSApiError(response['Error']['Description'])
+usps.usps.USPSApiError: XML Syntax Error: Please check the XML request to see if it can be parsed.(B)
+[14/Jan/2022 21:02:55] ERROR [django.request:224] Internal Server Error: /application/addressCorrection
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py", line 318, in addressCorrection
+    dict_address = validateUSPS(q)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\backend.py", line 341, in validateUSPS
+    validation = usps.validate_address(address)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 43, in validate_address
+    return AddressValidate(self, *args, **kwargs)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 59, in __init__
+    self.result = usps.send_request('validate', xml)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 39, in send_request
+    raise USPSApiError(response['Error']['Description'])
+usps.usps.USPSApiError: XML Syntax Error: Please check the XML request to see if it can be parsed.(B)
+[14/Jan/2022 21:02:55] ERROR [django.server:157] "GET /application/addressCorrection HTTP/1.1" 500 90728
+[14/Jan/2022 21:02:55] ERROR [django.server:157] "GET /application/addressCorrection HTTP/1.1" 500 90728
+[14/Jan/2022 21:03:04] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9838
+[14/Jan/2022 21:03:04] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9838
+[14/Jan/2022 21:03:27] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[14/Jan/2022 21:03:27] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[14/Jan/2022 21:03:29] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3992
+[14/Jan/2022 21:03:29] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3992
+[14/Jan/2022 21:03:31] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9838
+[14/Jan/2022 21:03:31] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9838
+[14/Jan/2022 21:10:21] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3992
+[14/Jan/2022 21:10:21] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3992
+[14/Jan/2022 21:10:25] INFO [django.server:157] "GET /application/takeUSPSaddress HTTP/1.1" 302 0
+[14/Jan/2022 21:10:25] INFO [django.server:157] "GET /application/takeUSPSaddress HTTP/1.1" 302 0
+[14/Jan/2022 21:10:26] INFO [django.server:157] "GET /application/inServiceArea HTTP/1.1" 302 0
+[14/Jan/2022 21:10:26] INFO [django.server:157] "GET /application/inServiceArea HTTP/1.1" 302 0
+[14/Jan/2022 21:10:26] INFO [django.server:157] "GET /application/finances HTTP/1.1" 200 8122
+[14/Jan/2022 21:10:26] INFO [django.server:157] "GET /application/finances HTTP/1.1" 200 8122
+[14/Jan/2022 21:11:08] INFO [django.server:157] "GET /application/ajax/load-gahi/?dependents=1 HTTP/1.1" 200 365
+[14/Jan/2022 21:11:08] INFO [django.server:157] "GET /application/ajax/load-gahi/?dependents=1 HTTP/1.1" 200 365
+[14/Jan/2022 21:11:13] INFO [django.server:157] "POST /application/finances HTTP/1.1" 302 0
+[14/Jan/2022 21:11:13] INFO [django.server:157] "POST /application/finances HTTP/1.1" 302 0
+[14/Jan/2022 21:11:14] INFO [django.server:157] "GET /application/moreInfoNeeded HTTP/1.1" 200 5024
+[14/Jan/2022 21:11:14] INFO [django.server:157] "GET /application/moreInfoNeeded HTTP/1.1" 200 5024
+[14/Jan/2022 21:11:27] INFO [django.server:157] "POST /application/moreInfoNeeded HTTP/1.1" 302 0
+[14/Jan/2022 21:11:27] INFO [django.server:157] "POST /application/moreInfoNeeded HTTP/1.1" 302 0
+[14/Jan/2022 21:11:27] INFO [django.server:157] "GET /application/programs HTTP/1.1" 200 5589
+[14/Jan/2022 21:11:27] INFO [django.server:157] "GET /application/programs HTTP/1.1" 200 5589

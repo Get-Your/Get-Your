@@ -3,19 +3,6 @@
 {% block body %}
 
 
-
-<div id="myModal" class="modal">
-    <!-- Modal content -->
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <p style="color: var(--darkblue);">This password is too short. It must contain at least 8 characters.', 'This password is too common.', 'This password is entirely numeric.'</p>
-        <br>
-        <br>
-        <br>
-        <p style="color: red;"><strong> {{ passwordError }} </strong> </p>
-    </div>
-</div>
-
 <h2 style="font-weight: 700; margin:5vh 0"> Create an Account </h2>
 <div class=sideNav> <div class=fadeSmall>
     <h1><b>You're on your way to greatness!</b></h1>
@@ -92,7 +79,7 @@
             style="width:100%;"
             required
             autocomplete="off">
-            <label class="label">{{field.label}} <buttonQuestion  id="myBtn"><img id src="{% static 'application/images/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px); display: inline;"></buttonQuestion>  </label>
+            <label class="label">{{field.label}}</label>
         </div>
 
     {% elif field.label == "Enter Password Again" %}
@@ -104,7 +91,8 @@
             type="password" 
             style="width:100%;"
             required  
-            autocomplete="off">
+            autocomplete="off"
+            onblur="finalChecks()">
             <label class="label">{{field.label}}</label>    
         </div>
     {% else %}
@@ -139,33 +127,7 @@
 </form>
 
 
-<script>
-    // Get the modal
-    var modal = document.getElementById("myModal");
-    
-    // Get the button that opens the modal
-    var btn = document.getElementById("myBtn");
-    
-    // Get the <span> element that closes the modal
-    var span = document.getElementsByClassName("close")[0];
-    
-    // When the user clicks the button, open the modal 
-    btn.onclick = function() {
-      modal.style.display = "block";
-    }
-    
-    // When the user clicks on <span> (x), close the modal
-    span.onclick = function() {
-      modal.style.display = "none";
-    }
-    
-    // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function(event) {
-      if (event.target == modal) {
-        modal.style.display = "none";
-      }
-    }
-</script>
+
 
 <!-- Password Server Side Check -->
 <script>
@@ -247,5 +209,25 @@
     });
 </script>
     
+
+<script>
+    function finalChecks(){
+        if(letter.classList == "invalid") {  
+        alert("You need a lowercase letter in your password")
+      }
+      else if(capital.classList == "invalid") {  
+        alert("You need an uppercase letter in your password")
+      }
+      else if(number.classList == "invalid") {  
+        alert("You need a number in your password")
+      }
+      else if(length.classList == "invalid") {  
+        alert("You need atleast 8 characters letter in your password")
+      }
+      else if(same.classList == "invalid") {  
+        alert("Your passwords need to match")
+      }
+    }
+</script>
 
 {% endblock %}
