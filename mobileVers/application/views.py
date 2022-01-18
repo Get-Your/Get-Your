@@ -869,6 +869,8 @@ def mayQualify(request):
         'Title': "May Qualify for Programs"
     })
 
+# TODO: The 'CallUs' page should no longer be referenced elsewhere - ensure this is true and remove this function
+# (also remove from urls.py)
 def callUs(request):
     return render(request, 'application/callUs.html',{
         'step':3,
