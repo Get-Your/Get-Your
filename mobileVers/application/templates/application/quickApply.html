@@ -3,8 +3,13 @@
 {% block content %}       
     <div class="content spaceAround">
         <!--NOTE: For the future have numbers change based on database-->
-        <h1><b>Thank you for quick applying to the {{ programName }} program! We'll let you know when you've been enrolled.</b></h1>
+        {% if 'grocery' in programName|lower %}
+            <h1><b>Thank you for quick applying to the {{ programName }} program! The program runs each year between August and October; your application will be processed during that period.</b></h1>
+        {% else %}
+            <h1><b>Thank you for quick applying to the {{ programName }} program! We'll let you know when you've been enrolled.</b></h1>
+
             <!--Whatever I need in the other pages, I can enter it here-->
+        {% endif %}
 
         {% if 'connexion' in programName|lower %}
             <br />
