@@ -454,6 +454,7 @@ def qualifiedPrograms(request):
     else:
         text = "False"
     # apply for other dynamic income work etc.
+    # TODO: The 'CallUs' text should no longer be referenced elsewhere - ensure this is true and remove this statement
     if request.user.eligibility.AmiRange_max == Decimal('0.5') and request.user.eligibility.AmiRange_min == Decimal('0.3'):
         text ="CallUs"
         
