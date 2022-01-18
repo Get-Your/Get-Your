@@ -1,0 +1,899 @@
+[14/Jan/2022 18:00:22] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[14/Jan/2022 18:00:22] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[14/Jan/2022 18:00:33] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9531
+[14/Jan/2022 18:00:33] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9531
+[14/Jan/2022 18:00:33] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:00:33] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:00:34] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:00:34] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:00:34] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:00:34] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:00:34] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:00:34] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:00:34] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:00:34] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:00:34] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:00:34] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:01:14] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9531
+[14/Jan/2022 18:01:14] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9531
+[14/Jan/2022 18:01:14] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:01:14] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:01:15] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:01:15] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:01:15] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:01:15] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:01:15] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:01:15] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:01:15] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:01:15] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:01:15] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:01:15] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:01:47] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9531
+[14/Jan/2022 18:01:47] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9531
+[14/Jan/2022 18:01:47] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:01:47] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:01:48] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:01:48] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:01:48] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:01:48] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:01:48] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:01:48] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:01:48] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:01:48] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:01:48] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:01:48] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:03:26] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9550
+[14/Jan/2022 18:03:26] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9550
+[14/Jan/2022 18:03:26] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:03:26] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:03:26] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:03:26] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:03:26] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:03:26] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:03:26] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:03:26] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:03:27] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:03:27] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:03:27] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:03:27] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:06:06] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9549
+[14/Jan/2022 18:06:06] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9549
+[14/Jan/2022 18:06:06] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:06:06] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:06:06] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:06:06] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:06:06] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:06:06] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:06:06] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:06:06] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:06:07] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:06:07] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:06:07] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:06:07] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:06:28] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9652
+[14/Jan/2022 18:06:28] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9652
+[14/Jan/2022 18:06:28] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:06:28] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:06:29] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:06:29] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:06:29] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:06:29] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:06:29] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:06:29] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:06:29] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:06:29] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:06:29] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:06:29] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:06:37] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9549
+[14/Jan/2022 18:06:37] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9549
+[14/Jan/2022 18:06:37] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:06:37] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:06:37] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:06:37] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:06:37] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:06:37] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:06:37] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:06:37] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:06:37] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:06:37] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:06:37] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:06:37] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:07:11] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9624
+[14/Jan/2022 18:07:11] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9624
+[14/Jan/2022 18:07:11] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:07:11] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 18:07:12] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:07:12] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:07:12] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:07:12] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:07:12] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:07:12] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:07:12] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:07:12] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:07:12] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:07:12] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:09:03] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9624
+[14/Jan/2022 18:09:03] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9624
+[14/Jan/2022 18:09:03] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17939
+[14/Jan/2022 18:09:03] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17939
+[14/Jan/2022 18:09:04] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:09:04] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:09:04] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:09:04] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:09:04] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:09:04] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:09:04] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:09:04] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:09:04] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:09:04] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:09:19] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9624
+[14/Jan/2022 18:09:19] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9624
+[14/Jan/2022 18:09:19] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17939
+[14/Jan/2022 18:09:19] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17939
+[14/Jan/2022 18:09:19] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:09:19] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:09:19] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:09:19] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:09:19] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:09:19] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:09:19] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:09:19] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:09:19] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:09:19] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:13:09] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9708
+[14/Jan/2022 18:13:09] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9708
+[14/Jan/2022 18:13:09] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17616
+[14/Jan/2022 18:13:09] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17616
+[14/Jan/2022 18:13:10] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:13:10] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:13:10] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:13:10] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:13:10] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:13:10] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:13:10] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:13:10] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:13:10] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:13:10] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:14:54] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9659
+[14/Jan/2022 18:14:54] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9659
+[14/Jan/2022 18:14:54] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17616
+[14/Jan/2022 18:14:54] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17616
+[14/Jan/2022 18:14:54] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:14:54] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:14:54] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:14:54] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:14:54] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:14:54] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:14:55] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:14:55] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:14:55] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:14:55] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:16:31] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9659
+[14/Jan/2022 18:16:31] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9659
+[14/Jan/2022 18:16:31] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17616
+[14/Jan/2022 18:16:31] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17616
+[14/Jan/2022 18:16:31] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:16:31] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:16:31] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:16:31] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:16:31] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:16:31] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:16:32] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:16:32] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:16:32] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:16:32] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:16:54] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 10046
+[14/Jan/2022 18:16:54] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 10046
+[14/Jan/2022 18:17:36] INFO [root:428] password passes all validation checks...
+[14/Jan/2022 18:17:36] INFO [root:432] password is the same password entered twice...
+[14/Jan/2022 18:17:37] INFO [django.server:157] "POST /application/account HTTP/1.1" 302 0
+[14/Jan/2022 18:17:37] INFO [django.server:157] "POST /application/account HTTP/1.1" 302 0
+[14/Jan/2022 18:17:37] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 5302
+[14/Jan/2022 18:17:37] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 5302
+[14/Jan/2022 18:17:37] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[14/Jan/2022 18:17:37] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[14/Jan/2022 18:18:03] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9659
+[14/Jan/2022 18:18:03] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9659
+[14/Jan/2022 18:18:10] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:18:10] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:18:10] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:18:10] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:18:47] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9659
+[14/Jan/2022 18:18:47] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9659
+[14/Jan/2022 18:18:47] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 18:18:47] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 18:18:47] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:18:47] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:18:47] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:18:47] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:18:48] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:18:48] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:18:48] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:18:48] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:18:48] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:18:48] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 18:18:48] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:18:48] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:18:48] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:18:48] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:19:00] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[14/Jan/2022 18:19:00] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[14/Jan/2022 18:19:00] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:19:00] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:19:00] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:19:00] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:21:02] INFO [root:428] password passes all validation checks...
+[14/Jan/2022 18:21:02] INFO [root:432] password is the same password entered twice...
+[14/Jan/2022 18:21:03] INFO [django.server:157] "POST /application/account HTTP/1.1" 302 0
+[14/Jan/2022 18:21:03] INFO [django.server:157] "POST /application/account HTTP/1.1" 302 0
+[14/Jan/2022 18:21:03] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 5302
+[14/Jan/2022 18:21:03] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 5302
+[14/Jan/2022 18:21:03] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[14/Jan/2022 18:21:03] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[14/Jan/2022 18:21:03] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:21:03] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:21:03] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:21:03] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:21:59] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[14/Jan/2022 18:21:59] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[14/Jan/2022 18:22:01] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3985
+[14/Jan/2022 18:22:01] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3985
+[14/Jan/2022 18:22:01] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[14/Jan/2022 18:22:01] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[14/Jan/2022 18:22:01] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:22:01] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:22:01] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:22:01] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:22:04] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 5302
+[14/Jan/2022 18:22:04] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 5302
+[14/Jan/2022 18:22:04] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:22:04] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:22:04] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:22:04] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:28:12] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 5302
+[14/Jan/2022 18:28:12] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 5302
+[14/Jan/2022 18:28:12] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 18:28:12] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 18:28:12] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:28:12] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:28:12] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:28:12] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:28:12] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:28:12] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:28:12] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:28:12] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:28:12] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:28:12] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:28:12] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:28:12] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:38:55] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7529
+[14/Jan/2022 18:38:55] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7529
+[14/Jan/2022 18:38:56] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 18:38:56] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 18:38:56] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:38:56] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:38:56] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:38:56] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:38:56] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:38:56] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:38:56] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:38:56] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:38:56] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:38:56] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:38:56] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:38:56] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:39:11] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7529
+[14/Jan/2022 18:39:11] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7529
+[14/Jan/2022 18:39:11] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 18:39:11] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 18:39:11] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:39:11] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:39:11] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:39:11] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:39:11] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:39:11] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:39:11] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:39:11] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:39:20] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:39:20] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:39:20] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:39:20] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:41:50] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 7749
+[14/Jan/2022 18:41:50] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 7749
+[14/Jan/2022 18:41:50] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[14/Jan/2022 18:41:50] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[14/Jan/2022 18:41:50] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:41:50] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:41:50] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:41:50] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:48:44] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 7752
+[14/Jan/2022 18:48:44] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 7752
+[14/Jan/2022 18:48:44] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 18:48:44] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 18:48:44] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:48:44] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:48:44] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:48:44] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:48:44] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:48:44] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 18:48:44] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:48:44] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 18:48:45] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:48:45] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 18:48:45] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:48:45] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 18:48:57] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 7870
+[14/Jan/2022 18:48:57] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 7870
+[14/Jan/2022 18:48:58] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:48:58] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 18:48:58] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 18:48:58] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:03:37] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 7855
+[14/Jan/2022 19:03:37] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 7855
+[14/Jan/2022 19:03:37] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:03:37] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:03:37] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:03:37] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:03:37] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:03:37] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:03:38] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:03:38] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:03:38] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:03:38] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:03:38] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:03:38] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:03:38] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:03:38] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:06:12] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 7910
+[14/Jan/2022 19:06:12] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 7910
+[14/Jan/2022 19:06:12] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:06:12] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:06:13] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:06:13] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:06:13] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:06:13] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:06:13] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:06:13] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:06:13] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:06:13] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:06:13] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:06:13] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:06:13] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:06:13] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:06:43] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 7907
+[14/Jan/2022 19:06:43] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 7907
+[14/Jan/2022 19:06:43] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:06:43] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:06:43] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:06:43] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:06:43] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:06:43] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:06:43] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:06:43] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:06:43] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:06:43] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:06:43] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:06:43] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:06:43] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:06:43] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:08:47] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 7909
+[14/Jan/2022 19:08:47] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 7909
+[14/Jan/2022 19:08:47] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:08:47] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:08:48] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:08:48] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:08:48] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:08:48] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:08:48] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:08:48] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:08:48] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:08:48] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:08:48] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:08:48] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:08:48] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:08:48] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:41:29] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 8299
+[14/Jan/2022 19:41:29] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 8299
+[14/Jan/2022 19:41:29] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:41:29] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:41:29] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:41:29] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:41:29] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:41:29] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:41:29] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:41:29] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:41:29] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:41:29] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:41:30] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:41:30] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:41:30] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:41:30] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:41:51] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 8312
+[14/Jan/2022 19:41:51] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 8312
+[14/Jan/2022 19:41:51] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:41:51] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:41:51] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:41:51] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:41:51] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:41:51] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:41:51] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:41:51] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:41:51] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:41:51] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:41:51] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:41:51] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:41:51] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:41:51] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:43:10] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 8154
+[14/Jan/2022 19:43:10] INFO [django.server:157] "POST /application/address HTTP/1.1" 200 8154
+[14/Jan/2022 19:43:10] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:43:10] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:43:10] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:43:10] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:44:00] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[14/Jan/2022 19:44:00] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[14/Jan/2022 19:44:01] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3992
+[14/Jan/2022 19:44:01] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3992
+[14/Jan/2022 19:44:02] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:44:02] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:44:02] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:44:02] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:44:04] INFO [django.server:157] "GET /application/takeUSPSaddress HTTP/1.1" 302 0
+[14/Jan/2022 19:44:04] INFO [django.server:157] "GET /application/takeUSPSaddress HTTP/1.1" 302 0
+[14/Jan/2022 19:44:05] INFO [django.server:157] "GET /application/inServiceArea HTTP/1.1" 302 0
+[14/Jan/2022 19:44:05] INFO [django.server:157] "GET /application/inServiceArea HTTP/1.1" 302 0
+[14/Jan/2022 19:44:05] INFO [django.server:157] "GET /application/finances HTTP/1.1" 200 8122
+[14/Jan/2022 19:44:05] INFO [django.server:157] "GET /application/finances HTTP/1.1" 200 8122
+[14/Jan/2022 19:44:06] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:44:06] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:44:06] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:44:06] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:44:06] INFO [django.server:157] "GET /static/application/images/Step3InstructionsMobile.gif HTTP/1.1" 200 117524
+[14/Jan/2022 19:44:06] INFO [django.server:157] "GET /static/application/images/Step3InstructionsMobile.gif HTTP/1.1" 200 117524
+[14/Jan/2022 19:44:06] INFO [django.server:157] "GET /static/application/images/Step3Instructions.gif HTTP/1.1" 200 182476
+[14/Jan/2022 19:44:06] INFO [django.server:157] "GET /static/application/images/Step3Instructions.gif HTTP/1.1" 200 182476
+[14/Jan/2022 19:44:10] INFO [django.server:157] "GET /application/ajax/load-gahi/?dependents=3 HTTP/1.1" 200 365
+[14/Jan/2022 19:44:10] INFO [django.server:157] "GET /application/ajax/load-gahi/?dependents=3 HTTP/1.1" 200 365
+[14/Jan/2022 19:44:15] INFO [django.server:157] "POST /application/finances HTTP/1.1" 302 0
+[14/Jan/2022 19:44:15] INFO [django.server:157] "POST /application/finances HTTP/1.1" 302 0
+[14/Jan/2022 19:44:16] INFO [django.server:157] "GET /application/moreInfoNeeded HTTP/1.1" 200 6716
+[14/Jan/2022 19:44:16] INFO [django.server:157] "GET /application/moreInfoNeeded HTTP/1.1" 200 6716
+[14/Jan/2022 19:44:16] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:44:16] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:44:16] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:44:16] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:44:17] INFO [django.server:157] "GET /application/finances HTTP/1.1" 200 8122
+[14/Jan/2022 19:44:17] INFO [django.server:157] "GET /application/finances HTTP/1.1" 200 8122
+[14/Jan/2022 19:44:17] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:44:17] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:44:17] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:44:17] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:44:22] INFO [django.server:157] "GET /application/ajax/load-gahi/?dependents=1 HTTP/1.1" 200 365
+[14/Jan/2022 19:44:22] INFO [django.server:157] "GET /application/ajax/load-gahi/?dependents=1 HTTP/1.1" 200 365
+[14/Jan/2022 19:44:25] INFO [django.server:157] "POST /application/finances HTTP/1.1" 302 0
+[14/Jan/2022 19:44:25] INFO [django.server:157] "POST /application/finances HTTP/1.1" 302 0
+[14/Jan/2022 19:44:26] INFO [django.server:157] "GET /application/moreInfoNeeded HTTP/1.1" 200 5024
+[14/Jan/2022 19:44:26] INFO [django.server:157] "GET /application/moreInfoNeeded HTTP/1.1" 200 5024
+[14/Jan/2022 19:44:26] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:44:26] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:44:26] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:44:26] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:44:42] INFO [django.server:157] "POST /application/moreInfoNeeded HTTP/1.1" 302 0
+[14/Jan/2022 19:44:42] INFO [django.server:157] "POST /application/moreInfoNeeded HTTP/1.1" 302 0
+[14/Jan/2022 19:44:42] INFO [django.server:157] "GET /application/programs HTTP/1.1" 200 5589
+[14/Jan/2022 19:44:42] INFO [django.server:157] "GET /application/programs HTTP/1.1" 200 5589
+[14/Jan/2022 19:44:43] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:44:43] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:44:43] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:44:43] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:44:47] INFO [django.server:157] "POST /application/programs HTTP/1.1" 302 0
+[14/Jan/2022 19:44:47] INFO [django.server:157] "POST /application/programs HTTP/1.1" 302 0
+[14/Jan/2022 19:44:49] INFO [django.server:157] "GET /dashboard/files HTTP/1.1" 200 8113
+[14/Jan/2022 19:44:49] INFO [django.server:157] "GET /dashboard/files HTTP/1.1" 200 8113
+[14/Jan/2022 19:44:49] INFO [django.server:157] "GET /static/dashboard/styles_app.css HTTP/1.1" 304 0
+[14/Jan/2022 19:44:49] INFO [django.server:157] "GET /static/dashboard/styles_app.css HTTP/1.1" 304 0
+[14/Jan/2022 19:44:49] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[14/Jan/2022 19:44:49] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[14/Jan/2022 19:44:49] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[14/Jan/2022 19:44:49] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[14/Jan/2022 19:44:49] INFO [django.server:157] "GET /static/dashboard/images/upload.svg HTTP/1.1" 200 1005
+[14/Jan/2022 19:44:49] INFO [django.server:157] "GET /static/dashboard/images/upload.svg HTTP/1.1" 200 1005
+[14/Jan/2022 19:44:49] INFO [django.server:157] "GET /static/application/images/Step5InstructionsDesktop.gif HTTP/1.1" 200 650133
+[14/Jan/2022 19:44:49] INFO [django.server:157] "GET /static/application/images/Step5InstructionsDesktop.gif HTTP/1.1" 200 650133
+[14/Jan/2022 19:44:49] INFO [django.server:157] "GET /static/application/images/Step5InstructionsMobile.gif HTTP/1.1" 200 2314862
+[14/Jan/2022 19:44:49] INFO [django.server:157] "GET /static/application/images/Step5InstructionsMobile.gif HTTP/1.1" 200 2314862
+[14/Jan/2022 19:44:56] INFO [root:71] PNG image data, 450 x 284, 8-bit/color RGBA, non-interlaced
+[14/Jan/2022 19:44:56] INFO [django.server:157] "POST /dashboard/files HTTP/1.1" 200 8024
+[14/Jan/2022 19:44:56] INFO [django.server:157] "POST /dashboard/files HTTP/1.1" 200 8024
+[14/Jan/2022 19:44:57] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[14/Jan/2022 19:44:57] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[14/Jan/2022 19:44:57] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[14/Jan/2022 19:44:57] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[14/Jan/2022 19:45:01] INFO [root:71] PNG image data, 1029 x 651, 8-bit/color RGBA, interlaced
+[14/Jan/2022 19:45:01] INFO [django.server:157] "POST /dashboard/files HTTP/1.1" 302 0
+[14/Jan/2022 19:45:01] INFO [django.server:157] "POST /dashboard/files HTTP/1.1" 302 0
+[14/Jan/2022 19:45:01] INFO [django.server:157] "GET /application/attestation HTTP/1.1" 200 3787
+[14/Jan/2022 19:45:01] INFO [django.server:157] "GET /application/attestation HTTP/1.1" 200 3787
+[14/Jan/2022 19:45:01] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:45:01] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:45:01] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:45:01] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:45:07] INFO [django.server:157] "POST /application/attestation HTTP/1.1" 302 0
+[14/Jan/2022 19:45:07] INFO [django.server:157] "POST /application/attestation HTTP/1.1" 302 0
+[14/Jan/2022 19:45:09] INFO [twilio.http_client:79] POST Request: https://api.twilio.com/2010-04-01/Accounts/ACac5816609e68f28715ad6e61e5cf3211/Messages.json
+[14/Jan/2022 19:45:09] INFO [twilio.http_client:81] PAYLOAD: {'To': '+16503388955', 'From': '+19703943034', 'Body': 'Thank you for creating an account with Get:FoCo! Be sure to review the programs you qualify for on your dashboard and click on Quick Apply to finish the application process!'}
+[14/Jan/2022 19:45:10] INFO [twilio.http_client:97] POST Response: 201 {"sid": "SM93816d77ee364bf08e7a4fbe56571996", "date_created": "Sat, 15 Jan 2022 03:45:09 +0000", "date_updated": "Sat, 15 Jan 2022 03:45:09 +0000", "date_sent": null, "account_sid": "ACac5816609e68f28715ad6e61e5cf3211", "to": "+16503388955", "from": "+19703943034", "messaging_service_sid": null, "body": "Thank you for creating an account with Get:FoCo! Be sure to review the programs you qualify for on your dashboard and click on Quick Apply to finish the application process!", "status": "queued", "num_segments": "2", "num_media": "0", "direction": "outbound-api", "api_version": "2010-04-01", "price": null, "price_unit": "USD", "error_code": null, "error_message": null, "uri": "/2010-04-01/Accounts/ACac5816609e68f28715ad6e61e5cf3211/Messages/SM93816d77ee364bf08e7a4fbe56571996.json", "subresource_uris": {"media": "/2010-04-01/Accounts/ACac5816609e68f28715ad6e61e5cf3211/Messages/SM93816d77ee364bf08e7a4fbe56571996/Media.json"}}
+[14/Jan/2022 19:45:10] INFO [django.server:157] "GET /dashboard/broadcast HTTP/1.1" 200 3488
+[14/Jan/2022 19:45:10] INFO [django.server:157] "GET /dashboard/broadcast HTTP/1.1" 200 3488
+[14/Jan/2022 19:45:10] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[14/Jan/2022 19:45:10] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[14/Jan/2022 19:45:10] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[14/Jan/2022 19:45:10] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38685
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38685
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/styles.css HTTP/1.1" 200 22191
+[14/Jan/2022 19:45:14] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[14/Jan/2022 19:45:14] WARNING [django.request:224] Not Found: /dashboard/requestProvider.js.map
+[14/Jan/2022 19:45:14] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[14/Jan/2022 19:45:14] WARNING [django.server:157] "GET /dashboard/requestProvider.js.map HTTP/1.1" 404 6035
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/Dashboard.svg HTTP/1.1" 200 199
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/PrivacyPolicy.svg HTTP/1.1" 200 1468
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/Settings.svg HTTP/1.1" 200 1654
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/LogOut.svg HTTP/1.1" 200 289
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/ProgramList.svg HTTP/1.1" 200 2128
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/downArrow.svg HTTP/1.1" 200 248
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/Arrow%201.svg HTTP/1.1" 200 543
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/AlertBell.svg HTTP/1.1" 200 864
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/reviewStarUnfilled.svg HTTP/1.1" 200 1178
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[14/Jan/2022 19:45:14] INFO [django.server:157] "GET /static/dashboard/images/rightArrow.svg HTTP/1.1" 200 238
+[14/Jan/2022 19:45:19] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7974
+[14/Jan/2022 19:45:19] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7974
+[14/Jan/2022 19:45:20] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:45:20] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:45:20] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:45:20] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:46:30] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9659
+[14/Jan/2022 19:46:30] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9659
+[14/Jan/2022 19:46:30] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:46:30] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:46:30] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:46:30] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:47:02] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9493
+[14/Jan/2022 19:47:02] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9493
+[14/Jan/2022 19:47:02] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:47:02] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:47:02] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:47:02] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:47:02] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:47:02] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:47:02] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:47:02] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:47:02] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:47:02] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:47:03] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:47:03] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:47:03] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:47:03] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:47:34] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:47:34] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:47:34] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:47:34] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:47:48] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7974
+[14/Jan/2022 19:47:48] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7974
+[14/Jan/2022 19:47:48] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:47:48] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:47:48] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:47:48] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:50:59] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 8063
+[14/Jan/2022 19:50:59] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 8063
+[14/Jan/2022 19:50:59] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:50:59] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:50:59] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:50:59] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[14/Jan/2022 19:50:59] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:50:59] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7634
+[14/Jan/2022 19:50:59] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:50:59] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:50:59] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:50:59] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:50:59] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:50:59] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:50:59] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:50:59] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:52:31] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7979
+[14/Jan/2022 19:52:31] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7979
+[14/Jan/2022 19:52:32] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:52:32] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:52:32] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:52:32] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:52:32] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:52:32] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:52:32] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:52:32] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:52:32] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:52:32] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:52:47] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7978
+[14/Jan/2022 19:52:47] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7978
+[14/Jan/2022 19:52:47] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:52:47] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:52:47] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:52:47] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:52:47] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:52:47] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:52:48] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:52:48] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:52:48] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:52:48] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:53:20] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 8030
+[14/Jan/2022 19:53:20] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 8030
+[14/Jan/2022 19:53:20] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:53:20] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:53:21] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:53:21] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:53:21] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:53:21] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:53:21] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:53:21] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:53:21] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:53:21] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:53:52] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7973
+[14/Jan/2022 19:53:52] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7973
+[14/Jan/2022 19:53:52] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:53:52] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:53:52] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:53:52] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:53:52] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:53:52] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:53:52] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:53:52] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:53:52] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:53:52] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:56:24] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8282
+[14/Jan/2022 19:56:24] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8282
+[14/Jan/2022 19:57:42] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8329
+[14/Jan/2022 19:57:42] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8329
+[14/Jan/2022 19:57:42] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:57:42] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 19:57:43] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:57:43] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 19:57:43] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:57:43] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 19:57:43] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:57:43] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 19:57:43] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 19:57:43] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:01:24] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8422
+[14/Jan/2022 20:01:24] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8422
+[14/Jan/2022 20:01:24] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:01:24] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:01:24] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:01:24] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:01:24] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:01:24] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:01:24] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:01:24] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:01:24] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:01:24] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:01:41] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8283
+[14/Jan/2022 20:01:41] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8283
+[14/Jan/2022 20:01:41] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:01:41] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:01:42] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:01:42] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:01:42] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:01:42] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:01:42] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:01:42] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:01:42] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:01:42] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:02:36] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8384
+[14/Jan/2022 20:02:36] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8384
+[14/Jan/2022 20:02:36] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:02:36] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:02:36] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:02:36] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:02:36] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:02:36] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:02:36] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:02:36] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:02:36] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:02:36] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:02:43] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8384
+[14/Jan/2022 20:02:43] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8384
+[14/Jan/2022 20:02:43] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:02:43] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:02:43] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:02:43] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:02:43] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:02:43] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:02:43] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:02:43] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:02:43] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:02:43] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:03:52] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8384
+[14/Jan/2022 20:03:52] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8384
+[14/Jan/2022 20:03:52] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:03:52] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:03:53] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:03:53] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:03:53] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:03:53] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:03:53] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:03:53] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:03:53] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:03:53] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:07:43] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8528
+[14/Jan/2022 20:07:43] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8528
+[14/Jan/2022 20:07:44] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:07:44] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:07:44] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:07:44] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:07:44] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:07:44] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:07:44] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:07:44] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:07:44] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:07:44] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:11:32] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8472
+[14/Jan/2022 20:11:32] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8472
+[14/Jan/2022 20:11:32] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:11:32] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:11:33] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:11:33] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:11:33] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:11:33] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:11:33] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:11:33] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:11:33] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:11:33] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:11:42] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8472
+[14/Jan/2022 20:11:42] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8472
+[14/Jan/2022 20:11:42] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:11:42] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:11:42] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:11:42] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:11:42] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:11:42] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:11:43] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:11:43] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:11:43] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:11:43] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:12:03] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8472
+[14/Jan/2022 20:12:03] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8472
+[14/Jan/2022 20:12:03] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:12:03] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:12:03] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:12:03] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:12:03] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:12:03] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:12:04] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:12:04] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:12:04] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:12:04] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:12:24] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8487
+[14/Jan/2022 20:12:24] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8487
+[14/Jan/2022 20:12:24] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:12:24] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:12:24] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:12:24] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:12:24] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:12:24] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:12:24] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:12:24] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:12:24] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:12:24] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:14:16] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8926
+[14/Jan/2022 20:14:16] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8926
+[14/Jan/2022 20:14:16] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:14:16] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:14:16] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:14:16] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:14:16] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:14:16] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:14:17] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:14:17] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:14:17] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:14:17] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:14:19] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8926
+[14/Jan/2022 20:14:19] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8926
+[14/Jan/2022 20:14:20] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:14:20] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:14:20] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:14:20] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:14:20] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:14:20] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:14:20] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:14:20] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:14:20] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:14:20] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:14:41] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[14/Jan/2022 20:14:41] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[14/Jan/2022 20:14:41] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:14:41] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:14:42] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:14:42] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:14:42] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:14:42] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:14:42] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:14:42] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:14:42] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:14:42] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:14:46] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[14/Jan/2022 20:14:46] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[14/Jan/2022 20:14:46] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:14:46] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:14:46] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:14:46] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:14:46] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:14:46] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:14:46] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:14:46] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:14:46] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:14:46] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:16:05] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[14/Jan/2022 20:16:05] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[14/Jan/2022 20:16:08] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[14/Jan/2022 20:16:08] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[14/Jan/2022 20:16:08] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:16:08] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:16:08] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:16:08] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:16:08] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:16:08] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:16:08] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:16:08] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:16:08] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:16:08] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:16:16] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[14/Jan/2022 20:16:16] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[14/Jan/2022 20:16:16] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:16:16] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:16:16] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:16:16] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:16:16] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:16:16] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:16:16] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:16:16] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:16:16] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:16:16] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:16:26] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[14/Jan/2022 20:16:26] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[14/Jan/2022 20:16:26] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:16:26] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:16:27] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:16:27] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:16:27] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:16:27] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:16:27] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:16:27] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:16:27] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:16:27] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:16:57] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[14/Jan/2022 20:16:57] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 8946
+[14/Jan/2022 20:17:23] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7973
+[14/Jan/2022 20:17:23] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 7973
+[14/Jan/2022 20:23:04] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 8565
+[14/Jan/2022 20:23:04] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 8565
+[14/Jan/2022 20:23:04] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:23:04] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[14/Jan/2022 20:23:04] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:23:04] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 20:23:04] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:23:04] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 20:23:04] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:23:04] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 20:23:04] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:23:04] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 20:25:32] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\forms.py changed, reloading.
+[14/Jan/2022 20:25:32] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\forms.py changed, reloading.

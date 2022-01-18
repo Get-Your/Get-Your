@@ -1,0 +1,32 @@
+[14/Jan/2022 16:55:35] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[14/Jan/2022 16:55:35] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[14/Jan/2022 16:55:38] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9400
+[14/Jan/2022 16:55:38] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9400
+[14/Jan/2022 16:55:38] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 16:55:38] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 16:55:39] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 16:55:39] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 16:55:39] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 16:55:39] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 16:55:39] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 16:55:39] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 16:55:39] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 16:55:39] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 16:55:39] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 16:55:39] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 16:55:44] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9400
+[14/Jan/2022 16:55:44] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9400
+[14/Jan/2022 16:55:44] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 16:55:44] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17620
+[14/Jan/2022 16:55:45] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 16:55:45] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[14/Jan/2022 16:55:45] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 16:55:45] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[14/Jan/2022 16:55:45] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 16:55:45] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[14/Jan/2022 16:55:45] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 16:55:45] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 16:55:45] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 16:55:45] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 16:56:13] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\forms.py changed, reloading.
+[14/Jan/2022 16:56:13] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\forms.py changed, reloading.
