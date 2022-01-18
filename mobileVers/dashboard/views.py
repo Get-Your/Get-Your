@@ -61,11 +61,12 @@ def files(request):
                 for f in request.FILES.getlist('document'):
                     fileAmount += 1
                     fileList.append(str(fileAmount))
-                    instance.document.save(str(request.user.email) + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files: format = email_n_fileName...  (f,f) = (name of file, actual file)
+                    instance.document.save( datetime.datetime.now().isoformat() + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files: format = iso format (f,f) = (name of file, actual file)
                     fileNames.append(str(instance.document))
                     file_upload = request.user
                     file_upload.files.add(instance)
                     
+                    #fileValidation found below
                     filetype = magic.from_file("mobileVers/" + instance.document.url)
                     logging.info(filetype)
                     if "PNG" in filetype:
@@ -199,8 +200,8 @@ def filesContinued(request):
                 for f in request.FILES.getlist('document'):
                     fileAmount += 1
                     fileList.append(str(fileAmount))
+                    instance.document.save( datetime.datetime.now().isoformat() + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files: format = iso format (f,f) = (name of file, actual file)
                     fileNames.append(str(instance.document))
-                    instance.document.save(str(request.user.email) + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files (name of file, actual file) to the media folder
                     file_upload = request.user
                     file_upload.address_files.add(instance)
 

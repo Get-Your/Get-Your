@@ -1,0 +1,10 @@
+[14/Jan/2022 16:50:18] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[14/Jan/2022 16:50:18] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[14/Jan/2022 16:50:21] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9400
+[14/Jan/2022 16:50:21] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9400
+[14/Jan/2022 16:50:21] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 16:50:21] WARNING [django.request:224] Not Found: /favicon.ico
+[14/Jan/2022 16:50:21] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 16:50:21] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[14/Jan/2022 16:52:45] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\forms.py changed, reloading.
+[14/Jan/2022 16:52:45] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\forms.py changed, reloading.
