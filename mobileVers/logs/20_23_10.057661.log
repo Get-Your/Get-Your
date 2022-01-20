@@ -1,0 +1,34 @@
+[19/Jan/2022 20:23:10] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[19/Jan/2022 20:23:10] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[19/Jan/2022 20:23:14] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:23:14] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:23:14] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[19/Jan/2022 20:23:14] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[19/Jan/2022 20:23:14] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[19/Jan/2022 20:23:14] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[19/Jan/2022 20:23:14] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[19/Jan/2022 20:23:14] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[19/Jan/2022 20:23:14] WARNING [django.request:224] Not Found: /favicon.ico
+[19/Jan/2022 20:23:14] WARNING [django.request:224] Not Found: /favicon.ico
+[19/Jan/2022 20:23:14] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[19/Jan/2022 20:23:14] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[19/Jan/2022 20:23:20] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:23:20] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:23:21] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3983
+[19/Jan/2022 20:23:21] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3983
+[19/Jan/2022 20:23:26] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:23:26] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:23:34] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:23:34] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:23:36] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3982
+[19/Jan/2022 20:23:36] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3982
+[19/Jan/2022 20:23:37] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:23:37] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:23:49] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:23:49] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:23:50] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3982
+[19/Jan/2022 20:23:50] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3982
+[19/Jan/2022 20:23:52] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:23:52] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:24:02] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py changed, reloading.
+[19/Jan/2022 20:24:02] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py changed, reloading.
