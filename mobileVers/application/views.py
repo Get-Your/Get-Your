@@ -14,7 +14,7 @@ from django.http import QueryDict
 
 from py_models.qualification_status import QualificationStatus
 
-import logging
+import logging, re
 import usaddress
 from decimal import Decimal
 
@@ -293,6 +293,9 @@ def address(request):
         if form.is_valid():
             instance = form.save(commit=False)
             instance.user_id = request.user
+            #checking for "#" in client form of "Apt, Suite, etc." # breaks the USPS api
+            pattern = r'#'
+            instance.address2 = re.sub(pattern, '', instance.address2)
             instance.save()            
             return redirect(reverse("application:addressCorrection"))
     else:
@@ -315,6 +318,7 @@ def addressCorrection(request):
             "city": request.user.addresses.city,
             "state": request.user.addresses.state,
             "zipcode": str(request.user.addresses.zipCode),})
+        
         dict_address = validateUSPS(q)
         print(dict_address['AddressValidateResponse']['Address'])
         
