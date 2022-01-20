@@ -36,6 +36,7 @@ urlpatterns = [
     path('mayQualify', views.mayQualify, name='mayQualify'),
     path('privacyPolicy', views.privacyPolicy, name='privacyPolicy'),
     path('dependentInfo', views.dependentInfo, name='dependentInfo'),
+    path('getReady', views.getReady, name='getReady'),
     
     path('ajax/load-gahi/', views.load_gahi_selector, name='ajax_load_gahi'),
     

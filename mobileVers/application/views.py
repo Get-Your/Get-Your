@@ -876,3 +876,11 @@ def callUs(request):
         'step':3,
         'formPageNum':formPageNum,
     })
+
+
+def getReady(request):
+     return render(request, 'application/getReady.html',{
+        'step':0,
+        'formPageNum':formPageNum,
+        'Title': "Ready some Necessary Documents"
+    })
