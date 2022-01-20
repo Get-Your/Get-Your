@@ -1,0 +1,6 @@
+[19/Jan/2022 19:17:35] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[19/Jan/2022 19:17:35] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[19/Jan/2022 19:18:10] INFO [django.server:157] "GET / HTTP/1.1" 200 13852
+[19/Jan/2022 19:18:10] INFO [django.server:157] "GET / HTTP/1.1" 200 13852
+[19/Jan/2022 19:19:41] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py changed, reloading.
+[19/Jan/2022 19:19:41] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py changed, reloading.
