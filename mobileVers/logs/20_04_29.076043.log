@@ -1,0 +1,128 @@
+[19/Jan/2022 20:04:29] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[19/Jan/2022 20:04:29] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[19/Jan/2022 20:04:32] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:04:32] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:04:37] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:04:37] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:04:39] ERROR [django.request:224] Internal Server Error: /application/addressCorrection
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py", line 319, in addressCorrection
+    dict_address = validateUSPS(q)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\backend.py", line 341, in validateUSPS
+    validation = usps.validate_address(address)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 43, in validate_address
+    return AddressValidate(self, *args, **kwargs)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 59, in __init__
+    self.result = usps.send_request('validate', xml)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 39, in send_request
+    raise USPSApiError(response['Error']['Description'])
+usps.usps.USPSApiError: XML Syntax Error: Please check the XML request to see if it can be parsed.(B)
+[19/Jan/2022 20:04:39] ERROR [django.request:224] Internal Server Error: /application/addressCorrection
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py", line 319, in addressCorrection
+    dict_address = validateUSPS(q)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\backend.py", line 341, in validateUSPS
+    validation = usps.validate_address(address)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 43, in validate_address
+    return AddressValidate(self, *args, **kwargs)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 59, in __init__
+    self.result = usps.send_request('validate', xml)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 39, in send_request
+    raise USPSApiError(response['Error']['Description'])
+usps.usps.USPSApiError: XML Syntax Error: Please check the XML request to see if it can be parsed.(B)
+[19/Jan/2022 20:04:39] ERROR [django.server:157] "GET /application/addressCorrection HTTP/1.1" 500 90718
+[19/Jan/2022 20:04:39] ERROR [django.server:157] "GET /application/addressCorrection HTTP/1.1" 500 90718
+[19/Jan/2022 20:04:45] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:04:45] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:05:01] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:05:01] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:05:02] ERROR [django.request:224] Internal Server Error: /application/addressCorrection
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py", line 345, in addressCorrection
+    dict_address['AddressValidateResponse']['Address']['Address2'].lower() == q['address'].lower() and \
+UnboundLocalError: local variable 'dict_address' referenced before assignment
+[19/Jan/2022 20:05:02] ERROR [django.request:224] Internal Server Error: /application/addressCorrection
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py", line 345, in addressCorrection
+    dict_address['AddressValidateResponse']['Address']['Address2'].lower() == q['address'].lower() and \
+UnboundLocalError: local variable 'dict_address' referenced before assignment
+[19/Jan/2022 20:05:02] ERROR [django.server:157] "GET /application/addressCorrection HTTP/1.1" 500 71477
+[19/Jan/2022 20:05:02] ERROR [django.server:157] "GET /application/addressCorrection HTTP/1.1" 500 71477
+[19/Jan/2022 20:05:17] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:05:17] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:05:56] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:05:56] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:05:57] ERROR [django.request:224] Internal Server Error: /application/addressCorrection
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py", line 319, in addressCorrection
+    dict_address = validateUSPS(q)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\backend.py", line 341, in validateUSPS
+    validation = usps.validate_address(address)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 43, in validate_address
+    return AddressValidate(self, *args, **kwargs)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 59, in __init__
+    self.result = usps.send_request('validate', xml)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 39, in send_request
+    raise USPSApiError(response['Error']['Description'])
+usps.usps.USPSApiError: XML Syntax Error: Please check the XML request to see if it can be parsed.(B)
+[19/Jan/2022 20:05:57] ERROR [django.request:224] Internal Server Error: /application/addressCorrection
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py", line 319, in addressCorrection
+    dict_address = validateUSPS(q)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\backend.py", line 341, in validateUSPS
+    validation = usps.validate_address(address)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 43, in validate_address
+    return AddressValidate(self, *args, **kwargs)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 59, in __init__
+    self.result = usps.send_request('validate', xml)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\usps\usps.py", line 39, in send_request
+    raise USPSApiError(response['Error']['Description'])
+usps.usps.USPSApiError: XML Syntax Error: Please check the XML request to see if it can be parsed.(B)
+[19/Jan/2022 20:05:57] ERROR [django.server:157] "GET /application/addressCorrection HTTP/1.1" 500 90714
+[19/Jan/2022 20:05:57] ERROR [django.server:157] "GET /application/addressCorrection HTTP/1.1" 500 90714
+[19/Jan/2022 20:06:03] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:06:03] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:06:13] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:06:13] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:06:14] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3982
+[19/Jan/2022 20:06:14] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3982
+[19/Jan/2022 20:06:16] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:06:16] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:06:31] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:06:31] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:06:32] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3982
+[19/Jan/2022 20:06:32] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3982
+[19/Jan/2022 20:06:39] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:06:39] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:09:22] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:09:22] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:09:23] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3982
+[19/Jan/2022 20:09:23] INFO [django.server:157] "GET /application/addressCorrection HTTP/1.1" 200 3982
+[19/Jan/2022 20:09:25] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:09:25] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:15:26] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py changed, reloading.
+[19/Jan/2022 20:15:26] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py changed, reloading.

@@ -1,0 +1,28 @@
+[19/Jan/2022 20:01:00] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[19/Jan/2022 20:01:00] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[19/Jan/2022 20:01:08] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:01:08] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 9835
+[19/Jan/2022 20:01:14] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:01:14] INFO [django.server:157] "POST /application/address HTTP/1.1" 302 0
+[19/Jan/2022 20:01:15] ERROR [django.request:224] Internal Server Error: /application/addressCorrection
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py", line 338, in addressCorrection
+    request.session['usps_address_validate'] = dict_address
+UnboundLocalError: local variable 'dict_address' referenced before assignment
+[19/Jan/2022 20:01:15] ERROR [django.request:224] Internal Server Error: /application/addressCorrection
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py", line 338, in addressCorrection
+    request.session['usps_address_validate'] = dict_address
+UnboundLocalError: local variable 'dict_address' referenced before assignment
+[19/Jan/2022 20:01:15] ERROR [django.server:157] "GET /application/addressCorrection HTTP/1.1" 500 70844
+[19/Jan/2022 20:01:15] ERROR [django.server:157] "GET /application/addressCorrection HTTP/1.1" 500 70844
+[19/Jan/2022 20:01:48] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py changed, reloading.
+[19/Jan/2022 20:01:48] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\views.py changed, reloading.
