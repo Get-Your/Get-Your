@@ -141,8 +141,6 @@
     var number = document.getElementById("number");
     var length = document.getElementById("length");
     var same = document.getElementById("same");
-
-    //below is password check code and variables
     var complex = document.getElementById("complex");
 
     
@@ -193,7 +191,8 @@
         length.classList.remove("valid");
         length.classList.add("invalid");
       }
-
+      
+      //below is password check code and variables
       var check = document.getElementById("password").value;
       var passwordDigest = new Hashes.SHA1().hex(check);
       var digestFive = passwordDigest.substring(0, 5).toUpperCase();
