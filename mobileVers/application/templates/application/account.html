@@ -81,6 +81,7 @@
             autocomplete="off">
             <label class="label">{{field.label}}</label>
         </div>
+        
 
     {% elif field.label == "Enter Password Again" %}
         <div class="input">
@@ -116,6 +117,7 @@
     <p id="capital" class="invalid">A <b>capital (uppercase)</b> letter</p>
     <p id="number" class="invalid">A <b>number</b></p>
     <p id="length" class="invalid">Minimum <b>8 characters</b></p>
+    <p id="complex" class="invalid">Must <b>NOT</b> be a common password</p>
     <p id="same" class="invalid">Passwords <b>must match</b></p>
 </div>
 
@@ -139,6 +141,10 @@
     var number = document.getElementById("number");
     var length = document.getElementById("length");
     var same = document.getElementById("same");
+
+    //below is password check code and variables
+    var complex = document.getElementById("complex");
+
     
     // When the user clicks on the password field, show the message box
     myInput.onfocus  = function() {
@@ -188,7 +194,33 @@
         length.classList.add("invalid");
       }
 
+      var check = document.getElementById("password").value;
+      var passwordDigest = new Hashes.SHA1().hex(check);
+      var digestFive = passwordDigest.substring(0, 5).toUpperCase();
+      var queryURL = "https://api.pwnedpasswords.com/range/" + digestFive;
+      var checkDigest = passwordDigest.substring(5, 41).toUpperCase();
+      var result;
+      
+      // Validate non common password
+      $.ajax({
+          url: queryURL,
+          type: 'GET',
+          async: false,
+          success: function(res) {
+            if (res.search(checkDigest) > -1){
+              complex.classList.remove("valid");
+              complex.classList.add("invalid");
+              return false;
+            } else {
+              complex.classList.remove("invalid");
+              complex.classList.add("valid");
+              return true;
+            }
+          }
+        });
+
     }
+
     myInput2.onkeyup = function(){
     // Validate same
       if(document.getElementById("password").value == document.getElementById("password2").value) {
