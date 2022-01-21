@@ -1,0 +1,104 @@
+[20/Jan/2022 19:47:42] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[20/Jan/2022 19:47:42] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[20/Jan/2022 19:47:51] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 9172
+[20/Jan/2022 19:47:51] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 9172
+[20/Jan/2022 19:47:51] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 304 0
+[20/Jan/2022 19:47:51] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 304 0
+[20/Jan/2022 19:48:05] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9130
+[20/Jan/2022 19:48:05] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9130
+[20/Jan/2022 19:48:10] INFO [django.server:157] "GET / HTTP/1.1" 200 13853
+[20/Jan/2022 19:48:10] INFO [django.server:157] "GET / HTTP/1.1" 200 13853
+[20/Jan/2022 19:48:13] INFO [django.server:157] "GET /application/getReady HTTP/1.1" 200 2845
+[20/Jan/2022 19:48:13] INFO [django.server:157] "GET /application/getReady HTTP/1.1" 200 2845
+[20/Jan/2022 19:48:16] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9130
+[20/Jan/2022 19:48:16] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9130
+[20/Jan/2022 19:48:17] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 304 0
+[20/Jan/2022 19:48:17] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 304 0
+[20/Jan/2022 19:48:43] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 9466
+[20/Jan/2022 19:48:43] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 9466
+[20/Jan/2022 19:48:43] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 304 0
+[20/Jan/2022 19:48:43] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 304 0
+[20/Jan/2022 19:48:47] INFO [django.server:157] "GET /application/ HTTP/1.1" 200 13853
+[20/Jan/2022 19:48:47] INFO [django.server:157] "GET /application/ HTTP/1.1" 200 13853
+[20/Jan/2022 19:48:49] INFO [django.server:157] "GET /dashboard/login HTTP/1.1" 200 2860
+[20/Jan/2022 19:48:49] INFO [django.server:157] "GET /dashboard/login HTTP/1.1" 200 2860
+[20/Jan/2022 19:48:50] INFO [django.server:157] "GET /static/dashboard/styles_app.css HTTP/1.1" 200 16043
+[20/Jan/2022 19:48:50] INFO [django.server:157] "GET /static/dashboard/styles_app.css HTTP/1.1" 200 16043
+[20/Jan/2022 19:49:05] INFO [django.server:157] "POST /dashboard/login HTTP/1.1" 302 0
+[20/Jan/2022 19:49:05] INFO [django.server:157] "POST /dashboard/login HTTP/1.1" 302 0
+[20/Jan/2022 19:49:07] INFO [django.server:157] "GET /dashboard/notifyRemaining HTTP/1.1" 200 2288
+[20/Jan/2022 19:49:07] INFO [django.server:157] "GET /dashboard/notifyRemaining HTTP/1.1" 200 2288
+[20/Jan/2022 19:49:09] INFO [django.server:157] "GET /application/finances HTTP/1.1" 200 8290
+[20/Jan/2022 19:49:09] INFO [django.server:157] "GET /application/finances HTTP/1.1" 200 8290
+[20/Jan/2022 19:49:09] INFO [django.server:157] "GET /static/application/images/Step3Instructions.gif HTTP/1.1" 200 182476
+[20/Jan/2022 19:49:09] INFO [django.server:157] "GET /static/application/images/Step3Instructions.gif HTTP/1.1" 200 182476
+[20/Jan/2022 19:49:10] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 304 0
+[20/Jan/2022 19:49:10] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 304 0
+[20/Jan/2022 19:49:10] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[20/Jan/2022 19:49:10] INFO [django.server:157] "GET /static/application/images/clipart249308.png HTTP/1.1" 200 46770
+[20/Jan/2022 19:49:10] INFO [django.server:157] "GET /static/application/images/Step3InstructionsMobile.gif HTTP/1.1" 200 117524
+[20/Jan/2022 19:49:10] INFO [django.server:157] "GET /static/application/images/Step3InstructionsMobile.gif HTTP/1.1" 200 117524
+[20/Jan/2022 19:49:16] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9130
+[20/Jan/2022 19:49:16] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9130
+[20/Jan/2022 19:50:51] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9130
+[20/Jan/2022 19:50:51] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9130
+[20/Jan/2022 19:50:51] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[20/Jan/2022 19:50:51] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[20/Jan/2022 19:50:52] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 304 0
+[20/Jan/2022 19:50:52] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 304 0
+[20/Jan/2022 19:50:55] INFO [django.server:157] "GET /application/ HTTP/1.1" 200 13853
+[20/Jan/2022 19:50:55] INFO [django.server:157] "GET /application/ HTTP/1.1" 200 13853
+[20/Jan/2022 19:50:57] INFO [django.server:157] "GET /application/getReady HTTP/1.1" 200 2845
+[20/Jan/2022 19:50:57] INFO [django.server:157] "GET /application/getReady HTTP/1.1" 200 2845
+[20/Jan/2022 19:50:59] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9130
+[20/Jan/2022 19:50:59] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9130
+[20/Jan/2022 19:51:21] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 9466
+[20/Jan/2022 19:51:21] INFO [django.server:157] "POST /application/account HTTP/1.1" 200 9466
+[20/Jan/2022 19:52:17] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[20/Jan/2022 19:52:17] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[20/Jan/2022 19:52:17] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7818
+[20/Jan/2022 19:52:17] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7818
+[20/Jan/2022 19:53:30] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[20/Jan/2022 19:53:30] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[20/Jan/2022 19:53:30] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7818
+[20/Jan/2022 19:53:30] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7818
+[20/Jan/2022 19:54:01] INFO [root:432] password passes all validation checks...
+[20/Jan/2022 19:54:01] INFO [root:436] password is the same password entered twice...
+[20/Jan/2022 19:54:02] INFO [django.server:157] "POST /application/account HTTP/1.1" 302 0
+[20/Jan/2022 19:54:02] INFO [django.server:157] "POST /application/account HTTP/1.1" 302 0
+[20/Jan/2022 19:54:02] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 10003
+[20/Jan/2022 19:54:02] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 10003
+[20/Jan/2022 19:54:04] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[20/Jan/2022 19:54:04] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[20/Jan/2022 19:54:04] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7818
+[20/Jan/2022 19:54:04] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7818
+[20/Jan/2022 19:54:04] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 304 0
+[20/Jan/2022 19:54:04] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 304 0
+[20/Jan/2022 20:00:02] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 10372
+[20/Jan/2022 20:00:02] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 10372
+[20/Jan/2022 20:00:02] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[20/Jan/2022 20:00:02] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 304 0
+[20/Jan/2022 20:00:03] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[20/Jan/2022 20:00:03] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[20/Jan/2022 20:00:03] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7818
+[20/Jan/2022 20:00:03] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7818
+[20/Jan/2022 20:00:06] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 10372
+[20/Jan/2022 20:00:06] INFO [django.server:157] "GET /application/address HTTP/1.1" 200 10372
+[20/Jan/2022 20:00:06] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[20/Jan/2022 20:00:06] INFO [django.server:157] "GET /static/application/styles_app.css HTTP/1.1" 200 17555
+[20/Jan/2022 20:00:06] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[20/Jan/2022 20:00:06] WARNING [django.request:224] Not Found: /application/requestProvider.js.map
+[20/Jan/2022 20:00:06] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7818
+[20/Jan/2022 20:00:06] WARNING [django.server:157] "GET /application/requestProvider.js.map HTTP/1.1" 404 7818
+[20/Jan/2022 20:00:07] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 200 2387
+[20/Jan/2022 20:00:07] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 200 2387
+[20/Jan/2022 20:00:07] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[20/Jan/2022 20:00:07] INFO [django.server:157] "GET /static/application/images/BackArrow-darkblue.svg HTTP/1.1" 200 801
+[20/Jan/2022 20:00:07] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[20/Jan/2022 20:00:07] INFO [django.server:157] "GET /static/application/images/BackArrow-white.svg HTTP/1.1" 200 798
+[20/Jan/2022 20:00:07] WARNING [django.request:224] Not Found: /favicon.ico
+[20/Jan/2022 20:00:07] WARNING [django.request:224] Not Found: /favicon.ico
+[20/Jan/2022 20:00:07] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[20/Jan/2022 20:00:07] WARNING [django.server:157] "GET /favicon.ico HTTP/1.1" 404 2878
+[20/Jan/2022 20:00:19] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9499
+[20/Jan/2022 20:00:19] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 9499
