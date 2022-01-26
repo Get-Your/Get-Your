@@ -420,6 +420,13 @@ def login_user(request):
         if user is not None:
             login(request, user)
             # Push user to correct page
+            #update application_user "modified" per login
+            login(request, user)
+            obj = request.user
+            obj.modified = datetime.datetime.now(datetime.timezone.utc)
+            print(obj)
+            obj.save()
+            # Push user to correct page
             print(what_page(request.user, request))
             page = what_page(request.user, request)
             if what_page(request.user, request) == "dashboard:dashboard":
