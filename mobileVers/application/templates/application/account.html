@@ -9,7 +9,8 @@
     <p>Get: FoCo has great things in store for you.</p>
     </div>
 </div>
-<form action="{% url 'application:account' %}" method="post" autocomplete="false">
+
+<form action="{% url 'application:account' %}" method="post" id="account-form" autocomplete="false">
 {% csrf_token %}
 {% for field in form %}
     {% if form.errors %}
