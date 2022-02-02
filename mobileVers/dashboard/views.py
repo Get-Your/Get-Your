@@ -706,6 +706,7 @@ def dashboardGetFoco(request):
         GRDisplayPending = "None"
         GRPendingDate = ""
         GRDisplay = "none"
+        
     else:
         GRButtonText = "Quick Apply +"
         GRButtonColor = ""
@@ -713,6 +714,15 @@ def dashboardGetFoco(request):
         GRDisplayActive="none"
         GRPendingDate = ""
         GRDisplayPending = "None"
+        
+    if request.user.eligibility.GRqualified == QualificationStatus.NOTQUALIFIED.name:
+        GRButtonText = "Can't Enroll"
+        GRButtonColor = "red"
+        GRButtonTextColor = "black"
+    else:
+        GRButtonText = "Quick Apply +"
+        GRButtonColor = ""
+        GRButtonTextColor = ""
 
     if request.user.eligibility.RecreationQualified == QualificationStatus.PENDING.name:
         RECButtonText = "Applied"
@@ -725,9 +735,9 @@ def dashboardGetFoco(request):
         RECPendingDate = "Estimated Notification Time: December 25th"
         RECDisplay ="none"
     elif request.user.eligibility.RecreationQualified == QualificationStatus.ACTIVE.name:
-        GRButtonText = "Enrolled!" 
-        GRButtonColor = "blue"
-        GRButtonTextColor = "White"
+        RECButtonText = "Enrolled!" 
+        RECButtonColor = "blue"
+        RECButtonTextColor = "White"
         ActiveNumber = ActiveNumber + 1
         QProgramNumber = QProgramNumber - 1
         RECDisplayPending = "None"
@@ -740,6 +750,15 @@ def dashboardGetFoco(request):
         RECDisplayActive = "none"
         RECPendingDate = ""
         RECDisplayPending = "None"
+        
+    if request.user.eligibility.RecreationQualified == QualificationStatus.NOTQUALIFIED.name:
+        RECButtonText = "Can't Enroll"
+        RECButtonColor = "red"
+        RECButtonTextColor = "black"
+    else:
+        RECButtonText = "Quick Apply +"
+        RECButtonColor = ""
+        RECButtonTextColor = ""
 
     return render(request, 'dashboard/dashboard_GetFoco.html',{
         "Title": "Get: FoCo Dashboard",
