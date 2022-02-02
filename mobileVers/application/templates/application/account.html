@@ -10,7 +10,7 @@
     </div>
 </div>
 
-<form action="{% url 'application:account' %}" method="post" id="post-form" autocomplete="false">
+<form action="{% url 'application:account' %}" method="post" id="account-form" autocomplete="false">
 {% csrf_token %}
 {% for field in form %}
     {% if form.errors %}

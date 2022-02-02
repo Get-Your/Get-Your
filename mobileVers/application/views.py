@@ -1,16 +1,17 @@
+from concurrent.futures.process import _python_exit
+import json
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login, logout
 from django.forms.models import modelformset_factory
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.password_validation import validate_password
 from django.contrib import messages
-
+from django.http import QueryDict
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from .forms import UserForm, AddressForm, EligibilityForm, programForm, addressLookupForm, futureEmailsForm, MoreInfoForm, attestationForm
 from .backend import addressCheck, validateUSPS, enroll_connexion_updates
 from .models import AMI, MoreInfo, iqProgramQualifications
-from django.http import QueryDict
 
 from py_models.qualification_status import QualificationStatus
 
@@ -18,7 +19,8 @@ import logging, re
 import usaddress
 from decimal import Decimal
 
-from django.http import HttpResponseRedirect 
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+
 
 
 formPageNum = 6
@@ -416,40 +418,50 @@ def account(request):
         except AttributeError or ObjectDoesNotExist:
             form = UserForm(request.POST or None)
         if form.is_valid():
-            # Add Error MESSAGE IF THEY DIDN"T WRITE CORRECT THINGS TO SUBMIT
-            # Make sure password isn't getting saved twice
             passwordCheck = form.passwordCheck()
             passwordCheckDuplicate = form.passwordCheckDuplicate()
-            if passwordCheck != None:
-                return render(request, 'application/account.html', {
-                'form':form,
-                'step':1,
-                'formPageNum':formPageNum,
-                'Title': "Account",
-                'passwordError': passwordCheck
-                })   
-            else:
-                logging.info("password passes all validation checks...")
-                
-
-            if str(passwordCheckDuplicate) == str(form.cleaned_data['password']):
-                logging.info("password is the same password entered twice...")
-            else:
-                logging.error("passwords are not the same...")
-                return render(request, 'application/account.html', {
-                'form':form,
-                'step':1,
-                'formPageNum':formPageNum,
-                'Title': "Account",
-                'passwordError': passwordCheckDuplicate
-                })   
+            #AJAX data function below, sends data to AJAX function in account.html. If client makes a mistake in password, AJAX lets them know, no page refresh
+            if passwordCheck != None: #if passwordCheck finds an error like too common a password, no numbers, etc.
+                data = {
+                    'result':"error",
+                    'message': passwordCheck
+                }
+                return JsonResponse(data)
+            #AJAX data function below, sends data to AJAX function in account.html. If client makes a mistake in password, AJAX lets them know, no page refresh
+            elif str(passwordCheckDuplicate) != str(form.cleaned_data['password']): #Checks if password is the same as the "Enter Password Again" Field
+                data = {
+                    'result':"error",
+                    'message': passwordCheckDuplicate
+                }
+                return JsonResponse(data)
             try:
                 user = form.save()
                 login(request,user)
                 print("userloggedin")
+                data = {
+                'result':"success",
+                }
+                return JsonResponse(data)
             except AttributeError:
                 print("user error, login not saved, user is: " + str(user))
+
             return redirect(reverse("application:address"))
+
+        else:
+            #AJAX data function below, sends data to AJAX function in account.html, if clients make a mistake via email or phone number, page lets them know and DOESN'T refresh web page
+            #let's them know via AJAX
+            errorMessages = dict(form.errors.items())       
+            if "email" in errorMessages:
+                data ={
+                    'result':"error",
+                    'message': errorMessages["email"]
+                    }
+            elif "phone_number" in errorMessages:
+                data = {
+                    'result':"error",
+                    'message':  errorMessages["phone_number"]
+                    }
+            return JsonResponse(data)
     else:
         form = UserForm()
 
