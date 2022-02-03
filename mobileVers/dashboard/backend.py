@@ -38,17 +38,19 @@ def files_to_string(file_list, request):
         # only add things to the list_string if its true
         if value == True:
             # Also add commas based on counter
-            if counter == 2:
+            if counter == 3:
+                list_string += ", "
+                counter = 2
+
+            elif counter == 2:
                 list_string += ", "
                 counter = 1
             elif counter == 1:
                 list_string += ", "
                 counter = 0
             else:
-                counter = 2
+                counter = 3
             list_string += key
-    #TODO Incorporate ID card here somewhere...
-    #list_string ="ID Card"
     return list_string
 
 # redirect user to whatever page they need to go to every time by checking which steps they've
