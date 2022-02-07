@@ -565,16 +565,16 @@ def finances(request):
             # Ensure AmiRange_max < 1 (that's all we need for GenericQualified)
             if instance.AmiRange_max < Decimal('1'):
                 print("GAHI is below program AMI ranges")
-                instance.GenericQualified = QualificationStatus.ACTIVE.name
+                instance.GenericQualified = QualificationStatus.PENDING.name
             else:
                 print("GAHI is greater than program AMI ranges")
                 instance.GenericQualified = QualificationStatus.NOTQUALIFIED.name                  
                 
             print("SAVING")
             instance.save()
-            # If GenericQualified is 'ACTIVE', go to the financial information page
+            # If GenericQualified is 'ACTIVE' or 'PENDING' (this will assume they are being truthful with their income range), go to the financial information page
             #TODO talk to the team about if they make too much money... if they do do we want them to still go through the application or to go to contact us page?
-            if instance.GenericQualified == QualificationStatus.ACTIVE.name:
+            if instance.GenericQualified == QualificationStatus.ACTIVE.name or instance.GenericQualified == QualificationStatus.PENDING.name:
                 return redirect(reverse("application:moreInfoNeeded"))
             else:
                 return redirect(reverse("application:moreInfoNeeded"))
@@ -602,7 +602,9 @@ def ConnexionQuickApply(request):
         ).first()['percentAmi']
     print(obj.AmiRange_max)
     print('Connexion max AMI %:',qualifyAmiPc)
-    if obj.GenericQualified == QualificationStatus.ACTIVE.name and obj.AmiRange_max <= qualifyAmiPc:
+    
+    # If GenericQualified is 'ACTIVE' or 'PENDING' (this will assume they are being truthful with their income range)
+    if (obj.GenericQualified == QualificationStatus.ACTIVE.name or obj.GenericQualified == QualificationStatus.PENDING.name) and obj.AmiRange_max <= qualifyAmiPc:
         obj.ConnexionQualified = QualificationStatus.PENDING.name
         print(obj.ConnexionQualified)
         obj.save()
@@ -652,7 +654,9 @@ def GRQuickApply(request):
         'percentAmi'
         ).first()['percentAmi']  
     print('Grocery max AMI %:',qualifyAmiPc)
-    if obj.GenericQualified == QualificationStatus.ACTIVE.name and obj.AmiRange_max <= qualifyAmiPc:
+    
+    # If GenericQualified is 'ACTIVE' or 'PENDING' (this will assume they are being truthful with their income range)
+    if (obj.GenericQualified == QualificationStatus.ACTIVE.name or obj.GenericQualified == QualificationStatus.PENDING.name) and obj.AmiRange_max <= qualifyAmiPc:
         obj.GRqualified = QualificationStatus.PENDING.name
         obj.save()
         return render(
@@ -682,7 +686,9 @@ def RecreationQuickApply(request):
         'percentAmi'
         ).first()['percentAmi']
     print('Recreation max AMI %:',qualifyAmiPc)
-    if obj.GenericQualified == QualificationStatus.ACTIVE.name and obj.AmiRange_max <= qualifyAmiPc:
+    
+    # If GenericQualified is 'ACTIVE' or 'PENDING' (this will assume they are being truthful with their income range)
+    if (obj.GenericQualified == QualificationStatus.ACTIVE.name or obj.GenericQualified == QualificationStatus.PENDING.name) and obj.AmiRange_max <= qualifyAmiPc:
         obj.RecreationQualified = QualificationStatus.PENDING.name
         obj.save()
         return render(
