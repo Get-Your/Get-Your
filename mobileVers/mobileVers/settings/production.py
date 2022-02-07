@@ -196,8 +196,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 
-str = str((datetime.now().time()))
-logFileName = str.replace(":", "_")
+datetime_now = datetime.utcnow()
+# Remove the microseconds
+datetime_now_ms = datetime_now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
+logFileName = datetime_now_ms.replace(":", "_")
 LOGGING = { 
     'version': 1,
     'disable_existing_loggers': False,
