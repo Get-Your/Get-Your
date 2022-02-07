@@ -36,6 +36,26 @@ class CustomUserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError(_('Superuser must have is_superuser=True.'))
         return self.create_user(email, password, **extra_fields)
+    
+
+class CaseInsensitiveFieldMixin:
+    """
+    Field mixin that uses case-insensitive lookup alternatives if they exist.
+    
+    This and associate case-insensitive index migration found in
+    https://concisecoder.io/2018/10/27/case-insensitive-fields-in-django-models
+    
+    """
+    LOOKUP_CONVERSIONS = {
+        'exact': 'iexact',
+        'contains': 'icontains',
+        'startswith': 'istartswith',
+        'endswith': 'iendswith',
+        'regex': 'iregex',
+    }
+    def get_lookup(self, lookup_name):
+        converted = self.LOOKUP_CONVERSIONS.get(lookup_name, lookup_name)
+        return super().get_lookup(converted)
 
 
 # Class to automatically save date data was entered into postgre
@@ -50,11 +70,16 @@ class TimeStampedModel(models.Model):
         abstract = True
 
 
+class CIEmailField(CaseInsensitiveFieldMixin, models.EmailField):
+    """
+    Create an email field with case-insensitivity.
+    """
+    pass
 
 # User model class
 class User(TimeStampedModel,AbstractUser):
     username = None
-    email = models.EmailField(_('email address'), unique=True)
+    email = CIEmailField(_('email address'), unique=True)
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     phone_number = PhoneNumberField()
