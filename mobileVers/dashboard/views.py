@@ -755,6 +755,7 @@ def dashboardGetFoco(request):
         "FAQ_color": "white",
         "Settings_color": "white",
         "Privacy_Policy_color": "white",
+        "Bag_It_color": "white",
 
         "GRButtonText": GRButtonText,
         "GRButtonColor": GRButtonColor,
@@ -803,7 +804,19 @@ def ProgramsList(request):
         "FAQ_color": "white",
         "Settings_color": "white",
         "Privacy_Policy_color": "white",
+        "Bag_It_color": "white",
         'Title': "Programs List"})
+
+def BagIt(request):
+    return render(request, 'dashboard/BagIt.html',{
+        "page_title": "Bag It",
+        "dashboard_color": "white",
+        "program_list_color": "white",
+        "FAQ_color": "white",
+        "Settings_color": "white",
+        "Privacy_Policy_color": "white",
+        "Bag_It_color": "var(--yellow)",
+        'Title': "Bag It"})
 
 
 def FAQ(request):
@@ -814,4 +827,5 @@ def FAQ(request):
         "FAQ_color": "var(--yellow)",
         "Settings_color": "white",
         "Privacy_Policy_color": "white",
+        "Bag_It_color": "white",
         'Title': "FAQ"})

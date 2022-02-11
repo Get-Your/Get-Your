@@ -1,0 +1,63 @@
+<!-- This brings in the CSS-->
+{% extends "dashboard/layout_dashboard.html" %}
+
+{% load static %}
+<link href="{% static 'dashboard/styles.css' %}" rel="stylesheet">
+{% block body %}
+
+<!--Back to dashboard button-->
+<a class="row" href="{% url 'dashboard:dashboard' %}" style="text-decoration: none;justify-content: start;align-items: center;">
+    <img src="{% static 'dashboard/images/Path 1083.svg' %}" alt="back" style="height: 3vw; margin-right: 5px;color:black">
+    <p style = "color:var(--lightblue);margin-left: 3%;">Back to Dashboard</p>
+</a>
+
+<!-- example of qualified program-->
+<div class="fadeLarge">
+    <div class="modulequickApply" id="Bag-It">
+        <div class = "row" style="margin:0; width:100%">
+            <div style="margin:0">
+                <p style ="font-weight: 550; margin: 0">Bag-It</p>
+                <p style = "margin-top:3px;"> Bag-It</p>
+                <p style = "margin-top:3px;">Congratulations! Being in this program allows you to net some very exclusive benefits! Show this page to your local Grocery Store to get free or reduced price plastic bags!</p>
+            </div>
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/connexion/digital-equity" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue)"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 3vw; margin-left: 5px;color:black">
+            </a>
+            <p style = "color:#999999;margin-top:0;text-align: right;" >Applications accepted all year</p>
+        </div>
+    </div>
+</div>
+
+    
+
+
+<div class="fadeSmall" style="padding-left: 300px;">
+    <div class="modulequickApply" id="Bag-It">
+        <div class = "row" style="margin:0; width:100%">
+            <div style="margin:0">
+                <p style ="font-weight: 550; margin: 0">Bag-It</p>
+                <p style = "margin-top:3px;"> Bag-It</p>
+                <p style = "margin-top:3px;"> Congratulations! Being in this program allows you to net some very exclusive benefits! Show this page to your local Grocery Store to get free or reduced price plastic bags!</p>
+            </div>
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/connexion/digital-equity" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue)"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 3vw; margin-left: 5px;color:black">
+            </a>
+            <p style = "color:#999999;margin-top:0;text-align: right;" >Applications accepted all year</p>
+        </div>
+    </div>
+
+    
+</div>
+
+
+
+<div class="extraspace"></div>
+
+
+{% endblock %}
