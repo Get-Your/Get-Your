@@ -74,7 +74,13 @@ def what_page(user,request):
             return "application:programs"
         
         try:
-            value = request.user.files
+            #print(request.user.files.all()) Check for all files per how many programs the client selected
+            value = request.user.files.all()
+            if not value.exists():
+               print("object doesn't exist")
+               return "dashboard:files"
+            else:
+                print("object exists")
         except AttributeError:
             return "dashboard:files"
         
