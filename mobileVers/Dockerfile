@@ -1,8 +1,6 @@
 FROM ubuntu:20.04
 #Layer for python and gdal support
 RUN apt-get update && apt-get install -y software-properties-common curl \
-    && apt-get install -y --no-install-recommends openssh-server \
-        && echo "root:Docker!" | chpasswd \
     && add-apt-repository ppa:ubuntugis/ubuntugis-unstable && apt-get update \
     && apt-get install -y python3-pip libssl-dev libffi-dev python3-gdal \
     && update-alternatives --install /usr/bin/python python /usr/bin/python3 10 \
@@ -35,22 +33,6 @@ RUN locale-gen
 RUN apt-get remove -y curl
 
 
-
-
-# Copy the sshd_config file to the /etc/ssh/ directory
-COPY sshd_config /etc/ssh/
-
-# Copy and configure the ssh_setup file
-RUN mkdir -p /tmp
-COPY ssh_setup.sh /tmp
-RUN echo ssh_setup.sh
-RUN ["chmod", "+x", "/tmp/ssh_setup.sh"] \
-    && (sleep 1;/tmp/ssh_setup.sh 2>&1 > /dev/null)
-
-# Open port 2222 for SSH access
-#EXPOSE 80 2222
-
-
 #Layers for the django app
 RUN mkdir /code
 WORKDIR /code
@@ -66,11 +48,30 @@ RUN python manage.py collectstatic --noinput --settings=mobileVers.settings.prod
 #--settings=mobileVers.settings.production
 
 
-#Layer for exposing the app through gunicorn
-#EXPOSE 8002
-EXPOSE 80 2222 8002
+#SSH
+ENV SSH_PASSWD "root:Docker!"
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends openssh-server \
+	&& echo "$SSH_PASSWD" | chpasswd 
+# Copy the sshd_config file to the /etc/ssh/ directory
+COPY sshd_config /etc/ssh/
+COPY init.sh /usr/local/bin/
+
+RUN chmod u+x /usr/local/bin/init.sh
+
+# Copy and configure the ssh_setup file
+#RUN mkdir -p /tmp
+#COPY ssh_setup.sh /tmp
+#RUN ["chmod", "+x", "/tmp/ssh_setup.sh"] \
+#    && (sleep 1;/tmp/ssh_setup.sh 2>&1 > /dev/null)
+
+#Layer for exposing the app through
+#EXPOSE 80 8002 2222
+EXPOSE 8000 2222
 
 #COPY entrypoint.sh /code/ commented this out because .yml can't find it for some reason, also entrypoint wasn't working to begin with hence commented out entrypoint below
 WORKDIR /code
 #ENTRYPOINT ["sh", "entrypoint.sh"]
-ENTRYPOINT ["python", "/code/manage.py", "runserver", "0.0.0.0:8002"]
+RUN service ssh start
+#ENTRYPOINT ["python", "/code/manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT [ "init.sh" ]
