@@ -2,3 +2,5 @@ mobileVers/mobileVers/settings/__pycache__/local.cpython-38.pyc
 .vscode/settings.json
 mobileVers/mobileVers/db.sqlite3
 mobileVers/env
+mmobileVers/ssh_setup.sh
+mobileVers/sshd_config
