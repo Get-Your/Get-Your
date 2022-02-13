@@ -59,19 +59,10 @@ COPY init.sh /usr/local/bin/
 
 RUN chmod u+x /usr/local/bin/init.sh
 
-# Copy and configure the ssh_setup file
-#RUN mkdir -p /tmp
-#COPY ssh_setup.sh /tmp
-#RUN ["chmod", "+x", "/tmp/ssh_setup.sh"] \
-#    && (sleep 1;/tmp/ssh_setup.sh 2>&1 > /dev/null)
-
 #Layer for exposing the app through
-#EXPOSE 80 8002 2222
 EXPOSE 8000 2222
 
 #COPY entrypoint.sh /code/ commented this out because .yml can't find it for some reason, also entrypoint wasn't working to begin with hence commented out entrypoint below
 WORKDIR /code
 #ENTRYPOINT ["sh", "entrypoint.sh"]
-RUN service ssh start
-#ENTRYPOINT ["python", "/code/manage.py", "runserver", "0.0.0.0:8000"]
 ENTRYPOINT [ "init.sh" ]
