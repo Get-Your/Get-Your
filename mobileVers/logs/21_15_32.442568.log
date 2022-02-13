@@ -1,4 +1,0 @@
-[02/Feb/2022 07:41:35] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38636
-[02/Feb/2022 07:41:35] INFO [django.server:157] "GET /dashboard/GetFOCO HTTP/1.1" 200 38636
-[02/Feb/2022 07:46:04] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\backend.py changed, reloading.
-[02/Feb/2022 07:46:04] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetYourConnexion\DigitalEquity_MobileVers\mobileVers\application\backend.py changed, reloading.
