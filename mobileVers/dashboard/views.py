@@ -616,10 +616,13 @@ def manualVerifyIncome(request):
 })
 
 def feedbackReceived(request):
-    return render(request, "dashboard/feedbackReceived.html", {'Title': "Feedback Received"})
+    return render(request, "dashboard/feedbackReceived.html", {
+        'Title': "Feedback Received"
+        })
 
 def underConstruction(request):
-    return render(request, "dashboard/underConstruction.html", {{'Title': "Under Construction"}})
+    return render(request, 
+    "dashboard/underConstruction.html", {'Title': "Under Construction"})
     
 
 # Everything under here is for new dashboard
