@@ -353,7 +353,7 @@ def validateUSPS(inobj):
 def broadcast_email(email):
     TEMPLATE_ID = settings.TEMPLATE_ID
     message = Mail(
-        from_email='ahernandez@codeforamerica.org',
+        from_email='getfoco@fcgov.com',
         to_emails=email)
     
     message.template_id = TEMPLATE_ID
@@ -370,7 +370,7 @@ def broadcast_email_pw_reset(email, content):
     TEMPLATE_ID_PW_RESET = settings.TEMPLATE_ID_PW_RESET
     message = Mail(
         subject='Password Reset Requested',
-        from_email='ahernandez@codeforamerica.org',
+        from_email='getfoco@fcgov.com',
         to_emails=email,
         )
     message.dynamic_template_data = {
