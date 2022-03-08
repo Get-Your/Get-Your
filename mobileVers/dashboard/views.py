@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, reverse
 from .forms import FileForm, FeedbackForm, TaxForm, addressVerificationForm, AddressForm
 from decimal import Decimal
-
+from django.conf import settings   
 from .models import User, Form
 from application.models import Eligibility
 
@@ -31,13 +31,14 @@ from django.core.files.storage import FileSystemStorage
 
 
 
+#below imports needed for blob storage
+import uuid
+from azure.storage.blob import BlockBlobService
 
 
-# Create your views here.
-
-# first index page we come into
 
 
+#Step 4 of Application Process
 def files(request):
     if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False and request.user.programs.ebb_acf == False:
         request.user.programs.form1040 = True
@@ -67,6 +68,16 @@ def files(request):
                     file_upload = request.user
                     file_upload.files.add(instance)
                     
+                    #Below is blob / storage code for Azure! Files automatically uploaded to the storage
+                    f.seek(0)
+                    blob_service_client = BlockBlobService(account_name = settings.ACCOUNT_NAME, account_key=settings.ACCOUNT_KEY)
+                    blob_service_client.create_blob_from_bytes( 
+                        container_name = settings.CONTAINER_NAME, 
+                        blob_name = str(instance.document.url), 
+                        blob = f.read()
+                        )
+
+
                     #fileValidation found below
                     filetype = magic.from_file("mobileVers/" + instance.document.url)
                     logging.info(filetype)
