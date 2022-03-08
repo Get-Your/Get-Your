@@ -121,10 +121,6 @@ TEMPLATES = [
         },
     },
 ]
-#TODO @Grace is this what we're looking for?
-#AUTHENTICATION_BACKENDS = (
-#        'django.contrib.auth.backends.ModelBackend',
-#    )
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
@@ -142,13 +138,25 @@ WSGI_APPLICATION = 'mobileVers.wsgi.application'
     }
 }'''
 
-DATABASES = {
+ # TODO old database found here, here for legacy isssues but can be deleted once transfer to city tenant is complete
+'''DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.postgresql',
          'NAME': 'getfoco_debug',
          'USER': 'gycpcdriver@gyc1.postgres.database.azure.com',
          'PASSWORD': POSTGRESQLPW,
          'HOST': 'gyc1.postgres.database.azure.com'
+         }
+ }'''
+
+
+DATABASES = {
+     'default': {
+         'ENGINE': 'django.db.backends.postgresql',
+         'NAME': 'getfoco_dev',
+         'USER': 'getfocoadmin@getfoco-singleserver.postgres.database.azure.com',
+         'PASSWORD': POSTGRESQLPW,
+         'HOST': 'getfoco-singleserver.postgres.database.azure.com'
          }
  }
 
