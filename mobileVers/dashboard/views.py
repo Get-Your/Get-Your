@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, reverse
 from .forms import FileForm, FeedbackForm, TaxForm, addressVerificationForm, AddressForm
 from decimal import Decimal
-
+from django.conf import settings   
 from .models import User, Form
 from application.models import Eligibility
 
@@ -31,19 +31,21 @@ from django.core.files.storage import FileSystemStorage
 
 
 
+#below imports needed for blob storage
+import uuid
+from azure.storage.blob import BlockBlobService
 
 
-# Create your views here.
-
-# first index page we come into
 
 
+#Step 4 of Application Process
 def files(request):
-    if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False:
+    if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False and request.user.programs.ebb_acf == False:
         request.user.programs.form1040 = True
     file_list = {"SNAP Card": request.user.programs.snap,
                 # Have Reduced Lunch be last item in the list if we add more programs
                 "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
+                "Affordable Connectivity Program": request.user.programs.ebb_acf,
                 "Identification": request.user.programs.Identification,
                 "1040 Form": request.user.programs.form1040,
     }
@@ -66,6 +68,16 @@ def files(request):
                     file_upload = request.user
                     file_upload.files.add(instance)
                     
+                    #Below is blob / storage code for Azure! Files automatically uploaded to the storage
+                    f.seek(0)
+                    blob_service_client = BlockBlobService(account_name = settings.ACCOUNT_NAME, account_key=settings.ACCOUNT_KEY)
+                    blob_service_client.create_blob_from_bytes( 
+                        container_name = settings.CONTAINER_NAME, 
+                        blob_name = str(instance.document.url), 
+                        blob = f.read()
+                        )
+
+
                     #fileValidation found below
                     filetype = magic.from_file("mobileVers/" + instance.document.url)
                     logging.info(filetype)
@@ -97,7 +109,7 @@ def files(request):
                 
                 # Check if the user needs to upload another form
                 Forms = request.user.files
-                checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.Identification),not(request.user.programs.form1040)] #TODO 4/24 include not(request.user.programs.1040) here not(request.user.programs.Identification),
+                checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.ebb_acf),not(request.user.programs.Identification),not(request.user.programs.form1040)]
                 for group in Forms.all():
                     if group.document_title == "SNAP":
                         checkAllForms[0] = True
@@ -105,11 +117,16 @@ def files(request):
                     if group.document_title == "Free and Reduced Lunch":
                         checkAllForms[1] = True
                         file_list["PSD Reduced Lunch Approval Letter"] = False
-                    if group.document_title == "Identification":
+
+                    if group.document_title == "ACP Letter":
                         checkAllForms[2] = True
+                        file_list["Affordable Connectivity Program"] = False
+
+                    if group.document_title == "Identification":
+                        checkAllForms[3] = True
                         file_list["Identification"] = False
                     if group.document_title == "1040 Form":
-                        checkAllForms[3] = True
+                        checkAllForms[4] = True
                         file_list["1040 Form"] = False
                 if False in checkAllForms:
                     return render(request, 'dashboard/files.html', {
@@ -120,7 +137,8 @@ def files(request):
                             'formPageNum':6,
                             'Title': "Files"
                         })
-                if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True:
+                # if not options are selected, they must upload their tax form, the code below allows for that.
+                if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True and request.user.programs.ebb_acf != True:
                     return redirect(reverse("dashboard:manualVerifyIncome"))
                 else:
                     return redirect(reverse("application:attestation")) 
@@ -770,6 +788,7 @@ def dashboardGetFoco(request):
         "FAQ_color": "white",
         "Settings_color": "white",
         "Privacy_Policy_color": "white",
+        "Bag_It_color": "white",
 
         "GRButtonText": GRButtonText,
         "GRButtonColor": GRButtonColor,
@@ -818,7 +837,19 @@ def ProgramsList(request):
         "FAQ_color": "white",
         "Settings_color": "white",
         "Privacy_Policy_color": "white",
+        "Bag_It_color": "white",
         'Title': "Programs List"})
+
+def BagIt(request):
+    return render(request, 'dashboard/BagIt.html',{
+        "page_title": "Bag It",
+        "dashboard_color": "white",
+        "program_list_color": "white",
+        "FAQ_color": "white",
+        "Settings_color": "white",
+        "Privacy_Policy_color": "white",
+        "Bag_It_color": "var(--yellow)",
+        'Title': "Bag It"})
 
 
 def FAQ(request):
@@ -829,4 +860,5 @@ def FAQ(request):
         "FAQ_color": "var(--yellow)",
         "Settings_color": "white",
         "Privacy_Policy_color": "white",
+        "Bag_It_color": "white",
         'Title': "FAQ"})
