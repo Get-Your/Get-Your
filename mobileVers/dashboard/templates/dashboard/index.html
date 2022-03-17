@@ -1,17 +1,11 @@
 <!-- This brings in the CSS-->
-
 {% load static %}
+
+
 <!DOCTYPE html>
 <html lang="en">
-
     <!--Get the various stylesheets I need like my fonts and CSS-->
-    <head>
-        <title>index</title>
-        <link href="{% static 'dashboard/styles.css' %}" rel="stylesheet">
-        <link rel="preconnect" href="https://fonts.gstatic.com">
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&display=swap" rel="stylesheet">
-        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
         <!-- Global site tag (gtag.js) - Google Analytics -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-SL59NNQRH0"></script>
         <script>
@@ -21,217 +15,232 @@
 
         gtag('config', 'G-SL59NNQRH0');
         </script>
+                
+
+        <!-- Google Translate below -->
+        <script type="text/javascript">
+            function googleTranslateElementInit() {
+            new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+            }
+        </script>
+        
+        <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+        
+
+        <title>Home</title>
+        <link href="{% static 'application/styles.css' %}" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&display=swap" rel="stylesheet">   
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>     
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
     </head>
 
-    <body>
-        <div class="row" style="text-align: center;">
-          <nav role="navigation" style="width: 3vh;">
-            <div id="menuToggle" class="icon" style="position: absolute;">
-              <input type="checkbox" />
-              
-              <!--Some spans to act as a hamburger.-->
-              <span></span>
-              <span></span>
-              <span></span>
-              
-              <ul id="menu">
-                <a style="color:var(--yellow); font-weight: 800;" href="#"><li>Dashboard</li></a>
-                <a style="color:var(--white); font-weight: 800;" href="{% url 'dashboard:underConstruction' %}"><li>FAQ</li></a>
-                <a style="color:var(--white); font-weight: 800;" href="{% url 'application:privacyPolicy' %}"><li>Privacy Policy</li></a>
-              </ul>
-            </div>
-          </nav>
-            <p style="font-weight: 700; color:var(--darkblue);">Get:FoCo</p>
-            <img src="{% static 'dashboard/images/AlertBell.svg' %}" alt="back" style="width:4.5vw;">
-        </div>
+    <!-- TODO: make a message to only look at this on mobile-->
+    
+    <body style="margin:0; padding:0">
         
-        <div class="content ">
-            <div class="module" >
-              <p>Application Status </p>
-              <h3 style="color:#137D13; font-weight: 800;"><span style="font-size:max(5.9vw, 30px);margin-right: 4vw;">01</span>
-                <span style="font-size: max(5vw, 18px);margin-right: 4vw;">In Progress</span></h3>
-             <table style="text-align: left;"> 
-              <tr >
-                <th style="width:15%; padding: 0 1vw;"><img src="{% static 'dashboard/images/iconRise.svg' %}" alt="back" style="width:100%;" ></th>
-                <th style="width:85%;"><p> {{program_string7}} </p></th>
-              </tr>
-              <tr>
-                <th style="padding: 0 1.5vw"><img src="{% static 'dashboard/images/clock.svg' %}" alt="back" style="width:100%;" ></th>
-                <th>
-                  <p style="margin-bottom: 0; font-weight: 400;">Qualification Status:</p>
-                  <p style="font-weight: 800; margin-top: 5px;">{{program_string}}</p> 
+        <!--NAVBAR-->
+        <div id=full-nav>
+                <!-- NEED TO DEVELOP: DROPDOWN MENU FOR LANGUAGES-->
+                <!-- Sample menu definition -->
+                <ul class=navUl style = "vertical-align: middle;">
+                    <!-- <a class="link" style = "display: inline;padding-top:2.5vh," href="">ENGLISH</a>  TODO spot to implement more complex translation feature --> 
+                    <div id="google_translate_element" style="display: inline;padding-top:2.5vh,"></div>
 
-                </th>
-              </tr>
-            </table>
+                    <div class="row" style="height: 5vh; vertical-align: middle; display: table-cell; text-align: right;overflow: initial;">
+                        <!--TODO: MAKE SURE THIS LINK WORKS-->
+                            <a href="#How it Works" class ="navLink"> How it Works</a>
+                            <a href="#Available Programs" class ="navLink"> Available Programs </a>
+                            <a href="#Check Availability" class ="navLink"> Check Availability </a>
+                            <a class="link" style = "display: inline;" href="{% url 'dashboard:login' %}">LOG IN</a>
+                            <button onclick="location.href='{% url 'application:getReady' %}'"><b>APPLY</b></button>
+                    </div>
+                </ul>
+        </div>
+        <div class=bluemain style="margin:0;">
+            <div class="img" style="float:left; padding: 20px;">
+                <img src="{% static 'application/images/WelcomeIllustration.svg' %}" alt="Welcome" style="width:100%; float:left">
             </div>
-            <div class="module" >
-              <form action="{% url 'dashboard:index' %}" method="post">
-                {% csrf_token %}
-                  <p>Feedback</p>
-                  <div class="column" style="margin:0; width:100%;">
-                    <p style="font-weight: 800;">How would you rate your experience so far using the Connexion portal? </p>
-                    <div class="column" style="margin:0; width:100%;">
-                      <clearButton name="starRating" value="1" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star1" style="width:10vw;margin-right: 3vw;" onclick="fillStar(1)"> </clearButton>
-                      <clearButton name="starRating" value="2" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star2" style="width:10vw;margin-right: 3vw;" onclick="fillStar(2)"> </clearButton>
-                      <clearButton name="starRating" value="3" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star3" style="width:10vw;margin-right: 3vw;" onclick="fillStar(3)"> </clearButton>
-                      <clearButton name="starRating" value="4" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star4" style="width:10vw;margin-right: 3vw;" onclick="fillStar(4)"> </clearButton>
-                      <clearButton name="starRating" value="5" type ="button"> <img src="{% static 'dashboard/images/reviewStarUnfilled.svg' %}" id="star5" style="width:10vw;margin-right: 3vw;" onclick="fillStar(5)"> </clearButton>
+            <h1 style="color:white">Welcome to</h1>
+            <h1 style="color:white"><b>Get: <b class=yellow style=>FOCO</b></b></h1>
+            <div style="overflow: auto;">            
+                <p style="color:white;"> An all-in-one application portal to the discounted services and municipal benefits offered by the City of Fort Collins, for income eligible residents. Get:FoCo is a partnership between Fort Collins' Connexion, and the City of Fort Collins' income eligible programming.</p>
+            </div>
+        </div>
+        <div class=whitemain>
+            <h2 style="text-align:center"><b><a id="How it Works">How it Works</a></b></h2>
+            <p style="padding-bottom:20px">With Get:Foco, you’ll be able to do more with your City of Fort Collins program applications than ever before.</p>
+            <div class="column">
+                <div class="row"  style = "justify-content: space-around;">
+                    <div class="img">
+                        <div class="fadeLarge">
+                            <img src="{% static 'application/images/control.png' %}" alt="Control" style="width:100%">
+                        </div>
+                        <div class ="fadeSmall">
+                            <img src="{% static 'application/images/control.svg' %}" alt="Control" style="width:100%">
+                        </div>
+                    </div>
+                    <div class="wordblock">
+                        <p style="margin-top:0;"><b>Control Your Application</b></p>
+                        <p>Manage applications in real 
+                            time with up-to-date 
+                            application status.</p>
                     </div>
                 </div>
-                <div class="column" style="width:100%; margin:0; justify-content: flex-start;">
-                      <p style="font-weight: 800; margin-top: 50px;">How can we do better?</p> 
-                      <textarea class="feedback" placeholder="Tell us how we're doing!"id="" name="feedbackComments" maxlength="500" style="border-radius: 2vh;"></textarea>
-                    <button name="starRating" value = "" id="submit" style="width:100%; padding:0; margin-top: 2vh; justify-content: flex-start;"> <b>SHARE FEEDBACK</b> </button>
-                    <br>
-                    <br>
+            </div>
+            <div class="column">
+                <div class="row" style = "justify-content: space-around;">
+                    <div class="img">
+                        <div class="fadeLarge">
+                            <img src="{% static 'application/images/save.png' %}" alt="Save" style="width:100%">
+                        </div>
+                        <div class ="fadeSmall">
+                            <img src="{% static 'application/images/save.svg' %}" alt="Save" style="width:100%">
+                        </div>
+                    </div>
+                    <div class="wordblock">
+                        <p style="margin-top:0;"><b>Do More, Save More</b></p>
+                        <p>If you qualify, you’ll get access 
+                            to specific City of Fort Collins' income qualified programs
+                            that are tailored to save you money.</p>
+                    </div>
                 </div>
-              </form>
             </div>
-
-            <div class="module">
-              <p>Other Programs:</p>
-              <div class="column" style="width:100%; margin:0;">
-              <p style="font-weight: 800;">{{program_string2}}</p>
-              <p style="font-weight: 800;">{{program_string3}} </p>
-              <a class=yellow href="{% url 'application:GRQuickApply' %}" style="font-weight: 800;font-size: max(3.8vw, 16px)"><u>{{program_string4}}</u></a></b>
-              <a class=yellow href="https://www.fcgov.com/rebate/" style="font-weight: 800;font-size: max(3.8vw, 16px)"><u>{{program_string5}}</u></a></b>
-              <br>
-              <br>
-              <a class=yellow href="{% url 'dashboard:addressVerification' %}" style="font-weight: 800;font-size: max(3.8vw, 16px)"><u>{{program_string6}}</u></a></b>
-              <br>
-              <br>
-              </div>
+            <div class="column">
+                <div class="row"  style = "justify-content: space-around;">
+                    <div class="img">
+                        <div class="fadeLarge">
+                            <img src="{% static 'application/images/forget.png' %}" alt="Forget" style="width:100%">
+                        </div>
+                        <div class ="fadeSmall">
+                            <img src="{% static 'application/images/forget.svg' %}" alt="Forget" style="width:100%">
+                        </div>
+                    </div>
+                    <div class="wordblock">
+                        <p style="margin-top:0;"><b>Forget “Forgetting”</b></p>
+                        <p>Never forget to renew your 
+                            application with easy reminders – making information 
+                            updates a breeze.</p>
+                    </div>
+                </div>
             </div>
-            <div class="extraspace">
+            <div class="column">
+                <div class="row"  style = "justify-content: space-around;">
+                    <div class="img">
+                        <div class="fadeLarge">
+                            <img src="{% static 'application/images/know.png' %}" alt="Know" style="width:100%">
+                        </div>
+                        <div class ="fadeSmall">
+                            <img src="{% static 'application/images/know.svg' %}" alt="Know" style="width:100%">
+                        </div>
+                    </div>
+                    <div class="wordblock">
+                        <p style="margin-top:0;"><b>Stay in the Know</b></p>
+                        <p>Be informed with the latest
+                            news & updates from both
+                            Connexion & the City.</p>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <script>
-          var image1 =  document.getElementById("star1");
-          var image2 =  document.getElementById("star2");
-          var image3 =  document.getElementById("star3");
-          var image4 =  document.getElementById("star4");
-          var image5 =  document.getElementById("star5");
-          function fillStar(value)
-          {
-            switch (value)
-            {
-                case 1:
-                if (image1.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
-                {
-                  image1.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                  document.getElementById("submit").value = value;
-                  return value;
-                }
-                else if((image2.getAttribute('src') || image3.getAttribute('src') || image4.getAttribute('src') || image5.getAttribute('src')) == "{% static 'dashboard/images/reviewStarFilled.svg' %}")
-                {
-                  image5.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  image4.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  image3.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  image2.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                }
-                else
-                {
-                  image1.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                }
-                break;
-
-                case 2: 
-                  if (image2.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
-                  {
-                    image2.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                    image1.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                    document.getElementById("submit").value = value;
-                    return value;
+        <div class=programsListmain>
+            <h2 style="color:white; text-align: center;"><a id="Available Programs">Available Income Eligible Programs</a></h2>
+            <p style="color:white; text-align: center;">Get: FOCO is always working to include more programs into the mobile app– making it easier for you to be connected!</p>
+            <div class=fadeSmall> 
+                <div class=exploreDiv> 
+                        <div style="padding-top: 1vw; padding-left: 3vw;"> <h4 style="color: white;">All Programs</h4></div>
+                        <div class=exploreDivPrograms>
+                            <p class=p2><b>Connexion Discount Program</b> <span> Utilities Aid</span></p>
+                            <p class=p2>As Connexion comes online in neighborhoods across our community, the City of Fort Collins is committed to fast, affordable internet. Digital Access & Equity is an income-qualified rate of $19.95 per month for 1 gig-speed of internet plus wireless.</p>
+                            <p class=p3> Applications accepted all year </p>
+                            <a href="https://www.fcgov.com/connexion/"style="color: #F9B316;"> Learn More</a>
+                            
+                        </div>
+                        <div class=exploreDivPrograms>
+                            <p class=p2><b>Grocery Tax Rebate</b> <span> Groceries Aid </span></p>
+                            <p class=p2>The Grocery Rebate Tax is an annual cash payment to low-income individuals and families living in the City of Fort Collins and its Growth Management Area. It provides your family with direct assistance in exchange for the taxes you spend on food. </p> 
+                            <p class=p3> Applications begin August 2, 2021 and end October 31, 2021  </p>
+                            <a href="https://www.fcgov.com/rebate/" style="color: #F9B316;"> Learn More</a>
+                           
+                        </div>
+                        <div class=exploreDivPrograms>
+                            <p class=p2><b>Recreation Reduced Fee</b> <span> Recreation Aid</p></span>
+                            <p class=p2>The Recreation Reduced Fee program provides income-eligible families and residents reduced cost access to recreation programs, classes, and facilities across the community.</p>
+                            <p class=p3> Applications accepted all year </p>
+                            <a href="https://www.fcgov.com/recreation/reducedfeeprogram" style="color: #F9B316;"> Learn More</a>
+                            
+                        </div>
+                </div>
+            </div>
+            <div class=fadeLarge><button style="background-color: var(--darkblue);width:100%;margin-bottom: 3vh;" onclick="location.href='{% url 'dashboard:ProgramsList' %}'">Explore Programs</button> </div>
+        </div>
+        <div class="intrigued">
+            <h2 style="color:white"><a id="Check Availability">Curious?</a></h2>
+            <p style="color:white">Enter your address to check if you qualify for income eligible programs & if Fort Collins Connexion 
+                is currently available for you.</p>
+                <!--TODO: Save input and add logic for checking zipcode-->
+                
+                <form action="{% url 'application:index' %}" method="post" autocomplete="false" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row" style="margin: 30px 0 0 0;">
+                        <div class="input" style = "width:100%">
+                            <!--TODO: change this to dropdown menu with data-->
+                            <input class="fill" name="{{ form.address.name }}"
+                                id="{{ form.address.id_for_label }}"
+                                maxlength="{{ form.address.max_length }}"
+                                type="text" 
+                                style="width:95%;" 
+                                required  
+                                autocomplete="off">
+                            <label class="label">{{ form.address.label }}</label>    
+                        </div>
+                        <button style="background-color:var(--darkblue);font-weight: 700;" type="submit"> ENTER </button>
+                    </div>
+                </form>
+                <!--
+                <button id="open-popup-1" style="background-color:var(--darkblue);padding: 5px 35px; margin: 15px 0 0 10px; height:40px;"><b>ENTER</b></button>
+                    -->
+            <p class="link" style="margin:0; padding-top: 10%;">Service brought to you by the City of Fort Collins</p>
+            <a class="link" href="{% url 'application:privacyPolicy' %}" style="margin:0; padding-top: 10%;"><u>Privacy Policy</u></a>        
+        </div>
+        
+        <!--TODO: Make another popup for when they are good to submit to digital equity-->
+        <!--TODO: make suure popup only comes up when  address is wrong-->
+        <div id="popup-1">
+            <div class="popup-content">
+                <img src="{% static 'application/images/X_gray.svg' %}" alt="back" style="width:5vw; top:20px;right:20px;position:absolute" onclick="location.href='{% url 'application:index' %}'">
+                <div>
+                    <h1 style="color:var(--yellow)"><b>Connexion is not quite ready to go where you are.</b></h1>
+                    <p>Stay updated for when Connexion will be available for you & your neighborhood.</p>
+                </div>
+                <div class="input">
+                    <!--TODO: Save input-->
                     
-                  }
-                  else if((image3.getAttribute('src') || image4.getAttribute('src') || image5.getAttribute('src')) == "{% static 'dashboard/images/reviewStarFilled.svg' %}")
-                  {
-                    image5.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                    image4.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                    image3.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  }
-                  else
-                  {
-                    image2.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                    image1.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  }
-                break;
-              
+                    <input type="text" style="width:100%;border-bottom:1px solid#888; background-color: white;" required>
+                    
+                    <label style="color:#888">Email Address</label>    
+                </div>
+                <button id="close-popup-1" style="background-color:var(--lightblue);padding: 5px 35px; width:100%;"><b>SUSCRIBE TO UPDATES</b></button>
+            </div>
+        </div>
+        <!--POPUP JAVASCRIPT CODE-->
+        <script>
+            var popup1 = document.getElementById("popup-1");
+            var openPopup1 = document.getElementById("open-popup-1");
+            var closePopup1 = document.getElementById('close-popup-1');
+            console.log(5);
+            openPopup1.addEventListener('click', () => {
+                popup1.style.display = "block";
+                console.log(6);
+            })
 
-                case 3: 
-                if (image3.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
-                {
-                  image3.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                  image2.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                  image1.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                  document.getElementById("submit").value = value;
-                  return value;
-                }
-                else if((image4.getAttribute('src') || image5.getAttribute('src')) == "{% static 'dashboard/images/reviewStarFilled.svg' %}")
-                {
-                  image5.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  image4.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                }
-                else
-                {
-                  image3.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  image2.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  image1.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                }
-                break;
-
-                case 4: 
-                if (image4.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
-                {
-                  image4.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                  image3.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                  image2.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                  image1.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                  document.getElementById("submit").value = value;
-                  return value;
-                }
-                else if(image5.getAttribute('src') == "{% static 'dashboard/images/reviewStarFilled.svg' %}")
-                {
-                  image5.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                }
-                else
-                {
-                  image4.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  image3.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  image2.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  image1.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                }
-                break;
-
-                case 5: 
-                if (image5.getAttribute('src') == "{% static 'dashboard/images/reviewStarUnfilled.svg' %}")
-                {
-                  image5.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                  image4.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                  image3.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                  image2.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                  image1.src = "{% static 'dashboard/images/reviewStarFilled.svg' %}";
-                  document.getElementById("submit").value = value;
-                  return value;
-                }
-                else
-                {
-                  image5.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  image4.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  image3.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  image2.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                  image1.src = "{% static 'dashboard/images/reviewStarUnfilled.svg' %}";
-                }
-                break;
-              } 
-          }
+            closePopup1.addEventListener('click', () => {
+                popup1.style.display = "none";
+                console.log(7);
+            })
         </script>
     </body>
 </html>
-
-
-
-
-
