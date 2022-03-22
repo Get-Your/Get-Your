@@ -849,7 +849,10 @@ def BagIt(request):
         "Settings_color": "white",
         "Privacy_Policy_color": "white",
         "Bag_It_color": "var(--yellow)",
-        'Title': "Bag It"})
+        'Title': "Bag It",
+        'lastName': request.user.last_name,
+        'date': datetime.datetime.now().date()
+        })
 
 
 def FAQ(request):
