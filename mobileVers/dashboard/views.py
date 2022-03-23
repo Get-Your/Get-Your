@@ -562,7 +562,7 @@ def feedback(request):
         text4 = "Click here to quick apply for Grocery Rebate Tax Program"
         text5 = ""
         text6 = "Click here to quick apply for Recreation"
-        text7 = "The Digital Equity Office is working on a timeline to respond to applications within the next two weeks."
+        text7 = "The Get: FoCo Office is working on a timeline to respond to applications within the next two weeks."
     else:
         text = "Based on your info, you may be over the pre-tax income limit. At this time you do not qualify. If your income changes, please apply again."
         text2 = ""
@@ -570,7 +570,7 @@ def feedback(request):
         text4 = ""
         text5 = "Grocery Rebate Tax Program"
         text6 = "Utilities Income-Qualified Assistance Program"
-        text7 = "The Digital Equity Office is working on a timeline to respond to applications within the next two weeks."
+        text7 = "The Get: FoCo Office is working on a timeline to respond to applications within the next two weeks."
     
     if request.user.eligibility.GRqualified == QualificationStatus.PENDING.name or request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
         text2 = "Thank you for quick applying for the Grocery Rebate Tax Program."
@@ -697,7 +697,7 @@ def dashboardGetFoco(request):
         GRDisplayActive = "None"
         GRDisplayPending = ""
         GRDisplay = "none"
-        GRPendingDate = "Estimated Notification Time: October 25th"
+        GRPendingDate = "Estimated Notification Time: Two Weeks"
 
     elif request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!"
@@ -735,7 +735,7 @@ def dashboardGetFoco(request):
         QProgramNumber = QProgramNumber - 1
         RECDisplayActive = "None"
         RECDisplayPending = ""
-        RECPendingDate = "Estimated Notification Time: December 25th"
+        RECPendingDate = "Estimated Notification Time: Two Weeks"
         RECDisplay ="none"
     elif request.user.eligibility.RecreationQualified == QualificationStatus.ACTIVE.name:
         RECButtonText = "Enrolled!" 
