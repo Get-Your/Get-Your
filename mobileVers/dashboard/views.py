@@ -5,7 +5,7 @@ from django.conf import settings
 from .models import User, Form
 from application.models import Eligibility
 
-from .backend import authenticate, files_to_string, what_page
+from .backend import authenticate, files_to_string, what_page, blobStorageUpload
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from application.backend import broadcast_email, broadcast_sms, broadcast_email_pw_reset
 
@@ -28,14 +28,6 @@ from django.utils.encoding import force_bytes
 
 import magic, datetime, re
 from django.core.files.storage import FileSystemStorage
-
-
-
-#below imports needed for blob storage
-import uuid
-from azure.storage.blob import BlockBlobService
-
-
 
 
 #Step 4 of Application Process
@@ -70,13 +62,7 @@ def files(request):
                     
                     #Below is blob / storage code for Azure! Files automatically uploaded to the storage
                     f.seek(0)
-                    blob_service_client = BlockBlobService(account_name = settings.ACCOUNT_NAME, account_key=settings.ACCOUNT_KEY)
-                    blob_service_client.create_blob_from_bytes( 
-                        container_name = settings.CONTAINER_NAME, 
-                        blob_name = str(instance.document.url), 
-                        blob = f.read()
-                        )
-
+                    blobStorageUpload(str(instance.document.url), f)
 
                     #fileValidation found below
                     filetype = magic.from_file("mobileVers/" + instance.document.url)
