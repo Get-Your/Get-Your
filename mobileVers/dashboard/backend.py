@@ -5,8 +5,21 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.backends import ModelBackend, UserModel
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from django.contrib.auth.hashers import check_password
+from django.conf import settings
+
+#below imports needed for blob storage
+from azure.storage.blob import BlockBlobService
 
 from .models import User
+
+
+def blobStorageUpload(filename, file):
+                        blob_service_client = BlockBlobService(account_name = settings.ACCOUNT_NAME, account_key=settings.ACCOUNT_KEY)
+                        blob_service_client.create_blob_from_bytes( 
+                        container_name = settings.CONTAINER_NAME,
+                        blob_name = filename,
+                        blob = file.read()
+                        )
 
 def authenticate(username=None, password=None):
     User = get_user_model()
