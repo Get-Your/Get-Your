@@ -18,7 +18,7 @@
 
         <script type="text/javascript">
         function googleTranslateElementInit() {
-        new google.translate.TranslateElement({pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+        new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages : 'ar,es,fr,pt,zh-CN,zh-TW,tl,eo,de,ht,hi,hmn,id,ja,jv,ko,rw,ko,ms,my,mi,pt,pa,ru,so,sw,uk,vi,xh,yo,zu',  layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
         }
         </script>
         
@@ -45,7 +45,7 @@
     </head>
 
     <body style="height:100vh">
-        <div style="display: flex; justify-content: flex-end" id="google_translate_element"></div>
+        <div style="position: fixed; bottom: 0%; right: 0%; display: flex; justify-content: flex-end" id="google_translate_element"></div>
         <div class=nav>
             <a class="row" onClick="window.history.back();return false;">
                 <div class=fadeSmall><img src="{% static 'application/images/BackArrow-darkblue.svg' %}" alt="back" style="width:max(4.5vw, 16px); margin-right: 5px;"></div>

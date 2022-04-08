@@ -396,7 +396,7 @@ def password_reset_request(request):
                     c = {
                         "email":user.email,
                         'domain':'getfoco.azurewebsites.net', #'getfoco.azurewebsites.net' | '127.0.0.1:8000'
-                        'site_name': 'Get:FoCo',
+                        'site_name': 'Get FoCo',
                         "uid": urlsafe_base64_encode(force_bytes(user.pk)),
                         "user": user,
                         'token': default_token_generator.make_token(user),
@@ -566,7 +566,7 @@ def feedback(request):
         text4 = "Click here to quick apply for Grocery Rebate Tax Program"
         text5 = ""
         text6 = "Click here to quick apply for Recreation"
-        text7 = "The Get: FoCo Office is working on a timeline to respond to applications within the next two weeks."
+        text7 = "The Get FoCo Office is working on a timeline to respond to applications within the next two weeks."
     else:
         text = "Based on your info, you may be over the pre-tax income limit. At this time you do not qualify. If your income changes, please apply again."
         text2 = ""
@@ -574,7 +574,7 @@ def feedback(request):
         text4 = ""
         text5 = "Grocery Rebate Tax Program"
         text6 = "Utilities Income-Qualified Assistance Program"
-        text7 = "The Get: FoCo Office is working on a timeline to respond to applications within the next two weeks."
+        text7 = "The Get FoCo Office is working on a timeline to respond to applications within the next two weeks."
     
     if request.user.eligibility.GRqualified == QualificationStatus.PENDING.name or request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
         text2 = "Thank you for quick applying for the Grocery Rebate Tax Program."
@@ -768,7 +768,7 @@ def dashboardGetFoco(request):
         RECButtonTextColor = ""
 
     return render(request, 'dashboard/dashboard_GetFoco.html',{
-        "Title": "Get: FoCo Dashboard",
+        "Title": "Get FoCo Dashboard",
         "dashboard_color": "var(--yellow)",
         "program_list_color": "white",
         "FAQ_color": "white",
