@@ -1,9 +1,17 @@
+'''
+Here you'll find some useful backend logic / functions used in the main application, most of these functions are used to 
+supplement the application and to keep views.py clutter to a minimum!
+
+'''
+
+
+
 import csv
 from usps import USPSApi, Address
 import re
 import requests
 from django import http  # used for type checks
-import logging
+import datetime
 
 import urllib.parse
 import requests
@@ -318,7 +326,6 @@ def enroll_connexion_updates(request):
         raise AssertionError('subscription request could not be completed')
 
 def validateUSPS(inobj):
-    
     if isinstance(inobj, http.request.QueryDict):
         # Combine fields into Address
         address = Address(
@@ -349,6 +356,75 @@ def validateUSPS(inobj):
         print("Wrong address info added")
         raise
 
+
+def broadcast_program_enrolled_email(email, counter):
+    """
+    Initial sent email to clients if they are marked as "qualified" in the database (after going through verification process)
+
+    Utilizes SendGrid TEMPLATE_ID = "d-9769c069b8aa4870bea547f600362ed0": Program Approval, lets clients know which programs they were accepted into
+    and any possible INITIAL next steps, more steps may be required per program
+
+
+    Parameters
+    ----------
+    email : str
+        email to send to client(s)
+    counter: int
+        counter allows us to choose which version of the message to send
+        1) qualified for these programs, may need to specify any further clarifications via "contact us"
+        2) a simple contact this number / email for further information and steps
+
+    Raises
+    ------
+    Exception
+        Email may not be valid
+
+    Returns / Outside Action
+    -------
+    API return
+        Sendgrid sends email
+
+    """
+    TEMPLATE_ID = "d-9769c069b8aa4870bea547f600362ed0"
+    message = Mail(
+        from_email='getfoco@fcgov.com',
+        to_emails=email)
+    if counter == 1:        
+        message.dynamic_template_data = {
+            'program1': "Connexion",
+            'program2': "Grocery Rebate",
+            'program3': "Recreation",
+            'date': str(datetime.datetime.now().date()),
+        }
+
+    elif counter == 2:        
+        message.dynamic_template_data = {
+            'program1': "Connexion",
+            'program2': "Grocery Rebate",
+            'program3': "Recreation",
+
+            'ConnexionRequirements': "For Connexion, please contact representatives using the information below and give them this code",
+            'ConnexionUUID': "specialcodehere",
+            'ConnexionContact': "Phone Number: xxx-xxx-xxxx; Email: connexion@connexion.com",
+            
+            'GroceryRequirements': "",
+            'GroceryContact': "",
+
+            'RecreationRequirements': "For Recreation you must buy a family pass using the information provided on Get:FoCo, please give them your email when you buy your pass more information found below.",
+            'RecreationContact': "https://www.fcgov.com/recreation/",
+
+            'date': str(datetime.datetime.now().date()),
+        }
+    
+    message.template_id = TEMPLATE_ID
+    try:
+        sg = SendGridAPIClient("***REMOVED***")
+        response = sg.send(message)
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+    except Exception as e:
+        print(e.message)
 
 def broadcast_email(email):
     TEMPLATE_ID = settings.TEMPLATE_ID
