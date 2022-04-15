@@ -373,12 +373,18 @@ td {
         background-color: white;
         border-radius: 3vw;
         border: 1px solid var(--darkblue);
-        padding: 1px 15px;
+        padding: 2px 15px;
         color:var(--darkblue);
         text-align: center;
-        height:max(3.2vw, 16px);
+        height:fit-content;
         font-size: max(3vw, 12px);
         overflow: hidden;
+    }
+    .linkQA{
+        font-size:13px;
+        display: block;
+        text-align: center;
+        text-decoration: none;
     }
 
     /*Backgrounds for homepage*/
