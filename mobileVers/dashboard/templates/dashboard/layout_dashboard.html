@@ -60,6 +60,7 @@
             <!--Side Navigation Column, for desktops and larger than phone devices-->
             <div class="fadeSmall">
               <div class=sideNav style="padding-left: 0;">
+                
                 <ul>
                   <p style="color: var(--yellow); font-weight: 700; font-size: 25px;">Get <p.1 style="color: white">FoCo</p></p>
                   <p> <img src="{% static 'dashboard/images/Dashboard.svg' %}">  <a style="color: {{ dashboard_color }}; text-decoration:none; " href="{% url 'dashboard:dashboard' %}">Dashboard</a></p>
@@ -71,6 +72,7 @@
                   <p> <img src="{% static 'dashboard/images/LogOut.svg' %}">  <a style="color:white;text-decoration:none; " href="{% url 'application:index' %}">Log Out</a></p>
                   <p style="font-size: 15px; text-align: center;"> {{clientEmail}}</p>
                   <p style="position: absolute; bottom: 5px; font-size: 15px;"> Service brought to you by the City of Fort Collins.</p>
+                  <img style="display: block; margin-left: auto; margin-right: auto; width: 50%;" src="{% static 'application/images/CityLogoGold-01.png' %}">
                 </ul>
               </div>
             </div>
