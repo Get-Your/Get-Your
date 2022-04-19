@@ -155,6 +155,7 @@ td {
         box-sizing: border-box;
         font-size: 22px;
         font-family: "Helvetica", sans-serif;
+
         /*color: #333333; commented this out, for some reason this breaks google translate and makes css invalid... ONLY IN GOOGLE TRANSLATE*/
       }
       
