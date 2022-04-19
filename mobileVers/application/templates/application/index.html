@@ -20,7 +20,7 @@
         <!-- Google Translate below -->
         <script type="text/javascript">
             function googleTranslateElementInit() {
-              new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+              new google.translate.TranslateElement({pageLanguage: 'en',includedLanguages : 'ar,es,fr,pt,zh-CN,zh-TW,tl,eo,de,ht,hi,hmn,id,ja,jv,ko,rw,ko,ms,my,mi,pt,pa,ru,so,sw,uk,vi,xh,yo,zu',}, 'google_translate_element');
             }
             </script>
             
@@ -47,8 +47,10 @@
                 <!-- Sample menu definition -->
                 
                 <ul class=navUl style = "vertical-align: middle;">
-                    <div id="google_translate_element" style="display: inline;padding-top:1vh; "></div>
+
                     <img style="padding-left: 2%;" src="{% static 'application/images/CityLogoGold-01.png' %}">
+                    <div id="google_translate_element" style="display: inline;padding-top:1vh;width: 175px;"></div>
+
                     <div class="row" style="height: 5vh; vertical-align: middle; display: table-cell; text-align: right;overflow: initial;">
                         <!--TODO: MAKE SURE THIS LINK WORKS-->
                             <a href="#How it Works" class ="navLink"> How it Works</a>
@@ -64,14 +66,14 @@
                 <img src="{% static 'application/images/WelcomeIllustration.svg' %}" alt="Welcome" style="width:100%; float:left">
             </div>
             <h1 style="color:white">Welcome to</h1>
-            <h1 style="color:white"><b>Get: <b class=yellow style=>FOCO</b></b></h1>
+            <h1 style="color:white"><b>Get <b class=yellow style=>FOCO</b></b></h1>
             <div style="overflow: auto;">            
                 <p style="color:white;"> An all-in-one application portal to the discounted services and municipal benefits offered by the City of Fort Collins, for income eligible residents. Get:FoCo is a partnership between Fort Collins' Connexion and the City of Fort Collins' income eligible programming.</p>
             </div>
         </div>
         <div class=whitemain>
             <h2 style="text-align:center"><b><a id="How it Works">How it Works</a></b></h2>
-            <p style="padding-bottom:20px">With Get:Foco, you’ll be able to do more with your City of Fort Collins program applications than ever before.</p>
+            <p style="padding-bottom:20px">With Get Foco, you’ll be able to do more with your City of Fort Collins program applications than ever before.</p>
             <div class="column">
                 <div class="row"  style = "justify-content: space-around;">
                     <div class="img">
@@ -147,7 +149,7 @@
         </div>
         <div class=programsListmain>
             <h2 style="color:white; text-align: center;"><a id="Available Programs">Available Income Eligible Programs</a></h2>
-            <p style="color:white; text-align: center;">Get: FOCO is always working to include more programs into the mobile app– making it easier for you to be connected!</p>
+            <p style="color:white; text-align: center;">Get FOCO is always working to include more programs into the mobile app– making it easier for you to be connected!</p>
             <div class=fadeSmall> 
                 <div class=exploreDiv> 
                         <div style="padding-top: 1vw; padding-left: 3vw;"> <h4 style="color: white;">All Programs</h4></div>

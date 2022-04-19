@@ -12,8 +12,9 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 from environ import Env
-import os
 from datetime import datetime
+import os
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -60,6 +61,9 @@ POSTGRESQLPW = env("POSTGRESQLPW")
 SENDGRID_API_KEY = env('SENDGRID_API_KEY')
 TEMPLATE_ID = env("TEMPLATE_ID")
 TEMPLATE_ID_PW_RESET = env("TEMPLATE_ID_PW_RESET")
+ACCOUNT_NAME = env("ACCOUNT_NAME")
+ACCOUNT_KEY = env("ACCOUNT_KEY")
+CONTAINER_NAME = env("CONTAINER_NAME")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -78,6 +82,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
     'dashboard',
     'application',
     'phonenumber_field',
@@ -116,10 +121,8 @@ TEMPLATES = [
         },
     },
 ]
-#TODO @Grace is this what we're looking for?
-#AUTHENTICATION_BACKENDS = (
-#        'django.contrib.auth.backends.ModelBackend',
-#    )
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 WSGI_APPLICATION = 'mobileVers.wsgi.application'
 
@@ -135,13 +138,25 @@ WSGI_APPLICATION = 'mobileVers.wsgi.application'
     }
 }'''
 
-DATABASES = {
+ # TODO old database found here, here for legacy isssues but can be deleted once transfer to city tenant is complete
+'''DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.postgresql',
-         'NAME': 'getfoco',
+         'NAME': 'getfoco_debug',
          'USER': 'gycpcdriver@gyc1.postgres.database.azure.com',
          'PASSWORD': POSTGRESQLPW,
          'HOST': 'gyc1.postgres.database.azure.com'
+         }
+ }'''
+
+
+DATABASES = {
+     'default': {
+         'ENGINE': 'django.db.backends.postgresql',
+         'NAME': 'getfoco_dev',
+         'USER': 'getfocoadmin@getfoco-singleserver.postgres.database.azure.com',
+         'PASSWORD': POSTGRESQLPW,
+         'HOST': 'getfoco-singleserver.postgres.database.azure.com'
          }
  }
 
@@ -196,10 +211,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 
-datetime_now = datetime.utcnow()
-# Remove the microseconds
-datetime_now_ms = datetime_now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
-logFileName = datetime_now_ms.replace(":", "_")
+str = str((datetime.now().time()))
+logFileName = str.replace(":", "_")
 LOGGING = { 
     'version': 1,
     'disable_existing_loggers': False,

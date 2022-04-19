@@ -116,30 +116,69 @@
             <div class="row" style="justify-content: space-between;">
                 <p style="font-weight: 800;">Files: <buttonQuestion  id="myBtn"><img id src="{% static 'application/images/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px); display: inline;"></buttonQuestion> </p>
                 <select name="{{ field.name }}" id="{{ field.id_for_label}}">
+
                 {% if program_string == "SNAP Card" %}
                     <option class="option files" value="SNAP"> SNAP </option>
                 {% elif program_string == "PSD Reduced Lunch Approval Letter" %}
                     <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                {% elif program_string == "1040 Form" %}
+                    <option class="option files" value="1040 Form"> Tax Form </option>
+                {% elif program_string == "Identification" %}
+                    <option class="option files" value="Identification"> Identification </option>
+                {% elif program_string == "Affordable Connectivity Program" %}
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+
+                {% elif program_string == "Affordable Connectivity Program, Identification" %}
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+                    <option class="option files" value="Identification"> Identification </option>
+                {% elif program_string == "PSD Reduced Lunch Approval Letter, Affordable Connectivity Program" %}
+                    <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+                {% elif program_string == "SNAP Card, Affordable Connectivity Program" %}
+                    <option class="option files" value="SNAP"> SNAP </option>
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+
+                {% elif program_string == "SNAP Card, Affordable Connectivity Program, Identification" %}
+                    <option class="option files" value="SNAP"> SNAP </option>
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+                    <option class="option files" value="Identification"> Identification </option>
+                {% elif program_string == "PSD Reduced Lunch Approval Letter, Affordable Connectivity Program, Identification" %}
+                    <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+                    <option class="option files" value="Identification"> Identification </option>
+                {% elif program_string == "SNAP Card, PSD Reduced Lunch Approval Letter, Affordable Connectivity Program" %}
+                <option class="option files" value="SNAP"> SNAP </option>
+                    <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+
+
+                {% elif program_string == "SNAP Card, PSD Reduced Lunch Approval Letter, Affordable Connectivity Program, Identification" %}
+                    <option class="option files" value="SNAP"> SNAP </option>
+                    <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+                    <option class="option files" value="Identification"> Identification </option>
+
+
+
+
                 {% elif program_string == "SNAP Card, PSD Reduced Lunch Approval Letter" %}
                     <option class="option files" value="SNAP"> SNAP </option>
                     <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
-                {% elif program_string == "Identification" %}
-                    <option class="option files" value="Identification"> Identification </option>
                 {% elif program_string == "SNAP Card, Identification" %}
                     <option class="option files" value="SNAP"> SNAP </option>
                     <option class="option files" value="Identification"> Identification </option>
                 {% elif program_string == "PSD Reduced Lunch Approval Letter, Identification" %}
                     <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
                     <option class="option files" value="Identification"> Identification </option>
+                {% elif program_string == "Identification, 1040 Form" %}
+                    <option class="option files" value="1040 Form"> Tax Form </option>
+                    <option class="option files" value="Identification"> Identification </option>
+
+
                 {% elif program_string == "SNAP Card, PSD Reduced Lunch Approval Letter, Identification" %}
                     <option class="option files" value="SNAP"> SNAP </option>
                     <option class="option files" value="Identification"> Identification </option>
                     <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
-                {% elif program_string == "1040 Form" %}
-                    <option class="option files" value="1040 Form"> Tax Form </option>
-                {% elif program_string == "Identification, 1040 Form" %}
-                    <option class="option files" value="1040 Form"> Tax Form </option>
-                    <option class="option files" value="Identification"> Identification </option>
                 <!-- take above and include for Identification-->
                 {% endif %}
                 </select>

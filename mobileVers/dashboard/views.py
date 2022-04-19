@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect, reverse
 from .forms import FileForm, FeedbackForm, TaxForm, addressVerificationForm, AddressForm
 from decimal import Decimal
-
+from django.conf import settings   
 from .models import User, Form
 from application.models import Eligibility
 
-from .backend import authenticate, files_to_string, what_page
+from .backend import authenticate, files_to_string, what_page, blobStorageUpload
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from application.backend import broadcast_email, broadcast_sms, broadcast_email_pw_reset
 
@@ -30,20 +30,14 @@ import magic, datetime, re
 from django.core.files.storage import FileSystemStorage
 
 
-
-
-
-# Create your views here.
-
-# first index page we come into
-
-
+#Step 4 of Application Process
 def files(request):
-    if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False:
+    if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False and request.user.programs.ebb_acf == False:
         request.user.programs.form1040 = True
     file_list = {"SNAP Card": request.user.programs.snap,
                 # Have Reduced Lunch be last item in the list if we add more programs
                 "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
+                "Affordable Connectivity Program": request.user.programs.ebb_acf,
                 "Identification": request.user.programs.Identification,
                 "1040 Form": request.user.programs.form1040,
     }
@@ -66,6 +60,10 @@ def files(request):
                     file_upload = request.user
                     file_upload.files.add(instance)
                     
+                    #Below is blob / storage code for Azure! Files automatically uploaded to the storage
+                    f.seek(0)
+                    blobStorageUpload(str(instance.document.url), f)
+
                     #fileValidation found below
                     filetype = magic.from_file("mobileVers/" + instance.document.url)
                     logging.info(filetype)
@@ -97,7 +95,7 @@ def files(request):
                 
                 # Check if the user needs to upload another form
                 Forms = request.user.files
-                checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.Identification),not(request.user.programs.form1040)] #TODO 4/24 include not(request.user.programs.1040) here not(request.user.programs.Identification),
+                checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.ebb_acf),not(request.user.programs.Identification),not(request.user.programs.form1040)]
                 for group in Forms.all():
                     if group.document_title == "SNAP":
                         checkAllForms[0] = True
@@ -105,11 +103,16 @@ def files(request):
                     if group.document_title == "Free and Reduced Lunch":
                         checkAllForms[1] = True
                         file_list["PSD Reduced Lunch Approval Letter"] = False
-                    if group.document_title == "Identification":
+
+                    if group.document_title == "ACP Letter":
                         checkAllForms[2] = True
+                        file_list["Affordable Connectivity Program"] = False
+
+                    if group.document_title == "Identification":
+                        checkAllForms[3] = True
                         file_list["Identification"] = False
                     if group.document_title == "1040 Form":
-                        checkAllForms[3] = True
+                        checkAllForms[4] = True
                         file_list["1040 Form"] = False
                 if False in checkAllForms:
                     return render(request, 'dashboard/files.html', {
@@ -120,7 +123,8 @@ def files(request):
                             'formPageNum':6,
                             'Title': "Files"
                         })
-                if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True:
+                # if not options are selected, they must upload their tax form, the code below allows for that.
+                if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True and request.user.programs.ebb_acf != True:
                     return redirect(reverse("dashboard:manualVerifyIncome"))
                 else:
                     return redirect(reverse("application:attestation")) 
@@ -392,7 +396,7 @@ def password_reset_request(request):
                     c = {
                         "email":user.email,
                         'domain':'getfoco.azurewebsites.net', #'getfoco.azurewebsites.net' | '127.0.0.1:8000'
-                        'site_name': 'Get:FoCo',
+                        'site_name': 'Get FoCo',
                         "uid": urlsafe_base64_encode(force_bytes(user.pk)),
                         "user": user,
                         'token': default_token_generator.make_token(user),
@@ -562,7 +566,7 @@ def feedback(request):
         text4 = "Click here to quick apply for Grocery Rebate Tax Program"
         text5 = ""
         text6 = "Click here to quick apply for Recreation"
-        text7 = "The Get: FoCo Office is working on a timeline to respond to applications within the next two weeks."
+        text7 = "The Get FoCo Office is working on a timeline to respond to applications within the next two weeks."
     else:
         text = "Based on your info, you may be over the pre-tax income limit. At this time you do not qualify. If your income changes, please apply again."
         text2 = ""
@@ -570,7 +574,7 @@ def feedback(request):
         text4 = ""
         text5 = "Grocery Rebate Tax Program"
         text6 = "Utilities Income-Qualified Assistance Program"
-        text7 = "The Get: FoCo Office is working on a timeline to respond to applications within the next two weeks."
+        text7 = "The Get FoCo Office is working on a timeline to respond to applications within the next two weeks."
     
     if request.user.eligibility.GRqualified == QualificationStatus.PENDING.name or request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
         text2 = "Thank you for quick applying for the Grocery Rebate Tax Program."
@@ -764,12 +768,13 @@ def dashboardGetFoco(request):
         RECButtonTextColor = ""
 
     return render(request, 'dashboard/dashboard_GetFoco.html',{
-        "Title": "Get: FoCo Dashboard",
+        "Title": "Get FoCo Dashboard",
         "dashboard_color": "var(--yellow)",
         "program_list_color": "white",
         "FAQ_color": "white",
         "Settings_color": "white",
         "Privacy_Policy_color": "white",
+        "Bag_It_color": "white",
 
         "GRButtonText": GRButtonText,
         "GRButtonColor": GRButtonColor,
@@ -818,7 +823,22 @@ def ProgramsList(request):
         "FAQ_color": "white",
         "Settings_color": "white",
         "Privacy_Policy_color": "white",
+        "Bag_It_color": "white",
         'Title': "Programs List"})
+
+def BagIt(request):
+    return render(request, 'dashboard/BagIt.html',{
+        "page_title": "Bag It",
+        "dashboard_color": "white",
+        "program_list_color": "white",
+        "FAQ_color": "white",
+        "Settings_color": "white",
+        "Privacy_Policy_color": "white",
+        "Bag_It_color": "var(--yellow)",
+        'Title': "Bag It",
+        'lastName': request.user.last_name,
+        'date': datetime.datetime.now().date()
+        })
 
 
 def FAQ(request):
@@ -829,4 +849,5 @@ def FAQ(request):
         "FAQ_color": "var(--yellow)",
         "Settings_color": "white",
         "Privacy_Policy_color": "white",
+        "Bag_It_color": "white",
         'Title': "FAQ"})

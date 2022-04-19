@@ -1,6 +1,3 @@
-'''
-instructions go here
-'''
 from django.shortcuts import render, redirect, reverse
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -9,7 +6,21 @@ from django.contrib.auth.backends import ModelBackend, UserModel
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from django.contrib.auth.hashers import check_password
 
+from django.conf import settings
+
+#below imports needed for blob storage
+from azure.storage.blob import BlockBlobService
+
 from .models import User
+
+
+def blobStorageUpload(filename, file):
+                        blob_service_client = BlockBlobService(account_name = settings.ACCOUNT_NAME, account_key=settings.ACCOUNT_KEY)
+                        blob_service_client.create_blob_from_bytes( 
+                        container_name = settings.CONTAINER_NAME,
+                        blob_name = filename,
+                        blob = file.read()
+                        )
 
 def authenticate(username=None, password=None):
     User = get_user_model()
@@ -41,17 +52,18 @@ def files_to_string(file_list, request):
         # only add things to the list_string if its true
         if value == True:
             # Also add commas based on counter
-            if counter == 2:
+            if counter == 3:
+                list_string += ", "
+                counter = 2
+            elif counter == 2:
                 list_string += ", "
                 counter = 1
             elif counter == 1:
                 list_string += ", "
                 counter = 0
             else:
-                counter = 2
+                counter = 3
             list_string += key
-    #TODO Incorporate ID card here somewhere...
-    #list_string ="ID Card"
     return list_string
 
 # redirect user to whatever page they need to go to every time by checking which steps they've
@@ -75,10 +87,20 @@ def what_page(user,request):
             return "application:programs"
         
         try:
-            value = request.user.files
+            print(request.user.files.all()) #Check for all files per how many programs the client selected
+            value = request.user.files.all()
+            if not value.exists():
+               print("object doesn't exist")
+               return "dashboard:files"
+            else:
+                print("object exists")
         except AttributeError:
             return "dashboard:files"
         
+        try:
+            value = request.user.attestations
+        except AttributeError or ObjectDoesNotExist:
+            return "application:attestation"
         return "dashboard:dashboard"
 
     else:
