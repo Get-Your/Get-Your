@@ -204,8 +204,8 @@ p {
     left: 0;
     background-color: var(--darkblue);
     overflow-x: hidden;
-    padding-top: 0px;
-    padding-left:30px;
+    padding-top: 20px;
+    
 }
 .sideNav h1{
     color: white;
@@ -672,13 +672,12 @@ input.fill:focus ~ label, input.fill:valid ~ label {
 
     .footer{
         display: flex;
-        align-items: center;
-        justify-content:space-between;
-        /*These two lines made the button stick to the bottom*/
+        justify-content: center;
+        /*These two lines make the button stick to the bottom*/
         position: fixed;
         bottom: 0;
         width:90%;
-        height:12vh;
+        height:12vh; /*footer button fix?*/
     }
     /*TODO: Do we want to make the link highlights disappear?*/
     .noselect {
