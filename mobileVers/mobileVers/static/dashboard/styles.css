@@ -197,7 +197,7 @@ td {
     
     .item.large {
     /*background-color: red;*/
-    height: 350px;
+    height: fit-content;
     }
 
     .item.medium {
