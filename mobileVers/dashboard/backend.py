@@ -5,6 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.backends import ModelBackend, UserModel
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from django.contrib.auth.hashers import check_password
+
 from django.conf import settings
 
 #below imports needed for blob storage
@@ -54,7 +55,6 @@ def files_to_string(file_list, request):
             if counter == 3:
                 list_string += ", "
                 counter = 2
-
             elif counter == 2:
                 list_string += ", "
                 counter = 1
@@ -101,7 +101,6 @@ def what_page(user,request):
             value = request.user.attestations
         except AttributeError or ObjectDoesNotExist:
             return "application:attestation"
-        
         return "dashboard:dashboard"
 
     else:

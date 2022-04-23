@@ -24,7 +24,7 @@
 
         <script type="text/javascript">
             function googleTranslateElementInit() {
-            new google.translate.TranslateElement({pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+            new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages : 'ar,es,fr,pt,zh-CN,zh-TW,tl,eo,de,ht,hi,hmn,id,ja,jv,ko,rw,ko,ms,my,mi,pt,pa,ru,so,sw,uk,vi,xh,yo,zu', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
         }
         </script>
             
@@ -33,7 +33,7 @@
     </head>
 
     <body>
-        <div style="display: flex; justify-content: flex-end" id="google_translate_element"></div>
+        <div style="position: fixed; bottom: 0%; right: 1%; display: flex; justify-content: flex-end; background-color: #FFB300; height: 30px; width: auto;" id="google_translate_element"></div>
         <div class=nav>
             {% block backurl %}
             {% endblock %}    

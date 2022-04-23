@@ -155,6 +155,7 @@ td {
         box-sizing: border-box;
         font-size: 22px;
         font-family: "Helvetica", sans-serif;
+
         /*color: #333333; commented this out, for some reason this breaks google translate and makes css invalid... ONLY IN GOOGLE TRANSLATE*/
       }
       
@@ -196,7 +197,7 @@ td {
     
     .item.large {
     /*background-color: red;*/
-    height: 350px;
+    height: fit-content;
     }
 
     .item.medium {
@@ -373,12 +374,18 @@ td {
         background-color: white;
         border-radius: 3vw;
         border: 1px solid var(--darkblue);
-        padding: 1px 15px;
+        padding: 2px 15px;
         color:var(--darkblue);
         text-align: center;
-        height:max(3.2vw, 16px);
+        height:fit-content;
         font-size: max(3vw, 12px);
         overflow: hidden;
+    }
+    .linkQA{
+        font-size:13px;
+        display: block;
+        text-align: center;
+        text-decoration: none;
     }
 
     /*Backgrounds for homepage*/
