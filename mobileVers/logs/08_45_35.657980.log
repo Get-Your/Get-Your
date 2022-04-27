@@ -1,0 +1,6 @@
+[27/Apr/2022 08:45:36] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[27/Apr/2022 08:45:36] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[27/Apr/2022 08:45:45] INFO [django.server:157] "GET / HTTP/1.1" 200 14532
+[27/Apr/2022 08:45:45] INFO [django.server:157] "GET / HTTP/1.1" 200 14532
+[27/Apr/2022 08:46:58] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetFoCo\GetFoco\mobileVers\application\backend.py changed, reloading.
+[27/Apr/2022 08:46:58] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetFoCo\GetFoco\mobileVers\application\backend.py changed, reloading.
