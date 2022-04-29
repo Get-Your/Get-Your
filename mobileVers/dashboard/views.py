@@ -209,6 +209,10 @@ def filesContinued(request):
                     file_upload = request.user
                     file_upload.address_files.add(instance)
 
+                    #Below is blob / storage code for Azure! Files automatically uploaded to the storage
+                    f.seek(0)
+                    blobStorageUpload(str(instance.document.url), f)
+
                     #file validation using magic found below...
                     filetype = magic.from_file("mobileVers/" + instance.document.url)
                     logging.info(filetype)
