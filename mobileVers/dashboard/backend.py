@@ -53,13 +53,13 @@ def files_to_string(file_list, request):
         if value == True:
             # Also add commas based on counter
             if counter == 3:
-                list_string += ", "
+                list_string += "\n"
                 counter = 2
             elif counter == 2:
-                list_string += ", "
+                list_string += "\n"
                 counter = 1
             elif counter == 1:
-                list_string += ", "
+                list_string += "\n"
                 counter = 0
             else:
                 counter = 3

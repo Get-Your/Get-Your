@@ -42,6 +42,12 @@ def files(request):
                 "1040 Form": request.user.programs.form1040,
     }
 
+    
+    '''
+    Variables:
+    fileNames - used to name the files in the database and file upload
+    fileAmount - number of file uploads per income verified documentation
+    '''
     if request.method == "POST":   
         form = FileForm(request.POST, request.FILES)
         if form.is_valid():
@@ -49,23 +55,27 @@ def files(request):
             if request.user.is_authenticated:
                 instance = form.save(commit=False)
                 instance.user_id = request.user
-                fileList=[]
                 fileNames=[]
                 fileAmount = 0
+                #process is as follows:
+                # 1) file is physically saved from the buffer
+                # 2) file is then SCANNED using magic
+                # 3) file is then deleted or nothing happens if magic sees it's ok
+
+                #update, magic no longer needs to scan from saved file, can now scan from buffer! so with this in mind
+                '''
+                1) file scanned first
+                2) file saved if file is valid
+                '''
                 for f in request.FILES.getlist('document'):
                     fileAmount += 1
-                    fileList.append(str(fileAmount))
                     instance.document.save( datetime.datetime.now().isoformat() + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files: format = iso format (f,f) = (name of file, actual file)
                     fileNames.append(str(instance.document))
                     file_upload = request.user
                     file_upload.files.add(instance)
-                    
-                    #Below is blob / storage code for Azure! Files automatically uploaded to the storage
-                    f.seek(0)
-                    blobStorageUpload(str(instance.document.url), f)
-
                     #fileValidation found below
                     filetype = magic.from_file("mobileVers/" + instance.document.url)
+                    #filetype = magic.from_buffer(f.read())
                     logging.info(filetype)
                     if "PNG" in filetype:
                         pass
@@ -78,17 +88,29 @@ def files(request):
                     else:
                         logging.error("File is not a valid file type. file is: " + filetype)
                         instance.document.delete()
+                        if instance.document_title == "SNAP":
+                            file_list = "SNAP Card"
+                        if instance.document_title == "Free and Reduced Lunch":
+                            file_list = "PSD Reduced Lunch Approval Letter"
+                        if instance.document_title == "ACP Letter":
+                            file_list = "Affordable Connectivity Program"
+                        if instance.document_title == "Identification":
+                            file_list = "Identification"
+                        if instance.document_title == "1040 Form":
+                            file_list = "1040 Form"
                         return render(request, 'dashboard/files.html', {
-                            "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
-                            'form':form,
-                            'programs': file_list,
-                            'program_string': files_to_string(file_list, request),
-                            'step':5,
-                            'formPageNum':6,
-                            'Title': "Files"
+                                "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
+                                'form':form,
+                                'programs': file_list,
+                                'program_string': file_list,
+                                'step':5,
+                                'formPageNum':6,
+                                'Title': "Files"
                             })
+                    #Below is blob / storage code for Azure! Files automatically uploaded to the storage
+                    f.seek(0)
+                    blobStorageUpload(str(instance.document.url), f)
                 #below the code to update the database to allow for MULTIPLE files AND change the name of the database upload!
-                #instance.document = str(request.user.email)+  str(fileList) this saves with email appeneded to number of files
                 instance.document = str(fileNames)
                 instance.save()
                 
@@ -123,7 +145,7 @@ def files(request):
                             'formPageNum':6,
                             'Title': "Files"
                         })
-                # if not options are selected, they must upload their tax form, the code below allows for that.
+                # if no options are selected, they must upload their tax form, the code below allows for that.
                 if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True and request.user.programs.ebb_acf != True:
                     return redirect(reverse("dashboard:manualVerifyIncome"))
                 else:
@@ -209,12 +231,9 @@ def filesContinued(request):
                     file_upload = request.user
                     file_upload.address_files.add(instance)
 
-                    #Below is blob / storage code for Azure! Files automatically uploaded to the storage
-                    f.seek(0)
-                    blobStorageUpload(str(instance.document.url), f)
-
                     #file validation using magic found below...
-                    filetype = magic.from_file("mobileVers/" + instance.document.url)
+                    #filetype = magic.from_file("mobileVers/" + instance.document.url)
+                    filetype = magic.from_buffer(f.read())
                     logging.info(filetype)
                     if "PNG" in filetype:
                         pass
@@ -227,15 +246,20 @@ def filesContinued(request):
                     else:
                         logging.error("File is not a valid file type. file is: " + filetype)
                         instance.document.delete()
-                        return render(request, "dashboard/filesContinued.html", {
-                            "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
-                            'form':form,
-                            'programs': file_list,
-                            'program_string': files_to_string(file_list, request),
-                            'step':2,
-                            'formPageNum':2,
-                            'Title': "Files Continued"})
+                        if instance.document_title == "Utility":
+                            file_list = "Utility Bill"
+                        return render(request, 'dashboard/filesContinued.html', {
+                                "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
+                                'form':form,
+                                'programs': file_list,
+                                'program_string': file_list,
+                                'step':2,
+                                'formPageNum':2,
+                                'Title': "Files Continued"})
                 
+                #Below is blob / storage code for Azure! Files automatically uploaded to the storage
+                f.seek(0)
+                blobStorageUpload(str(instance.document.url), f)
                 #below the code to update the database to allow for MULTIPLE files AND change the name of the database upload!
                 #instance.document = str(request.user.email)+  str(fileList) this saves with email appeneded to number of files
                 instance.document = str(fileNames) 
