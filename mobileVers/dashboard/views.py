@@ -64,18 +64,13 @@ def files(request):
 
                 #update, magic no longer needs to scan from saved file, can now scan from buffer! so with this in mind
                 '''
-                1) file scanned first
-                2) file saved if file is valid
+                1) For loop #1 file(s) scanned first
+                2) For Loop #2 file saved if file(s) are valid
                 '''
                 for f in request.FILES.getlist('document'):
-                    fileAmount += 1
-                    instance.document.save( datetime.datetime.now().isoformat() + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files: format = iso format (f,f) = (name of file, actual file)
-                    fileNames.append(str(instance.document))
-                    file_upload = request.user
-                    file_upload.files.add(instance)
                     #fileValidation found below
-                    filetype = magic.from_file("mobileVers/" + instance.document.url)
-                    #filetype = magic.from_buffer(f.read())
+                    #filetype = magic.from_file("mobileVers/" + instance.document.url)
+                    filetype = magic.from_buffer(f.read())
                     logging.info(filetype)
                     if "PNG" in filetype:
                         pass
@@ -87,7 +82,6 @@ def files(request):
                         pass
                     else:
                         logging.error("File is not a valid file type. file is: " + filetype)
-                        instance.document.delete()
                         if instance.document_title == "SNAP":
                             file_list = "SNAP Card"
                         if instance.document_title == "Free and Reduced Lunch":
@@ -107,9 +101,16 @@ def files(request):
                                 'formPageNum':6,
                                 'Title': "Files"
                             })
+                for f in request.FILES.getlist('document'):
+                    fileAmount += 1
+                    instance.document.save( datetime.datetime.now().isoformat() + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files: format = iso format (f,f) = (name of file, actual file)
+                    fileNames.append(str(instance.document))
+                    file_upload = request.user
+                    file_upload.files.add(instance)
                     #Below is blob / storage code for Azure! Files automatically uploaded to the storage
                     f.seek(0)
                     blobStorageUpload(str(instance.document.url), f)
+            
                 #below the code to update the database to allow for MULTIPLE files AND change the name of the database upload!
                 instance.document = str(fileNames)
                 instance.save()
