@@ -2,3 +2,4 @@
 *.pyc
 settings.json
 /.env
+/.dockerignore
