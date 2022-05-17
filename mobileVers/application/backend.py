@@ -361,7 +361,7 @@ def broadcast_program_enrolled_email(email, counter):
     """
     Initial sent email to clients if they are marked as "qualified" in the database (after going through verification process)
 
-    Utilizes SendGrid TEMPLATE_ID = "d-9769c069b8aa4870bea547f600362ed0": Program Approval, lets clients know which programs they were accepted into
+    Utilizes SendGrid DynamicEmail template Program Approval, lets clients know which programs they were accepted into
     and any possible INITIAL next steps, more steps may be required per program
 
 
@@ -385,7 +385,7 @@ def broadcast_program_enrolled_email(email, counter):
         Sendgrid sends email
 
     """
-    TEMPLATE_ID = "d-9769c069b8aa4870bea547f600362ed0"
+    TEMPLATE_ID = settings.TEMPLATE_ID_DYNAMIC_EMAIL
     message = Mail(
         from_email='getfoco@fcgov.com',
         to_emails=email)
