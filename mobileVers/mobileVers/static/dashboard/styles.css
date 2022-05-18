@@ -1,3 +1,9 @@
+/*
+*This program is free software: you can redistribute it and/or modify
+*it under the terms of the GNU General Public License as published by
+*the Free Software Foundation, either version 3 of the License, or
+*(at your option) any later version
+*/
 /*This may not work for internet explorer, the colors*/
 :root {
     --darkblue: #13467D;
@@ -155,7 +161,7 @@ td {
         box-sizing: border-box;
         font-size: 22px;
         font-family: "Helvetica", sans-serif;
-        color: #333333;
+        /*color: #333333;*/
       }
       
       .container {
