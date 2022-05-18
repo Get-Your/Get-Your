@@ -1,7 +1,13 @@
+"""
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version
+"""
+
 '''
 Here you'll find some useful backend logic / functions used in the main application, most of these functions are used to 
 supplement the application and to keep views.py clutter to a minimum!
-
 '''
 
 
