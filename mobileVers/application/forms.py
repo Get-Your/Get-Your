@@ -10,6 +10,8 @@ from django.db.models.fields import CharField, DateField, TextField
 from django.forms import widgets
 from django.contrib.auth.password_validation import validate_password
 
+from dashboard.models import TaxInformation
+
 from .models import User, Addresses, Eligibility, programs, choices, addressLookup, futureEmails, attestations, MoreInfo
 
 # form for user account creation
@@ -90,7 +92,13 @@ class MoreInfoForm(forms.ModelForm):
         fields = ['dependentsName','dependentsBirthdate','dependentInformation']
         widgets = {'dependentInformation': forms.HiddenInput(),}
 
- 
+
+class FilesInfoForm(forms.ModelForm):
+    last4SSN = forms.DecimalField(label='Because you uploaded an American Connectivity Letter, please enter the last four digits of your SSN')
+    class Meta:
+        model = TaxInformation
+        fields = ['last4SSN']
+
 
 # programs they are available for
 class programForm(forms.ModelForm):

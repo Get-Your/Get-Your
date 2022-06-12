@@ -47,8 +47,6 @@ def files(request):
                 "Identification": request.user.programs.Identification,
                 "1040 Form": request.user.programs.form1040,
     }
-
-    
     '''
     Variables:
     fileNames - used to name the files in the database and file upload
@@ -155,6 +153,9 @@ def files(request):
                 # if no options are selected, they must upload their tax form, the code below allows for that.
                 if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True and request.user.programs.ebb_acf != True:
                     return redirect(reverse("dashboard:manualVerifyIncome"))
+                # if american connectivity program is chosen
+                elif request.user.programs.ebb_acf == True:
+                    return redirect(reverse("application:filesInfoNeeded"))
                 else:
                     return redirect(reverse("application:attestation")) 
             else:

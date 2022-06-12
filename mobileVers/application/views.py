@@ -6,6 +6,7 @@ the Free Software Foundation, either version 3 of the License, or
 """
 from concurrent.futures.process import _python_exit
 import json
+from multiprocessing.sharedctypes import Value
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login, logout
 from django.forms.models import modelformset_factory
@@ -15,7 +16,7 @@ from django.contrib import messages
 from django.http import QueryDict
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from .forms import UserForm, AddressForm, EligibilityForm, programForm, addressLookupForm, futureEmailsForm, MoreInfoForm, attestationForm
+from .forms import FilesInfoForm, UserForm, AddressForm, EligibilityForm, programForm, addressLookupForm, futureEmailsForm, MoreInfoForm, attestationForm
 from .backend import addressCheck, validateUSPS, enroll_connexion_updates
 from .models import AMI, MoreInfo, iqProgramQualifications
 
@@ -479,6 +480,39 @@ def account(request):
     })
 #    else:
 #        return redirect(reverse(page))
+def filesInfoNeeded(request):
+    '''
+    can be used in the future for more information that may be needed from client pertaining to IQ programs
+    i.e. ACP requires last 4 digits of SSN
+    '''
+    if request.method =="POST":
+        try:
+            existing = request.user.MoreInfo
+            form = FilesInfoForm(request.POST,instance = existing)
+        except AttributeError or ObjectDoesNotExist:
+            form = FilesInfoForm(request.POST or None)
+        if form.is_valid():
+            try:
+                instance = form.save(commit=False)
+                instance.user_id = request.user
+                instance.last4SSN = form.cleaned_data['last4SSN']
+                instance.save()
+                return redirect(reverse("application:attestation"))
+            except IntegrityError:
+                print("User already has information filled out for this section")
+                return redirect(reverse("application:filesInfoNeeded"))
+        else:
+            print(form.data)
+    else:
+        form = FilesInfoForm()
+     
+    return render(request, "application/filesInfoNeeded.html",{
+        'step':5,
+        'form':form,
+        'formPageNum':6,
+        'Title': "IQ Program Info Needed"
+    })
+     
 
 def moreInfoNeeded(request):
     if request.method =="POST":

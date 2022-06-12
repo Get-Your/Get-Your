@@ -66,6 +66,7 @@ class TaxInformation(TimeStampedModel):
     primary_key=True,
     )
     TaxBoxAmount = models.DecimalField(max_digits=9, null=True, blank=True, decimal_places=2,)
+    last4SSN = models.DecimalField(null=True,max_digits=4, decimal_places=0, blank=True)
 
 
 class Feedback(TimeStampedModel):
