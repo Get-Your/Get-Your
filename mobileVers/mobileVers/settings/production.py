@@ -63,7 +63,6 @@ TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN") 
 TWILIO_NUMBER = env("TWILIO_NUMBER")
 USPS_SID = env("USPS_SID") 
-DB_NAME = env("DB_NAME")
 POSTGRESQLPW = env("POSTGRESQLPW")
 SENDGRID_API_KEY = env('SENDGRID_API_KEY')
 TEMPLATE_ID = env("TEMPLATE_ID")
@@ -72,9 +71,9 @@ TEMPLATE_ID_DYNAMIC_EMAIL = env("TEMPLATE_ID_DYNAMIC_EMAIL")
 ACCOUNT_NAME = env("ACCOUNT_NAME")
 ACCOUNT_KEY = env("ACCOUNT_KEY")
 CONTAINER_NAME = env("CONTAINER_NAME")
+IS_PROD = True
 
-
-# SECURITY WARNING: don't run with debug turned on in production!
+# SECURITY WARNING: don't run with debug turned on for any live site!
 DEBUG = False
 
 # ANDREW: Make sure to change this later!
@@ -160,7 +159,7 @@ WSGI_APPLICATION = 'mobileVers.wsgi.application'
 DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.postgresql',
-         'NAME': DB_NAME,
+         'NAME': 'getfoco_prod',
          'USER': 'getfocoadmin',
          'PASSWORD': POSTGRESQLPW,
          'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'
