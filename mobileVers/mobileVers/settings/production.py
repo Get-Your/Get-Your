@@ -63,6 +63,7 @@ TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN") 
 TWILIO_NUMBER = env("TWILIO_NUMBER")
 USPS_SID = env("USPS_SID") 
+DB_NAME = env("DB_NAME")
 POSTGRESQLPW = env("POSTGRESQLPW")
 SENDGRID_API_KEY = env('SENDGRID_API_KEY')
 TEMPLATE_ID = env("TEMPLATE_ID")
@@ -156,18 +157,15 @@ WSGI_APPLICATION = 'mobileVers.wsgi.application'
          }
  }'''
 
-
 DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.postgresql',
-         'NAME': 'getfoco_dev',
-         'USER': 'getfocoadmin@getfoco-singleserver.postgres.database.azure.com',
+         'NAME': DB_NAME,
+         'USER': 'getfocoadmin',
          'PASSWORD': POSTGRESQLPW,
-         'HOST': 'getfoco-singleserver.postgres.database.azure.com'
+         'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'
          }
  }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
