@@ -153,7 +153,7 @@ def files(request):
                 # if no options are selected, they must upload their tax form, the code below allows for that.
                 if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True and request.user.programs.ebb_acf != True:
                     return redirect(reverse("dashboard:manualVerifyIncome"))
-                # if american connectivity program is chosen
+                # if affordable connectivity program is chosen
                 elif request.user.programs.ebb_acf == True:
                     return redirect(reverse("application:filesInfoNeeded"))
                 else:
