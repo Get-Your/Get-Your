@@ -94,7 +94,7 @@ class MoreInfoForm(forms.ModelForm):
 
 
 class FilesInfoForm(forms.ModelForm):
-    last4SSN = forms.DecimalField(label='Because you uploaded an American Connectivity Letter, please enter the last four digits of your SSN')
+    last4SSN = forms.DecimalField(label='Because you uploaded an Affordable Connectivity Program confirmation, please enter the last four digits of your SSN')
     class Meta:
         model = TaxInformation
         fields = ['last4SSN']
