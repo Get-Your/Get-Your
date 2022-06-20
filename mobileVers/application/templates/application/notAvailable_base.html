@@ -30,6 +30,11 @@ the Free Software Foundation, either version 3 of the License, or
     </head>
 
     <body>
+
+        {% if is_prod is False %}
+            <div style="background-color: #FF5E5E; text-align: center; font-size: x-large; ">WARNING: THIS SITE IS FOR TESTING ONLY<br>To enroll in Get FoCo, go to <a href="https://fcgov.com/getfoco" target="_blank">https://fcgov.com/getfoco</a> instead</div>
+        {% endif %}
+        
         <div class="content spaceAround" style="padding: 0 0 0 2vw;">
     
         <h1><b>Your address wasn't found in our service area, so we can't extend support to you.</b></h1>
