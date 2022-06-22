@@ -30,7 +30,7 @@ def user_directory_path(instance, filename):
 
 class Form(TimeStampedModel):
     user_id = models.ForeignKey(User, related_name ="UserFiles", on_delete=models.CASCADE)
-    document = models.FileField(validators=[FileExtensionValidator(['pdf','jpg','png'],)], max_length=5000, upload_to=user_directory_path) #upload_to="mobileVers/uploads/" + str(datetime.date.today()) + "/" this uploads file to date and time of day
+    document = models.FileField(max_length=5000, upload_to=user_directory_path) #upload_to="mobileVers/uploads/" + str(datetime.date.today()) + "/" this uploads file to date and time of day
     form_titles = (
         ('SNAP', 'SNAP'),
         ('Free and Reduced Lunch', 'Free and Reduced Lunch'),
