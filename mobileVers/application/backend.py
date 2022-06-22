@@ -9,9 +9,6 @@ the Free Software Foundation, either version 3 of the License, or
 Here you'll find some useful backend logic / functions used in the main application, most of these functions are used to 
 supplement the application and to keep views.py clutter to a minimum!
 '''
-
-
-
 import csv
 from usps import USPSApi, Address
 import re

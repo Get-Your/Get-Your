@@ -46,6 +46,10 @@ the Free Software Foundation, either version 3 of the License, or
     <!-- TODO: make a message to only look at this on mobile-->
     
     <body style="margin:0; padding:0">
+
+        {% if is_prod is False %}
+            <div style="background-color: #FF5E5E; text-align: center; font-size: x-large; ">WARNING: THIS SITE IS FOR TESTING ONLY<br>To enroll in Get FoCo, go to <a href="https://fcgov.com/getfoco" target="_blank">https://fcgov.com/getfoco</a> instead</div>
+        {% endif %}
         
         <!--NAVBAR-->
         <div id=full-nav>

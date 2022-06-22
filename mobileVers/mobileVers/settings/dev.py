@@ -70,11 +70,11 @@ TEMPLATE_ID_PW_RESET = env("TEMPLATE_ID_PW_RESET")
 TEMPLATE_ID_DYNAMIC_EMAIL = env("TEMPLATE_ID_DYNAMIC_EMAIL")
 ACCOUNT_NAME = env("ACCOUNT_NAME")
 ACCOUNT_KEY = env("ACCOUNT_KEY")
-CONTAINER_NAME = env("CONTAINER_NAME")
+CONTAINER_NAME = env("CONTAINER_NAME")+'dev'
+IS_PROD = False
 
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# SECURITY WARNING: don't run with debug turned on for any live site!
+DEBUG = False
 
 # ANDREW: Make sure to change this later!
 ALLOWED_HOSTS = ["*", "192.168.0.15","localhost"]
@@ -156,18 +156,15 @@ WSGI_APPLICATION = 'mobileVers.wsgi.application'
          }
  }'''
 
-
 DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.postgresql',
          'NAME': 'getfoco_dev',
-         'USER': 'getfocoadmin@getfoco-singleserver.postgres.database.azure.com',
+         'USER': 'getfocoadmin',
          'PASSWORD': POSTGRESQLPW,
-         'HOST': 'getfoco-singleserver.postgres.database.azure.com'
+         'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'
          }
  }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators

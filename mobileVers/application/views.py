@@ -7,6 +7,7 @@ the Free Software Foundation, either version 3 of the License, or
 from concurrent.futures.process import _python_exit
 import json
 from multiprocessing.sharedctypes import Value
+from django.conf import settings as django_settings
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login, logout
 from django.forms.models import modelformset_factory
@@ -285,9 +286,14 @@ def index(request):
     
     form = addressLookupForm() 
     logout(request)
-    return render(request, 'application/index.html', {
-            'form':form,
-        })
+    return render(
+        request,
+        'application/index.html',
+        {
+            'form': form,
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 def address(request):
 
@@ -310,13 +316,18 @@ def address(request):
     else:
         form = AddressForm()
 
-    return render(request, 'application/address.html', {
-        'form':form,
-        'step':2,
-        'request.user':request.user,
-        'formPageNum':formPageNum,
-        'Title': "Address"
-        })
+    return render(
+        request,
+        'application/address.html',
+        {
+            'form':form,
+            'step':2,
+            'request.user':request.user,
+            'formPageNum':formPageNum,
+            'Title': "Address",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 
 def addressCorrection(request):
@@ -367,13 +378,18 @@ def addressCorrection(request):
         print('Address match not found - proceeding to addressCorrection')
                             
         program_string = [request.user.addresses.address, request.user.addresses.address2, request.user.addresses.city + " " + request.user.addresses.state + " " + str(request.user.addresses.zipCode)]
-        return render(request, 'application/addressCorrection.html',  {
-            'step':2,
-            'formPageNum':formPageNum,
-            'program_string': program_string,
-            'program_string_2': program_string_2,
-            'Title': "Address Correction"
-        })
+        return render(
+            request,
+            'application/addressCorrection.html',
+            {
+                'step':2,
+                'formPageNum':formPageNum,
+                'program_string': program_string,
+                'program_string_2': program_string_2,
+                'Title': "Address Correction",
+                'is_prod': django_settings.IS_PROD,
+                },
+            )
 
 def takeUSPSaddress(request):
     try:
@@ -472,12 +488,17 @@ def account(request):
     else:
         form = UserForm()
 
-    return render(request, 'application/account.html', {
-    'form':form,
-    'step':1,
-    'formPageNum':formPageNum,
-    'Title': "Account",
-    })
+    return render(
+        request,
+        'application/account.html',
+        {
+            'form':form,
+            'step':1,
+            'formPageNum':formPageNum,
+            'Title': "Account",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 #    else:
 #        return redirect(reverse(page))
 def filesInfoNeeded(request):
@@ -506,12 +527,17 @@ def filesInfoNeeded(request):
     else:
         form = FilesInfoForm()
      
-    return render(request, "application/filesInfoNeeded.html",{
-        'step':5,
-        'form':form,
-        'formPageNum':6,
-        'Title': "IQ Program Info Needed"
-    })
+    return render(
+        request,
+        "application/filesInfoNeeded.html",
+        {
+            'step':5,
+            'form':form,
+            'formPageNum':6,
+            'Title': "IQ Program Info Needed",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
      
 
 def moreInfoNeeded(request):
@@ -545,16 +571,21 @@ def moreInfoNeeded(request):
             householdNum=request.user.eligibility.dependents_id,
             active=True,
             ).values('householdNum').first()['householdNum']"""
-    return render(request, "application/moreInfoNeeded.html",{
-        'step':3,
-        #"""'dependent': householdNum,
-        #'list':list(range(householdNum)),"""
-        'dependent': str(request.user.eligibility.dependents),
-        'list':list(range(request.user.eligibility.dependents)),
-        'form':form,
-        'formPageNum':6,
-        'Title': "More Info Needed"
-    })
+    return render(
+        request,
+        "application/moreInfoNeeded.html",
+        {
+            'step':3,
+            #"""'dependent': householdNum,
+            #'list':list(range(householdNum)),"""
+            'dependent': str(request.user.eligibility.dependents),
+            'list':list(range(request.user.eligibility.dependents)),
+            'form':form,
+            'formPageNum':6,
+            'Title': "More Info Needed",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
      
     '''"""householdNum = AMI.objects.filter(
             householdNum=request.user.eligibility.dependents_id,
@@ -623,12 +654,17 @@ def finances(request):
     else:
         form = EligibilityForm()
 
-    return render(request, 'application/finances.html', {
-        'form':form,
-        'step':3,
-        'formPageNum':formPageNum,
-        'Title': "Finances"
-    })
+    return render(
+        request,
+        'application/finances.html',
+        {
+            'form':form,
+            'step':3,
+            'formPageNum':formPageNum,
+            'Title': "Finances",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 def ConnexionQuickApply(request):
     obj = request.user.eligibility
@@ -668,8 +704,11 @@ def ConnexionQuickApply(request):
             return render(
                 request,
                 "application/quickApply.html",
-                {'programName': 'Reduced-Rate Connexion',
-                'Title': "Reduced-Rate Connexion Quick Apply Complete"},
+                {
+                    'programName': 'Reduced-Rate Connexion',
+                    'Title': "Reduced-Rate Connexion Quick Apply Complete",
+                    'is_prod': django_settings.IS_PROD,
+                    },
                 )
     else:
         obj.ConnexionQualified = QualificationStatus.NOTQUALIFIED.name
@@ -679,8 +718,11 @@ def ConnexionQuickApply(request):
         return render(
             request,
             'application/notQualify.html',
-            {'programName': 'Reduced-Rate Connexion',
-            'Title': "Reduced-Rate Connexion Not Qualified"},
+            {
+                'programName': 'Reduced-Rate Connexion',
+                'Title': "Reduced-Rate Connexion Not Qualified",
+                'is_prod': django_settings.IS_PROD,
+                },
             )
 
 def GRQuickApply(request):
@@ -702,8 +744,11 @@ def GRQuickApply(request):
         return render(
             request,
             "application/quickApply.html",
-            {'programName': 'Grocery Tax Rebate',
-            'Title': "Grocery Tax Rebate Quick Apply Complete"},
+            {
+                'programName': 'Grocery Tax Rebate',
+                'Title': "Grocery Tax Rebate Quick Apply Complete",
+                'is_prod': django_settings.IS_PROD,
+                },
             )
     else:
         obj.GRqualified = QualificationStatus.NOTQUALIFIED.name
@@ -711,8 +756,11 @@ def GRQuickApply(request):
         return render(
             request,
             "application/notQualify.html",
-            {'programName': 'Grocery Tax Rebate',
-            'Title': "Grocery Tax Rebate Not Qualified"},
+            {
+                'programName': 'Grocery Tax Rebate',
+                'Title': "Grocery Tax Rebate Not Qualified",
+                'is_prod': django_settings.IS_PROD,
+                },
             )
     print(obj.GRqualified)
 
@@ -734,8 +782,11 @@ def RecreationQuickApply(request):
         return render(
             request,
             "application/quickApply.html",
-            {'programName': 'Recreation',
-            'Title': "Recreation Quick Apply Complete"},
+            {
+                'programName': 'Recreation',
+                'Title': "Recreation Quick Apply Complete",
+                'is_prod': django_settings.IS_PROD,
+                },
             )
     else:
         obj.RecreationQualified = QualificationStatus.NOTQUALIFIED.name        
@@ -744,8 +795,11 @@ def RecreationQuickApply(request):
         return render(
             request,
             "application/notQualify.html",
-            {'programName': 'Recreation',
-            'Title': "Recreation Not Qualified"},
+            {
+                'programName': 'Recreation',
+                'Title': "Recreation Not Qualified",
+                'is_prod': django_settings.IS_PROD,
+                },
             )
 
 
@@ -770,12 +824,17 @@ def attestation(request):
     else:
         form = attestationForm()
 
-    return render(request, "application/attestation.html",{
-        'form':form,
-        'step':6,
-        'formPageNum':formPageNum,
-        'Title': "Attestation"
-    })
+    return render(
+        request,
+        "application/attestation.html",
+        {
+            'form':form,
+            'step':6,
+            'formPageNum':formPageNum,
+            'Title': "Attestation",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 
 
@@ -801,12 +860,17 @@ def programs(request):
     else:
         form = programForm()
 
-    return render(request, 'application/programs.html', {
-    'form':form,
-    'step':4,
-    'formPageNum':formPageNum,
-    'Title': "Programs"
-    })
+    return render(
+        request,
+        'application/programs.html',
+        {
+            'form':form,
+            'step':4,
+            'formPageNum':formPageNum,
+            'Title': "Programs",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 #    else:
 #        return redirect(reverse(page))
@@ -820,16 +884,44 @@ def programs(request):
 
 
 def notAvailable(request):
-    return render(request, 'application/notAvailable.html',{'Title': "Address Not in GMA"})
+    return render(
+        request,
+        'application/notAvailable.html',
+        {
+            'Title': "Address Not in GMA",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 def quickAvailable(request):
-    return render(request, 'application/quickAvailable.html', {'Title': "Quick Connexion Available"})
+    return render(
+        request,
+        'application/quickAvailable.html',
+        {
+            'Title': "Quick Connexion Available",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 def quickNotAvailable(request):
-    return render(request, 'application/quickNotAvailable.html', {'Title': "Quick Connexion Not Available"}) 
+    return render(
+        request,
+        'application/quickNotAvailable.html',
+        {
+            'Title': "Quick Connexion Not Available",
+            'is_prod': django_settings.IS_PROD,
+            },
+        ) 
 
 def quickNotFound(request):
-    return render(request, 'application/quickNotFound.html',{'Title': "Quick Connexion Not Found"}) 
+    return render(
+        request,
+        'application/quickNotFound.html',
+        {
+            'Title': "Quick Connexion Not Found",
+            'is_prod': django_settings.IS_PROD,
+            },
+        ) 
 
 def quickComingSoon(request): 
     
@@ -846,11 +938,16 @@ def quickComingSoon(request):
                 
     
     form = futureEmailsForm()
-    return render(request, 'application/quickComingSoon.html', {
+    return render(
+        request,
+        'application/quickComingSoon.html',
+        {
             'form':form,
             'model_url': reverse("application:quickComingSoon"),
-            'Title': "Quick Connexion Coming Soon"
-        })
+            'Title': "Quick Connexion Coming Soon",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 def comingSoon(request): 
 
@@ -875,7 +972,8 @@ def comingSoon(request):
                         'programName': 'Reduced-Rate Connexion',
                         'enroll_failure': enrollFailure,
                         'is_enrolled': doEnroll,
-                        'Title': "Reduced-Rate Connexion Quick Apply Complete"
+                        'Title': "Reduced-Rate Connexion Quick Apply Complete",
+                        'is_prod': django_settings.IS_PROD,
                         },
                     )
 
@@ -907,42 +1005,75 @@ def comingSoon(request):
                     'programName': 'Reduced-Rate Connexion',
                     'enroll_failure': enrollFailure,
                     'is_enrolled': doEnroll,
-                    'Title': "Reduced-Rate Connexion Quick Apply Complete"
+                    'Title': "Reduced-Rate Connexion Quick Apply Complete",
+                    'is_prod': django_settings.IS_PROD,
                     },
                 )
         
     form = futureEmailsForm()
-    return render(request, 'application/comingSoon.html', {
+    return render(
+        request,
+        'application/comingSoon.html',
+        {
             'form':form,
             'model_url': reverse("application:comingSoon"),
-            'Title': "Reduced-Rate Connexion Communication"
-        })
+            'Title': "Reduced-Rate Connexion Communication",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 def privacyPolicy(request):
-    return render(request, 'application/privacyPolicy.html',)
+    return render(
+        request,
+        'application/privacyPolicy.html',
+        {
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 def dependentInfo(request):
-    return render(request, 'application/dependentInfo.html',)
+    return render(
+        request,
+        'application/dependentInfo.html',
+        {
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 def mayQualify(request):
-    return render(request, 'application/mayQualify.html',{
-        'step':3,
-        'formPageNum':formPageNum,
-        'Title': "May Qualify for Programs"
-    })
+    return render(
+        request,
+        'application/mayQualify.html',
+        {
+            'step':3,
+            'formPageNum':formPageNum,
+            'Title': "May Qualify for Programs",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 # TODO: The 'CallUs' page should no longer be referenced elsewhere - ensure this is true and remove this function
 # (also remove from urls.py)
 def callUs(request):
-    return render(request, 'application/callUs.html',{
-        'step':3,
-        'formPageNum':formPageNum,
-    })
+    return render(
+        request,
+        'application/callUs.html',
+        {
+            'step':3,
+            'formPageNum':formPageNum,
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 
 def getReady(request):
-     return render(request, 'application/getReady.html',{
-        'step':0,
-        'formPageNum':formPageNum,
-        'Title': "Ready some Necessary Documents"
-    })
+     return render(
+         request,
+         'application/getReady.html',
+         {
+            'step':0,
+            'formPageNum':formPageNum,
+            'Title': "Ready some Necessary Documents",
+            'is_prod': django_settings.IS_PROD,
+            },
+         )
