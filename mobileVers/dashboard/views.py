@@ -278,7 +278,7 @@ def filesContinued(request):
                         pass
                     else:
                         logging.error("File is not a valid file type. file is: " + filetype)
-                        if instance.document_title == "Utility Bill":
+                        if instance.document_title == "Utility":
                             file_list = "Utility Bill"
                         return render(request,'dashboard/filesContinued.html',
                             {
