@@ -146,7 +146,7 @@ WSGI_APPLICATION = 'mobileVers.wsgi.application'
 }'''
 
  # TODO old database found here, here for legacy isssues but can be deleted once transfer to city tenant is complete
-DATABASES = {
+'''DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.postgresql',
          'NAME': 'getfoco_debug',
@@ -154,9 +154,9 @@ DATABASES = {
          'PASSWORD': POSTGRESQLPW,
          'HOST': 'gyc1.postgres.database.azure.com'
          }
- }
+ }'''
 
-'''DATABASES = {
+DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.postgresql',
          'NAME': 'getfoco_dev',
@@ -164,7 +164,7 @@ DATABASES = {
          'PASSWORD': POSTGRESQLPW,
          'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'
          }
- }'''
+ }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators

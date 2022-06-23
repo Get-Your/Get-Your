@@ -258,16 +258,13 @@ def filesContinued(request):
                 fileList = []
                 fileNames=[]
                 fileAmount = 0
-                
-                for f in request.FILES.getlist('document'):
-                    fileAmount += 1
-                    fileList.append(str(fileAmount))
-                    instance.document.save( datetime.datetime.now().isoformat() + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files: format = iso format (f,f) = (name of file, actual file)
-                    fileNames.append(str(instance.document))
-                    file_upload = request.user
-                    file_upload.address_files.add(instance)
+                '''
+                1) For loop #1 file(s) scanned first
+                2) For Loop #2 file saved if file(s) are valid
+                '''
 
-                    #file validation using magic found below...
+                for f in request.FILES.getlist('document'):
+                    #fileValidation found below
                     #filetype = magic.from_file("mobileVers/" + instance.document.url)
                     filetype = magic.from_buffer(f.read())
                     logging.info(filetype)
@@ -275,18 +272,15 @@ def filesContinued(request):
                         pass
                     elif "JPEG" in filetype:
                         pass
-                    elif "JPG" in filetype:            
+                    elif "JPG" in filetype:
                         pass
                     elif "PDF" in filetype:
                         pass
                     else:
                         logging.error("File is not a valid file type. file is: " + filetype)
-                        instance.document.delete()
-                        if instance.document_title == "Utility":
+                        if instance.document_title == "Utility Bill":
                             file_list = "Utility Bill"
-                        return render(
-                            request,
-                            'dashboard/filesContinued.html',
+                        return render(request,'dashboard/filesContinued.html',
                             {
                                 "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
                                 'form':form,
@@ -298,10 +292,18 @@ def filesContinued(request):
                                 'is_prod': django_settings.IS_PROD,
                                 },
                             )
-                
-                #Below is blob / storage code for Azure! Files automatically uploaded to the storage
-                f.seek(0)
-                blobStorageUpload(str(instance.document.url), f)
+
+                for f in request.FILES.getlist('document'):
+                    fileAmount += 1
+                    fileList.append(str(fileAmount))
+                    instance.document.save( datetime.datetime.now().isoformat() + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files: format = iso format (f,f) = (name of file, actual file)
+                    fileNames.append(str(instance.document))
+                    file_upload = request.user
+                    file_upload.address_files.add(instance)
+                    #Below is blob / storage code for Azure! Files automatically uploaded to the storage
+                    f.seek(0)
+                    blobStorageUpload(str(instance.document.url), f)
+
                 #below the code to update the database to allow for MULTIPLE files AND change the name of the database upload!
                 #instance.document = str(request.user.email)+  str(fileList) this saves with email appeneded to number of files
                 instance.document = str(fileNames) 
