@@ -1,0 +1,26 @@
+[23/Jun/2022 10:48:03] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[23/Jun/2022 10:48:03] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[23/Jun/2022 10:48:13] ERROR [django.request:224] Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetFoCo\GetFoco\mobileVers\application\views.py", line 294, in index
+    'is_prod': django_settings.IS_PROD,
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\conf\__init__.py", line 83, in __getattr__
+    val = getattr(self._wrapped, name)
+AttributeError: 'Settings' object has no attribute 'IS_PROD'
+[23/Jun/2022 10:48:13] ERROR [django.request:224] Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetFoCo\GetFoco\mobileVers\application\views.py", line 294, in index
+    'is_prod': django_settings.IS_PROD,
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\conf\__init__.py", line 83, in __getattr__
+    val = getattr(self._wrapped, name)
+AttributeError: 'Settings' object has no attribute 'IS_PROD'
+[23/Jun/2022 10:48:13] ERROR [django.server:157] "GET / HTTP/1.1" 500 75332
+[23/Jun/2022 10:48:13] ERROR [django.server:157] "GET / HTTP/1.1" 500 75332
