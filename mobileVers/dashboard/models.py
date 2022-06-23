@@ -56,7 +56,7 @@ class residencyForm(TimeStampedModel):
         max_length=30,
         choices=form_titles,
     )
-    document = models.FileField(validators=[FileExtensionValidator(['pdf','jpg','png'],)],max_length=5000,  upload_to=user_directory_path)
+    document = models.FileField(max_length=5000,  upload_to=user_directory_path)
 
 
 class TaxInformation(TimeStampedModel):
