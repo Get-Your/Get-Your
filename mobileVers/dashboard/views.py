@@ -493,7 +493,7 @@ def password_reset_request(request):
                     email_template_name = "dashboard/PasswordReset/password_reset_email.txt"
                     c = {
                         "email":user.email,
-                        'domain':'getfoco.azurewebsites.net', #'getfoco.azurewebsites.net' | '127.0.0.1:8000'
+                        'domain':'getfoco.fcgov.com', #'getfoco.azurewebsites.net' | '127.0.0.1:8000'
                         'site_name': 'Get FoCo',
                         "uid": urlsafe_base64_encode(force_bytes(user.pk)),
                         "user": user,
