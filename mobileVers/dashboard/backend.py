@@ -21,12 +21,17 @@ from .models import User
 
 
 def blobStorageUpload(filename, file):
-                        blob_service_client = BlockBlobService(account_name = settings.ACCOUNT_NAME, account_key=settings.ACCOUNT_KEY) #endpoint_suffix='core.usgovcloudapi.net'
-                        blob_service_client.create_blob_from_bytes( 
-                        container_name = settings.CONTAINER_NAME,
-                        blob_name = filename,
-                        blob = file.read()
-                        )
+    blob_service_client = BlockBlobService(
+        account_name=settings.ACCOUNT_NAME,
+        account_key=settings.ACCOUNT_KEY,
+        endpoint_suffix=settings.FILESTORE_ENDPOINT_SUFFIX,
+        )
+    
+    blob_service_client.create_blob_from_bytes(
+        container_name = settings.CONTAINER_NAME,
+        blob_name = filename,
+        blob = file.read(),
+    )
 
 def authenticate(username=None, password=None):
     User = get_user_model()
