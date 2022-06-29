@@ -31,6 +31,9 @@ class AddressForm(forms.ModelForm):
             'document_title':'Program', 
             'document':'Document Upload',
         }
+        widgets = {
+            'document': ClearableFileInput(attrs={'multiple': True}),
+        }
 
 
 

@@ -70,6 +70,7 @@ TEMPLATE_ID_PW_RESET = env("TEMPLATE_ID_PW_RESET")
 TEMPLATE_ID_DYNAMIC_EMAIL = env("TEMPLATE_ID_DYNAMIC_EMAIL")
 ACCOUNT_NAME = env("ACCOUNT_NAME")
 ACCOUNT_KEY = env("ACCOUNT_KEY")
+FILESTORE_ENDPOINT_SUFFIX = env("FILESTORE_ENDPOINT_SUFFIX")
 CONTAINER_NAME = env("CONTAINER_NAME")
 IS_PROD = True
 
@@ -136,26 +137,6 @@ WSGI_APPLICATION = 'mobileVers.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
-# ANDREW: Add Azure stuff here
-'''DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
-    }
-}'''
-
- # TODO old database found here, here for legacy isssues but can be deleted once transfer to city tenant is complete
-'''DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.postgresql',
-         'NAME': 'getfoco_debug',
-         'USER': 'gycpcdriver@gyc1.postgres.database.azure.com',
-         'PASSWORD': POSTGRESQLPW,
-         'HOST': 'gyc1.postgres.database.azure.com'
-         }
- }'''
-
 DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.postgresql',

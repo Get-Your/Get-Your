@@ -1,0 +1,4 @@
+[23/Jun/2022 12:34:12] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[23/Jun/2022 12:34:12] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[23/Jun/2022 12:34:51] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetFoCo\GetFoco\mobileVers\dashboard\backend.py changed, reloading.
+[23/Jun/2022 12:34:51] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetFoCo\GetFoco\mobileVers\dashboard\backend.py changed, reloading.

@@ -7,7 +7,7 @@ the Free Software Foundation, either version 3 of the License, or
 from django.shortcuts import render, redirect, reverse
 from .forms import FileForm, FeedbackForm, TaxForm, addressVerificationForm, AddressForm
 from decimal import Decimal
-from django.conf import settings   
+from django.conf import settings as django_settings  
 from .models import User, Form
 from application.models import Eligibility
 
@@ -96,15 +96,21 @@ def files(request):
                             file_list = "Identification"
                         if instance.document_title == "1040 Form":
                             file_list = "1040 Form"
-                        return render(request, 'dashboard/files.html', {
+                        return render(
+                            request,
+                            'dashboard/files.html',
+                            {
                                 "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
                                 'form':form,
                                 'programs': file_list,
                                 'program_string': file_list,
                                 'step':5,
                                 'formPageNum':6,
-                                'Title': "Files"
-                            })
+                                'Title': "Files",
+                                'is_prod': django_settings.IS_PROD,
+                                },
+                            )
+                    
                 for f in request.FILES.getlist('document'):
                     fileAmount += 1
                     instance.document.save( datetime.datetime.now().isoformat() + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files: format = iso format (f,f) = (name of file, actual file)
@@ -142,14 +148,20 @@ def files(request):
                         checkAllForms[4] = True
                         file_list["1040 Form"] = False
                 if False in checkAllForms:
-                    return render(request, 'dashboard/files.html', {
+                    return render(
+                        request,
+                        'dashboard/files.html',
+                        {
                             'form':form,
                             'programs': file_list,
                             'program_string': files_to_string(file_list, request),
                             'step':5,
                             'formPageNum':6,
-                            'Title': "Files"
-                        })
+                            'Title': "Files",
+                            'is_prod': django_settings.IS_PROD,
+                            },
+                        )
+                
                 # if no options are selected, they must upload their tax form, the code below allows for that.
                 if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True and request.user.programs.ebb_acf != True:
                     return redirect(reverse("dashboard:manualVerifyIncome"))
@@ -161,18 +173,29 @@ def files(request):
             else:
                 print("notautnehticated")
                 # TODO: Change this link
-                return render(request, 'dashboard/layout.html',)
+                return render(
+                    request,
+                    'dashboard/layout.html',
+                    {
+                        'is_prod': django_settings.IS_PROD,
+                        },
+                    )
     else:
         form = FileForm()
     print(file_list)
-    return render(request, 'dashboard/files.html', {
-    'form':form,
-    'programs': file_list,
-    'program_string': files_to_string(file_list, request),
-    'step':5,
-    'formPageNum':6,
-    'Title': "Files"
-    })
+    return render(
+        request,
+        'dashboard/files.html',
+        {
+            'form':form,
+            'programs': file_list,
+            'program_string': files_to_string(file_list, request),
+            'step':5,
+            'formPageNum':6,
+            'Title': "Files",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 
 
@@ -198,12 +221,17 @@ def addressVerification(request):
     else:
         form = addressVerificationForm()
 
-    return render(request, 'dashboard/addressVerification.html', {
-    'form':form,
-    'step':1,
-    'formPageNum':"2 - Recreation Reduced Fee",
-    'Title': "Address Verification"
-    })
+    return render(
+        request,
+        'dashboard/addressVerification.html',
+        {
+            'form':form,
+            'step':1,
+            'formPageNum':"2 - Recreation Reduced Fee",
+            'Title': "Address Verification",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 #    else:
 #        return redirect(reverse(page))
@@ -230,16 +258,13 @@ def filesContinued(request):
                 fileList = []
                 fileNames=[]
                 fileAmount = 0
-                
-                for f in request.FILES.getlist('document'):
-                    fileAmount += 1
-                    fileList.append(str(fileAmount))
-                    instance.document.save( datetime.datetime.now().isoformat() + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files: format = iso format (f,f) = (name of file, actual file)
-                    fileNames.append(str(instance.document))
-                    file_upload = request.user
-                    file_upload.address_files.add(instance)
+                '''
+                1) For loop #1 file(s) scanned first
+                2) For Loop #2 file saved if file(s) are valid
+                '''
 
-                    #file validation using magic found below...
+                for f in request.FILES.getlist('document'):
+                    #fileValidation found below
                     #filetype = magic.from_file("mobileVers/" + instance.document.url)
                     filetype = magic.from_buffer(f.read())
                     logging.info(filetype)
@@ -247,27 +272,38 @@ def filesContinued(request):
                         pass
                     elif "JPEG" in filetype:
                         pass
-                    elif "JPG" in filetype:            
+                    elif "JPG" in filetype:
                         pass
                     elif "PDF" in filetype:
                         pass
                     else:
                         logging.error("File is not a valid file type. file is: " + filetype)
-                        instance.document.delete()
                         if instance.document_title == "Utility":
                             file_list = "Utility Bill"
-                        return render(request, 'dashboard/filesContinued.html', {
+                        return render(request,'dashboard/filesContinued.html',
+                            {
                                 "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
                                 'form':form,
                                 'programs': file_list,
                                 'program_string': file_list,
                                 'step':2,
                                 'formPageNum':2,
-                                'Title': "Files Continued"})
-                
-                #Below is blob / storage code for Azure! Files automatically uploaded to the storage
-                f.seek(0)
-                blobStorageUpload(str(instance.document.url), f)
+                                'Title': "Files Continued",
+                                'is_prod': django_settings.IS_PROD,
+                                },
+                            )
+
+                for f in request.FILES.getlist('document'):
+                    fileAmount += 1
+                    fileList.append(str(fileAmount))
+                    instance.document.save( datetime.datetime.now().isoformat() + "_" + str(fileAmount) + "_" + str(f),f) # this line allows us to save multiple files: format = iso format (f,f) = (name of file, actual file)
+                    fileNames.append(str(instance.document))
+                    file_upload = request.user
+                    file_upload.address_files.add(instance)
+                    #Below is blob / storage code for Azure! Files automatically uploaded to the storage
+                    f.seek(0)
+                    blobStorageUpload(str(instance.document.url), f)
+
                 #below the code to update the database to allow for MULTIPLE files AND change the name of the database upload!
                 #instance.document = str(request.user.email)+  str(fileList) this saves with email appeneded to number of files
                 instance.document = str(fileNames) 
@@ -289,30 +325,46 @@ def filesContinued(request):
                         file_list["PSD Reduced Lunch Approval Letter"] = False'''
 
                 if False in checkAllForms:
-                    return render(request, 'dashboard/filesContinued.html', {
+                    return render(
+                        request,
+                        'dashboard/filesContinued.html',
+                        {
                             'form':form,
                             'programs': file_list,
                             'program_string': files_to_string(file_list, request),
                             'step':2,
                             'formPageNum':2,
-                            'Title': "Files Continued"
-                        })
+                            'Title': "Files Continued",
+                            'is_prod': django_settings.IS_PROD,
+                            },
+                        )
                 return redirect(reverse("application:RecreationQuickApply")) 
             else:
                 print("notautnehticated")
                 # TODO: Change this link
-                return render(request, 'dashboard/layout.html',)
+                return render(
+                    request,
+                    'dashboard/layout.html',
+                    {
+                        'is_prod': django_settings.IS_PROD,
+                        },
+                    )
     else:
         form = AddressForm()
     print(file_list)
-    return render(request, 'dashboard/filesContinued.html', {
-    'form':form,
-    'programs': file_list,
-    'program_string': files_to_string(file_list, request),
-    'step':2,
-    'formPageNum':"2 - Recreation Reduced Fee",
-    'Title': "Files Continued",
-    })
+    return render(
+        request,
+        'dashboard/filesContinued.html',
+        {
+            'form':form,
+            'programs': file_list,
+            'program_string': files_to_string(file_list, request),
+            'step':2,
+            'formPageNum':"2 - Recreation Reduced Fee",
+            'Title': "Files Continued",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 def broadcast(request):
     print(request.user.files.all()[0])
@@ -328,12 +380,17 @@ def broadcast(request):
     except:
         logging.error("Twilio servers may be down")
         #TODO store / save for later: client getting feedback that twilio may be down 
-    return render(request, 'dashboard/broadcast.html', {
+    return render(
+        request,
+        'dashboard/broadcast.html',
+        {
             'program_string': current_user.email,
             'step':6,
             'formPageNum':6,
-            'Title': "Broadcast"
-        })
+            'Title': "Broadcast",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 
 def index(request):
@@ -405,17 +462,22 @@ def settings(request):
             '''
         obj.save()
   
-    return render(request, 'dashboard/settings.html',{
-        "name": request.user.first_name,
-        "lastName": request.user.last_name,
-        "email": request.user.email,
-        "address": request.user.addresses.address,
-        "address2": request.user.addresses.address2,
-        "zipCode": request.user.addresses.zipCode,
-        "state": request.user.addresses.state,
-        "password": request.user.password,
-        "phoneNumber": request.user.phone_number,
-    })
+    return render(
+        request,
+        'dashboard/settings.html',
+        {
+            "name": request.user.first_name,
+            "lastName": request.user.last_name,
+            "email": request.user.email,
+            "address": request.user.addresses.address,
+            "address2": request.user.addresses.address2,
+            "zipCode": request.user.addresses.zipCode,
+            "state": request.user.addresses.state,
+            "password": request.user.password,
+            "phoneNumber": request.user.phone_number,
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 
 def password_reset_request(request):
@@ -431,7 +493,7 @@ def password_reset_request(request):
                     email_template_name = "dashboard/PasswordReset/password_reset_email.txt"
                     c = {
                         "email":user.email,
-                        'domain':'getfoco.azurewebsites.net', #'getfoco.azurewebsites.net' | '127.0.0.1:8000'
+                        'domain':'getfoco.fcgov.com', #'getfoco.azurewebsites.net' | '127.0.0.1:8000'
                         'site_name': 'Get FoCo',
                         "uid": urlsafe_base64_encode(force_bytes(user.pk)),
                         "user": user,
@@ -447,7 +509,15 @@ def password_reset_request(request):
                     return redirect ("/password_reset/done/")
     password_reset_form = PasswordResetForm()
 
-    return render(request,"dashboard/PasswordReset/passwordReset.html",{"password_reset_form":password_reset_form, 'Title': "Password Reset Request"})
+    return render(
+        request,
+        "dashboard/PasswordReset/passwordReset.html",
+        {
+            "password_reset_form":password_reset_form,
+            'Title': "Password Reset Request",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 
 def login_user(request):
@@ -473,10 +543,15 @@ def login_user(request):
                 return redirect(reverse("dashboard:notifyRemaining"))
 
         else:
-            return render(request, "dashboard/login.html", {
-                "message": "Invalid username and/or password",
-                'Title': "Login",
-            })
+            return render(
+                request,
+                "dashboard/login.html",
+                {
+                    "message": "Invalid username and/or password",
+                    'Title': "Login",
+                    'is_prod': django_settings.IS_PROD,
+                    },
+                )
     
     # If it turns out user is already logged in but is trying to log in again redirect to user's homepage
     if request.method == "GET" and request.user.is_authenticated:
@@ -484,14 +559,26 @@ def login_user(request):
 
     # Just give back log in page if none of the above is true
     else:
-        return render(request, "dashboard/login.html",{'Title': "Login"})
+        return render(
+            request,
+            "dashboard/login.html",
+            {
+                'Title': "Login",
+                'is_prod': django_settings.IS_PROD,
+                },
+            )
 
 def notifyRemaining(request):    
     page = what_page(request.user, request)
-    return render(request, "dashboard/notifyRemaining.html",{
-        "next_page": page,
-        'Title': "Notify Remaining Steps"
-    })
+    return render(
+        request,
+        "dashboard/notifyRemaining.html",
+        {
+            "next_page": page,
+            'Title': "Notify Remaining Steps",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 
 def qualifiedPrograms(request):
@@ -560,29 +647,35 @@ def qualifiedPrograms(request):
         RECButtonColor = ""
         RECButtonTextColor = ""
 
-    return render(request, 'dashboard/qualifiedPrograms.html',{
-        "Title": "Qualified Programs",
-        "dashboard_color": "white",
-        "program_list_color": "var(--yellow)",
-        "FAQ_color": "white",
-        "Settings_color": "white",
-        "Privacy_Policy_color": "white",
-
-        "ConnexionButtonText": ConnexionButtonText,
-        "ConnexionButtonColor": ConnexionButtonColor,
-        "ConnexionButtonTextColor": ConnexionButtonTextColor,
-
-        "GRButtonText": GRButtonText,
-        "GRButtonColor": GRButtonColor,
-        "GRButtonTextColor": GRButtonTextColor,
-
-        "RECButtonText" : RECButtonText,
-        "RECButtonColor" : RECButtonColor,
-        "RECButtonTextColor" : RECButtonTextColor,
-        
-        "GRPreQualification": text,
-        "RecreationPreQualification": text2,
-        })
+    return render(
+        request,
+        'dashboard/qualifiedPrograms.html',
+        {
+            "Title": "Qualified Programs",
+            "dashboard_color": "white",
+            "program_list_color": "var(--yellow)",
+            "FAQ_color": "white",
+            "Settings_color": "white",
+            "Privacy_Policy_color": "white",
+    
+            "ConnexionButtonText": ConnexionButtonText,
+            "ConnexionButtonColor": ConnexionButtonColor,
+            "ConnexionButtonTextColor": ConnexionButtonTextColor,
+    
+            "GRButtonText": GRButtonText,
+            "GRButtonColor": GRButtonColor,
+            "GRButtonTextColor": GRButtonTextColor,
+    
+            "RECButtonText" : RECButtonText,
+            "RECButtonColor" : RECButtonColor,
+            "RECButtonTextColor" : RECButtonTextColor,
+            
+            "GRPreQualification": text,
+            "RecreationPreQualification": text2,
+            
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
  
 def feedback(request):
@@ -618,16 +711,21 @@ def feedback(request):
         text4 = ""
 
 
-    return render(request, 'dashboard/index.html',context={
-        "program_string": text,
-        "program_string2": text2,
-        "program_string3": text3,
-        "program_string4": text4,
-        "program_string5": text5,
-        "program_string6": text6,
-        "program_string7": text7,
-        'Title': "Feedback"
-        })
+    return render(
+        request,
+        'dashboard/index.html',
+        context={
+            "program_string": text,
+            "program_string2": text2,
+            "program_string3": text3,
+            "program_string4": text4,
+            "program_string5": text5,
+            "program_string6": text6,
+            "program_string7": text7,
+            'Title': "Feedback",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 
 def manualVerifyIncome(request):
@@ -649,20 +747,36 @@ def manualVerifyIncome(request):
                 print("User already has information filled out for this section")
         else:
             form = TaxForm()
-    return render(request, "dashboard/manualVerifyIncome.html", {
-    'step':5,
-    'formPageNum':6,
-    'Title': "Input Income"
-})
+    return render(
+        request,
+        "dashboard/manualVerifyIncome.html",
+        {
+            'step':5,
+            'formPageNum':6,
+            'Title': "Input Income",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 def feedbackReceived(request):
-    return render(request, "dashboard/feedbackReceived.html", {
-        'Title': "Feedback Received"
-        })
+    return render(
+        request,
+        "dashboard/feedbackReceived.html",
+        {
+            'Title': "Feedback Received",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 def underConstruction(request):
-    return render(request, 
-    "dashboard/underConstruction.html", {'Title': "Under Construction"})
+    return render(
+        request,
+        "dashboard/underConstruction.html",
+        {
+            'Title': "Under Construction",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
     
 
 # Everything under here is for new dashboard
@@ -803,87 +917,110 @@ def dashboardGetFoco(request):
         RECButtonColor = ""
         RECButtonTextColor = ""
 
-    return render(request, 'dashboard/dashboard_GetFoco.html',{
-        "Title": "Get FoCo Dashboard",
-        "dashboard_color": "var(--yellow)",
-        "program_list_color": "white",
-        "FAQ_color": "white",
-        "Settings_color": "white",
-        "Privacy_Policy_color": "white",
-        "Bag_It_color": "white",
-
-        "GRButtonText": GRButtonText,
-        "GRButtonColor": GRButtonColor,
-        "GRButtonTextColor": GRButtonTextColor,
-
-        "RECButtonText" : RECButtonText,
-        "RECButtonColor" : RECButtonColor,
-        "RECButtonTextColor" : RECButtonTextColor,
-
-        "ConnexionButtonText": ConnexionButtonText,
-        "ConnexionButtonColor": ConnexionButtonColor,
-        "ConnexionButtonTextColor": ConnexionButtonTextColor,
-
-        
-        "GRPreQualification": text,
-        "RecreationPreQualification": text2,
-        
-        "QProgramNumber":QProgramNumber,
-        "PendingNumber":PendingNumber,
-        "ActiveNumber":ActiveNumber,
-
-        "GRDisplay": GRDisplay,
-        "RECDisplay": RECDisplay,
-        "CONDisplay": CONDisplay,
-
-        "GRDisplayActive": GRDisplayActive,
-        "RECDisplayActive": RECDisplayActive,
-        "CONDisplayActive": CONDisplayActive,
-
-        "GRDisplayPending": GRDisplayPending,
-        "RECDisplayPending": RECDisplayPending,
-        "CONDisplayPending": CONDisplayPending,
-
-        "RECPendingDate": RECPendingDate,
-        "GRPendingDate": GRPendingDate,
-        
-        "clientName": request.user.first_name,
-        "clientEmail": request.user.email,
-        })
+    return render(
+        request,
+        'dashboard/dashboard_GetFoco.html',
+        {
+            "Title": "Get FoCo Dashboard",
+            "dashboard_color": "var(--yellow)",
+            "program_list_color": "white",
+            "FAQ_color": "white",
+            "Settings_color": "white",
+            "Privacy_Policy_color": "white",
+            "Bag_It_color": "white",
+    
+            "GRButtonText": GRButtonText,
+            "GRButtonColor": GRButtonColor,
+            "GRButtonTextColor": GRButtonTextColor,
+    
+            "RECButtonText" : RECButtonText,
+            "RECButtonColor" : RECButtonColor,
+            "RECButtonTextColor" : RECButtonTextColor,
+    
+            "ConnexionButtonText": ConnexionButtonText,
+            "ConnexionButtonColor": ConnexionButtonColor,
+            "ConnexionButtonTextColor": ConnexionButtonTextColor,
+    
+            
+            "GRPreQualification": text,
+            "RecreationPreQualification": text2,
+            
+            "QProgramNumber":QProgramNumber,
+            "PendingNumber":PendingNumber,
+            "ActiveNumber":ActiveNumber,
+    
+            "GRDisplay": GRDisplay,
+            "RECDisplay": RECDisplay,
+            "CONDisplay": CONDisplay,
+    
+            "GRDisplayActive": GRDisplayActive,
+            "RECDisplayActive": RECDisplayActive,
+            "CONDisplayActive": CONDisplayActive,
+    
+            "GRDisplayPending": GRDisplayPending,
+            "RECDisplayPending": RECDisplayPending,
+            "CONDisplayPending": CONDisplayPending,
+    
+            "RECPendingDate": RECPendingDate,
+            "GRPendingDate": GRPendingDate,
+            
+            "clientName": request.user.first_name,
+            "clientEmail": request.user.email,
+            
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 def ProgramsList(request):
-    return render(request, 'dashboard/ProgramsList.html',{
-        "page_title": "Programs List",
-        "dashboard_color": "white",
-        "program_list_color": "var(--yellow)",
-        "FAQ_color": "white",
-        "Settings_color": "white",
-        "Privacy_Policy_color": "white",
-        "Bag_It_color": "white",
-        'Title': "Programs List"})
+    return render(
+        request,
+        'dashboard/ProgramsList.html',
+        {
+            "page_title": "Programs List",
+            "dashboard_color": "white",
+            "program_list_color": "var(--yellow)",
+            "FAQ_color": "white",
+            "Settings_color": "white",
+            "Privacy_Policy_color": "white",
+            "Bag_It_color": "white",
+            'Title': "Programs List",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 def BagIt(request):
-    return render(request, 'dashboard/BagIt.html',{
-        "page_title": "Bag It",
-        "dashboard_color": "white",
-        "program_list_color": "white",
-        "FAQ_color": "white",
-        "Settings_color": "white",
-        "Privacy_Policy_color": "white",
-        "Bag_It_color": "var(--yellow)",
-        'Title': "Bag It",
-        'lastName': request.user.last_name,
-        'date': datetime.datetime.now().date()
-        })
+    return render(
+        request,
+        'dashboard/BagIt.html',
+        {
+            "page_title": "Bag It",
+            "dashboard_color": "white",
+            "program_list_color": "white",
+            "FAQ_color": "white",
+            "Settings_color": "white",
+            "Privacy_Policy_color": "white",
+            "Bag_It_color": "var(--yellow)",
+            'Title': "Bag It",
+            'lastName': request.user.last_name,
+            'date': datetime.datetime.now().date(),
+            'is_prod': django_settings.IS_PROD,
+            },
+        )
 
 
 def FAQ(request):
-    return render(request, 'dashboard/FAQ.html',{
-        "page_title": "FAQ",
-        "dashboard_color": "white",
-        "program_list_color": "white",
-        "FAQ_color": "var(--yellow)",
-        "Settings_color": "white",
-        "Privacy_Policy_color": "white",
-        "Bag_It_color": "white",
-        'Title': "FAQ"})
+    return render(
+        request,
+        'dashboard/FAQ.html',
+        {
+            "page_title": "FAQ",
+            "dashboard_color": "white",
+            "program_list_color": "white",
+            "FAQ_color": "var(--yellow)",
+            "Settings_color": "white",
+            "Privacy_Policy_color": "white",
+            "Bag_It_color": "white",
+            'Title': "FAQ",
+            'is_prod': django_settings.IS_PROD,
+            },
+        )

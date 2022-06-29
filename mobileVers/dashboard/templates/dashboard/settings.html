@@ -29,6 +29,11 @@ the Free Software Foundation, either version 3 of the License, or
     </head>
 
     <body style="height:100vh;">
+
+        {% if is_prod is False %}
+            <div style="background-color: #FF5E5E; text-align: center; font-size: x-large; ">WARNING: THIS SITE IS FOR TESTING ONLY<br>To enroll in Get FoCo, go to <a href="https://fcgov.com/getfoco" target="_blank">https://fcgov.com/getfoco</a> instead</div>
+        {% endif %}
+        
         <div class=nav>
             <a class="row" onClick="window.history.back();return false;">
                 <div class=fadeSmall><img src="{% static 'application/images/BackArrow-darkblue.svg' %}" alt="back" style="width:max(4.5vw, 16px); margin-right: 5px"></div>

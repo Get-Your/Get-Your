@@ -29,6 +29,11 @@ the Free Software Foundation, either version 3 of the License, or
     </head>
 
     <body style="background-color: white;">
+
+        {% if is_prod is False %}
+            <div style="background-color: #FF5E5E; text-align: center; font-size: x-large; ">WARNING: THIS SITE IS FOR TESTING ONLY<br>To enroll in Get FoCo, go to <a href="https://fcgov.com/getfoco" target="_blank">https://fcgov.com/getfoco</a> instead</div>
+        {% endif %}
+        
         <div class=nav>
             <a href="{% url 'application:index' %}" style="margin-left:auto; margin-right:10px">
                 <p style = "color:#999999; font-weight: 700;">EXIT</p>

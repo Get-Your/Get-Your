@@ -1,0 +1,34 @@
+[23/Jun/2022 12:34:53] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[23/Jun/2022 12:34:53] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[23/Jun/2022 13:19:44] INFO [django.server:157] "GET / HTTP/1.1" 200 15059
+[23/Jun/2022 13:19:44] INFO [django.server:157] "GET / HTTP/1.1" 200 15059
+[23/Jun/2022 13:19:47] INFO [django.server:157] "GET /application/getReady HTTP/1.1" 200 5150
+[23/Jun/2022 13:19:47] INFO [django.server:157] "GET /application/getReady HTTP/1.1" 200 5150
+[23/Jun/2022 13:19:59] ERROR [django.request:224] Internal Server Error: /dashboard/filesContinued
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetFoCo\GetFoco\mobileVers\dashboard\views.py", line 247, in filesContinued
+    "Utility Bill": request.user.addressverification.Utility,
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\utils\functional.py", line 241, in inner
+    return func(self._wrapped, *args)
+AttributeError: 'AnonymousUser' object has no attribute 'addressverification'
+[23/Jun/2022 13:19:59] ERROR [django.request:224] Internal Server Error: /dashboard/filesContinued
+Traceback (most recent call last):
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\exception.py", line 47, in inner
+    response = get_response(request)
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\core\handlers\base.py", line 181, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\JAndr\OneDrive\Projects\GetFoCo\GetFoco\mobileVers\dashboard\views.py", line 247, in filesContinued
+    "Utility Bill": request.user.addressverification.Utility,
+  File "C:\Users\JAndr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\django\utils\functional.py", line 241, in inner
+    return func(self._wrapped, *args)
+AttributeError: 'AnonymousUser' object has no attribute 'addressverification'
+[23/Jun/2022 13:19:59] ERROR [django.server:157] "GET /dashboard/filesContinued HTTP/1.1" 500 145
+[23/Jun/2022 13:19:59] ERROR [django.server:157] "GET /dashboard/filesContinued HTTP/1.1" 500 145
+[23/Jun/2022 13:20:05] INFO [django.server:157] "GET / HTTP/1.1" 200 15059
+[23/Jun/2022 13:20:05] INFO [django.server:157] "GET / HTTP/1.1" 200 15059
+[23/Jun/2022 13:20:06] INFO [django.server:157] "GET /dashboard/login HTTP/1.1" 200 4559
+[23/Jun/2022 13:20:06] INFO [django.server:157] "GET /dashboard/login HTTP/1.1" 200 4559

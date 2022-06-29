@@ -17,6 +17,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+from datetime import datetime
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -50,6 +51,14 @@ USPS_SID = get_secret('USPS_SID') #os.getenv("USPS_ACCOUNT_SID")
 POSTGRESQLPW = get_secret('POSTGRESQLPW') #os.getenv("POSTGRESQLPW")
 SENDGRID_API_KEY = get_secret('SENDGRID_API_KEY')
 TEMPLATE_ID = get_secret("TEMPLATE_ID")
+TEMPLATE_ID_PW_RESET = get_secret("TEMPLATE_ID_PW_RESET")
+TEMPLATE_ID_DYNAMIC_EMAIL = get_secret("TEMPLATE_ID_DYNAMIC_EMAIL")
+ACCOUNT_NAME = get_secret("ACCOUNT_NAME")
+ACCOUNT_KEY = get_secret("ACCOUNT_KEY")
+FILESTORE_ENDPOINT_SUFFIX = get_secret("FILESTORE_ENDPOINT_SUFFIX")
+CONTAINER_NAME = get_secret("CONTAINER_NAME")+'dev'
+IS_PROD = False
+
 #SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -66,10 +75,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
     'dashboard',
     'application',
     'phonenumber_field',
+    'crispy_forms'
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -79,9 +91,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', #add whitenoise
 ]
 
 ROOT_URLCONF = 'mobileVers.urls'
+AUTH_USER_MODEL = "application.User" 
 
 TEMPLATES = [
     {
@@ -102,18 +116,28 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'mobileVers.wsgi.application'
-AUTH_USER_MODEL = "application.User" 
+
+
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 # ANDREW: Add Azure stuff here
+# DATABASES = {
+#      'default': {
+#          'ENGINE': 'django.db.backends.postgresql',
+#          'NAME': 'getfoco_dev',
+#          'USER': 'getfocoadmin',
+#          'PASSWORD': POSTGRESQLPW,
+#          'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'
+#          }
+#  }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
-}
-
+ }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -150,6 +174,7 @@ USE_TZ = True
 # For phone number default region setting:
 PHONENUMBER_DEFAULT_REGION = 'US'
 
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
@@ -157,6 +182,46 @@ STATIC_URL = '/static/'
 # CSS files
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+
 #added media path for file uploads
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+
+str = str((datetime.now().time()))
+logFileName = str.replace(":", "_")
+LOGGING = { 
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },  
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': 'logs/' + logFileName + '.log', 
+            'when': 'midnight', # this specifies the interval
+            'interval': 1, # defaults to 1, only necessary for other values 
+            'backupCount': 100, # how many backup file to keep, 10 days
+            'formatter': 'verbose',
+        },
+
+    },  
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+        '': {
+            'handlers': ['file'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        }
+    },  
+}
