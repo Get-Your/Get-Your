@@ -3,4 +3,4 @@ service ssh start
 
 python /code/manage.py migrate
 
-python /code/manage.py runserver 0.0.0.0:8000 --settings=mobileVers.settings.dev
+python /code/manage.py runserver 0.0.0.0:8000
