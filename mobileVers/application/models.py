@@ -167,6 +167,7 @@ class Eligibility(TimeStampedModel):
     )
 
     rent = models.CharField(choices=choices, max_length=10)
+    livedin = models.IntegerField(100, default =1)
 
     #TODO: possibly add field for how many total individuals are in the household
     dependents = models.IntegerField(100, default=1)
