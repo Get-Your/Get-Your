@@ -71,7 +71,6 @@ class AddressForm(forms.ModelForm):
 # form for basic finance eligibility
 class EligibilityForm(forms.ModelForm):
     rent = forms.ChoiceField(choices=choices,widget=forms.RadioSelect(),label="Rent")
-    livedin = forms.DecimalField(label='Length of Stay')
     class Meta:
         model = Eligibility
         fields = ['rent','dependents', 'grossAnnualHouseholdIncome']

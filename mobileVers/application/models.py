@@ -122,8 +122,9 @@ class Addresses(TimeStampedModel):
     hasConnexion = models.BooleanField(null=True, default=None)
 
 choices = (
-    ('Rent', 'Rent'),
-    ('Own', 'Own')
+    ('More than 3 Years', 'More than 3 Years'),
+    ('1 to 3 Years', '1 to 3 Years'),
+    ('Less than a Year', 'Less than a Year'),
 )
 
 class AMI(TimeStampedModel):
@@ -166,9 +167,7 @@ class Eligibility(TimeStampedModel):
         primary_key=True,
     )
 
-    rent = models.CharField(choices=choices, max_length=10)
-    livedin = models.IntegerField(100, default =1)
-
+    rent = models.CharField(choices=choices, max_length=200)
     #TODO: possibly add field for how many total individuals are in the household
     dependents = models.IntegerField(100, default=1)
 
