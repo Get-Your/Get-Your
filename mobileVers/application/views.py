@@ -518,7 +518,7 @@ def filesInfoNeeded(request):
                 instance.user_id = request.user
                 instance.last4SSN = form.cleaned_data['last4SSN']
                 instance.save()
-                return redirect(reverse("application:attestation"))
+                return redirect(reverse("dashboard:broadcast"))
             except IntegrityError:
                 print("User already has information filled out for this section")
                 return redirect(reverse("application:filesInfoNeeded"))

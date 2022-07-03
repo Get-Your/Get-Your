@@ -3,3 +3,5 @@
 settings.json
 /.env
 /.dockerignore
+/dev_depr.env
+/prod.env

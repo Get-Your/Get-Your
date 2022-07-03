@@ -108,10 +108,6 @@ def what_page(user,request):
         except AttributeError:
             return "dashboard:files"
         
-        try:
-            value = request.user.attestations
-        except AttributeError or ObjectDoesNotExist:
-            return "application:attestation"
         return "dashboard:dashboard"
 
     else:

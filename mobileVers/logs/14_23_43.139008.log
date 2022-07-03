@@ -1,0 +1,26 @@
+[01/Jul/2022 14:23:44] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[01/Jul/2022 14:23:44] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
+[01/Jul/2022 14:23:50] INFO [django.server:157] "GET / HTTP/1.1" 200 15059
+[01/Jul/2022 14:23:50] INFO [django.server:157] "GET / HTTP/1.1" 200 15059
+[01/Jul/2022 14:23:50] INFO [django.server:157] "GET /static/application/styles.css HTTP/1.1" 304 0
+[01/Jul/2022 14:23:50] INFO [django.server:157] "GET /static/application/styles.css HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/WelcomeIllustration.svg HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/WelcomeIllustration.svg HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/control.png HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/control.png HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/control.svg HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/control.svg HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/save.png HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/save.png HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/X_gray.svg HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/X_gray.svg HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/know.svg HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/know.svg HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/save.svg HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/save.svg HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/forget.png HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/forget.png HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/forget.svg HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/forget.svg HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/know.png HTTP/1.1" 304 0
+[01/Jul/2022 14:23:51] INFO [django.server:157] "GET /static/application/images/know.png HTTP/1.1" 304 0
