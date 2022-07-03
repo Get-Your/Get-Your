@@ -1,6 +1,0 @@
-[23/Jun/2022 12:03:18] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
-[23/Jun/2022 12:03:18] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
-[23/Jun/2022 12:03:28] INFO [django.server:157] "GET /dashboard/filesContinued HTTP/1.1" 200 6324
-[23/Jun/2022 12:03:28] INFO [django.server:157] "GET /dashboard/filesContinued HTTP/1.1" 200 6324
-[23/Jun/2022 12:34:10] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetFoCo\GetFoco\mobileVers\dashboard\backend.py changed, reloading.
-[23/Jun/2022 12:34:10] INFO [django.utils.autoreload:240] C:\Users\JAndr\OneDrive\Projects\GetFoCo\GetFoco\mobileVers\dashboard\backend.py changed, reloading.

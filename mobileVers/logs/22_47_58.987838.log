@@ -1,8 +1,0 @@
-[12/Apr/2022 22:47:59] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
-[12/Apr/2022 22:47:59] INFO [django.utils.autoreload:617] Watching for file changes with StatReloader
-[12/Apr/2022 22:48:14] INFO [django.server:157] "GET /application/getReady HTTP/1.1" 200 3590
-[12/Apr/2022 22:48:14] INFO [django.server:157] "GET /application/getReady HTTP/1.1" 200 3590
-[12/Apr/2022 22:48:17] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 11537
-[12/Apr/2022 22:48:17] INFO [django.server:157] "GET /application/account HTTP/1.1" 200 11537
-[12/Apr/2022 22:48:18] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 200 604
-[12/Apr/2022 22:48:18] INFO [django.server:157] "GET /static/scripts/main.js HTTP/1.1" 200 604
