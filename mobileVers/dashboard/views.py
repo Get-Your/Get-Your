@@ -169,7 +169,7 @@ def files(request):
                 elif request.user.programs.ebb_acf == True:
                     return redirect(reverse("application:filesInfoNeeded"))
                 else:
-                    return redirect(reverse("application:attestation")) 
+                    return redirect(reverse("dashboard:broadcast")) 
             else:
                 print("notautnehticated")
                 # TODO: Change this link
@@ -742,7 +742,7 @@ def manualVerifyIncome(request):
                 instance = form.save(commit=False)
                 instance.user_id = request.user
                 instance.save()
-                return redirect(reverse("application:attestation"))
+                return redirect(reverse("dashboard:broadcast"))
             except IntegrityError:
                 print("User already has information filled out for this section")
         else:
