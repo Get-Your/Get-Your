@@ -1,3 +1,9 @@
+"""
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version
+"""
 from django.shortcuts import render, redirect, reverse
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -15,12 +21,17 @@ from .models import User
 
 
 def blobStorageUpload(filename, file):
-                        blob_service_client = BlockBlobService(account_name = settings.ACCOUNT_NAME, account_key=settings.ACCOUNT_KEY)
-                        blob_service_client.create_blob_from_bytes( 
-                        container_name = settings.CONTAINER_NAME,
-                        blob_name = filename,
-                        blob = file.read()
-                        )
+    blob_service_client = BlockBlobService(
+        account_name=settings.ACCOUNT_NAME,
+        account_key=settings.ACCOUNT_KEY,
+        endpoint_suffix=settings.FILESTORE_ENDPOINT_SUFFIX,
+        )
+    
+    blob_service_client.create_blob_from_bytes(
+        container_name = settings.CONTAINER_NAME,
+        blob_name = filename,
+        blob = file.read(),
+    )
 
 def authenticate(username=None, password=None):
     User = get_user_model()
@@ -52,17 +63,20 @@ def files_to_string(file_list, request):
         # only add things to the list_string if its true
         if value == True:
             # Also add commas based on counter
-            if counter == 3:
-                list_string += ", "
+            if counter == 4:
+                list_string += "\n"
+                counter = 3
+            elif counter == 3:
+                list_string += "\n"
                 counter = 2
             elif counter == 2:
-                list_string += ", "
+                list_string += "\n"
                 counter = 1
             elif counter == 1:
-                list_string += ", "
+                list_string += "\n"
                 counter = 0
             else:
-                counter = 3
+                counter = 4
             list_string += key
     return list_string
 
@@ -97,10 +111,6 @@ def what_page(user,request):
         except AttributeError:
             return "dashboard:files"
         
-        try:
-            value = request.user.attestations
-        except AttributeError or ObjectDoesNotExist:
-            return "application:attestation"
         return "dashboard:dashboard"
 
     else:

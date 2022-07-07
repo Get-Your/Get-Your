@@ -1,3 +1,9 @@
+"""
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version
+"""
 from django.db import models
 from application.models import User
 import datetime
@@ -24,13 +30,14 @@ def user_directory_path(instance, filename):
 
 class Form(TimeStampedModel):
     user_id = models.ForeignKey(User, related_name ="UserFiles", on_delete=models.CASCADE)
-    document = models.FileField(validators=[FileExtensionValidator(['pdf','jpg','png'],)], max_length=5000, upload_to=user_directory_path) #upload_to="mobileVers/uploads/" + str(datetime.date.today()) + "/" this uploads file to date and time of day
+    document = models.FileField(max_length=5000, upload_to=user_directory_path) #upload_to="mobileVers/uploads/" + str(datetime.date.today()) + "/" this uploads file to date and time of day
     form_titles = (
         ('SNAP', 'SNAP'),
         ('Free and Reduced Lunch', 'Free and Reduced Lunch'),
         ('1040 Form', '1040 Form'),
         ('Identification', 'Identification'),
         ('ACP Letter','ACP Letter'),
+        ('LEAP Letter', 'LEAP Letter',)
         )
     document_title = models.CharField(
         max_length=30,
@@ -50,7 +57,7 @@ class residencyForm(TimeStampedModel):
         max_length=30,
         choices=form_titles,
     )
-    document = models.FileField(validators=[FileExtensionValidator(['pdf','jpg','png'],)],max_length=5000,  upload_to=user_directory_path)
+    document = models.FileField(max_length=5000,  upload_to=user_directory_path)
 
 
 class TaxInformation(TimeStampedModel):
@@ -60,6 +67,7 @@ class TaxInformation(TimeStampedModel):
     primary_key=True,
     )
     TaxBoxAmount = models.DecimalField(max_digits=9, null=True, blank=True, decimal_places=2,)
+    last4SSN = models.DecimalField(null=True,max_digits=4, decimal_places=0, blank=True)
 
 
 class Feedback(TimeStampedModel):

@@ -1,8 +1,16 @@
+"""
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version
+"""
 # All of the forms built from models are here 
 from django import forms
 from django.db.models.fields import CharField, DateField, TextField
 from django.forms import widgets
 from django.contrib.auth.password_validation import validate_password
+
+from dashboard.models import TaxInformation
 
 from .models import User, Addresses, Eligibility, programs, choices, addressLookup, futureEmails, attestations, MoreInfo
 
@@ -84,19 +92,26 @@ class MoreInfoForm(forms.ModelForm):
         fields = ['dependentsName','dependentsBirthdate','dependentInformation']
         widgets = {'dependentInformation': forms.HiddenInput(),}
 
- 
+
+class FilesInfoForm(forms.ModelForm):
+    last4SSN = forms.DecimalField(label='Because you uploaded an Affordable Connectivity Program confirmation, please enter the last four digits of your SSN')
+    class Meta:
+        model = TaxInformation
+        fields = ['last4SSN']
+
 
 # programs they are available for
 class programForm(forms.ModelForm):
     class Meta:
         model = programs
-        fields = ['snap', 'freeReducedLunch', 'Identification', 'form1040', 'ebb_acf'] #ebb_acf = Emergency Broadband Benefit AKA Affordable Connectivity Program
+        fields = ['snap', 'freeReducedLunch', 'Identification', 'form1040', 'ebb_acf', 'leap'] #ebb_acf = Emergency Broadband Benefit AKA Affordable Connectivity Program
         labels  = { 
             'snap':'Supplemental Nutrition Assistance Program (SNAP)',
             'freeReducedLunch': 'Poudre School District Free and Reduced Lunch',
             'Identification':'Identification Card',
             'form1040':'1040 Form',
             'ebb_acf':'Affordable Connectivity Program',
+            'leap':'Low-income Energy Assistance Program',
         } 
 
 class attestationForm(forms.ModelForm):

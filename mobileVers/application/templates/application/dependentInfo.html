@@ -1,3 +1,9 @@
+<!--
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version
+-->
 <!-- This brings in the CSS-->
 {% load static %}
 
@@ -23,6 +29,11 @@
     </head>
 
     <body>
+
+        {% if is_prod is False %}
+            <div style="background-color: #FF5E5E; text-align: center; font-size: x-large; ">WARNING: THIS SITE IS FOR TESTING ONLY<br>To enroll in Get FoCo, go to <a href="https://fcgov.com/getfoco" target="_blank">https://fcgov.com/getfoco</a> instead</div>
+        {% endif %}
+        
         <div class=fadeLarge>
             <div class=nav>
                 <a class="row" onClick="window.history.back();return false;">
@@ -50,7 +61,7 @@
             <div class="fadeSmall"><p style="color:#55A1D3;"><b>Household shall mean collectively the applicant and any other person claimed as a dependent on the applicant’s federal income tax return. This may include the applicant's spouse, and applicant's children by birth or adoption, step children, foster children and children under legal guardianship who reside with the applicant in the taxed dwelling unit.</b></p></div>
             <div class="fadeLarge"><p style="color:white;"><b>Household shall mean collectively the applicant and any other person claimed as a dependent on the applicant’s federal income tax return. This may include the applicant's spouse, and applicant's children by birth or adoption, step children, foster children and children under legal guardianship who reside with the applicant in the taxed dwelling unit.</b></p></div>
             -->
-            <div><p><b>“Household” means the applicant and any other people claimed on your federal tax return. This could include your spouse, and your children by birth or adoption, step children, foster children and children under legal guardianship who live with you in your home as submitted on your federal income tax return. </b></p></div>
+            <div><p><b>"Household" means the applicant and any other people claimed on your federal tax return. This could include your spouse, and your children by birth or adoption, step children, foster children and children under legal guardianship who live with you in your home as submitted on your federal income tax return. </b></p></div>
                 <!--Whatever I need in the other pages, I can enter it here-->
 
         </div>

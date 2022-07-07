@@ -1,3 +1,9 @@
+"""
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version
+"""
 from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
@@ -13,6 +19,7 @@ urlpatterns = [
     path('programs', views.programs, name='programs'),
     path('attestation', views.attestation, name='attestation'),
     path('moreInfoNeeded', views.moreInfoNeeded, name='moreInfoNeeded'),
+    path('filesInfoNeeded', views.filesInfoNeeded, name='filesInfoNeeded'),
     
 
     # Available/NotAvailable Digital Equity in your area

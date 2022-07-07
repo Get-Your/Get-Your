@@ -1,3 +1,11 @@
+"""
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version
+"""
+
+from unicodedata import decimal
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import AbstractUser
@@ -114,8 +122,9 @@ class Addresses(TimeStampedModel):
     hasConnexion = models.BooleanField(null=True, default=None)
 
 choices = (
-    ('Rent', 'Rent'),
-    ('Own', 'Own')
+    ('More than 3 Years', 'More than 3 Years'),
+    ('1 to 3 Years', '1 to 3 Years'),
+    ('Less than a Year', 'Less than a Year'),
 )
 
 class AMI(TimeStampedModel):
@@ -158,8 +167,7 @@ class Eligibility(TimeStampedModel):
         primary_key=True,
     )
 
-    rent = models.CharField(choices=choices, max_length=10)
-
+    rent = models.CharField(choices=choices, max_length=200)
     #TODO: possibly add field for how many total individuals are in the household
     dependents = models.IntegerField(100, default=1)
 
@@ -200,6 +208,7 @@ class programs(TimeStampedModel): #incomeVerificationPrograms
     Identification = models.BooleanField()
     form1040 = models.BooleanField()
     ebb_acf = models.BooleanField()
+    leap = models.BooleanField()
 
 class attestations(TimeStampedModel):
     user_id = models.OneToOneField(

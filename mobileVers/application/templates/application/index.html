@@ -1,3 +1,9 @@
+<!--
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version
+-->
 <!-- This brings in the CSS-->
 {% load static %}
 
@@ -40,6 +46,10 @@
     <!-- TODO: make a message to only look at this on mobile-->
     
     <body style="margin:0; padding:0">
+
+        {% if is_prod is False %}
+            <div style="background-color: #FF5E5E; text-align: center; font-size: x-large; ">WARNING: THIS SITE IS FOR TESTING ONLY<br>To enroll in Get FoCo, go to <a href="https://fcgov.com/getfoco" target="_blank">https://fcgov.com/getfoco</a> instead</div>
+        {% endif %}
         
         <!--NAVBAR-->
         <div id=full-nav>
@@ -67,7 +77,7 @@
                 <img src="{% static 'application/images/WelcomeIllustration.svg' %}" alt="Welcome" style="width:100%; float:left">
             </div>
             <h1 style="color:white">Welcome to</h1>
-            <h1 style="color:white"><b>Get <b class=yellow style=>FOCO</b></b></h1>
+            <h1 style="color:white"><b>Get <b class=yellow style=>FoCo</b></b></h1>
             <div style="overflow: auto;">            
                 <p style="color:white;"> An all-in-one application portal to the discounted services and municipal benefits offered by the City of Fort Collins, for income eligible residents. Get FoCo is a partnership between Fort Collins' Connexion and the City of Fort Collins' income eligible programming.</p>
             </div>
