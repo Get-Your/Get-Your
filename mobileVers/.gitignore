@@ -1,6 +1,0 @@
-/secrets.json
-*.pyc
-settings.json
-/.env
-/.dockerignore
-/dev_depr.env
