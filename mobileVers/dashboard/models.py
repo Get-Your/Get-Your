@@ -37,6 +37,7 @@ class Form(TimeStampedModel):
         ('1040 Form', '1040 Form'),
         ('Identification', 'Identification'),
         ('ACP Letter','ACP Letter'),
+        ('LEAP Letter', 'LEAP Letter',)
         )
     document_title = models.CharField(
         max_length=30,

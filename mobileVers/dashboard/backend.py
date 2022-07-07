@@ -21,7 +21,7 @@ from .models import User
 
 
 def blobStorageUpload(filename, file):
-                        blob_service_client = BlockBlobService(account_name = settings.ACCOUNT_NAME, account_key=settings.ACCOUNT_KEY) #endpoint_suffix='core.usgovcloudapi.net'
+                        blob_service_client = BlockBlobService(account_name = settings.ACCOUNT_NAME, account_key=settings.ACCOUNT_KEY,endpoint_suffix='core.usgovcloudapi.net')
                         blob_service_client.create_blob_from_bytes( 
                         container_name = settings.CONTAINER_NAME,
                         blob_name = filename,
@@ -58,7 +58,10 @@ def files_to_string(file_list, request):
         # only add things to the list_string if its true
         if value == True:
             # Also add commas based on counter
-            if counter == 3:
+            if counter == 4:
+                list_string += "\n"
+                counter = 3
+            elif counter == 3:
                 list_string += "\n"
                 counter = 2
             elif counter == 2:
@@ -68,7 +71,7 @@ def files_to_string(file_list, request):
                 list_string += "\n"
                 counter = 0
             else:
-                counter = 3
+                counter = 4
             list_string += key
     return list_string
 
