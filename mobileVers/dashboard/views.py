@@ -790,6 +790,10 @@ def dashboardGetFoco(request):
     QProgramNumber = 0
     ActiveNumber = 0
     PendingNumber = 0
+    groceryStatus =""
+    recreationStatus =""
+    connexionStatus =""
+
     if request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name:
         text = "True"
         QProgramNumber = QProgramNumber + 2
@@ -820,7 +824,7 @@ def dashboardGetFoco(request):
         CONDisplayActive = "none"
         CONDisplayPending = ""
         CONDisplay = "none"
-
+        connexionStatus = "We are reviewing your application! Stay tuned here and check your email for updates."
     elif request.user.eligibility.ConnexionQualified == QualificationStatus.ACTIVE.name:
         ConnexionButtonText = "Enrolled!"
         ConnexionButtonColor = "blue"
@@ -858,6 +862,8 @@ def dashboardGetFoco(request):
         GRDisplayPending = ""
         GRDisplay = "none"
         GRPendingDate = "Estimated Notification Time: Two Weeks"
+
+        groceryStatus = "We are reviewing your application! Stay tuned here and check your email for updates."
 
     elif request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!"
@@ -897,6 +903,9 @@ def dashboardGetFoco(request):
         RECDisplayPending = ""
         RECPendingDate = "Estimated Notification Time: Two Weeks"
         RECDisplay ="none"
+
+        recreationStatus = "We are reviewing your application! Stay tuned here and check your email for updates."
+
     elif request.user.eligibility.RecreationQualified == QualificationStatus.ACTIVE.name:
         RECButtonText = "Enrolled!" 
         RECButtonColor = "blue"
@@ -972,6 +981,10 @@ def dashboardGetFoco(request):
             
             "clientName": request.user.first_name,
             "clientEmail": request.user.email,
+
+            "groceryStatus": groceryStatus,
+            "connexionStatus": connexionStatus,
+            "recreationStatus": recreationStatus,
             
             'is_prod': django_settings.IS_PROD,
             },
