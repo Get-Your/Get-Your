@@ -803,7 +803,7 @@ def dashboardGetFoco(request):
     if request.user.eligibility.AmiRange_max == Decimal('0.5') and request.user.eligibility.AmiRange_min == Decimal('0.3'):
         text ="CallUs"
     # auto apply grocery rebate people if their AMI is 0.3%
-    if (request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0')) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True):
+    if (request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0')):
         request.user.eligibility.GRqualified = QualificationStatus.ACTIVE.name
         
     if (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True) and ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name):
