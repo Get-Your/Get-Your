@@ -167,6 +167,16 @@ the Free Software Foundation, either version 3 of the License, or
                 {% elif program_string|linebreaks|escape == "<p>Identification<br>LEAP Letter</p>" %}
                     <option class="option files" value="LEAP Letter"> LEAP Letter</option>
                     <option class="option files" value="Identification"> Identification </option>
+                {% elif program_string|linebreaks|escape == "<p>PSD Reduced Lunch Approval Letter<br>LEAP Letter</p>" %}
+                    <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter</option>
+                {% elif program_string|linebreaks|escape == "<p>Affordable Connectivity Program<br>LEAP Letter</p>" %}
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter</option>
+                {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>LEAP Letter</p>" %}
+                    <option class="option files" value="SNAP"> SNAP </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter</option>
+                    
 
                 {% elif program_string|linebreaks|escape == "<p>PSD Reduced Lunch Approval Letter<br>Identification</p>" %}
                     <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
