@@ -63,7 +63,10 @@ def files_to_string(file_list, request):
         # only add things to the list_string if its true
         if value == True:
             # Also add commas based on counter
-            if counter == 3:
+            if counter == 4:
+                list_string += "\n"
+                counter = 3
+            elif counter == 3:
                 list_string += "\n"
                 counter = 2
             elif counter == 2:
@@ -73,7 +76,7 @@ def files_to_string(file_list, request):
                 list_string += "\n"
                 counter = 0
             else:
-                counter = 3
+                counter = 4
             list_string += key
     return list_string
 

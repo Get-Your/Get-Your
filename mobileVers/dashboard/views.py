@@ -38,7 +38,8 @@ from django.core.files.storage import FileSystemStorage
 
 #Step 4 of Application Process
 def files(request):
-    if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False and request.user.programs.ebb_acf == False:
+    #check to go to Tax route if no files are chosen
+    if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False and request.user.programs.ebb_acf == False and request.user.programs.leap == False:
         request.user.programs.form1040 = True
     file_list = {"SNAP Card": request.user.programs.snap,
                 # Have Reduced Lunch be last item in the list if we add more programs
@@ -46,6 +47,7 @@ def files(request):
                 "Affordable Connectivity Program": request.user.programs.ebb_acf,
                 "Identification": request.user.programs.Identification,
                 "1040 Form": request.user.programs.form1040,
+                "LEAP Letter": request.user.programs.leap,
     }
     '''
     Variables:
@@ -86,6 +88,8 @@ def files(request):
                         pass
                     else:
                         logging.error("File is not a valid file type. file is: " + filetype)
+                        if instance.document_title == "LEAP Letter":
+                            file_list = "LEAP Letter"
                         if instance.document_title == "SNAP":
                             file_list = "SNAP Card"
                         if instance.document_title == "Free and Reduced Lunch":
@@ -128,7 +132,7 @@ def files(request):
                 
                 # Check if the user needs to upload another form
                 Forms = request.user.files
-                checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.ebb_acf),not(request.user.programs.Identification),not(request.user.programs.form1040)]
+                checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.ebb_acf),not(request.user.programs.Identification),not(request.user.programs.leap),not(request.user.programs.form1040),]
                 for group in Forms.all():
                     if group.document_title == "SNAP":
                         checkAllForms[0] = True
@@ -136,16 +140,17 @@ def files(request):
                     if group.document_title == "Free and Reduced Lunch":
                         checkAllForms[1] = True
                         file_list["PSD Reduced Lunch Approval Letter"] = False
-
                     if group.document_title == "ACP Letter":
                         checkAllForms[2] = True
                         file_list["Affordable Connectivity Program"] = False
-
                     if group.document_title == "Identification":
                         checkAllForms[3] = True
                         file_list["Identification"] = False
-                    if group.document_title == "1040 Form":
+                    if group.document_title == "LEAP Letter":
                         checkAllForms[4] = True
+                        file_list["LEAP Letter"] = False
+                    if group.document_title == "1040 Form":
+                        checkAllForms[5] = True
                         file_list["1040 Form"] = False
                 if False in checkAllForms:
                     return render(
@@ -163,7 +168,8 @@ def files(request):
                         )
                 
                 # if no options are selected, they must upload their tax form, the code below allows for that.
-                if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True and request.user.programs.ebb_acf != True:
+                # Tax form upload check
+                if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True and request.user.programs.ebb_acf != True and request.user.programs.leap != True:
                     return redirect(reverse("dashboard:manualVerifyIncome"))
                 # if affordable connectivity program is chosen
                 elif request.user.programs.ebb_acf == True:

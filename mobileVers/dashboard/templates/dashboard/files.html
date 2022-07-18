@@ -133,6 +133,7 @@ the Free Software Foundation, either version 3 of the License, or
                 <p style="font-weight: 800;">Files: <buttonQuestion  id="myBtn"><img id src="{% static 'application/images/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px); display: inline;"></buttonQuestion> </p>
                 <select name="{{ field.name }}" id="{{ field.id_for_label}}">
 
+                <!--One selection-->
                 {% if program_string|linebreaks|escape == "<p>SNAP Card</p>" %}
                     <option class="option files" value="SNAP"> SNAP </option>
                 {% elif program_string|linebreaks|escape == "<p>PSD Reduced Lunch Approval Letter</p>" %}
@@ -143,7 +144,10 @@ the Free Software Foundation, either version 3 of the License, or
                     <option class="option files" value="Identification"> Identification </option>
                 {% elif program_string|linebreaks|escape == "<p>Affordable Connectivity Program</p>" %}
                     <option class="option files" value="ACP Letter"> ACP Letter </option>
+                {% elif program_string|linebreaks|escape == "<p>LEAP Letter</p>" %}
+                    <option class="option files" value="LEAP Letter"> LEAP Letter </option>
 
+                <!--Two selection-->
                 {% elif program_string|linebreaks|escape == "<p>Affordable Connectivity Program<br>Identification</p>" %}
                     <option class="option files" value="ACP Letter"> ACP Letter </option>
                     <option class="option files" value="Identification"> Identification </option>
@@ -153,7 +157,36 @@ the Free Software Foundation, either version 3 of the License, or
                 {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>Affordable Connectivity Program</p>" %}
                     <option class="option files" value="SNAP"> SNAP </option>
                     <option class="option files" value="ACP Letter"> ACP Letter </option>
+                {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>PSD Reduced Lunch Approval Letter</p>" %}
+                    <option class="option files" value="SNAP"> SNAP </option>
+                    <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>Identification</p>" %}
+                    <option class="option files" value="SNAP"> SNAP </option>
+                    <option class="option files" value="Identification"> Identification </option>
 
+                {% elif program_string|linebreaks|escape == "<p>Identification<br>LEAP Letter</p>" %}
+                    <option class="option files" value="LEAP Letter"> LEAP Letter</option>
+                    <option class="option files" value="Identification"> Identification </option>
+                {% elif program_string|linebreaks|escape == "<p>PSD Reduced Lunch Approval Letter<br>LEAP Letter</p>" %}
+                    <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter</option>
+                {% elif program_string|linebreaks|escape == "<p>Affordable Connectivity Program<br>LEAP Letter</p>" %}
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter</option>
+                {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>LEAP Letter</p>" %}
+                    <option class="option files" value="SNAP"> SNAP </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter</option>
+                    
+
+                {% elif program_string|linebreaks|escape == "<p>PSD Reduced Lunch Approval Letter<br>Identification</p>" %}
+                    <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                    <option class="option files" value="Identification"> Identification </option>
+                {% elif program_string|linebreaks|escape == "<p>Identification<br>1040 Form</p>" %}
+                    <option class="option files" value="1040 Form"> Tax Form </option>
+                    <option class="option files" value="Identification"> Identification </option>
+
+                
+                <!--Three selection-->
                 {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>Affordable Connectivity Program<br>Identification</p>" %}
                     <option class="option files" value="SNAP"> SNAP </option>
                     <option class="option files" value="ACP Letter"> ACP Letter </option>
@@ -163,39 +196,70 @@ the Free Software Foundation, either version 3 of the License, or
                     <option class="option files" value="ACP Letter"> ACP Letter </option>
                     <option class="option files" value="Identification"> Identification </option>
                 {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>PSD Reduced Lunch Approval Letter<br>Affordable Connectivity Program</p>" %}
-                <option class="option files" value="SNAP"> SNAP </option>
+                    <option class="option files" value="SNAP"> SNAP </option>
                     <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
                     <option class="option files" value="ACP Letter"> ACP Letter </option>
+                {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>PSD Reduced Lunch Approval Letter<br>Identification</p>" %}
+                    <option class="option files" value="SNAP"> SNAP </option>
+                    <option class="option files" value="Identification"> Identification </option>
+                    <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>Identification<br>LEAP Letter</p>" %}
+                    <option class="option files" value="SNAP"> SNAP </option>
+                    <option class="option files" value="Identification"> Identification </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter </option>
+                {% elif program_string|linebreaks|escape == "<p>PSD Reduced Lunch Approval Letter<br>Identification<br>LEAP Letter</p>" %}
+                    <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                    <option class="option files" value="Identification"> Identification </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter </option>
+                {% elif program_string|linebreaks|escape == "<p>Affordable Connectivity Program<br>Identification<br>LEAP Letter</p>" %}
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+                    <option class="option files" value="Identification"> Identification </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter </option>
+                {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>PSD Reduced Lunch Approval Letter<br>LEAP Letter</p>" %}
+                    <option class="option files" value="SNAP"> SNAP </option>
+                    <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter </option>
+                {% elif program_string|linebreaks|escape == "<p>PSD Reduced Lunch Approval Letter<br>Affordable Connectivity Program<br>LEAP Letter</p>" %}
+                    <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter </option>
 
 
+                <!--Four selection-->
                 {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>PSD Reduced Lunch Approval Letter<br>Affordable Connectivity Program<br>Identification</p>" %}
                     <option class="option files" value="SNAP"> SNAP </option>
                     <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
                     <option class="option files" value="ACP Letter"> ACP Letter </option>
                     <option class="option files" value="Identification"> Identification </option>
-
-
-
-
-                {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>PSD Reduced Lunch Approval Letter</p>" %}
+                {% elif program_string|linebreaks|escape == "<p>PSD Reduced Lunch Approval Letter<br>Affordable Connectivity Program<br>Identification<br>LEAP Letter</p>" %}                
+                    <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+                    <option class="option files" value="Identification"> Identification </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter </option>
+                {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>Affordable Connectivity Program<br>Identification<br>LEAP Letter</p>" %}                
+                    <option class="option files" value="SNAP"> SNAP </option>
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+                    <option class="option files" value="Identification"> Identification </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter </option>
+                {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>PSD Reduced Lunch Approval Letter<br>Identification<br>LEAP Letter</p>" %}                
                     <option class="option files" value="SNAP"> SNAP </option>
                     <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
-                {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>Identification</p>" %}
+                    <option class="option files" value="Identification"> Identification </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter </option>
+                {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>PSD Reduced Lunch Approval Letter<br>Affordable Connectivity Program<br>LEAP Letter</p>" %}                
                     <option class="option files" value="SNAP"> SNAP </option>
-                    <option class="option files" value="Identification"> Identification </option>
-                {% elif program_string|linebreaks|escape == "<p>PSD Reduced Lunch Approval Letter<br>Identification</p>" %}
                     <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
-                    <option class="option files" value="Identification"> Identification </option>
-                {% elif program_string|linebreaks|escape == "<p>Identification<br>1040 Form</p>" %}
-                    <option class="option files" value="1040 Form"> Tax Form </option>
-                    <option class="option files" value="Identification"> Identification </option>
-
-
-                {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>PSD Reduced Lunch Approval Letter<br>Identification</p>" %}
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter </option>
+                
+                <!--Five selection-->
+                {% elif program_string|linebreaks|escape == "<p>SNAP Card<br>PSD Reduced Lunch Approval Letter<br>Affordable Connectivity Program<br>Identification<br>LEAP Letter</p>" %}
                     <option class="option files" value="SNAP"> SNAP </option>
-                    <option class="option files" value="Identification"> Identification </option>
                     <option class="option files" value="Free and Reduced Lunch"> Free and Reduced Lunch </option>
-                <!-- take above and include for Identification-->
+                    <option class="option files" value="ACP Letter"> ACP Letter </option>
+                    <option class="option files" value="Identification"> Identification </option>
+                    <option class="option files" value="LEAP Letter"> LEAP Letter </option>
+
                 {% endif %}
                 </select>
             </div>

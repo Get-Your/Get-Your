@@ -8,7 +8,7 @@ the Free Software Foundation, either version 3 of the License, or
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="background-color: var(--darkblue);">
     <!--Get the various stylesheets I need like my fonts and CSS-->
     <head>
         <title>Under Construction</title>
@@ -28,28 +28,23 @@ the Free Software Foundation, either version 3 of the License, or
          </script>
     </head>
 
-    <body>
+    <body style="background-color: var(--darkblue);">
 
         {% if is_prod is False %}
             <div style="background-color: #FF5E5E; text-align: center; font-size: x-large; ">WARNING: THIS SITE IS FOR TESTING ONLY<br>To enroll in Get FoCo, go to <a href="https://fcgov.com/getfoco" target="_blank">https://fcgov.com/getfoco</a> instead</div>
         {% endif %}
+
+
         
-        <div class=nav>
-            <a class="row" onClick="window.history.back();return false;">
-                <img src="{% static 'application/images/BackArrow-white.svg' %}" alt="back" style="width:8vw; margin-right: 5px;">
-                <p style = " font-weight: 700;">BACK</p>
-            </a>
-            <img src="{% static 'application/images/X_white.svg' %}" alt="back" style="width:4.5vw; margin-right: 5px;" onclick="location.href='{% url 'application:index' %}'">
+        <div class=bluemain style="margin:0;">
+            <div class="img" style="float:left; padding: 20px;">
+                <img src="{% static 'application/images/WelcomeIllustration.svg' %}" alt="Welcome" style="width:100%; float:left">
+            </div>
+            <h1 style="color:white">Welcome to</h1>
+            <h1 style="color:white"><b>Get <b class=yellow style=>FoCo</b></b></h1>
+            <div style="overflow: auto;">            
+                <p style="color:white; padding-top: 5%;"> The site is currently under maintenance - we'll be back soon!</p>
         </div>
 
-        <div class="content spaceAround" style="padding: 0 0 0 3vw;">
-            <!--NOTE: For the future have numbers change based on database-->
-            <h1><b>Under construction - stay tuned!</b></h1>
-                <!--Whatever I need in the other pages, I can enter it here-->
-
-        </div>
-        <div class="footer" style="width:100%">
-            <button onclick="location.href='{% url 'dashboard:index' %}'"> CONTINUE </button>
-        </div>
     </body>
 </html>

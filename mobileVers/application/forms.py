@@ -104,13 +104,14 @@ class FilesInfoForm(forms.ModelForm):
 class programForm(forms.ModelForm):
     class Meta:
         model = programs
-        fields = ['snap', 'freeReducedLunch', 'Identification', 'form1040', 'ebb_acf'] #ebb_acf = Emergency Broadband Benefit AKA Affordable Connectivity Program
+        fields = ['snap', 'freeReducedLunch', 'Identification', 'form1040', 'ebb_acf', 'leap'] #ebb_acf = Emergency Broadband Benefit AKA Affordable Connectivity Program
         labels  = { 
             'snap':'Supplemental Nutrition Assistance Program (SNAP)',
             'freeReducedLunch': 'Poudre School District Free and Reduced Lunch',
             'Identification':'Identification Card',
             'form1040':'1040 Form',
             'ebb_acf':'Affordable Connectivity Program',
+            'leap':'Low-income Energy Assistance Program',
         } 
 
 class attestationForm(forms.ModelForm):
