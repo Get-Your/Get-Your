@@ -653,6 +653,41 @@ def qualifiedPrograms(request):
         RECButtonColor = ""
         RECButtonTextColor = ""
 
+    if request.user.eligibility.RecreationQualified == QualificationStatus.PENDING.name:
+        RECButtonText = "Applied"
+        RECButtonColor = "green"
+        RECButtonTextColor = "White"
+    elif request.user.eligibility.RecreationQualified == QualificationStatus.ACTIVE.name:
+        RECButtonText = "Enrolled!" 
+        RECButtonColor = "blue"
+        RECButtonTextColor = "White"
+    elif request.user.eligibility.RecreationQualified == QualificationStatus.NOTQUALIFIED.name:
+        RECButtonText = "Can't Enroll"
+        RECButtonColor = "red"
+        RECButtonTextColor = "black"
+    else:
+        RECButtonText = "Quick Apply +"
+        RECButtonColor = ""
+        RECButtonTextColor = ""
+
+
+    if request.user.eligibility.SPINQualified == QualificationStatus.PENDING.name:
+        SPINButtonText = "Applied"
+        SPINButtonColor = "green"
+        SPINButtonTextColor = "White"
+    elif request.user.eligibility.SPINQualified == QualificationStatus.ACTIVE.name:
+        SPINButtonText = "Enrolled!" 
+        SPINButtonColor = "blue"
+        SPINButtonTextColor = "White"
+    elif request.user.eligibility.SPINQualified == QualificationStatus.NOTQUALIFIED.name:
+        SPINButtonText = "Can't Enroll"
+        SPINButtonColor = "red"
+        SPINButtonTextColor = "black"
+    else:
+        SPINButtonText = "Quick Apply +"
+        SPINButtonColor = ""
+        SPINButtonTextColor = ""
+
     return render(
         request,
         'dashboard/qualifiedPrograms.html',
@@ -675,6 +710,10 @@ def qualifiedPrograms(request):
             "RECButtonText" : RECButtonText,
             "RECButtonColor" : RECButtonColor,
             "RECButtonTextColor" : RECButtonTextColor,
+
+            "SPINButtonText" : SPINButtonText,
+            "SPINButtonColor" : SPINButtonColor,
+            "SPINButtonTextColor" : SPINButtonTextColor,
             
             "GRPreQualification": text,
             "RecreationPreQualification": text2,
@@ -790,15 +829,18 @@ def dashboardGetFoco(request):
     QProgramNumber = 0
     ActiveNumber = 0
     PendingNumber = 0
+    SPINDisplay = "" #no qualifications needed for SPIN, so show it outright
+
     if request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name:
         text = "True"
-        QProgramNumber = QProgramNumber + 2
+        QProgramNumber = QProgramNumber + 3 #3 because we are accounting for 3 programs, GR, CON AND SPIN
         GRDisplay = ""
         CONDisplay = ""
     else:
         text = "False"
         GRDisplay = "none"
         CONDisplay = "none"
+        SPINDisplay = "none"
     # apply for other dynamic income work etc.
     if request.user.eligibility.AmiRange_max == Decimal('0.5') and request.user.eligibility.AmiRange_min == Decimal('0.3'):
         text ="CallUs"
@@ -926,6 +968,45 @@ def dashboardGetFoco(request):
         RECButtonColor = ""
         RECButtonTextColor = ""
 
+    if request.user.eligibility.SPINQualified == QualificationStatus.PENDING.name:
+        SPINButtonText = "Applied"
+        SPINButtonColor = "green"
+        SPINButtonTextColor = "White"
+        PendingNumber = PendingNumber + 1
+        QProgramNumber = QProgramNumber - 1
+        SPINDisplayActive = "None"
+        SPINDisplayPending = ""
+        SPINPendingDate = "Estimated Notification Time: Two Weeks"
+        SPINDisplay ="none"
+    elif request.user.eligibility.SPINQualified == QualificationStatus.ACTIVE.name:
+        SPINButtonText = "Enrolled!" 
+        SPINButtonColor = "blue"
+        SPINButtonTextColor = "White"
+        ActiveNumber = ActiveNumber + 1
+        QProgramNumber = QProgramNumber - 1
+        SPINDisplayPending = "None"
+        SPINDisplayActive = ""
+        SPINDisplay ="none"
+    else:
+        SPINButtonText = "Quick Apply +"
+        SPINButtonColor = ""
+        SPINButtonTextColor = ""
+        SPINDisplayActive = "none"
+        SPINPendingDate = ""
+        SPINDisplayPending = "None"
+        
+    if request.user.eligibility.SPINQualified == QualificationStatus.NOTQUALIFIED.name:
+        SPINButtonText = "Can't Enroll"
+        SPINButtonColor = "red"
+        SPINButtonTextColor = "black"
+    else:
+        SPINButtonText = "Quick Apply +"
+        SPINButtonColor = ""
+        SPINButtonTextColor = ""
+
+
+
+
     return render(
         request,
         'dashboard/dashboard_GetFoco.html',
@@ -949,6 +1030,10 @@ def dashboardGetFoco(request):
             "ConnexionButtonText": ConnexionButtonText,
             "ConnexionButtonColor": ConnexionButtonColor,
             "ConnexionButtonTextColor": ConnexionButtonTextColor,
+
+            "SPINButtonText": SPINButtonText,
+            "SPINButtonColor": SPINButtonColor,
+            "SPINButtonTextColor": SPINButtonTextColor,
     
             
             "GRPreQualification": text,
@@ -961,17 +1046,21 @@ def dashboardGetFoco(request):
             "GRDisplay": GRDisplay,
             "RECDisplay": RECDisplay,
             "CONDisplay": CONDisplay,
+            "SPINDisplay": SPINDisplay,
     
             "GRDisplayActive": GRDisplayActive,
             "RECDisplayActive": RECDisplayActive,
             "CONDisplayActive": CONDisplayActive,
+            "SPINDisplayActive": SPINDisplayActive,
     
             "GRDisplayPending": GRDisplayPending,
             "RECDisplayPending": RECDisplayPending,
             "CONDisplayPending": CONDisplayPending,
+            "SPINDisplayPending": SPINDisplayPending,
     
             "RECPendingDate": RECPendingDate,
             "GRPendingDate": GRPendingDate,
+            "SPINPendingDate": SPINPendingDate,
             
             "clientName": request.user.first_name,
             "clientEmail": request.user.email,
