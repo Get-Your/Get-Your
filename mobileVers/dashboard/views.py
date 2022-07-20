@@ -905,6 +905,7 @@ def dashboardGetFoco(request):
         QProgramNumber = QProgramNumber - 1
         RECDisplayPending = "None"
         RECDisplayActive = ""
+        RECPendingDate = ""
         RECDisplay ="none"
     else:
         RECButtonText = "Quick Apply +"
