@@ -601,6 +601,9 @@ def qualifiedPrograms(request):
         text2 = "True"
     else:
         text2 = "False"
+
+    if (request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0')):
+        request.user.eligibility.GRqualified = QualificationStatus.PENDING.name
         
     if request.user.eligibility.ConnexionQualified == QualificationStatus.PENDING.name:
         ConnexionButtonText = "Applied"
@@ -684,9 +687,14 @@ def qualifiedPrograms(request):
         SPINButtonColor = "red"
         SPINButtonTextColor = "black"
     else:
-        SPINButtonText = "Quick Apply +"
-        SPINButtonColor = ""
-        SPINButtonTextColor = ""
+        if (Eligibility.objects.filter(SPINQualified='PENDING').count()) + (Eligibility.objects.filter(SPINQualified='ACTIVE').count()) > 75:
+            SPINButtonText = "Waitlist"
+            SPINButtonColor = ""
+            SPINButtonTextColor = ""
+        else:
+            SPINButtonText = "Quick Apply +"
+            SPINButtonColor = ""
+            SPINButtonTextColor = ""
 
     return render(
         request,
@@ -829,7 +837,6 @@ def dashboardGetFoco(request):
     QProgramNumber = 0
     ActiveNumber = 0
     PendingNumber = 0
-    SPINDisplay = "" #no qualifications needed for SPIN, so show it outright
 
     if request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name:
         text = "True"
@@ -846,7 +853,7 @@ def dashboardGetFoco(request):
         text ="CallUs"
     # auto apply grocery rebate people if their AMI is 0.3%
     if (request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0')):
-        request.user.eligibility.GRqualified = QualificationStatus.ACTIVE.name
+        request.user.eligibility.GRqualified = QualificationStatus.PENDING.name
         
     if (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True) and ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name):
         text2 = "True"
@@ -968,6 +975,7 @@ def dashboardGetFoco(request):
         RECButtonColor = ""
         RECButtonTextColor = ""
 
+    SPINDisplay = "" #no qualifications needed for SPIN, so show it outright
     if request.user.eligibility.SPINQualified == QualificationStatus.PENDING.name:
         SPINButtonText = "Applied"
         SPINButtonColor = "green"
@@ -987,25 +995,26 @@ def dashboardGetFoco(request):
         SPINDisplayPending = "None"
         SPINDisplayActive = ""
         SPINDisplay ="none"
-    else:
-        SPINButtonText = "Quick Apply +"
-        SPINButtonColor = ""
-        SPINButtonTextColor = ""
-        SPINDisplayActive = "none"
-        SPINPendingDate = ""
-        SPINDisplayPending = "None"
-        
-    if request.user.eligibility.SPINQualified == QualificationStatus.NOTQUALIFIED.name:
+    elif request.user.eligibility.SPINQualified == QualificationStatus.NOTQUALIFIED.name:
         SPINButtonText = "Can't Enroll"
         SPINButtonColor = "red"
         SPINButtonTextColor = "black"
     else:
-        SPINButtonText = "Quick Apply +"
-        SPINButtonColor = ""
-        SPINButtonTextColor = ""
-
-
-
+        #if SPIN > 75 have text say waitlist
+        if (Eligibility.objects.filter(SPINQualified='PENDING').count()) + (Eligibility.objects.filter(SPINQualified='ACTIVE').count()) > 75:
+            SPINButtonText = "Waitlist"
+            SPINButtonColor = ""
+            SPINButtonTextColor = ""
+            SPINDisplayActive = "none"
+            SPINPendingDate = ""
+            SPINDisplayPending = "None"
+        else:
+            SPINButtonText = "Quick Apply +"
+            SPINButtonColor = ""
+            SPINButtonTextColor = ""
+            SPINDisplayActive = "none"
+            SPINPendingDate = ""
+            SPINDisplayPending = "None"
 
     return render(
         request,
