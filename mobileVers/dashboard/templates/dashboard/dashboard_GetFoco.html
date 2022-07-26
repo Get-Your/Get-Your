@@ -14,7 +14,7 @@ the Free Software Foundation, either version 3 of the License, or
   <!-- Modal content -->
   <div class="modal-content">
     <span class="close">&times;</span>
-    {% if  GRPreQualification  == "False" %}
+    {% if  QProgramNumber  == 0 %}
       <p>We're sorry, currently you do not qualify for any programs. If you think this is an error please <a href="mailto: GetFoCo@fcgov.com?subject=Income Qualification Question - Get FoCo&body=Hello Get FoCo team, I seem to be having an issue with qualification, can you help clarify the qualifications for the available progrms?" style="font-style: none;">contact us</a>. <br> <br> Furthermore, you may click on <a style = "display: inline;" href="{% url 'dashboard:ProgramsList' %}">Programs</a> to view our available programs and their qualifications. </p>
     {% else %}
       <p>Congrats on creating an account! <br> <br> With the information you provided we gathered all the programs you may qualify for! All you need to do now is to click on Quick Apply + for programs you may be interested in to apply.</p>

@@ -809,7 +809,7 @@ def SPINQuickApply(request):
     
     # Calculate if within the qualification range
 
-    qualifyAmiPc = iqProgramQualifications.objects.filter(name='recreation').values(
+    qualifyAmiPc = iqProgramQualifications.objects.filter(name='spin').values(
         'percentAmi'
         ).first()['percentAmi']
     print('SPIN max AMI %:',qualifyAmiPc)

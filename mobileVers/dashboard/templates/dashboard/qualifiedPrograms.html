@@ -19,7 +19,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 <!-- example of qualified program-->
 <div class="fadeLarge">
-    <div class="modulequickApply" id="connexionRebate">
+    <div class="modulequickApply" id="connexionRebate" style="display:{{ toggleConnexion }};"> 
         <div class = "row" style="margin:0; width:100%">
             <div style="margin:0">
                 <p style ="font-weight: 550; margin: 0">Reduced-Rate Connexion</p>
@@ -35,7 +35,7 @@ the Free Software Foundation, either version 3 of the License, or
         </div>
     </div>
 
-    <div class="modulequickApply" id="groceryRebate">
+    <div class="modulequickApply" id="groceryRebate" style="display:{{ toggleGrocery }};">
         <div class = "row" style="margin:0; width:100%">
             <div style="margin:0">
                 <p style ="font-weight: 550; margin: 0">Grocery Tax Rebate </p>
@@ -58,7 +58,7 @@ the Free Software Foundation, either version 3 of the License, or
     -->
 
 
-    <div class="modulequickApply" id="recreationRebate">
+    <div class="modulequickApply" id="recreationRebate" style="display:{{ toggleRecreation }};">
         <div class = "row" style="margin:0; width:100%">
             <div style="margin:0">
                 <p style ="font-weight: 550; margin: 0">Recreation Reduced Fee </p>
@@ -74,7 +74,7 @@ the Free Software Foundation, either version 3 of the License, or
         </div>
     </div>
 
-    <div class="modulequickApply" id="SPINRebate">
+    <div class="modulequickApply" id="SPINRebate" style="display:{{ toggleSPIN }};">  
         <div class = "row" style="margin:0; width:100%">
             <div style="margin:0">
                 <p style ="font-weight: 550; margin: 0">SPIN </p>
@@ -171,67 +171,6 @@ the Free Software Foundation, either version 3 of the License, or
 -->
 
 <div class="extraspace"></div>
-
-
-<!-- Logic for hiding quick apply below -->
-<!-- Grocery Rebate-->
-{% if  GRPreQualification  == "False" %}
-    <body onload="toggleConnexion(), toggleGrocery(), toggleRecreation()"></body>
-{% endif %}
-
-<script>
-    function toggleGrocery() {
-      var x = document.getElementById("groceryRebate");
-      var y = document.getElementById("groceryRebateDesktop")
-      if (x.style.display === "none") {
-        x.style.display = "block";
-      } else {
-        x.style.display = "none";
-      }
-
-      if (y.style.display === "none") {
-        y.style.display = "block";
-      } else {
-        y.style.display = "none";
-      }
-    }
-</script>
-
-<script>
-    function toggleRecreation() {
-      var x = document.getElementById("recreationRebate");
-      var y = document.getElementById("recreationRebateDesktop")
-      if (x.style.display === "none") {
-        x.style.display = "block";
-      } else {
-        x.style.display = "none";
-      }
-
-      if (y.style.display === "none") {
-        y.style.display = "block";
-      } else {
-        y.style.display = "none";
-      }
-    }
-</script>
-
-<script>
-    function toggleConnexion() {
-      var x = document.getElementById("connexionRebate");
-      var y = document.getElementById("connexionRebateDesktop")
-      if (x.style.display === "none") {
-        x.style.display = "block";
-      } else {
-        x.style.display = "none";
-      }
-
-      if (y.style.display === "none") {
-        y.style.display = "block";
-      } else {
-        y.style.display = "none";
-      }
-    }
-</script>
 
 
 {% endblock %}
