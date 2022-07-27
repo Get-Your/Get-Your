@@ -593,28 +593,28 @@ def qualifiedPrograms(request):
         text ="CallUs"
         
     #Logic for AMI and IQ checks to show or hide quick apply programs
-    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='grocery').values('percentAmi').first()['percentAmi']) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True):
+    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='grocery').values('percentAmi').first()['percentAmi']) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True or request.user.programs.leap == True or request.user.programs.ebb_acf == True):
         toggleGrocery = ""
     else:
         toggleGrocery = "none"
 
-    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='connexion').values('percentAmi').first()['percentAmi']) and (request.user.programs.ebb_acf == True):
+    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='connexion').values('percentAmi').first()['percentAmi']) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True or request.user.programs.leap == True or request.user.programs.ebb_acf == True):
         toggleConnexion = ""
     else:
         toggleConnexion = "none"
 
-    if ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='spin').values('percentAmi').first()['percentAmi']):
+    if ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='spin').values('percentAmi').first()['percentAmi']) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True or request.user.programs.leap == True or request.user.programs.ebb_acf == True):#add snap and psd
         toggleSPIN = ""
     else:
         toggleSPIN = "none"
 
-    if (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True) and ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='recreation').values('percentAmi').first()['percentAmi']):
+    if ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='recreation').values('percentAmi').first()['percentAmi']) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True or request.user.programs.leap == True or request.user.programs.ebb_acf == True):
         toggleRecreation = ""
     else:
         toggleRecreation = "none"
 
     #auto apply clients with 30% AMI and below only if snap card / psd is uploaded and below 30% AMI
-    if ((request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0')) and ((request.user.programs.snap == True or request.user.programs.freeReducedLunch == True))):
+    if ((request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0')) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True or request.user.programs.leap == True or request.user.programs.ebb_acf == True)):
         request.user.eligibility.GRqualified = QualificationStatus.PENDING.name
         
     if request.user.eligibility.ConnexionQualified == QualificationStatus.PENDING.name:
@@ -853,29 +853,26 @@ def dashboardGetFoco(request):
     ActiveNumber = 0
     PendingNumber = 0
     #AMI and requirements logic for Grocery Rebate below
-    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='grocery').values('percentAmi').first()['percentAmi']) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True):
+    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='grocery').values('percentAmi').first()['percentAmi']) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True or request.user.programs.leap == True or request.user.programs.ebb_acf == True):
         QProgramNumber = QProgramNumber + 1
         GRDisplay = ""
     else:
         GRDisplay = "none"
     #AMI and requirements logic for Connexion below
-    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='connexion').values('percentAmi').first()['percentAmi']) and (request.user.programs.ebb_acf == True):
+    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='connexion').values('percentAmi').first()['percentAmi']) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True or request.user.programs.leap == True or request.user.programs.ebb_acf == True):
         QProgramNumber = QProgramNumber + 1
         CONDisplay = ""
     else:
         CONDisplay = "none"
-
-
-
     #AMI and requirements logic for Recreation Rebate below
-    if (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True) and ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='recreation').values('percentAmi').first()['percentAmi']):
+    if ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='recreation').values('percentAmi').first()['percentAmi']) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True or request.user.programs.leap == True or request.user.programs.ebb_acf == True):
         QProgramNumber = QProgramNumber + 1
         RECDisplay = ""
     else:
         RECDisplay = "none"
 
     #AMI and requirements logic for SPIN Rebate below
-    if ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='spin').values('percentAmi').first()['percentAmi']):
+    if ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='spin').values('percentAmi').first()['percentAmi']) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True or request.user.programs.leap == True or request.user.programs.ebb_acf == True):
         QProgramNumber = QProgramNumber + 1
         SPINDisplay = ""
     else:
@@ -901,12 +898,12 @@ def dashboardGetFoco(request):
 
 
 
-
+    # TODO callus should no longer be relevant, delete!
     # apply for other dynamic income work etc.
     if request.user.eligibility.AmiRange_max == Decimal('0.5') and request.user.eligibility.AmiRange_min == Decimal('0.3'):
         text ="CallUs"
     # auto apply grocery rebate people if their AMI is 0.3% AND snap / PSD letter uploaded
-    if ((request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0')) and ((request.user.programs.snap == True or request.user.programs.freeReducedLunch == True))):
+    if ((request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0')) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True or request.user.programs.leap == True or request.user.programs.ebb_acf == True)):
         request.user.eligibility.GRqualified = QualificationStatus.PENDING.name
         
 
