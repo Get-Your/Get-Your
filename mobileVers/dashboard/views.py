@@ -614,7 +614,7 @@ def qualifiedPrograms(request):
         toggleRecreation = "none"
 
     #auto apply clients with 30% AMI and below only if snap card / psd is uploaded and below 30% AMI
-    if ((request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0')) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True or request.user.programs.leap == True or request.user.programs.ebb_acf == True)):
+    if ((request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0')) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True or request.user.programs.ebb_acf == True)):
         request.user.eligibility.GRqualified = QualificationStatus.PENDING.name
         
     if request.user.eligibility.ConnexionQualified == QualificationStatus.PENDING.name:
@@ -903,7 +903,7 @@ def dashboardGetFoco(request):
     if request.user.eligibility.AmiRange_max == Decimal('0.5') and request.user.eligibility.AmiRange_min == Decimal('0.3'):
         text ="CallUs"
     # auto apply grocery rebate people if their AMI is 0.3% AND snap / PSD letter uploaded
-    if ((request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0')) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True or request.user.programs.leap == True or request.user.programs.ebb_acf == True)):
+    if ((request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0')) and (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True  or request.user.programs.ebb_acf == True)):
         request.user.eligibility.GRqualified = QualificationStatus.PENDING.name
         
 
