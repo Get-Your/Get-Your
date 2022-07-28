@@ -98,7 +98,7 @@ def what_page(user,request):
         try: #check if dependents / birthdays are filled
             value = request.user.moreinfo
         except AttributeError or ObjectDoesNotExist:
-            return "application:finances"
+            return "application:moreInfoNeeded"
         
         try: #check if programs is filled out
             value = request.user.programs
