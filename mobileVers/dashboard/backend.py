@@ -85,33 +85,27 @@ def files_to_string(file_list, request):
 def what_page(user,request):
     if user.is_authenticated:
         #for some reason, none of these login correctly... reviewing this now
-        try:
+        try: #check if address is completely filled
             value = request.user.addresses
         except AttributeError:
             return "application:address"
 
-        try:
+        try: #check if finances is filled
             value = request.user.eligibility
         except AttributeError:
             return "application:finances"
+
+        try: #check if dependents / birthdays are filled
+            value = request.user.moreinfo
+        except AttributeError or ObjectDoesNotExist:
+            return "application:finances"
         
-        try:
+        try: #check if programs is filled out
             value = request.user.programs
         except AttributeError or ObjectDoesNotExist:
             return "application:programs"
         
-        '''try:
-            print(request.user.files.all()) #Check for all files per how many programs the client selected
-            value = request.user.files.all()
-            if not value.exists():
-               print("object doesn't exist")
-               return "dashboard:files"
-            else:
-                print("object exists")
-        except AttributeError:
-            return "dashboard:files"'''
-
-        try:
+        try: #check if files are all uploaded
             file_list = {"SNAP Card": request.user.programs.snap,
                 # Have Reduced Lunch be last item in the list if we add more programs
                 "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
@@ -142,13 +136,22 @@ def what_page(user,request):
                 if group.document_title == "1040 Form":
                     checkAllForms[5] = True
                     file_list["1040 Form"] = False
-            for fileCheck in checkAllForms:
-                if fileCheck == False:
-                    return "dashboard:files"
-                else:
-                    print("files found")
+            if False in checkAllForms:
+                return "dashboard:files"
+            else:
+                print("files found")
         except AttributeError:
             return "dashboard:files"
+
+        try: #check if ACP last four SSN is needed or not...
+            if ((request.user.programs.ebb_acf) is True) and ((request.user.taxinformation.last4SSN) is "NULL"):
+                return "application:filesInfoNeeded"
+            else:
+                print("last 4 ssn found")
+        except:
+            return "application:filesInfoNeeded"
+
+
 
         return "dashboard:dashboard"
     else:

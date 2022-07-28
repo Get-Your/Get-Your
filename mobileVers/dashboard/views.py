@@ -5,6 +5,8 @@ the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version
 """
 from django.shortcuts import render, redirect, reverse
+
+from application.models import iqProgramQualifications
 from .forms import FileForm, FeedbackForm, TaxForm, addressVerificationForm, AddressForm
 from decimal import Decimal
 from django.conf import settings as django_settings  
@@ -803,19 +805,19 @@ def dashboardGetFoco(request):
     ActiveNumber = 0
     PendingNumber = 0
     #AMI and requirements logic for Grocery Rebate below
-    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name):
+    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='grocery').values('percentAmi').first()['percentAmi']):
         QProgramNumber = QProgramNumber + 1
         GRDisplay = ""
     else:
         GRDisplay = "none"
     #AMI and requirements logic for Connexion below
-    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name):
+    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name)  and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='connexion').values('percentAmi').first()['percentAmi']):
         QProgramNumber = QProgramNumber + 1
         CONDisplay = ""
     else:
         CONDisplay = "none"
     #AMI and requirements logic for Recreation Rebate below
-    if ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name):
+    if ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='recreation').values('percentAmi').first()['percentAmi']):
         QProgramNumber = QProgramNumber + 1
         RECDisplay = ""
     else:
