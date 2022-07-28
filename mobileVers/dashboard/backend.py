@@ -100,7 +100,7 @@ def what_page(user,request):
         except AttributeError or ObjectDoesNotExist:
             return "application:programs"
         
-        try:
+        '''try:
             print(request.user.files.all()) #Check for all files per how many programs the client selected
             value = request.user.files.all()
             if not value.exists():
@@ -109,9 +109,47 @@ def what_page(user,request):
             else:
                 print("object exists")
         except AttributeError:
-            return "dashboard:files"
-        
-        return "dashboard:dashboard"
+            return "dashboard:files"'''
 
+        try:
+            file_list = {"SNAP Card": request.user.programs.snap,
+                # Have Reduced Lunch be last item in the list if we add more programs
+                "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
+                "Affordable Connectivity Program": request.user.programs.ebb_acf,
+                "Identification": request.user.programs.Identification,
+                "1040 Form": request.user.programs.form1040,
+                "LEAP Letter": request.user.programs.leap,
+            }
+
+            Forms = request.user.files
+            checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.ebb_acf),not(request.user.programs.Identification),not(request.user.programs.leap),not(request.user.programs.form1040),]
+            for group in Forms.all():
+                if group.document_title == "SNAP":
+                    checkAllForms[0] = True
+                    file_list["SNAP Card"] = False
+                if group.document_title == "Free and Reduced Lunch":
+                    checkAllForms[1] = True
+                    file_list["PSD Reduced Lunch Approval Letter"] = False
+                if group.document_title == "ACP Letter":
+                    checkAllForms[2] = True
+                    file_list["Affordable Connectivity Program"] = False
+                if group.document_title == "Identification":
+                    checkAllForms[3] = True
+                    file_list["Identification"] = False
+                if group.document_title == "LEAP Letter":
+                    checkAllForms[4] = True
+                    file_list["LEAP Letter"] = False
+                if group.document_title == "1040 Form":
+                    checkAllForms[5] = True
+                    file_list["1040 Form"] = False
+            for fileCheck in checkAllForms:
+                if fileCheck == False:
+                    return "dashboard:files"
+                else:
+                    print("files found")
+        except AttributeError:
+            return "dashboard:files"
+
+        return "dashboard:dashboard"
     else:
         return "application:account"

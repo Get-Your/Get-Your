@@ -588,19 +588,30 @@ def notifyRemaining(request):
 
 
 def qualifiedPrograms(request):
-    if request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name:
-        text = "True"
-    else:
-        text = "False"
     # apply for other dynamic income work etc.
     # TODO: The 'CallUs' text should no longer be referenced elsewhere - ensure this is true and remove this statement
     if request.user.eligibility.AmiRange_max == Decimal('0.5') and request.user.eligibility.AmiRange_min == Decimal('0.3'):
         text ="CallUs"
         
-    if (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True) and (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name):
-        text2 = "True"
+    #Logic for AMI and IQ checks to show or hide quick apply programs
+    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='grocery').values('percentAmi').first()['percentAmi']):
+        toggleGrocery = ""
     else:
-        text2 = "False"
+        toggleGrocery = "none"
+
+    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='connexion').values('percentAmi').first()['percentAmi']):
+        toggleConnexion = ""
+    else:
+        toggleConnexion = "none"
+
+    if ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='recreation').values('percentAmi').first()['percentAmi']):
+        toggleRecreation = ""
+    else:
+        toggleRecreation = "none"
+
+    #auto apply clients with 30% AMI and below only if snap card / psd is uploaded and below 30% AMI
+    if ((request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0'))):
+        request.user.eligibility.GRqualified = QualificationStatus.PENDING.name
         
     if request.user.eligibility.ConnexionQualified == QualificationStatus.PENDING.name:
         ConnexionButtonText = "Applied"
@@ -676,8 +687,9 @@ def qualifiedPrograms(request):
             "RECButtonColor" : RECButtonColor,
             "RECButtonTextColor" : RECButtonTextColor,
             
-            "GRPreQualification": text,
-            "RecreationPreQualification": text2,
+            "toggleGrocery": toggleGrocery,
+            "toggleRecreation": toggleRecreation,
+            "toggleConnexion": toggleConnexion,
             
             'is_prod': django_settings.IS_PROD,
             },
@@ -790,26 +802,34 @@ def dashboardGetFoco(request):
     QProgramNumber = 0
     ActiveNumber = 0
     PendingNumber = 0
-    if request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name:
-        text = "True"
-        QProgramNumber = QProgramNumber + 2
+    #AMI and requirements logic for Grocery Rebate below
+    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name):
+        QProgramNumber = QProgramNumber + 1
         GRDisplay = ""
+    else:
+        GRDisplay = "none"
+    #AMI and requirements logic for Connexion below
+    if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name):
+        QProgramNumber = QProgramNumber + 1
         CONDisplay = ""
     else:
-        text = "False"
-        GRDisplay = "none"
         CONDisplay = "none"
+    #AMI and requirements logic for Recreation Rebate below
+    if ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name):
+        QProgramNumber = QProgramNumber + 1
+        RECDisplay = ""
+    else:
+        RECDisplay = "none"
+
+    # auto apply grocery rebate people if their AMI is 0.3% AND snap / PSD letter uploaded
+    if ((request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0'))):
+        request.user.eligibility.GRqualified = QualificationStatus.PENDING.name
+
+
     # apply for other dynamic income work etc.
     if request.user.eligibility.AmiRange_max == Decimal('0.5') and request.user.eligibility.AmiRange_min == Decimal('0.3'):
         text ="CallUs"
         
-    if (request.user.programs.snap == True or request.user.programs.freeReducedLunch == True) and ( request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name):
-        text2 = "True"
-        QProgramNumber = QProgramNumber + 1
-        RECDisplay = ""
-    else:
-        text2 = "False"
-        RECDisplay = "none"
 
     if request.user.eligibility.ConnexionQualified == QualificationStatus.PENDING.name:
         ConnexionButtonText = "Applied"
@@ -947,10 +967,6 @@ def dashboardGetFoco(request):
             "ConnexionButtonText": ConnexionButtonText,
             "ConnexionButtonColor": ConnexionButtonColor,
             "ConnexionButtonTextColor": ConnexionButtonTextColor,
-    
-            
-            "GRPreQualification": text,
-            "RecreationPreQualification": text2,
             
             "QProgramNumber":QProgramNumber,
             "PendingNumber":PendingNumber,
