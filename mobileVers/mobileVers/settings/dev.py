@@ -137,20 +137,10 @@ WSGI_APPLICATION = 'mobileVers.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-'''DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.postgresql',
-         'NAME': 'getfoco_dev',
-         'USER': 'getfocoadmin',
-         'PASSWORD': POSTGRESQLPW,
-         'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'
-         }
- }'''
-
 DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.postgresql',
-         'NAME': 'getfoco_prod',
+         'NAME': 'getfoco_dev',
          'USER': 'getfocoadmin',
          'PASSWORD': POSTGRESQLPW,
          'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'

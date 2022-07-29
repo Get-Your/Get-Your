@@ -18,6 +18,7 @@ from django.conf import settings
 from azure.storage.blob import BlockBlobService
 
 from .models import User
+from application.models import MoreInfo
 
 
 def blobStorageUpload(filename, file):
@@ -96,7 +97,12 @@ def what_page(user,request):
             return "application:finances"
 
         try: #check if dependents / birthdays are filled
-            value = request.user.moreinfo
+            searchForUser = request.user.id
+            if(MoreInfo.objects.all().filter(user_id_id=searchForUser).exists()):
+                print("MoreInfo exists")
+            else:
+                print("MoreInfo doesn't exist")
+                return "application:moreInfoNeeded"
         except AttributeError or ObjectDoesNotExist:
             return "application:moreInfoNeeded"
         
@@ -144,7 +150,7 @@ def what_page(user,request):
             return "dashboard:files"
 
         try: #check if ACP last four SSN is needed or not...
-            if ((request.user.programs.ebb_acf) is True) and ((request.user.taxinformation.last4SSN) is "NULL"):
+            if ((request.user.programs.ebb_acf) == True) and ((request.user.taxinformation.last4SSN) == "NULL"):
                 return "application:filesInfoNeeded"
             else:
                 print("last 4 ssn found")
