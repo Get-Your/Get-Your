@@ -101,7 +101,7 @@ def what_page(user,request):
             return "application:programs"
         
         try:
-            print(request.user.files.all()) #Check for all files per how many programs the client selected
+            print('Num files is', request.user.files.all()) #Check for all files per how many programs the client selected
             value = request.user.files.all()
             if not value.exists():
                print("object doesn't exist")
