@@ -386,9 +386,11 @@ the Free Software Foundation, either version 3 of the License, or
     <!--CSV HERE / Also template for printing out all updates-->
       <p style="font-weight: 550;">Stay Tuned for Updates! </p>
       <p> Grocery Rebate</p>
+        <p>{{groceryStatus}}</p>
       <p> Connexion</p>
+        <p>{{connexionStatus}}</p>
       <p> Recreation</p>
-      <a href="{% url 'dashboard:dashboard' %}" style="text-decoration: none; color:#55A1D3">Show More   <img src="{% static 'dashboard/images/rightArrow.svg' %}" > </a>
+        <p>{{recreationStatus}}</p>
     </div>
 
     <!-- News Section -->
