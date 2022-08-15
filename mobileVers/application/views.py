@@ -342,7 +342,7 @@ def addressCorrection(request):
             print("Start loop {}".format(idx+1))
             addressStr = "{ad1} {ad2}, {ct}, {st} {zp}".format(
                 ad1=q['address'],
-                ad2=q['address2'],
+                ad2=q['address2'].replace('#',''),
                 ct=q['city'],
                 st=q['state'],
                 zp=q['zipcode'])
@@ -363,19 +363,26 @@ def addressCorrection(request):
             rawAddressDict.update(
                 {key:'' for key in uspsKeys if key not in rawAddressDict.keys()}
                 )
+            print('rawAddressDict:', rawAddressDict)
 
             # Validate to USPS address
             dict_address = validateUSPS(rawAddressDict)        
-            print(dict_address['AddressValidateResponse']['Address'])
+            validationAddress = dict_address['AddressValidateResponse']['Address']
+            print('USPS Validation return:', validationAddress)
+            
+            if 'Address1' not in validationAddress.keys():
+                validationAddress['Address1'] = ''
             
             # Kick back to the user if the USPS API needs more information
-            if 'ReturnText' in dict_address['AddressValidateResponse']['Address'].keys():
+            if 'ReturnText' in validationAddress.keys():
                 if idx == 1 or q['address2'] == '':
+                    print('Address not found - either end of loop or Line 1 of the address is blank')
                     raise TypeError()
                     
                 else:
                     # If 'ReturnText' is not found and address2 is not None,
                     # remove possible keywords and try again
+                    print('Address not found - try to remove keywords')
                     removeList = ['apt', 'unit', '#']
                     for wrd in removeList:
                         q['address2'] = q['address2'].lower().replace(wrd, '')
@@ -385,18 +392,18 @@ def addressCorrection(request):
             else:
                 break
         
-        
-        program_string_2 = [dict_address['AddressValidateResponse']['Address']['Address2'], 
-                            dict_address['AddressValidateResponse']['Address']['Address1'],
-                            dict_address['AddressValidateResponse']['Address']['City'] + " "+ dict_address['AddressValidateResponse']['Address']['State'] +" "+  str(dict_address['AddressValidateResponse']['Address']['Zip5'])]
+        program_string_2 = [validationAddress['Address2'], 
+                            validationAddress['Address1'],
+                            validationAddress['City'] + " "+ validationAddress['State'] +" "+  str(validationAddress['Zip5'])]
+        print('program_string_2', program_string_2)
         
     except TypeError:
         print("More address information is needed from user")
         # Only pass to the user for the 'more information is needed' case
         # --This is all that has been tested--
-        if 'more information is needed' in dict_address['AddressValidateResponse']['Address']['ReturnText']:
+        if 'more information is needed' in validationAddress['ReturnText']:
             program_string_2 = [
-                dict_address['AddressValidateResponse']['Address']['ReturnText'].replace('Default address: ',''),
+                validationAddress['ReturnText'].replace('Default address: ',''),
                 "Please press 'back' and re-enter.",
                 ]
             
