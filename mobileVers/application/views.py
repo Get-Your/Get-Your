@@ -155,10 +155,15 @@ class GAHIBuilder:
                             ),
                         )
                 else:
+                    # Add $1 to the low end of each range to improve clarity
+                    # (range ends will now not overlap)
+                    # Adding to the low end means applicants at the edge of the
+                    # range will select the lower range and increase their
+                    # available benefits.
                     self.list.append(
                         GAHIVal(
                             f"{self.amiCutoffPc[idx]}^{self.amiCutoffPc[idx+1]}",
-                            f"${itm:06,.0f} ~ ${amiCutoffVals[idx+1]:06,.0f}",
+                            f"${itm+1:06,.0f} ~ ${amiCutoffVals[idx+1]:06,.0f}",
                             ),
                         )
                 
