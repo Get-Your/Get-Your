@@ -852,6 +852,9 @@ def dashboardGetFoco(request):
     QProgramNumber = 0
     ActiveNumber = 0
     PendingNumber = 0
+    groceryStatus =""
+    recreationStatus =""
+    connexionStatus =""
     #AMI and requirements logic for Grocery Rebate below
     if (request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name) and (request.user.eligibility.AmiRange_max <= iqProgramQualifications.objects.filter(name='grocery').values('percentAmi').first()['percentAmi']):
         QProgramNumber = QProgramNumber + 1
@@ -877,8 +880,8 @@ def dashboardGetFoco(request):
     else:
         SPINDisplay = "none"
 
-    # auto apply grocery rebate people if their AMI is 0.3% AND snap / PSD letter uploaded
-    if ((request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0'))):
+    # auto apply grocery rebate people if their AMI is <=30%
+    if request.user.eligibility.AmiRange_max <= Decimal('0.3'):
         request.user.eligibility.GRqualified = QualificationStatus.PENDING.name
         
     # TODO callus should no longer be relevant, delete!
@@ -895,7 +898,7 @@ def dashboardGetFoco(request):
         CONDisplayActive = "none"
         CONDisplayPending = ""
         CONDisplay = "none"
-
+        connexionStatus = "We are reviewing your application! Stay tuned here and check your email for updates."
     elif request.user.eligibility.ConnexionQualified == QualificationStatus.ACTIVE.name:
         ConnexionButtonText = "Enrolled!"
         ConnexionButtonColor = "blue"
@@ -933,6 +936,8 @@ def dashboardGetFoco(request):
         GRDisplayPending = ""
         GRDisplay = "none"
         GRPendingDate = "Estimated Notification Time: Two Weeks"
+
+        groceryStatus = "We are reviewing your application! Stay tuned here and check your email for updates."
 
     elif request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
         GRButtonText = "Enrolled!"
@@ -972,6 +977,9 @@ def dashboardGetFoco(request):
         RECDisplayPending = ""
         RECPendingDate = "Estimated Notification Time: Two Weeks"
         RECDisplay ="none"
+
+        recreationStatus = "We are reviewing your application! Stay tuned here and check your email for updates."
+
     elif request.user.eligibility.RecreationQualified == QualificationStatus.ACTIVE.name:
         RECButtonText = "Enrolled!" 
         RECButtonColor = "blue"
@@ -1093,6 +1101,10 @@ def dashboardGetFoco(request):
             
             "clientName": request.user.first_name,
             "clientEmail": request.user.email,
+
+            "groceryStatus": groceryStatus,
+            "connexionStatus": connexionStatus,
+            "recreationStatus": recreationStatus,
             
             'is_prod': django_settings.IS_PROD,
             },
