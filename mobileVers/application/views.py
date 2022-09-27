@@ -480,8 +480,12 @@ def takeUSPSaddress(request):
         instance.state = dict_address['AddressValidateResponse']['Address']['State']
         instance.zipCode = int(dict_address['AddressValidateResponse']['Address']['Zip5'])
         
+        # Record the service area and Connexion status
         instance.isInGMA = isInGMA
         instance.hasConnexion = hasConnexion
+        
+        # Final step: mark the address record as 'verified'
+        instance.is_verified = True
         
         instance.save()
     except KeyError or TypeError or RelatedObjectDoesNotExist:
