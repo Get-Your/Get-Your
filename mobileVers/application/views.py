@@ -434,8 +434,8 @@ def addressCorrection(request):
     # If validation was successful and all address parts are case-insensitive
     # exact matches between entered and validation, skip addressCorrection()
     
-    # Rewrite any blank values in q to match '-' from USPS API
-    q = {key: q[key] if q[key]!='' else '-' for key in q.keys()}
+    # Run the QueryDict 'q' to get just dict
+    q = {key: q[key] for key in q.keys()}
     if 'usps_address_validate' in request.session.keys() and \
         dict_address['AddressValidateResponse']['Address']['Address2'].lower() == q['address'].lower() and \
             dict_address['AddressValidateResponse']['Address']['Address1'].lower() == q['address2'].lower() and \
