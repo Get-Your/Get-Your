@@ -888,7 +888,11 @@ def dashboardGetFoco(request):
 
     # auto apply grocery rebate people if their AMI is <=30%
     if request.user.eligibility.AmiRange_max <= Decimal('0.3'):
+        # Update the current model so the dashboard displays correctly
         request.user.eligibility.GRqualified = QualificationStatus.PENDING.name
+
+        # Update the database
+        Eligibility.objects.filter(user_id_id=request.user.id).update(GRqualified=QualificationStatus.PENDING.name)
         
     # TODO callus should no longer be relevant, delete!
     # apply for other dynamic income work etc.
