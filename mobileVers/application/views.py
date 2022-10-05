@@ -341,10 +341,11 @@ def addressCorrection(request):
             "state": request.user.addresses.state,
             "zipcode": str(request.user.addresses.zipCode),})
         
-        # Loop through a maximum of two times to try an extra iteration of
+        # Loop through a maximum of two times to try extra iterations of
         # specifying 'unit' in from of the apt/unit number
-        for idx in (0,1):
-            print("Start loop {}".format(idx+1))
+        maxLoopIdx = 2
+        for idx in range(maxLoopIdx+1):
+            print("Start loop {}".format(idx))
             addressStr = "{ad1} {ad2}, {ct}, {st} {zp}".format(
                 ad1=q['address'],
                 ad2=q['address2'].replace('#',''),
@@ -370,23 +371,34 @@ def addressCorrection(request):
                 )
             print('rawAddressDict:', rawAddressDict)
 
-            # Validate to USPS address
-            dict_address = validateUSPS(rawAddressDict)        
-            validationAddress = dict_address['AddressValidateResponse']['Address']
-            print('USPS Validation return:', validationAddress)
+            # Validate to USPS address - use usaddress first, then try a string
+            try:
+                if idx == 2:
+                    dict_address = validateUSPS(q)   
+                else:
+                    dict_address = validateUSPS(rawAddressDict)        
+                validationAddress = dict_address['AddressValidateResponse']['Address']
+                print('USPS Validation return:', validationAddress)
+            
+            except KeyError:
+                if idx == maxLoopIdx:
+                    raise
+                else:
+                    continue
             
             if 'Address1' not in validationAddress.keys():
                 validationAddress['Address1'] = ''
             
             # Kick back to the user if the USPS API needs more information
             if 'ReturnText' in validationAddress.keys():
-                if idx == 1 or q['address2'] == '':
+                if idx == maxLoopIdx or q['address2'] == '':
                     print('Address not found - either end of loop or Line 1 of the address is blank')
                     raise TypeError()
                     
-                else:
-                    # If 'ReturnText' is not found and address2 is not None,
-                    # remove possible keywords and try again
+                elif idx == 0:
+                    # For loop 1: if 'ReturnText' is not found and address2 is
+                    # not None, remove possible keywords and try again
+                    # Note that this will affect later loop iterations
                     print('Address not found - try to remove keywords')
                     removeList = ['apt', 'unit', '#']
                     for wrd in removeList:
@@ -434,8 +446,12 @@ def addressCorrection(request):
     # If validation was successful and all address parts are case-insensitive
     # exact matches between entered and validation, skip addressCorrection()
     
-    # Rewrite any blank values in q to match '-' from USPS API
-    q = {key: q[key] if q[key]!='' else '-' for key in q.keys()}
+    # Run the QueryDict 'q' to get just dict
+    # If just a string input was used (loop idx == 2), use '-' for blanks
+    if idx == 2:
+        q = {key: q[key] if q[key]!='' else '-' for key in q.keys()}
+    else:
+        q = {key: q[key] for key in q.keys()}
     if 'usps_address_validate' in request.session.keys() and \
         dict_address['AddressValidateResponse']['Address']['Address2'].lower() == q['address'].lower() and \
             dict_address['AddressValidateResponse']['Address']['Address1'].lower() == q['address2'].lower() and \
@@ -480,8 +496,12 @@ def takeUSPSaddress(request):
         instance.state = dict_address['AddressValidateResponse']['Address']['State']
         instance.zipCode = int(dict_address['AddressValidateResponse']['Address']['Zip5'])
         
+        # Record the service area and Connexion status
         instance.isInGMA = isInGMA
         instance.hasConnexion = hasConnexion
+        
+        # Final step: mark the address record as 'verified'
+        instance.is_verified = True
         
         instance.save()
     except KeyError or TypeError or RelatedObjectDoesNotExist:
