@@ -90,7 +90,7 @@ def what_page(user,request):
         
         #for some reason, none of these login correctly... reviewing this now
         try: #check if the addresses.is_verified==True
-            if Addresses.objects.get(user_id_id=searchForUser).is_verified:
+            if Addresses.objects.all().filter(user_id_id=searchForUser).exists() and Addresses.objects.get(user_id_id=searchForUser).is_verified:
                 print("Address has been verified")
             else:
                 print("Still need to verify address")
