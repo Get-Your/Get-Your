@@ -1036,6 +1036,7 @@ def dashboardGetFoco(request):
         QProgramNumber = QProgramNumber - 1
         SPINDisplayPending = "None"
         SPINDisplayActive = ""
+        SPINPendingDate = ""
         SPINDisplay ="none"
     elif request.user.eligibility.SPINQualified == QualificationStatus.NOTQUALIFIED.name:
         SPINButtonText = "Can't Enroll"
