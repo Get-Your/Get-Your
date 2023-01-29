@@ -134,3 +134,9 @@ dmypy.json
 
 # Docker stuff
 *.dockerignore
+
+# VSCode Dev Environment
+.vscode/
+
+# Mac OS File System
+.DS_Store

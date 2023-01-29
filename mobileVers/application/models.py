@@ -213,6 +213,7 @@ class programs(TimeStampedModel): #incomeVerificationPrograms
     form1040 = models.BooleanField()
     ebb_acf = models.BooleanField()
     leap = models.BooleanField()
+    medicaid = models.BooleanField(default=False)
 
 class attestations(TimeStampedModel):
     user_id = models.OneToOneField(

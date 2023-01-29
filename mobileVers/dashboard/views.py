@@ -40,16 +40,14 @@ from django.core.files.storage import FileSystemStorage
 
 #Step 4 of Application Process
 def files(request):
-    #check to go to Tax route if no files are chosen
-    if request.user.programs.snap == False and request.user.programs.freeReducedLunch == False and request.user.programs.ebb_acf == False and request.user.programs.leap == False:
-        request.user.programs.form1040 = True
-    file_list = {"SNAP Card": request.user.programs.snap,
-                # Have Reduced Lunch be last item in the list if we add more programs
-                "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
-                "Affordable Connectivity Program": request.user.programs.ebb_acf,
-                "Identification": request.user.programs.Identification,
-                "1040 Form": request.user.programs.form1040,
-                "LEAP Letter": request.user.programs.leap,
+    file_list = {
+        "SNAP Card": request.user.programs.snap,
+        # Have Reduced Lunch be last item in the list if we add more programs
+        "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
+        "Affordable Connectivity Program": request.user.programs.ebb_acf,
+        "Identification": request.user.programs.Identification,
+        "Medicaid Card": request.user.programs.medicaid,
+        "LEAP Letter": request.user.programs.leap,
     }
     '''
     Variables:
@@ -100,8 +98,8 @@ def files(request):
                             file_list = "Affordable Connectivity Program"
                         if instance.document_title == "Identification":
                             file_list = "Identification"
-                        if instance.document_title == "1040 Form":
-                            file_list = "1040 Form"
+                        if instance.document_title == "Medicaid":
+                            file_list = "Medicaid Card"
                         return render(
                             request,
                             'dashboard/files.html',
@@ -134,7 +132,7 @@ def files(request):
                 
                 # Check if the user needs to upload another form
                 Forms = request.user.files
-                checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.ebb_acf),not(request.user.programs.Identification),not(request.user.programs.leap),not(request.user.programs.form1040),]
+                checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.ebb_acf),not(request.user.programs.Identification),not(request.user.programs.leap),not(request.user.programs.medicaid),]
                 for group in Forms.all():
                     if group.document_title == "SNAP":
                         checkAllForms[0] = True
@@ -151,9 +149,9 @@ def files(request):
                     if group.document_title == "LEAP Letter":
                         checkAllForms[4] = True
                         file_list["LEAP Letter"] = False
-                    if group.document_title == "1040 Form":
+                    if group.document_title == "Medicaid":
                         checkAllForms[5] = True
-                        file_list["1040 Form"] = False
+                        file_list["Medicaid Card"] = False
                 if False in checkAllForms:
                     return render(
                         request,
@@ -161,7 +159,7 @@ def files(request):
                         {
                             'form':form,
                             'programs': file_list,
-                            'program_string': files_to_string(file_list, request),
+                            'program_string': files_to_string(file_list),
                             'step':5,
                             'formPageNum':6,
                             'Title': "Files",
@@ -169,10 +167,6 @@ def files(request):
                             },
                         )
                 
-                # if no options are selected, they must upload their tax form, the code below allows for that.
-                # Tax form upload check
-                if request.user.programs.freeReducedLunch != True and request.user.programs.snap != True and request.user.programs.ebb_acf != True and request.user.programs.leap != True:
-                    return redirect(reverse("dashboard:manualVerifyIncome"))
                 # if affordable connectivity program is chosen
                 elif request.user.programs.ebb_acf == True:
                     return redirect(reverse("application:filesInfoNeeded"))
@@ -197,7 +191,7 @@ def files(request):
         {
             'form':form,
             'programs': file_list,
-            'program_string': files_to_string(file_list, request),
+            'program_string': files_to_string(file_list),
             'step':5,
             'formPageNum':6,
             'Title': "Files",
@@ -339,7 +333,7 @@ def filesContinued(request):
                         {
                             'form':form,
                             'programs': file_list,
-                            'program_string': files_to_string(file_list, request),
+                            'program_string': files_to_string(file_list),
                             'step':2,
                             'formPageNum':2,
                             'Title': "Files Continued",
@@ -366,7 +360,7 @@ def filesContinued(request):
         {
             'form':form,
             'programs': file_list,
-            'program_string': files_to_string(file_list, request),
+            'program_string': files_to_string(file_list),
             'step':2,
             'formPageNum':"2 - Recreation Reduced Fee",
             'Title': "Files Continued",
