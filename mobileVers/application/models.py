@@ -210,7 +210,7 @@ class programs(TimeStampedModel): #incomeVerificationPrograms
     snap = models.BooleanField()
     freeReducedLunch = models.BooleanField()
     Identification = models.BooleanField()
-    form1040 = models.BooleanField()
+    form1040 = models.BooleanField(default=False)
     ebb_acf = models.BooleanField()
     leap = models.BooleanField()
     medicaid = models.BooleanField(default=False)
