@@ -190,6 +190,7 @@ class Eligibility(TimeStampedModel):
     # AMI (which is a function of number of individuals in household)
     AmiRange_min = models.DecimalField(max_digits=5, decimal_places=4)
     AmiRange_max = models.DecimalField(max_digits=5, decimal_places=4)
+    spin_privacy_acknowledgement = models.BooleanField(default=False)
 
 
 

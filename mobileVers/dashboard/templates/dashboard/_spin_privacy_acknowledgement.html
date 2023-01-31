@@ -1,0 +1,52 @@
+<div id="modalSpin" class="modal Dashboard" style="display: none">
+    <!-- Modal content -->
+    <div class="modal-content">
+        <span id="closeSpin" class="close">&times;</span>
+        <p>Privacy Acknowledgement</p>
+        <p>By clicking "Agree" below, you acknowledge that you have read and understand the City of Fort Collins and GetFoCo will share your name and email address with Spin Community for the purpose of registering you in the program.</p>
+        <a href="{% url 'application:SPINQuickApply' %}" style="text-decoration: none"> <div class="quickapply link" style="background-color: {{SPINButtonColor}}; color: {{SPINButtonTextColor}}">Agree</div></a> 
+    </div>
+</div>
+
+<style>
+    @media screen and (max-width: 767px) {
+        .modal {
+            padding-top: 270px;
+        }
+    }
+</style>
+
+<script>
+    // Get the modal
+    var modalSpin = document.getElementById("modalSpin");
+
+
+    // Get the <span> element that closes the modal
+    var spinSpan = document.getElementById("closeSpin");
+
+
+    // When the user clicks on <span> (x), close the modal
+    spinSpan.onclick = function () {
+        modalSpin.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function (event) {
+        if (event.target == modalSpin) {
+            modalSpin.style.display = "none";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        try {
+            document.getElementById("spinPrivacyAcknowledgement").addEventListener("click", function() {
+                document.getElementById("modalSpin").style.display = "block";
+            });
+            document.getElementById("spinPrivacyAcknowledgementSm").addEventListener("click", function() {
+                document.getElementById("modalSpin").style.display = "block";
+            });
+        } catch (error) {
+            console.error("Error adding event listener to spinPrivacyAcknowledgement: " + error)
+        }
+    });
+</script>
