@@ -960,6 +960,7 @@ def SPINQuickApply(request):
     # If GenericQualified is 'ACTIVE' or 'PENDING' (this will assume they are being truthful with their income range)
     if (obj.GenericQualified == QualificationStatus.ACTIVE.name or obj.GenericQualified == QualificationStatus.PENDING.name) and obj.AmiRange_max <= qualifyAmiPc:
         obj.SPINQualified = QualificationStatus.PENDING.name
+        obj.spin_privacy_acknowledgement = True
         obj.save()
         return render(
             request,
