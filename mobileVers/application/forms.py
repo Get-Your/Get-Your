@@ -104,7 +104,7 @@ class FilesInfoForm(forms.ModelForm):
 class programForm(forms.ModelForm):
     class Meta:
         model = programs
-        fields = ['snap', 'medicaid', 'freeReducedLunch', 'Identification', 'ebb_acf', 'leap'] #ebb_acf = Emergency Broadband Benefit AKA Affordable Connectivity Program
+        fields = ['ebb_acf', 'Identification', 'leap', 'medicaid', 'freeReducedLunch', 'snap'] #ebb_acf = Emergency Broadband Benefit AKA Affordable Connectivity Program
         labels  = { 
             'snap':'Supplemental Nutrition Assistance Program (SNAP)',
             'medicaid':'Medicaid',
