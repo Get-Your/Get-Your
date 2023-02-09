@@ -4,6 +4,7 @@ it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version
 """
+import json
 from django.shortcuts import render, redirect, reverse
 
 from application.models import iqProgramQualifications
@@ -41,20 +42,25 @@ from django.core.files.storage import FileSystemStorage
 #Step 4 of Application Process
 def files(request):
     file_list = {
-        "SNAP Card": request.user.programs.snap,
-        # Have Reduced Lunch be last item in the list if we add more programs
-        "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
         "Affordable Connectivity Program": request.user.programs.ebb_acf,
         "Identification": request.user.programs.Identification,
-        "Medicaid Card": request.user.programs.medicaid,
         "LEAP Letter": request.user.programs.leap,
+        "Medicaid Card": request.user.programs.medicaid,
+        "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
+        "SNAP Card": request.user.programs.snap,
     }
     '''
     Variables:
     fileNames - used to name the files in the database and file upload
     fileAmount - number of file uploads per income verified documentation
     '''
-    if request.method == "POST":   
+    if request.method == "POST":
+         # Check the user's session variables to see if they have a first_time_file_upload variable
+        # If they don't have it, create the variable and set it to True
+        if 'first_time_file_upload' not in request.session:
+            request.session['first_time_file_upload'] = True
+        else:
+            request.session['first_time_file_upload'] = False
         form = FileForm(request.POST, request.FILES)
         if form.is_valid():
             print(form)
@@ -111,6 +117,7 @@ def files(request):
                                 'step':5,
                                 'formPageNum':6,
                                 'Title': "Files",
+                                'file_upload': json.dumps({'success_status': False}),
                                 'is_prod': django_settings.IS_PROD,
                                 },
                             )
@@ -163,6 +170,7 @@ def files(request):
                             'step':5,
                             'formPageNum':6,
                             'Title': "Files",
+                            'file_upload': json.dumps({'success_status': True}),
                             'is_prod': django_settings.IS_PROD,
                             },
                         )
@@ -183,6 +191,13 @@ def files(request):
                         },
                     )
     else:
+        print(request.user)
+        # Check the user's session variables to see if they have a first_time_file_upload variable
+        # If they don't have it, create the variable and set it to True
+        if 'first_time_file_upload' not in request.session:
+            request.session['first_time_file_upload'] = True
+        else:
+            request.session['first_time_file_upload'] = False
         form = FileForm()
     print(file_list)
     return render(
@@ -195,6 +210,7 @@ def files(request):
             'step':5,
             'formPageNum':6,
             'Title': "Files",
+            'file_upload': json.dumps({'success_status': None}),
             'is_prod': django_settings.IS_PROD,
             },
         )
