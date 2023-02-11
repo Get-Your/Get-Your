@@ -48,15 +48,15 @@ TWILIO_ACCOUNT_SID = get_secret('TWILIO_ACCOUNT_SID') #os.getenv("TWILIO_ACCOUNT
 TWILIO_AUTH_TOKEN = get_secret('TWILIO_AUTH_TOKEN') #os.getenv("TWILIO_AUTH_TOKEN") 
 TWILIO_NUMBER = get_secret('TWILIO_NUMBER') #os.getenv("TWILIO_NUMBER")
 USPS_SID = get_secret('USPS_SID') #os.getenv("USPS_ACCOUNT_SID") 
-POSTGRESQLPW = get_secret('POSTGRESQLPW') #os.getenv("POSTGRESQLPW")
+DB_PASS = get_secret('DB_PASS') #os.getenv("DB_PASS")
 SENDGRID_API_KEY = get_secret('SENDGRID_API_KEY')
 TEMPLATE_ID = get_secret("TEMPLATE_ID")
 TEMPLATE_ID_PW_RESET = get_secret("TEMPLATE_ID_PW_RESET")
 TEMPLATE_ID_DYNAMIC_EMAIL = get_secret("TEMPLATE_ID_DYNAMIC_EMAIL")
-ACCOUNT_NAME = get_secret("ACCOUNT_NAME")
-ACCOUNT_KEY = get_secret("ACCOUNT_KEY")
-FILESTORE_ENDPOINT_SUFFIX = get_secret("FILESTORE_ENDPOINT_SUFFIX")
-CONTAINER_NAME = get_secret("CONTAINER_NAME")+'dev'
+BLOB_STORE_NAME = get_secret("BLOB_STORE_NAME")
+BLOB_STORE_KEY = get_secret("BLOB_STORE_KEY")
+BLOB_STORE_SUFFIX = get_secret("BLOB_STORE_SUFFIX")
+USER_FILES_CONTAINER = get_secret("USER_FILES_CONTAINER")
 IS_PROD = False
 
 #SECURITY WARNING: don't run with debug turned on in production!
@@ -120,17 +120,6 @@ WSGI_APPLICATION = 'mobileVers.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
-# ANDREW: Add Azure stuff here
-# DATABASES = {
-#      'default': {
-#          'ENGINE': 'django.db.backends.postgresql',
-#          'NAME': 'getfoco_dev',
-#          'USER': 'getfocoadmin',
-#          'PASSWORD': POSTGRESQLPW,
-#          'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'
-#          }
-#  }
 
 DATABASES = {
     'default': {

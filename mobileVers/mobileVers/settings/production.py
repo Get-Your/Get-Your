@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = Env()
 
-env.read_env(env_file='.env') 
+env.read_env(env_file='prod.env') 
 import json
 
 from django.core.exceptions import ImproperlyConfigured
@@ -45,33 +45,21 @@ def get_secret(setting, secrets=secrets):
         error_msg = 'Set the {0} environment variable'.format(setting)
         raise ImproperlyConfigured(error_msg)'''
 
-
-#Below is loading via locally
-#SECRET_KEY = get_secret('SECRET_KEY')
-#TWILIO_ACCOUNT_SID = get_secret('TWILIO_ACCOUNT_SID') #os.getenv("TWILIO_ACCOUNT_SID") 
-#TWILIO_AUTH_TOKEN = get_secret('TWILIO_AUTH_TOKEN') #os.getenv("TWILIO_AUTH_TOKEN") 
-#TWILIO_NUMBER = get_secret('TWILIO_NUMBER') #os.getenv("TWILIO_NUMBER")
-#USPS_SID = get_secret('USPS_SID') #os.getenv("USPS_ACCOUNT_SID") 
-#POSTGRESQLPW = get_secret('POSTGRESQLPW') #os.getenv("POSTGRESQLPW")
-#SENDGRID_API_KEY = get_secret('SENDGRID_API_KEY')
-#TEMPLATE_ID = get_secret("TEMPLATE_ID")
-
-
 #Below is loading via .env (for Docker purposes)
 SECRET_KEY = env("SECRET_KEY") 
 TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID") 
 TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN") 
 TWILIO_NUMBER = env("TWILIO_NUMBER")
 USPS_SID = env("USPS_SID") 
-POSTGRESQLPW = env("POSTGRESQLPW")
+DB_PASS = env("DB_PASS")
 SENDGRID_API_KEY = env('SENDGRID_API_KEY')
 TEMPLATE_ID = env("TEMPLATE_ID")
 TEMPLATE_ID_PW_RESET = env("TEMPLATE_ID_PW_RESET")
 TEMPLATE_ID_DYNAMIC_EMAIL = env("TEMPLATE_ID_DYNAMIC_EMAIL")
-ACCOUNT_NAME = env("ACCOUNT_NAME")
-ACCOUNT_KEY = env("ACCOUNT_KEY")
-FILESTORE_ENDPOINT_SUFFIX = env("FILESTORE_ENDPOINT_SUFFIX")
-CONTAINER_NAME = env("CONTAINER_NAME")
+BLOB_STORE_NAME = env("BLOB_STORE_NAME")
+BLOB_STORE_KEY = env("BLOB_STORE_KEY")
+BLOB_STORE_SUFFIX = env("BLOB_STORE_SUFFIX")
+USER_FILES_CONTAINER = env("USER_FILES_CONTAINER")
 IS_PROD = True
 
 # SECURITY WARNING: don't run with debug turned on for any live site!
@@ -142,7 +130,7 @@ DATABASES = {
          'ENGINE': 'django.db.backends.postgresql',
          'NAME': 'getfoco_prod',
          'USER': 'getfocoadmin',
-         'PASSWORD': POSTGRESQLPW,
+         'PASSWORD': DB_PASS,
          'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'
          }
  }

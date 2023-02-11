@@ -23,13 +23,13 @@ from application.models import MoreInfo, Addresses
 
 def blobStorageUpload(filename, file):
     blob_service_client = BlockBlobService(
-        account_name=settings.ACCOUNT_NAME,
-        account_key=settings.ACCOUNT_KEY,
-        endpoint_suffix=settings.FILESTORE_ENDPOINT_SUFFIX,
+        account_name=settings.BLOB_STORE_NAME,
+        account_key=settings.BLOB_STORE_KEY,
+        endpoint_suffix=settings.BLOB_STORE_SUFFIX,
         )
     
     blob_service_client.create_blob_from_bytes(
-        container_name = settings.CONTAINER_NAME,
+        container_name = settings.USER_FILES_CONTAINER,
         blob_name = filename,
         blob = file.read(),
     )
