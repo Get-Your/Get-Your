@@ -17,16 +17,13 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
-from environ import Env
 from datetime import datetime
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-env = Env()
 
-env.read_env(env_file='.env') 
 import json
 
 from django.core.exceptions import ImproperlyConfigured
@@ -36,55 +33,43 @@ from django.core.exceptions import ImproperlyConfigured
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # JSON-based secrets module
-'''with open('secrets.json') as f:
+with open('secrets.json') as f:
     secrets = json.loads(f.read())
 def get_secret(setting, secrets=secrets):
+    '''Get the secret variable or return explicit exception.'''
     try:
         return secrets[setting]
     except KeyError:
         error_msg = 'Set the {0} environment variable'.format(setting)
-        raise ImproperlyConfigured(error_msg)'''
+        raise ImproperlyConfigured(error_msg)
 
-
-#Below is loading via locally
-#SECRET_KEY = get_secret('SECRET_KEY')
-#TWILIO_ACCOUNT_SID = get_secret('TWILIO_ACCOUNT_SID') #os.getenv("TWILIO_ACCOUNT_SID") 
-#TWILIO_AUTH_TOKEN = get_secret('TWILIO_AUTH_TOKEN') #os.getenv("TWILIO_AUTH_TOKEN") 
-#TWILIO_NUMBER = get_secret('TWILIO_NUMBER') #os.getenv("TWILIO_NUMBER")
-#USPS_SID = get_secret('USPS_SID') #os.getenv("USPS_ACCOUNT_SID") 
-#POSTGRESQLPW = get_secret('POSTGRESQLPW') #os.getenv("POSTGRESQLPW")
-#SENDGRID_API_KEY = get_secret('SENDGRID_API_KEY')
-#TEMPLATE_ID = get_secret("TEMPLATE_ID")
-
-
-#Below is loading via .env (for Docker purposes)
-SECRET_KEY = env("SECRET_KEY") 
-TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID") 
-TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN") 
-TWILIO_NUMBER = env("TWILIO_NUMBER")
-USPS_SID = env("USPS_SID") 
-POSTGRESQLPW = env("POSTGRESQLPW")
-SENDGRID_API_KEY = env('SENDGRID_API_KEY')
-TEMPLATE_ID = env("TEMPLATE_ID")
-TEMPLATE_ID_PW_RESET = env("TEMPLATE_ID_PW_RESET")
-TEMPLATE_ID_DYNAMIC_EMAIL = env("TEMPLATE_ID_DYNAMIC_EMAIL")
-ACCOUNT_NAME = env("ACCOUNT_NAME")
-ACCOUNT_KEY = env("ACCOUNT_KEY")
-FILESTORE_ENDPOINT_SUFFIX = env("FILESTORE_ENDPOINT_SUFFIX")
-CONTAINER_NAME = env("CONTAINER_NAME")
-IS_PROD = False
+SECRET_KEY = get_secret('SECRET_KEY')
+TWILIO_ACCOUNT_SID = get_secret('TWILIO_ACCOUNT_SID') #os.getenv("TWILIO_ACCOUNT_SID") 
+TWILIO_AUTH_TOKEN = get_secret('TWILIO_AUTH_TOKEN') #os.getenv("TWILIO_AUTH_TOKEN") 
+TWILIO_NUMBER = get_secret('TWILIO_NUMBER') #os.getenv("TWILIO_NUMBER")
+USPS_SID = get_secret('USPS_SID') #os.getenv("USPS_ACCOUNT_SID") 
+DB_PASS = get_secret('DB_PASS') #os.getenv("DB_PASS")
+SENDGRID_API_KEY = get_secret('SENDGRID_API_KEY')
+TEMPLATE_ID = get_secret("TEMPLATE_ID")
+TEMPLATE_ID_PW_RESET = get_secret("TEMPLATE_ID_PW_RESET")
+TEMPLATE_ID_DYNAMIC_EMAIL = get_secret("TEMPLATE_ID_DYNAMIC_EMAIL")
+BLOB_STORE_NAME = get_secret("BLOB_STORE_NAME")
+BLOB_STORE_KEY = get_secret("BLOB_STORE_KEY")
+BLOB_STORE_SUFFIX = get_secret("BLOB_STORE_SUFFIX")
+USER_FILES_CONTAINER = get_secret("USER_FILES_CONTAINER")
+IS_PROD = True
 
 # SECURITY WARNING: don't run with debug turned on for any live site!
-DEBUG = False
+DEBUG = True
 
 # ANDREW: Make sure to change this later!
-ALLOWED_HOSTS = ["*", "192.168.0.15","localhost"]
+ALLOWED_HOSTS = ["*", "192.168.0.15"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'django.contrib.admin', # NOTE: may just be able to stop admin stuff in settings.py
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -138,34 +123,15 @@ WSGI_APPLICATION = 'mobileVers.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-# ANDREW: Add Azure stuff here
-'''DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
-    }
-}'''
-
- # TODO old database found here, here for legacy isssues but can be deleted once transfer to city tenant is complete
 DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.postgresql',
-         'NAME': 'getfoco_debug',
-         'USER': 'gycpcdriver@gyc1.postgres.database.azure.com',
-         'PASSWORD': POSTGRESQLPW,
-         'HOST': 'gyc1.postgres.database.azure.com'
-         }
- }
-
-'''DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.postgresql',
-         'NAME': 'getfoco_dev',
+         'NAME': 'getfoco_prod',
          'USER': 'getfocoadmin',
-         'PASSWORD': POSTGRESQLPW,
+         'PASSWORD': DB_PASS,
          'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'
          }
- }'''
+ }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators

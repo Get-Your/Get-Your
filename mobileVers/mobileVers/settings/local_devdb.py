@@ -59,7 +59,7 @@ BLOB_STORE_SUFFIX = get_secret("BLOB_STORE_SUFFIX")
 USER_FILES_CONTAINER = get_secret("USER_FILES_CONTAINER")
 IS_PROD = False
 
-#SECURITY WARNING: don't run with debug turned on in production!
+# SECURITY WARNING: don't run with debug turned on for any live site!
 DEBUG = True
 
 # ANDREW: Make sure to change this later!
@@ -115,6 +115,8 @@ TEMPLATES = [
     },
 ]
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 WSGI_APPLICATION = 'mobileVers.wsgi.application'
 
 
@@ -122,10 +124,13 @@ WSGI_APPLICATION = 'mobileVers.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+     'default': {
+         'ENGINE': 'django.db.backends.postgresql',
+         'NAME': 'getfoco_dev',
+         'USER': 'getfocodevadmin',
+         'PASSWORD': DB_PASS,
+         'HOST': 'getfoco-postgres-dev.postgres.database.usgovcloudapi.net'
+         }
  }
 
 # Password validation
