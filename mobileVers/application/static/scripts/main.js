@@ -49,9 +49,9 @@ function toggleBtnState() {
     // If they are not, disable the button and change the text to "Select a Program"
     if ($("input[type=checkbox]:checked").not("#id_Identification").length > 0) {
         $("#btnContinue").prop("disabled", false);
-        $("#btnContinue").html("Continue");
+        $("#btnContinue").html("CONTINUE");
     } else {
         $("#btnContinue").prop("disabled", true);
-        $("#btnContinue").html("Select a Program");
+        $("#btnContinue").html("SELECT A PROGRAM");
     }
 }
