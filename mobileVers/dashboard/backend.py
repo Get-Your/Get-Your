@@ -23,13 +23,13 @@ from application.models import MoreInfo, Addresses
 
 def blobStorageUpload(filename, file):
     blob_service_client = BlockBlobService(
-        account_name=settings.ACCOUNT_NAME,
-        account_key=settings.ACCOUNT_KEY,
-        endpoint_suffix=settings.FILESTORE_ENDPOINT_SUFFIX,
+        account_name=settings.BLOB_STORE_NAME,
+        account_key=settings.BLOB_STORE_KEY,
+        endpoint_suffix=settings.BLOB_STORE_SUFFIX,
         )
     
     blob_service_client.create_blob_from_bytes(
-        container_name = settings.CONTAINER_NAME,
+        container_name = settings.USER_FILES_CONTAINER,
         blob_name = filename,
         blob = file.read(),
     )
@@ -54,7 +54,7 @@ def get_user(self, user_id):
     except UserModel.DoesNotExist:
         return None
 
-def files_to_string(file_list, request):
+def files_to_string(file_list):
     list_string = ""
     counter = 0
 
@@ -64,7 +64,10 @@ def files_to_string(file_list, request):
         # only add things to the list_string if its true
         if value == True:
             # Also add commas based on counter
-            if counter == 4:
+            if counter == 5:
+                list_string += "\n"
+                counter = 4
+            elif counter == 4:
                 list_string += "\n"
                 counter = 3
             elif counter == 3:
@@ -77,7 +80,7 @@ def files_to_string(file_list, request):
                 list_string += "\n"
                 counter = 0
             else:
-                counter = 4
+                counter = 5
             list_string += key
     return list_string
 
@@ -119,17 +122,18 @@ def what_page(user,request):
             return "application:programs"
 
         try: #check if files are all uploaded
-            file_list = {"SNAP Card": request.user.programs.snap,
+            file_list = {
+                "SNAP Card": request.user.programs.snap,
                 # Have Reduced Lunch be last item in the list if we add more programs
                 "PSD Reduced Lunch Approval Letter": request.user.programs.freeReducedLunch,
                 "Affordable Connectivity Program": request.user.programs.ebb_acf,
                 "Identification": request.user.programs.Identification,
-                "1040 Form": request.user.programs.form1040,
+                "Medicaid Card": request.user.programs.medicaid,
                 "LEAP Letter": request.user.programs.leap,
             }
 
             Forms = request.user.files
-            checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.ebb_acf),not(request.user.programs.Identification),not(request.user.programs.leap),not(request.user.programs.form1040),]
+            checkAllForms = [not(request.user.programs.snap),not(request.user.programs.freeReducedLunch),not(request.user.programs.ebb_acf),not(request.user.programs.Identification),not(request.user.programs.leap),not(request.user.programs.medicaid),]
             for group in Forms.all():
                 if group.document_title == "SNAP":
                     checkAllForms[0] = True
@@ -146,9 +150,9 @@ def what_page(user,request):
                 if group.document_title == "LEAP Letter":
                     checkAllForms[4] = True
                     file_list["LEAP Letter"] = False
-                if group.document_title == "1040 Form":
+                if group.document_title == "Medicaid":
                     checkAllForms[5] = True
-                    file_list["1040 Form"] = False
+                    file_list["Medicaid Card"] = False
             if False in checkAllForms:
                 return "dashboard:files"
             else:

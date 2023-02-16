@@ -73,14 +73,14 @@ the Free Software Foundation, either version 3 of the License, or
             </a>
         </div>
     </div>
-
+    
     <div class="modulequickApply" id="SPINRebate" style="display:{{ toggleSPIN }};">  
         <div class = "row" style="margin:0; width:100%">
             <div style="margin:0">
                 <p style ="font-weight: 550; margin: 0">SPIN </p>
                 <p style = "margin-top:3px;">1 Year of Free Spin E-bikes & Scooters </p>
             </div>
-            <a href="{% url 'application:SPINQuickApply' %}" style="text-decoration: none"> <div class="quickapply link" style="background-color: {{SPINButtonColor}}; color: {{SPINButtonTextColor}}">{{ SPINButtonText }}</div></a> 
+            <a href="#" onclick="return false;" id="spinPrivacyAcknowledgement" style="text-decoration: none; text-align: center;"> <div class="quickapply link"  style="background-color: {{SPINButtonColor}}; color: {{SPINButtonTextColor}}; ">{{ SPINButtonText }}</div></a> <!--font-size: 13px; height:20px;-->
         </div>
         <div class = "row" style="margin:0;width:100%">
             <a class="row" href="https://www.fcgov.com/fcmoves/spin" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
@@ -147,6 +147,22 @@ the Free Software Foundation, either version 3 of the License, or
             </a>
         </div>
     </div>
+
+    <div class="modulequickApply" id="SPINRebate">  
+        <div class = "row" style="margin:0; width:100%">
+            <div style="margin:0">
+                <p style ="font-weight: 550; margin: 0">SPIN </p>
+                <p style = "margin-top:3px;">1 Year of Free Spin E-bikes & Scooters </p>
+            </div>
+            <a href="#" onclick="return false;" id="spinPrivacyAcknowledgementSm" style="text-decoration: none; text-align: center;"> <div class="quickapply link"  style="background-color: {{SPINButtonColor}}; color: {{SPINButtonTextColor}}; ">{{ SPINButtonText }}</div></a> <!--font-size: 13px; height:20px;-->
+        </div>
+        <div class = "row" style="margin:0;width:100%">
+            <a class="row" href="https://www.fcgov.com/fcmoves/spin" style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                <p style = "margin: 0;color:var(--lightblue)"> Learn More </p>
+                <img src="{% static 'dashboard/images/Arrow 1.svg' %}" alt="back" style="height: 3vw; margin-left: 5px;color:black">
+            </a>
+        </div>
+    </div>
 </div>
 
 
@@ -171,5 +187,7 @@ the Free Software Foundation, either version 3 of the License, or
 -->
 
 <div class="extraspace"></div>
+
+{% include "dashboard/_spin_privacy_acknowledgement.html" %}
 
 {% endblock %}

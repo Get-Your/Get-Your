@@ -34,7 +34,7 @@ class Form(TimeStampedModel):
     form_titles = (
         ('SNAP', 'SNAP'),
         ('Free and Reduced Lunch', 'Free and Reduced Lunch'),
-        ('1040 Form', '1040 Form'),
+        ('Medicaid', 'Medicaid'),
         ('Identification', 'Identification'),
         ('ACP Letter','ACP Letter'),
         ('LEAP Letter', 'LEAP Letter',)
