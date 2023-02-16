@@ -14,7 +14,7 @@ import sys
 def main():
     """Run administrative tasks."""
     #note you took this out per Asheesh's suggestion during your DevOps testing with implementing environment variables through Azure, check Azure env variables for this below so you don't need to hardcode
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobileVers.settings.dev') #.production / .dev put this in to make python manage.py [] easier, don't need to use --settings=...
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobileVers.settings.production') #.production / .dev put this in to make python manage.py [] easier, don't need to use --settings=...
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
