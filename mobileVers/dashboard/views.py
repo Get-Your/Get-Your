@@ -716,14 +716,9 @@ def qualifiedPrograms(request):
         SPINButtonColor = "red"
         SPINButtonTextColor = "black"
     else:
-        if (Eligibility.objects.filter(SPINQualified='PENDING').count()) + (Eligibility.objects.filter(SPINQualified='ACTIVE').count()) > 75:
-            SPINButtonText = "Waitlist"
-            SPINButtonColor = ""
-            SPINButtonTextColor = ""
-        else:
-            SPINButtonText = "Quick Apply +"
-            SPINButtonColor = ""
-            SPINButtonTextColor = ""
+        SPINButtonText = "Quick Apply +"
+        SPINButtonColor = ""
+        SPINButtonTextColor = ""
 
     return render(
         request,
@@ -1053,21 +1048,12 @@ def dashboardGetFoco(request):
         SPINButtonColor = "red"
         SPINButtonTextColor = "black"
     else:
-        #if SPIN > 75 have text say waitlist
-        if (Eligibility.objects.filter(SPINQualified='PENDING').count()) + (Eligibility.objects.filter(SPINQualified='ACTIVE').count()) > 75:
-            SPINButtonText = "Waitlist"
-            SPINButtonColor = ""
-            SPINButtonTextColor = ""
-            SPINDisplayActive = "none"
-            SPINPendingDate = ""
-            SPINDisplayPending = "None"
-        else:
-            SPINButtonText = "Quick Apply +"
-            SPINButtonColor = ""
-            SPINButtonTextColor = ""
-            SPINDisplayActive = "none"
-            SPINPendingDate = ""
-            SPINDisplayPending = "None"
+        SPINButtonText = "Quick Apply +"
+        SPINButtonColor = ""
+        SPINButtonTextColor = ""
+        SPINDisplayActive = "none"
+        SPINPendingDate = ""
+        SPINDisplayPending = "None"
 
     return render(
         request,
