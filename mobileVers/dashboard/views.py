@@ -631,7 +631,7 @@ def qualifiedPrograms(request):
         toggleRecreation = "none"
 
     #auto apply clients with 30% AMI and below only if snap card / psd is uploaded and below 30% AMI
-    if ((request.user.eligibility.AmiRange_max == Decimal('0.3') and request.user.eligibility.AmiRange_min == Decimal('0.0'))):
+    if (request.user.eligibility.AmiRange_max <= Decimal('0.3') and request.user.eligibility.GRqualified != QualificationStatus.ACTIVE.name):
         request.user.eligibility.GRqualified = QualificationStatus.PENDING.name
         
     if request.user.eligibility.ConnexionQualified == QualificationStatus.PENDING.name:
@@ -892,7 +892,7 @@ def dashboardGetFoco(request):
         SPINDisplay = "none"
 
     # auto apply grocery rebate people if their AMI is <=30%
-    if request.user.eligibility.AmiRange_max <= Decimal('0.3'):
+    if (request.user.eligibility.AmiRange_max <= Decimal('0.3') and request.user.eligibility.GRqualified != QualificationStatus.ACTIVE.name):
         # Update the current model so the dashboard displays correctly
         request.user.eligibility.GRqualified = QualificationStatus.PENDING.name
 
