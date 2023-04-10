@@ -81,6 +81,6 @@ the Free Software Foundation, either version 3 of the License, or
     </body>
     <!--TODO make sure main.js is properly referenced-->
     <!--<script src="/static/scripts/main.js"></script>-->
-    <script src="{% static 'scripts/main.js' %}"></script>
+    <script src="{% static 'scripts/main.js' %}?cache_breaker={% now 'YmdHmmss' %}"></script>
 </html>
 
