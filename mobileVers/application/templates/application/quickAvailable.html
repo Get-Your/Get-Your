@@ -1,0 +1,13 @@
+<!--
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version
+-->
+{% extends 'application/available_base.html' %}
+
+{% block backurl %}
+    <a href="{% url 'application:index' %}" style="margin-left:auto; margin-right:10px; text-decoration: none;">
+        <p class=p2 alt="back" style="margin-left:auto; margin-right: 5px;" onclick="location.href='{% url 'application:index' %}'">EXIT</p>
+    </a>    
+{% endblock %}

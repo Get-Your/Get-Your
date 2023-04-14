@@ -1,0 +1,32 @@
+<!--
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version
+-->
+{% extends 'application/availability_base.html' %}
+
+{% block content %}
+    {% block maintext %}
+    {% endblock %}
+
+    <form action="{{ model_url }}" method="post" autocomplete="false" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <br/><br/>
+        
+        <label for="{{ form.connexionCommunication.id_for_label }}" style="word-wrap: break-word;">
+            <input type="checkbox" id="{{ form.connexionCommunication.id_for_label }}" name="{{ form.connexionCommunication.name}}" style="vertical-align: middle; display: inline-block;">
+            {{ form.connexionCommunication.label}}
+        </label>
+
+        <div style="text-align: left;">
+          <a href="https://www.fcgov.com/connexion/privacy" target="_blank"> <p style="font-size: 20px; padding: 5px;color: var(--yellow);">View Connexion Privacy Policy</p></a>
+        </div>
+
+        <div style = "text-align: center;overflow: hidden;margin-top: 3vh;">
+            <button type="submit" style="padding:10px"> CONTINUE </button>
+        </div>
+        <div style = "height: 1vh;"></div>     
+    </form>
+{% endblock %}
