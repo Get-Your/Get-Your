@@ -82,6 +82,8 @@ so that full error messages are displayed on the webpage, rather than the minima
 
 Hybrid development uses `secrets_dev.json` and `secrets_prod.json` for DEV and STAGE/PROD [app secrets](#app-secrets) (respectively).
 
+> Note that **all** migrations must be run via `local_devdb.py` or `caution_local_proddb.py` settings using the privileged database user (summarized in the [database setup](#database-setup-summary)).
+
 ## Deployment
 Deployment consists of building and pushing the Docker container, then pulling into the Azure [Web App](#web-app). Get FoCo is set up for the following:
 
@@ -135,7 +137,7 @@ Summary of the database setup
 - Database names
   - `platform_dev` is the database name on the DEV server instance
   - `platform_stage` and `platform_prod` are separate databases on the PROD server instance
-- Database users (\<env\> is the database instance for each user ('dev' or 'prod'))
+- Database users (\<env\> is the database instance for each user ('dev', 'stage', or 'prod'))
   - developer_\<env\>_user: Privileged database user, used locally for Django development
   - django_\<env\>_user: Base database user, used by Django with the minimum necessary database privileges
 
