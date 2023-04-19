@@ -6,6 +6,7 @@ The universal income-qualified application for the City of Fort Collins, Colorad
 
 # Table of Contents
 1. [Get FoCo](#get-foco)
+1. [Running the App](#running-the-app)
 1. [Development and Deployment](#development-and-deployment)
     1. [manage.py](#managepy)
     1. [Local Development](#local-development)
@@ -30,6 +31,36 @@ The universal income-qualified application for the City of Fort Collins, Colorad
     1. [Database Administration Tools](#database-administration-tools)
         1. [Delete User](#delete-user)
 
+# Running the App
+This app runs on the Django web framework. Unless otherwise noted, the following commands must be run from the 'platform' directory within this repo.
+
+To run for the first time, a local instance is recommended. To get started, copy the `manage.py` file, paste it as something like `manage_local.py` (see the [manage.py](#managepy) sections for details), then modify the app to use a local environment by changing the line beginning with `os.environ.set...` to 
+
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobileVers.settings.local')
+
+Next, copy/paste or rename `settings_dev.json.template` as `settings_dev.json`. There's no need to set variables for the initial run.
+
+Once the settings have been accounted for, finalize Python setup by [creating a virtual environment](https://docs.python.org/3.9/library/venv.html) (optional, but recommended) and installing dependencies.
+
+On **Ubuntu only**, run the following to match the `libmagic1` dependency installed in the Docker container
+
+    apt-get install libmagic1
+
+On **Windows only**, run
+
+    python3 -m pip install sqlparse~=0.4 django-storages[azure]~=1.12 python-magic-bin~=0.4
+
+> If `magic` still isn't working, follow the instructions at https://github.com/pidydx/libmagicwin64.
+
+On either platform, finish by installing all other dependencies
+
+    python3 -m pip install -r requirements.txt
+
+Run the following to create the SQLite database and populate it with the database schema and sample data (coming soon - see https://github.com/Get-Your/Get-Your/issues/63).
+
+    python3 manage_local.py migrate
+    python3 manage_local.py runserver
+
 # Development and Deployment
 This app uses files in the `settings/` directory for its environment settings. There are three categories of use cases:
 
@@ -51,7 +82,7 @@ A local clone of `manage.py` should instead be used for development, where the `
 ## Local Development
 Local development is completely on the developer's computer. The Django app will be run via 
 
-    python manage_local.py runserver
+    python3 manage_local.py runserver
     
 (see the [manage.py](#managepy) section on using `manage_local.py` instead of the typical `manage.py`) or
 
@@ -64,7 +95,7 @@ Local development uses `secrets_dev.json` for [app secrets](#app-secrets). The S
 ## Hybrid Development
 Hybrid development is for running the webapp locally on the developer's computer and connecting to a remote database for testing or migrating changes. The Django app will be run via
 
-    python manage_local.py runserver
+    python3 manage_local.py runserver
     
 (see the [manage.py](#managepy) section on using `manage_local.py` instead of the typical `manage.py`) or
 
