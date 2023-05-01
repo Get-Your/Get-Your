@@ -1,0 +1,158 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2023
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!-- This brings in the CSS-->
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<!--Get the various stylesheets I need like my fonts and CSS-->
+
+<head>
+    <title>Settings</title>
+    <!-- Add Favicon-->
+    <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
+    <link href="{% static 'css/styles_app.css' %}" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&display=swap" rel="stylesheet">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SL59NNQRH0"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-SL59NNQRH0');
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="h-100">
+
+    {% if is_prod is False %}
+    <div style="background-color: #FF5E5E; text-align: center; font-size: x-large; ">WARNING: THIS SITE IS FOR TESTING
+        ONLY<br>To enroll in Get FoCo, go to <a href="https://getfoco.fcgov.com"
+            target="_blank">https://getfoco.fcgov.com</a> instead</div>
+    {% endif %}
+
+    <div class=nav>
+        <a class="row" onClick="window.history.back();return false;">
+            <div class=fadeSmall><img src="{% static 'img/BackArrow-darkblue.svg' %}" alt="back"
+                    style="width:max(4.5vw, 16px); margin-right: 5px"></div>
+            <div class=fadeLarge><img src="{% static 'img/BackArrow-white.svg' %}" alt="back"
+                    style="width:max(4.5vw, 16px); margin-right: 5px;"></div>
+            <p style="font-weight: 700;">BACK</p>
+        </a>
+
+    </div>
+    <div class="container desktop">
+        {% block body %}
+
+        <h1>{{name}}</h1>
+        <h1 class="mb-3">{{lastName}}</h1>
+
+        <!-- Create a div that centers the content nested inside of it-->
+        <p class="pb-15">Manage your account information, including updating your account, address, and financial information.
+        </p>
+        <div class="w-100">
+            <a href="{{routes.account}}?update_mode=1" class="simple-and-cool-button">Account</a>
+            <a href="{{routes.household}}?update_mode=1" class="simple-and-cool-button">Household</a>
+        </div>
+
+        {% endblock %}
+    </div>
+
+    <style>
+        .h-100 {
+            height: 100vh;
+        }
+
+        .w-100 {
+            width: 100%;
+        }
+
+        .mb-3 {
+            margin-bottom: 3%;
+        }
+
+        .pb-15 {
+            padding-bottom: 15px;
+        }
+
+        .container {
+            margin-bottom:5vw;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .simple-and-cool-button {
+            border: 0.1em solid;
+            cursor: pointer;
+            display: block;
+            font-family: 'Montserrat', sans-serif;
+            text-decoration: none;
+            font-size: 1.0em;
+            margin: 0.5em 0.0em 1.0em 0.0em;
+            padding: 1.9em;
+            padding-top: 0.5em;
+            padding-bottom: 0.5em;
+            text-align: center;
+            -moz-border-radius: 0.5em;
+            -webkit-border-radius: 0.5em;
+            border-radius: 0.5em;
+            -moz-transition: all 0.3s ease-in-out;
+            -o-transition: all 0.3s ease-in-out;
+            -webkit-transition: all 0.3s ease-in-out;
+            transition: all 0.3s ease-in-out;
+            background-color: var(--lightblue);
+            color: white;
+            border-color: var(--lightblue);
+            border-radius: 3vh;
+        }
+
+        @media screen and (max-width: 767px) {
+            .container {
+                margin: 6vw;
+                height: 50vh;
+            }
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            var page_updated = JSON.parse('{{ page_updated | escapejs }}');
+
+            if (page_updated['page_updated']) {            
+                Swal.fire({
+                    title: 'Success!',
+                    text: `Your ${page_updated['page_updated']} information was updated!`,
+                    icon: 'success',
+                    confirmButtonColor: '#13467D',
+                });
+
+                $("a.row").attr("onclick", "window.location='dashboard'");
+                $("a.row > p").text("Dashboard");
+            }
+        });
+    </script>
+
+</body>
+</html>
