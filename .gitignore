@@ -134,9 +134,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Docker stuff
-*.dockerignore
-
 # VSCode Dev Environment
 .vscode/
 
@@ -145,3 +142,8 @@ dmypy.json
 
 # Add back in the base manage.py
 !**/manage.py
+
+# Keep the media folder, but ignore all of
+# junk that gets added to it
+/getyour/getyour/media/*
+!/getyour/getyour/media/.gitkeep
