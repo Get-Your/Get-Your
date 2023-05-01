@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from decimal import Decimal
 import json
 import hashlib
 import datetime
@@ -551,12 +552,17 @@ def get_users_iq_programs(user_id, users_ami_range_max):
     returns:
         a list of users iq programs
     """
+    # Get the IQ programs that a user has already applied to
     users_iq_programs = list(IQProgram.objects.select_related(
         'program').filter(user_id=user_id))
+
+    # Get the IQ programs a user is eligible for
     users_iq_programs_ids = [
         program.program_id for program in users_iq_programs]
-    active_iq_programs = list(IQProgramRD.objects.exclude(
-        (Q(is_active=False) & Q(ami_threshold__lte=users_ami_range_max)) | Q(id__in=users_iq_programs_ids)))
+    active_iq_programs = list(IQProgramRD.objects.filter(
+        (Q(is_active=True) & Q(ami_threshold__gte=Decimal(
+            float(users_ami_range_max))) & ~Q(id__in=users_iq_programs_ids))
+    ))
 
     programs = list(chain(users_iq_programs, active_iq_programs))
     for program in programs:
