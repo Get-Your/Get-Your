@@ -19,7 +19,7 @@ RUN pip install pip --upgrade
 RUN pip install azure-storage-blob==2.1.0
 RUN pip install Django==4.1
 RUN pip install django-environ==0.10.0
-RUN pip install django-phonenumber-field==7.1.0
+RUN pip install django-phonenumber-field[phonenumbers]==7.1.0
 RUN pip install gunicorn==20.1.0
 RUN pip install psycopg2-binary==2.9.6
 RUN pip install python-magic==0.4.27

@@ -157,8 +157,7 @@ PHONENUMBER_DEFAULT_REGION = 'US'
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-# CSS files
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
 
 
 # added media path for file uploads
