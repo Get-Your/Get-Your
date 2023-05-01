@@ -26,7 +26,7 @@ from datetime import datetime
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = Env()
-env.read_env(env_file='/Users/jcowan/Documents/penoptech/Get-Your/getyour/.dev.env')
+env.read_env(env_file='.dev.env')
 
 # Below is loading via .env (for Docker purposes)
 SECRET_KEY = env("SECRET_KEY")
@@ -163,63 +163,41 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 
-LOGGING = {
+str = str((datetime.now().time()))
+logFileName = str.replace(":", "_")
+LOGGING = { 
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
+    'formatters': {
+        'verbose': {
+            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
         },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'WARNING',
-    },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },  
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            # 'filename': 'logs/' + logFileName + '.log', 
+            'filename': 'getyour/logs/' + logFileName + '.log', 
+            'when': 'midnight', # this specifies the interval
+            'interval': 1, # defaults to 1, only necessary for other values 
+            'backupCount': 100, # how many backup file to keep, 10 days
+            'formatter': 'verbose',
+        },
+
+    },  
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': ['file'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-            'propagate': False,
         },
-    },
+        '': {
+            'handlers': ['file'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        }
+    },  
 }
-
-
-# str = str((datetime.now().time()))
-# logFileName = str.replace(":", "_")
-# LOGGING = { 
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'formatters': {
-#         'verbose': {
-#             'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-#             'datefmt' : "%d/%b/%Y %H:%M:%S"
-#         },
-#         'simple': {
-#             'format': '%(levelname)s %(message)s'
-#         },
-#     },  
-#     'handlers': {
-#         'file': {
-#             'level': 'INFO',
-#             'class': 'logging.handlers.TimedRotatingFileHandler',
-#             # 'filename': 'logs/' + logFileName + '.log', 
-#             'filename': 'mobileVers/logs/' + logFileName + '.log', 
-#             'when': 'midnight', # this specifies the interval
-#             'interval': 1, # defaults to 1, only necessary for other values 
-#             'backupCount': 100, # how many backup file to keep, 10 days
-#             'formatter': 'verbose',
-#         },
-
-#     },  
-#     'loggers': {
-#         'django': {
-#             'handlers': ['file'],
-#             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-#         },
-#         '': {
-#             'handlers': ['file'],
-#             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-#         }
-#     },  
-# }
