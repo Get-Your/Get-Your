@@ -670,21 +670,24 @@ def quick_apply(request, iq_program):
     IQProgram.objects.create(
         user_id=request.user.id, program_id=iq_program.id)
     if iq_program.program_name == 'connexion':
-        addr = request.user.addresses
+        # Get the user's address from the AddressRD table by joining the eligibility_address_id
+        # to the AddressRD table's id
+        addr = AddressRD.objects.get(
+            id=request.user.address.eligibility_address_id)
         # Check for Connexion services
         # Recreate the relevant parts of addressDict as if from validate_usps()
         addressDict = {
             'AddressValidateResponse': {
                 'Address': {
-                    'Address2': addr.address,
-                    'Zip5': addr.zipCode,
+                    'Address2': addr.address1,
+                    'Zip5': addr.zip_code,
                 },
             },
         }
-        _, hasConnexion = address_check(addressDict)
+        _, has_connexion = address_check(addressDict)
         # Connexion status unknown, but since isInGMA==True at this point in
         # the application, Connexion will be available at some point
-        if not hasConnexion:    # this covers both None and False
+        if not has_connexion:    # this covers both None and False
             return redirect(reverse("app:coming_soon"))
 
     return render(
