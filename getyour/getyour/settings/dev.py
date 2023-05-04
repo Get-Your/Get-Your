@@ -44,14 +44,14 @@ BLOB_STORE_NAME = env("BLOB_STORE_NAME")
 BLOB_STORE_KEY = env("BLOB_STORE_KEY")
 BLOB_STORE_SUFFIX = env("BLOB_STORE_SUFFIX")
 USER_FILES_CONTAINER = env("USER_FILES_CONTAINER")
-CSRF_COOKIE_DOMAIN =  env("HOST")
+CSRF_TRUSTED_ORIGINS = [f"https://{env('HOST')}"]
 IS_PROD = False
 
 # SECURITY WARNING: don't run with debug turned on for any live site!
 DEBUG = True
 
 # ANDREW: Make sure to change this later!
-ALLOWED_HOSTS = [env("HOST")]
+ALLOWED_HOSTS = [env('HOST')]
 
 
 # Application definition
