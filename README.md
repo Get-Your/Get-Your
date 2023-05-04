@@ -48,7 +48,7 @@ On **Ubuntu only**, run the following to match the `libmagic1` dependency instal
 
 On **Windows only**, run
 
-    python3 -m pip install sqlparse~=0.4 django-storages[azure]~=1.12 python-magic-bin~=0.4
+    python3 -m pip install python-magic-bin~=0.4
 
 > If `magic` still isn't working, follow the instructions at https://github.com/pidydx/libmagicwin64.
 
