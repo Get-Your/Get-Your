@@ -26,7 +26,7 @@ from datetime import datetime
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = Env()
-env.read_env(env_file='prod.env')
+env.read_env(env_file='.prod.env')
 
 # Below is loading via .env (for Docker purposes)
 SECRET_KEY = env("SECRET_KEY")
