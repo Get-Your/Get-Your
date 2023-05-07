@@ -1360,3 +1360,15 @@ def programs_list(request):
             'iq_programs': programs,
         },
     )
+
+
+def programs_info(request):
+    return render(
+        request,
+        'programs_info.html',
+        {
+            'title': "Programs List",
+            'is_prod': django_settings.IS_PROD,
+            'iq_programs': IQProgramRD.objects.all(),
+        },
+    )

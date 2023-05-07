@@ -57,6 +57,7 @@ urlpatterns = [
     path('dashboard', views.dashboard, name='dashboard'),
     path('qualified_programs', views.qualified_programs, name='qualified_programs'),
     path('programs_list', views.programs_list, name='programs_list'),
+    path('programs_info', views.programs_info, name='programs_info'),
     path('user_settings', views.user_settings, name='user_settings'),
     path("password_reset", views.password_reset_request, name="password_reset")
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

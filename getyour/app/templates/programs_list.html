@@ -25,7 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 <!--Back to dashboard button-->
 <div class="fadeLarge">
-    <a class="row" onClick="window.history.back();return false;" style="text-decoration: none;justify-content: start;align-items: center;">
+    <a class="row" href="{% url 'app:dashboard' %}" style="text-decoration: none;justify-content: start;align-items: center;">
         <img src="{% static 'img/Path 1083.svg' %}" alt="back" style="height: 3vw; margin-right: 5px;color:black">
         <p style = "color:var(--lightblue);margin-left: 3%;">Back to Dashboard</p>
     </a>
