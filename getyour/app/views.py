@@ -1215,7 +1215,7 @@ def qualified_programs(request):
         request,
         'qualified_programs.html',
         {
-            "Title": "Qualified Programs",
+            "title": "Qualified Programs",
             "dashboard_color": "white",
             "program_list_color": "var(--yellow)",
             "Settings_color": "white",
@@ -1324,7 +1324,7 @@ def dashboard(request):
         request,
         'dashboard.html',
         {
-            "Title": "Get FoCo Dashboard",
+            "title": "Get FoCo Dashboard",
             "dashboard_color": "var(--yellow)",
             "program_list_color": "white",
             "Settings_color": "white",
