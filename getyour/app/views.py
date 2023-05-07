@@ -184,6 +184,7 @@ def index(request):
                 'form': form,
                 'is_prod': django_settings.IS_PROD,
                 'in_progress_app_saved': in_progress_app_saved,
+                'iq_programs': IQProgramRD.objects.filter(is_active=True),
             },
         )
 
