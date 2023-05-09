@@ -17,7 +17,7 @@ RUN apt-get remove -y curl
 RUN apt-get install libmagic1
 RUN pip install pip --upgrade
 RUN pip install azure-storage-blob==2.1.0
-RUN pip install Django==4.1
+RUN pip install Django~=4.1.9
 RUN pip install django-environ==0.10.0
 RUN pip install django-phonenumber-field[phonenumbers]==7.1.0
 RUN pip install gunicorn==20.1.0
