@@ -440,7 +440,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     }
 
     // Get the has_viewed_dashboard value of the user
-    var has_viewed_dashboard = "{{ proxy_viewed_dashboard|yesno:'true:false'|safe }}";
+    var has_viewed_dashboard = "{{ proxy_viewed_dashboard }}" === "True";
     // If the user has viewed the dashboard, do not show the modal
     if (has_viewed_dashboard) {
         modal.style.display = "none";
