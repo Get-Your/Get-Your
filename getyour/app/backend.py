@@ -490,6 +490,11 @@ def what_page(user, request):
             request.user.address
         except AttributeError:
             return "app:address"
+        
+        try:
+            request.user.household
+        except AttributeError:
+            return "app:household"
 
         if (HouseholdMembers.objects.all().filter(user_id=request.user.id).exists()):
             pass
