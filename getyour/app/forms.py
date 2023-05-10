@@ -119,15 +119,6 @@ class HouseholdForm(forms.ModelForm):
         }
 
 
-class HouseholdUpdateForm(forms.ModelForm):
-    class Meta:
-        model = Household
-        fields = ['number_persons_in_household',]
-        labels = {
-            'number_persons_in_household': 'How many individuals are in your household?',
-        }
-
-
 class DateInput(forms.DateInput):
     input_type = 'date'
 

@@ -36,7 +36,7 @@ from django.db.models.query_utils import Q
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
-from app.forms import HouseholdForm, HouseholdUpdateForm, UserForm, AddressForm, AddressLookupForm, FutureEmailForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm, FeedbackForm
+from app.forms import HouseholdForm, UserForm, AddressForm, AddressLookupForm, FutureEmailForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm, FeedbackForm
 from app.backend import address_check, serialize_household_members, validate_usps, enroll_connexion_updates, model_to_dict, authenticate, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, blob_storage_upload, broadcast_email, broadcast_sms, broadcast_email_pw_reset
 from app.models import AddressRD, Address, EligibilityProgram, Household, IQProgram, User, IQProgramRD, EligibilityProgramRD
 from app.decorators import set_update_mode
@@ -612,7 +612,7 @@ def household(request):
             # Query the users table for the user's data
             eligibility = Household.objects.get(
                 user_id=request.user.id)
-            form = HouseholdUpdateForm(instance=eligibility)
+            form = HouseholdForm(instance=eligibility)
         else:
             form = HouseholdForm()
 
@@ -625,7 +625,7 @@ def household(request):
             'form_page_number': form_page_number,
             'title': "Household",
             'is_prod': django_settings.IS_PROD,
-            'update_mode': request.POST.get('update_mode'),
+            'update_mode': request.session.get('update_mode'),
         },
     )
 
@@ -646,7 +646,7 @@ def household_members(request):
         instance.household_info = serialize_household_members(request)
         instance.save()
         if update_mode:
-            return redirect(f"{reverse('app:user_settings')}?page_updated=financial")
+            return redirect(f"{reverse('app:user_settings')}?page_updated=household")
         return redirect(reverse("app:programs"))
     else:
         form = HouseholdMembersForm(request.POST or None)

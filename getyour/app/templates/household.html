@@ -57,10 +57,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <form action="{% url 'app:household' %}" method="post" autocomplete="false" id="eligibilityForm">
     {% csrf_token %}
 
-    {% if update_mode is True %}
-    {# We're not interested in updating their length of residency or houseing status when we're updating household info
-    #}
-    {% else %}
     <div class="input" style="padding-top:0">
         <label class="labelword">Do you rent or own your current residence?</label>
         <div class="row" style="justify-content:left; padding-top:5%">
@@ -84,7 +80,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             {% endfor %}
         </div>
     </div>
-    {% endif %}
 
     <div class="input">
         <label class="labelword" style="position:relative">{{ form.number_persons_in_household.label }}</label> <a
@@ -92,7 +87,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 style="width:min(4.5vw,20px);"></a>
         {% if update_mode is True %}
         <input class="fill" type="text" name="{{ form.number_persons_in_household.name }}"
-            id="{{ form.number_persons_in_household.id_for_label}}" value="{{ form.dependents.value }}"
+            id="{{ form.number_persons_in_household.id_for_label}}" value="{{ form.number_persons_in_household.value }}"
             style="height: 3vh;" required>
         {% else %}
         <input class="fill" type="text" name="{{ form.number_persons_in_household.name }}"
@@ -111,8 +106,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </form>
 
 <script>
-    var update_mode = "{{ update_mode|yesno:'true:false'|safe }}";
-
     $(document).ready(function () {
         // Get the modal
         var modal = document.getElementById("myModal");

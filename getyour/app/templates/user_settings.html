@@ -47,10 +47,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </head>
 
 <body class="h-100">
-
+    {% if is_prod is not True %}
     {% if is_prod is False %}
-    <div style="background-color: #FF5E5E; text-align: center; font-size: x-large; ">WARNING: THIS SITE IS FOR TESTING
-        ONLY<br>To enroll in Get FoCo, go to <a href="https://getfoco.fcgov.com"
+    {% firstof "TESTING" as db_env_str %}
+    {% else %}
+    {% firstof "STAGING" as db_env_str %}
+    {% endif %}
+    <div style="background-color: #FF5E5E; text-align: center; font-size: x-large; ">WARNING: THIS SITE IS FOR {{ db_env_str }} ONLY<br>To enroll in Get FoCo, go to <a href="https://getfoco.fcgov.com"
             target="_blank">https://getfoco.fcgov.com</a> instead</div>
     {% endif %}
 
@@ -71,7 +74,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <h1 class="mb-3">{{lastName}}</h1>
 
         <!-- Create a div that centers the content nested inside of it-->
-        <p class="pb-15">Manage your account information, including updating your account, address, and financial
+        <p class="pb-15">Manage your account information, including updating your account and household
             information.
         </p>
         <div class="w-100">
