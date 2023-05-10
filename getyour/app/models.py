@@ -213,8 +213,10 @@ class Household(GenericTimeStampedModel):
 
     # Define the min and max Gross Annual Household Income as a fraction of
     # AMI (which is a function of number of individuals in household)
-    ami_range_min = models.DecimalField(max_digits=3, decimal_places=2, null=True, default=None)
-    ami_range_max = models.DecimalField(max_digits=3, decimal_places=2, null=True, default=None)
+    ami_range_min = models.DecimalField(
+        max_digits=3, decimal_places=2, null=True, default=None)
+    ami_range_max = models.DecimalField(
+        max_digits=3, decimal_places=2, null=True, default=None)
     rent_own = models.CharField(max_length=200)
 
 
