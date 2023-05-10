@@ -1128,11 +1128,12 @@ def password_reset_request(request):
                     }
                     email = render_to_string(email_template_name, c)
                     try:
-                        #                        send_mail(subject, email, 'admin@example.com' , [user.email], fail_silently=False)
                         broadcast_email_pw_reset(user.email, email)
                     except BadHeaderError:
                         return HttpResponse('Invalid header found.')
                     return redirect("/password_reset/done/")
+            else:
+                return redirect("/password_reset/done/")
     password_reset_form = PasswordResetForm()
 
     return render(
