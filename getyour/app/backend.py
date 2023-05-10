@@ -574,6 +574,8 @@ def get_users_iq_programs(user_id, users_ami_range_max):
                                            'iq_program': program.program.program_name if hasattr(program, 'program') else program.program_name})
         program.title = program.program.friendly_name if hasattr(
             program, 'program') else program.friendly_name
+        program.subtitle = program.program.friendly_category if hasattr(
+            program, 'program') else program.friendly_category
         program.description = program.program.friendly_description if hasattr(
             program, 'program') else program.friendly_description
         program.supplemental_info = program.program.friendly_supplemental_info if hasattr(
