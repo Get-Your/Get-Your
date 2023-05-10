@@ -21,6 +21,7 @@ import usaddress
 import magic
 import datetime
 import logging
+from decimal import Decimal
 from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings as django_settings
 from django.shortcuts import render, redirect, reverse
@@ -1018,6 +1019,14 @@ def files(request):
                 Household.objects.filter(
                     Q(user_id=request.user.id)
                 ).update(ami_range_min=lowest_ami['program__ami_threshold'], ami_range_max=lowest_ami['program__ami_threshold'])
+
+                # Check if the user's lowest_ami is <= 0.3. If it is, auto enroll them in the
+                # Grocery Rebate program by adding a record to the IQProgram table
+                if Decimal(float(lowest_ami['program__ami_threshold'])) <= 0.3:
+                    IQProgram.objects.create(
+                        user_id=request.user.id,
+                        program_id=1,
+                    )
 
                 return redirect(reverse("app:broadcast"))
     else:
