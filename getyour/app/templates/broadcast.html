@@ -25,9 +25,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <!--Get the various stylesheets I need like my fonts and CSS-->
 <div class=sideNav>
     <div class=fadeSmall>
-        <img style="display: block; margin-left: auto; margin-right: auto; width: 50%;" src="{% static 'img/CityLogoWhite-01.png' %}">
+        <img style="display: block; margin-left: auto; margin-right: auto; width: 50%;"
+            src="{% static 'img/CityLogoWhite-01.png' %}">
         <h1><b>One Last Thing!</b></h1>
-        <p>Get Foco sent some pretty important emails. We'll notify you when it's time to reapply for a specific program or when you've been approved. We won't ever spam you with any unwanted emails.</p>
+        <p>Get Foco sent some pretty important emails. We'll notify you when it's time to reapply for a specific program
+            or when you've been approved. We won't ever spam you with any unwanted emails.</p>
     </div>
 </div>
 
@@ -35,7 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <!--NOTE: For the future have numbers change based on database-->
     <br>
     <br>
-    
+
     <h1><b>We sent you an email and a text!</b></h1>
     <br>
     <br>
@@ -43,12 +45,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <p>Be sure to check your spam folder!</p>
     <br>
     <p>Didn't get an email from us?</p>
-    
+
     <br>
 
-    <div class="fadeLarge"><a class=yellow href="{% url 'app:broadcast' %}" style="font-size: 2vw;"><u>Click here to re-send it!</u></a></b></div>
-    <div class="fadeSmall"><a href="{% url 'app:broadcast' %}" style="font-size: 2vw;"><u>Click here to re-send it!</u></a></b></div>
-        <!--Whatever I need in the other pages, I can enter it here-->
+    <div class="fadeLarge"><a class=yellow href="{% url 'app:broadcast' %}" style="font-size: 2vw;"><u>Click here to
+                re-send it!</u></a></b></div>
+    <div class="fadeSmall"><a href="{% url 'app:broadcast' %}" style="font-size: 2vw;"><u>Click here to re-send
+                it!</u></a></b></div>
+    <!--Whatever I need in the other pages, I can enter it here-->
 
     <br>
     <br>
@@ -57,14 +61,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <button onclick="location.href='{% url 'app:dashboard' %}'"> CONTINUE </button>
 </div>
 
+<style>
+    .p2 {
+        margin-left: auto;
+    }
+</style>
+
 <script>
-    // Select a paragraph element with the p2 class
-    var p2 = document.querySelector(".p2");
-    
-    // Replace the onclick attribute value of the p2 element
-    // by replacing the existing string to the following value
-    // "location.href='/?app_status=in_progress'"
-    p2.setAttribute("onclick", "location.href='/?app_status=in_progress'");
+    $(document).ready(function () {
+        // Select a paragraph element with the p2 class
+        var saveAndLogoutBtn = $(".p2");
+
+        // Replace the onclick attribute value of the p2 element
+        // by replacing the existing string to the following value
+        // "location.href='/?app_status=not_started'"
+        saveAndLogoutBtn.attr("onclick", "location.href='/?app_status=not_started'");
+
+        // Hide the application navigation row, since the user has completed the application
+        $("#backBtn").hide();
+    });
 </script>
 
 {% endblock %}

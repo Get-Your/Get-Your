@@ -75,8 +75,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <div class =fadeLarge><img style="display: block;  padding-top: 4%;margin-left: auto; margin-right: auto; width: 30%;" src="{% static 'img/CityLogoWhite-01.png' %}"></div>
         <div style="position: fixed; bottom: 0%; right: 1%; display: flex; justify-content: flex-end; background-color: #FFB300; height: 30px; width: auto;" id="google_translate_element"></div>
 
-        <div class=nav>
-            <a class="row" onClick="window.history.back();return false;">
+        <div class="nav">
+            <a id="backBtn" class="row" onClick="window.history.back();return false;">
                 <div class=fadeSmall><img src="{% static 'img/BackArrow-darkblue.svg' %}" alt="back" style="width:max(4.5vw, 16px); margin-right: 5px;"></div>
                 <div class=fadeLarge><img src="{% static 'img/BackArrow-white.svg' %}" alt="back" style="width:max(4.5vw, 16px); margin-right: 5px;"></div>
                 <p style = "font-weight: 700;">BACK</p>
@@ -85,7 +85,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             {% if update_mode is True %}
                 {# Do nothing here. We just don't want to display 'Save & Logout' #}
             {% else %}
-                <p class=p2 alt="back" style=" margin-right: 5px;" onclick="location.href='{% url 'app:index' %}?app_status=in_progress'">Save & Logout</p>
+                <p class="p2" style=" margin-right: 5px;" onclick="location.href='{% url 'app:index' %}?app_status=in_progress'">Save & Logout</p>
             {% endif %}
         </div>
         <div class="content desktop" style="height:150vh">

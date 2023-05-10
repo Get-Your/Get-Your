@@ -29,7 +29,6 @@ from sendgrid import SendGridAPIClient
 from usps import USPSApi, Address
 from itertools import chain
 from django import http
-from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import reverse
 from django.contrib.auth.backends import UserModel
 from django.contrib.auth import get_user_model
