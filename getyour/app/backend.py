@@ -493,14 +493,14 @@ def what_page(user, request):
             return "app:address"
 
         if (HouseholdMembers.objects.all().filter(user_id=request.user.id).exists()):
-            print("MoreInfo exists")
+            pass
         else:
-            print("MoreInfo doesn't exist")
             return "app:household_members"
 
-        try:  # check if programs is filled out
-            request.user.programs
-        except AttributeError or ObjectDoesNotExist:
+        # Check to see if the user has selected any eligibility programs
+        if (request.user.eligibility_files.count()):
+            pass
+        else:
             return "app:programs"
 
         users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
