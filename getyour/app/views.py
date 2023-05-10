@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import json
+from django.db import IntegrityError
 import usaddress
 import magic
 import datetime
@@ -561,13 +562,21 @@ def take_usps_address(request):
         instance.save()
 
         if is_in_gma:
-            # Create and save a record for the user's address using
-            # the Address object
-            Address.objects.create(
-                user=request.user,
-                eligibility_address=instance,
-                mailing_address=instance,
-            )
+            try:
+                # Create and save a record for the user's address using
+                # the Address object
+                Address.objects.create(
+                    user=request.user,
+                    eligibility_address=instance,
+                    mailing_address=instance,
+                )
+            except IntegrityError:
+                # Update the user's address record if it already exists
+                # (e.g. if the user is updating their address)
+                address = Address.objects.get(user=request.user)
+                address.eligibility_address = instance
+                address.mailing_address = instance
+            
             return redirect(reverse("app:household"))
         else:
             return redirect(reverse("app:not_available"))
