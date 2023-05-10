@@ -32,7 +32,6 @@ $(document).on('submit', '#account-form', function (e) {
             } else {
                 alert(data.message)
             }
-
         },
 
         error: function (response) {
@@ -42,15 +41,17 @@ $(document).on('submit', '#account-form', function (e) {
 });
 
 // Check for when the document is ready
-$(document).ready(function() {
-    // Check if any of the input[type=checkbox] are checked when the page
-    // is ready.
-    toggleBtnState();
-
+$(document).ready(function () {
     // When a checkbox is clicked, call the toggleBtnState() function
-    $("input[type=checkbox]").click(function() {
+    $("input[type=checkbox]").click(function () {
         toggleBtnState();
     });
+
+    // Check if any of the input[type=checkbox] are checked when the page
+    // is ready.
+    setTimeout(function () {
+        toggleBtnState();
+    }, 500);
 });
 
 // toggleBtnState() is called when a checkbox is clicked

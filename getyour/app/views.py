@@ -705,6 +705,10 @@ def quick_apply(request, iq_program):
 
 def programs(request):
     if request.method == "POST":
+        # In case a user has migrated back to the programs page, clear out their existing
+        # eligibility programs and have them start fresh.
+        EligibilityProgram.objects.filter(user_id=request.user.id).delete()
+
         # Serialize POST request
         eligibility_programs = {}
         for key, value in request.POST.items():
