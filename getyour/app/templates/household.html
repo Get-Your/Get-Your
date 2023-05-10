@@ -54,7 +54,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 
-<form action="{% url 'app:household' %}" method="post" autocomplete="false" id="eligibilityForm" novalidate>
+<form action="{% url 'app:household' %}" method="post" autocomplete="false" id="eligibilityForm">
     {% csrf_token %}
 
     {% if update_mode is True %}
@@ -65,7 +65,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <label class="labelword">Do you rent or own your current residence?</label>
         <div class="row" style="justify-content:left; padding-top:5%">
             {% for choice in form.rent_own %}
-            <label for="{{choice.id_for_label}}" class="row" style="padding-right: 5%;">
+            <label for="{{choice.id_for_label}}" class="row" style="padding-right: 5%;" required>
                 <span class="radio">{{ choice.tag }}</span>
                 <p>{{ choice.choice_label }}</p>
             </label>
@@ -77,7 +77,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <label class="labelword">How long have you lived at this address?</label>
         <div class="row" style="justify-content:left; padding-top:5%">
             {% for choice in form.duration_at_address %}
-            <label for="{{choice.id_for_label}}" class="row" style="padding-right: 5%;">
+            <label for="{{choice.id_for_label}}" class="row" style="padding-right: 5%;" required>
                 <span class="radio">{{ choice.tag }}</span>
                 <p>{{ choice.choice_label }}</p>
             </label>
@@ -93,10 +93,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         {% if update_mode is True %}
         <input class="fill" type="text" name="{{ form.number_persons_in_household.name }}"
             id="{{ form.number_persons_in_household.id_for_label}}" value="{{ form.dependents.value }}"
-            style="height: 3vh;">
+            style="height: 3vh;" required>
         {% else %}
         <input class="fill" type="text" name="{{ form.number_persons_in_household.name }}"
-            id="{{ form.number_persons_in_household.id_for_label}}" style="height: 3vh;">
+            id="{{ form.number_persons_in_household.id_for_label}}" style="height: 3vh;" required>
         {% endif %}
     </div>
 
