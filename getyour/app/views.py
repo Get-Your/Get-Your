@@ -584,7 +584,7 @@ def household(request):
         # Check if the update_mode exists in the POST data.
         update_mode = request.POST.get('update_mode')
         try:
-            existing = request.user.eligibility
+            existing = request.user.household
             form = HouseholdForm(request.POST, instance=existing)
         except AttributeError or ObjectDoesNotExist:
             form = HouseholdForm(request.POST or None)
