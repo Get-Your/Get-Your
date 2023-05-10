@@ -19,26 +19,29 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% extends 'availability_base.html' %}
 
 {% block content %}
-    {% block maintext %}
-    {% endblock %}
+{% block maintext %}
+{% endblock %}
 
-    <form action="{{ model_url }}" method="post" autocomplete="false" enctype="multipart/form-data">
-        {% csrf_token %}
+<form action="{{ model_url }}" method="post" autocomplete="false" enctype="multipart/form-data">
+    {% csrf_token %}
 
-        <br/><br/>
-        
-        <label for="{{ form.connexion_communication.id_for_label }}" style="word-wrap: break-word;">
-            <input type="checkbox" id="{{ form.connexion_communication.id_for_label }}" name="{{ form.connexion_communication.name}}" style="vertical-align: middle; display: inline-block;">
-            {{ form.connexion_communication.label}}
-        </label>
+    <br /><br />
 
-        <div style="text-align: left;">
-          <a href="https://www.fcgov.com/connexion/privacy" target="_blank"> <p style="font-size: 20px; padding: 5px;color: var(--yellow);">View Connexion Privacy Policy</p></a>
-        </div>
+    <label for="{{ form.connexion_communication.id_for_label }}" style="word-wrap: break-word;">
+        <input type="checkbox" id="{{ form.connexion_communication.id_for_label }}"
+            name="{{ form.connexion_communication.name}}" style="vertical-align: middle; display: inline-block;">
+        {{ form.connexion_communication.label}}
+    </label>
 
-        <div style = "text-align: center;overflow: hidden;margin-top: 3vh;">
-            <button type="submit" style="padding:10px"> CONTINUE </button>
-        </div>
-        <div style = "height: 1vh;"></div>     
-    </form>
+    <div style="text-align: left;">
+        <a href="https://www.fcgov.com/connexion/privacy" target="_blank">
+            <p style="font-size: 20px; padding: 5px;color: var(--yellow);">View Connexion Privacy Policy</p>
+        </a>
+    </div>
+
+    <div style="text-align: center;overflow: hidden;margin-top: 3vh;">
+        <button type="submit" style="padding:10px"> CONTINUE </button>
+    </div>
+    <div style="height: 1vh;"></div>
+</form>
 {% endblock %}

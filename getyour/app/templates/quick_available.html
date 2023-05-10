@@ -19,7 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% extends 'available_base.html' %}
 
 {% block backurl %}
-    <a href="{% url 'app:index' %}" style="margin-left:auto; margin-right:10px; text-decoration: none;">
-        <p class=p2 alt="back" style="margin-left:auto; margin-right: 5px;" onclick="location.href='{% url 'app:index' %}'">EXIT</p>
-    </a>    
+<a href="{% url 'app:index' %}" style="margin-left:auto; margin-right:10px; text-decoration: none;">
+    <p class=p2 alt="back" style="margin-left:auto; margin-right: 5px;" onclick="location.href='{% url 'app:index' %}'">
+        EXIT</p>
+</a>
 {% endblock %}

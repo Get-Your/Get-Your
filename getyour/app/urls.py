@@ -33,7 +33,8 @@ urlpatterns = [
     # Available/NotAvailable Digital Equity in your area
     path('not_available', views.not_available, name='not_available'),
     path('quick_available', views.quick_available, name='quick_available'),
-    path('quick_not_available', views.quick_not_available, name='quick_not_available'),
+    path('quick_not_available', views.quick_not_available,
+         name='quick_not_available'),
     path('quick_coming_soon', views.quick_coming_soon, name='quick_coming_soon'),
     path('quick_not_found', views.quick_not_found, name='quick_not_found'),
     path('address_correction', views.address_correction, name='address_correction'),
@@ -45,7 +46,8 @@ urlpatterns = [
 
     path('coming_soon', views.coming_soon, name='coming_soon'),
     path('privacy_policy', views.privacy_policy, name='privacy_policy'),
-    path('household_definition', views.household_definition, name='household_definition'),
+    path('household_definition', views.household_definition,
+         name='household_definition'),
     path('get_ready', views.get_ready, name='get_ready'),
 
     path('feedback', views.feedback, name='feedback'),

@@ -576,7 +576,7 @@ def take_usps_address(request):
                 address = Address.objects.get(user=request.user)
                 address.eligibility_address = instance
                 address.mailing_address = instance
-            
+
             return redirect(reverse("app:household"))
         else:
             return redirect(reverse("app:not_available"))
