@@ -230,8 +230,6 @@ class HouseholdMembers(GenericTimeStampedModel):
     # Store the household info (individuals' names and birthdates) as JSON for
     # quick storage and reference
     household_info = models.JSONField(null=True, blank=True)
-    created_at_init_temp = models.DateTimeField(null=True)
-    modified_at_init_temp = models.DateTimeField(null=True)
 
 
 class HouseholdHist(models.Model):
