@@ -587,6 +587,8 @@ def get_users_iq_programs(user_id, users_ami_range_max):
         program.eligibility_review_status = 'We are reviewing your application! Stay tuned here and check your email for updates.' if status_for_user == 'PENDING' else '',
         program.eligibility_review_time_period = program.program.friendly_eligibility_review_period if hasattr(
             program, 'program') else program.friendly_eligibility_review_period
+        program.learn_more_link  = program.program.learn_more_link if hasattr(
+            program, 'program') else program.learn_more_link
     return programs
 
 
