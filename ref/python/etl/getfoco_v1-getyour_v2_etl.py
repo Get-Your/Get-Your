@@ -9,6 +9,36 @@ v2 Get Your database.
 
 """
 
+# MOVE ANY CURRENT USERS TO THE 100,000 BLOCK
+
+# Moving current users to some ridiculous user ID will ensure that inserted
+# users will preserve their current ID (making the porting much easier) and
+# allows removal and reinsertion of just the transferred users easier to
+# identify
+
+# Warn if there are any existing user in non-dev databases
+if '_dev' not in conn.config['db'] and (select count(*) from public.app_user) > 0:
+    raise Exception("There are already users in the app_user table!")
+
+update public.app_user set id=id+100000;
+update public.app_address set user_id=user_id+100000;
+update public.app_household set user_id=user_id+100000;
+update public.app_householdmembers set user_id=user_id+100000;
+update public.app_iqprogram set user_id=user_id+100000;
+update public.app_eligibilityprogram set user_id=user_id+100000;
+    
+
+# FILL NEW USERS TABLE --
+
+# Current name: users table is application_user
+# All fields transfer directly over *except* `created` and `modified`, which
+# were removed in v2 because they duplicate the functionality of Django's
+# internal `date_joined` and `last_login`, respectively.
+
+insert into public.app_user ("id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived")
+    select "id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived"
+    from public.application_user;
+
 # FILL NEW ADDRESSES TABLES --
 
 # Current names: lookup table is application_addressesnew_rearch, user table
