@@ -41,6 +41,7 @@ from app.backend import address_check, serialize_household_members, validate_usp
 from app.models import AddressRD, Address, EligibilityProgram, Household, IQProgram, User, IQProgramRD, EligibilityProgramRD
 from app.decorators import set_update_mode
 from app.qualification_status import QualificationStatus
+from app.build_hash import hash_address
 
 
 form_page_number = 6
@@ -535,12 +536,16 @@ def take_usps_address(request):
         # Check if an addressnew_rearch object exists by using the
         # dict_address. If the address is not found, create a new one.
         try:
+            dict_ref = dict_address['AddressValidateResponse']['Address']
+            field_map = [
+                ('Address2', 'address1'),
+                ('Address1', 'address2'),
+                ('City', 'city'),
+                ('State', 'state'),
+                ('Zip5', 'zip_code'),
+            ]
             instance = AddressRD.objects.get(
-                address1=dict_address['AddressValidateResponse']['Address']['Address2'],
-                address2=dict_address['AddressValidateResponse']['Address']['Address1'],
-                city=dict_address['AddressValidateResponse']['Address']['City'],
-                state=dict_address['AddressValidateResponse']['Address']['State'],
-                zip_code=dict_address['AddressValidateResponse']['Address']['Zip5'],
+                address_sha1=hash_address({key: dict_ref[ref_key] for ref_key,key in field_map})
             )
         except AddressRD.DoesNotExist:
             instance = AddressRD(
@@ -551,6 +556,7 @@ def take_usps_address(request):
                 zip_code=int(
                     dict_address['AddressValidateResponse']['Address']['Zip5']),
             )
+            instance.clean()
 
         # Record the service area and Connexion status
         instance.is_in_gma = is_in_gma
