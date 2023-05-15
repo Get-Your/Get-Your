@@ -126,17 +126,6 @@ def update_current_users(global_objects: dict) -> None:
     
     global_objects['conn_new'].commit()
     cursorNew.close()
-    
-# FILL NEW USERS TABLE --
-
-# Current name: users table is application_user
-# All fields transfer directly over *except* `created` and `modified`, which
-# were removed in v2 because they duplicate the functionality of Django's
-# internal `date_joined` and `last_login`, respectively.
-
-insert into public.app_user ("id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived")
-    select "id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived"
-    from public.application_user;
 
 # FILL NEW ADDRESSES TABLES --
 
@@ -329,8 +318,50 @@ insert into public.app_eligibilityprogram ("created_at", "modified_at", "user_id
     from public.dashboard_form
     where document_title='1040' or document_title='1040 Form';
     
+def port_user(global_objects: dict) -> None:
+    """
+    8) Port 'user' from old to new database.
+
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    cursorOld = global_objects['conn_old'].cursor()
+    cursorNew = global_objects['conn_new'].cursor()
+    
+    # FILL NEW USERS TABLE --
+    
+    # Current name: users table is application_user
+    # All fields transfer directly over *except* `created` and `modified`, which
+    # were removed in v2 because they duplicate the functionality of Django's
+    # internal `date_joined` and `last_login`, respectively.
+    
+    cursorOld.execute("""SELECT "id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived"
+                      from public.application_user""")
+    userList = cursorOld.fetchall()
+    
+    if len(userList) > 0:
+        cursorNew.execute("""insert into public.app_user ("id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived")
+                          VALUES ({})""".format(
+                ', '.join(['%s' for _ in range(len(userList[0]))])
+                ),
+            userList,
+            )
+        
+        global_objects['conn_new'].commit()
+        cursorNew.close()
+        cursorOld.close()    
+        
+        
 if __name__=='__main__':
     
     # Define the generic profile ('_old' will be appended to this for the v1
     # connection)
-    genericProfile = prompt('Enter a generic database profile to use for porting')
+    genericProfile = prompt('Enter a generic database profile to use for porting')        
