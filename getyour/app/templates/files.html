@@ -44,16 +44,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         </p>
     </div>
 </div>
-<p style="font-weight: 700;"> STEP {{ step }} OF {{ form_page_number }} </p>
-
 
 {% if message %}
 <div style="color:red; margin-bottom: 5%;">{{ message }} </div>
 {% endif %}
 
-
 <div style="margin-top: 3vh;">
     <p style="margin-bottom: 25px;">To get verified, please upload your</p>
+
+    <ul id="document_upload_list">
+        {% for program in eligiblity_programs %}
+        <li>{{program.program__friendly_name}}</li>
+        {% endfor %}
+    </ul>
 
     <div style="margin-bottom: 25px;">
         {% for program, program_was_selected in programs.items %}
@@ -89,7 +92,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     {% endif %}
 
     <div class="row" style="justify-content: space-between;">
-        <p style="font-weight: 800;">Files: <buttonQuestion id="myBtn"><img id
+        <p style="font-weight: 800;">Files: <buttonQuestion id="fileTooltipBtn"><img id
                     src="{% static 'img/clipart249308.png' %}" alt="back"
                     style="width:min(4.5vw,20px); display: inline;"></buttonQuestion>
         </p>
@@ -117,7 +120,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
         </button>
-        <input type="file" name="document_path" id="document_path" onchange="preview_image(event)" required multiple>
+        <input type="file" name="document_path" id="document_path" required multiple>
     </div>
 
     <div class="footer">
@@ -133,10 +136,67 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         overflow-x: visible;
     }
 
+    li {
+        font-weight: bold;
+    }
+
+    .buttonFileUpload {
+        margin: auto;
+        width: 100%;
+        font-family: Montserrat;
+        font-size: 3.2vh;
+        color: white;
+        padding: 3.5vh;
+        background-color: var(--darkblue);
+        border: 1px solid white;
+        border-radius: 2vh;
+        color: white;
+        height: auto;
+        font-size: max(3.8vw, 16px);
+        font-weight: 700;
+    }
+
+    .upload-btn-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+    }
+
+    .upload-btn-wrapper input[type=file] {
+        font-size: 100px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+    }
+
     @media screen and (min-width: 768px) {
+        li {
+            font-size: x-large;
+        }
+
         #eligiblity_program {
             background-color: white;
         }
+
+        #document_upload_list {
+            color: #13467D;
+        }
+    }
+
+    @media screen and (max-width: 767px) {
+        li {
+            font-size: medium;
+        }
+
+        #document_upload_list {
+            color: #ffffff;
+        }
+    }
+
+    /* Remove default anchor tag styling for the #backBtn */
+    #backBtn {
+        text-decoration: none;
     }
 </style>
 
@@ -144,7 +204,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     var fileUploadSuccessful = JSON.parse('{{ file_upload|escapejs }}')['success_status'];
 
     $(document).ready(function () {
-        $("#application_step").remove();
+        // Remove the onclick attr from the backBtn
+        $("#backBtn").removeAttr("onclick");
+        $("#backBtn").attr("href", "{% url 'app:programs' %}");
 
         var fileUploadButton = $(".upload-btn-wrapper");
         $("input[type='file']").css("height", fileUploadButton.height());
@@ -154,7 +216,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             $("input[type='file']").css("height", fileUploadButtonHeight);
         });
 
-        $("#myBtn").click(function () {
+        $("#fileTooltipBtn").click(function () {
             var modalContent = `
                 <div class ="fadeSmall">
                     <p style="color: var(--darkblue);">If you are uploading multiple files, be sure to click and <b>hold</b> the Ctrl key on your keyboard and click on each file. See an example below!</p>
@@ -177,6 +239,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 confirmButtonColor: '#13467D',
                 confirmButtonText: 'Continue'
             })
+        });
+
+        $("#document_path").change(function (event) {
+            $("#toggleColorButton").css("background-color", "green");
         });
 
         if (fileUploadSuccessful === null) {
@@ -215,22 +281,5 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             })
         }
     });
-
-    // Get the element with the id="dashboardBackBtn"
-    var dashboardBackBtn = document.getElementById("dashboardBackBtn");
-    // Update the back button's onclick attribute to go back to the
-    // application programs page
-    dashboardBackBtn.setAttribute("onclick", "window.location.href='/programs'");
-
-    function preview_image(event) {
-        var reader = new FileReader();
-        reader.onload = function () {
-            var output = document.getElementById('output_image');
-            output.src = reader.result;
-        }
-
-        document.getElementById("toggleColorButton").style.backgroundColor = 'Green';
-        reader.readAsDataURL(event.target.files[0]);
-    }
 </script>
 {% endblock %}
