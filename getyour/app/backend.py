@@ -427,22 +427,6 @@ def serialize_household_members(request):
     return household_info
 
 
-def hash_address(address_dict: dict, ) -> str:
-    """ 
-    Create a SHA-1 hash from existing address values.
-    :param address_dict: Dictionary of user-entered address fields.
-    :returns str: String representation of SHA-1 address hash. SHA-1 hash is 160 bits; written as hex for 40 characters.
-    """
-    # Explicitly define address field order
-    keyList = ['address1', 'address2', 'city', 'state', 'zip_code',
-               'is_in_gma', 'is_city_covered', 'has_connexion']
-    # Concatenate string representations of each value in sequence. If key DNE, use blank string.
-    concatVals = ''.join(
-        [str(address_dict[key]) if key in address_dict.keys() else '' for key in keyList])
-    # Return SHA-1 hash of the concatenated strings
-    return hashlib.sha1(bytearray(concatVals, 'utf8')).hexdigest()
-
-
 def blob_storage_upload(filename, file):
     blob_service_client = BlockBlobService(
         account_name=settings.BLOB_STORE_NAME,
