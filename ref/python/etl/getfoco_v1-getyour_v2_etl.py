@@ -9,25 +9,124 @@ v2 Get Your database.
 
 """
 
-# MOVE ANY CURRENT USERS TO THE 100,000 BLOCK
+from typer import prompt
+from rich import print
+import psycopg2
 
-# Moving current users to some ridiculous user ID will ensure that inserted
-# users will preserve their current ID (making the porting much easier) and
-# allows removal and reinsertion of just the transferred users easier to
-# identify
+import coftc_cred_man as crd
 
-# Warn if there are any existing user in non-dev databases
-if '_dev' not in conn.config['db'] and (select count(*) from public.app_user) > 0:
-    raise Exception("There are already users in the app_user table!")
+def run_full_porting(profile):
+    """
+    Run all ETL, in order.
 
-update public.app_user set id=id+100000;
-update public.app_address set user_id=user_id+100000;
-update public.app_household set user_id=user_id+100000;
-update public.app_householdmembers set user_id=user_id+100000;
-update public.app_iqprogram set user_id=user_id+100000;
-update public.app_eligibilityprogram set user_id=user_id+100000;
+    Returns
+    -------
+    None.
+
+    """
     
+    print(
+        "[bright_cyan]Updating new '{}' database with old data...".format(
+            profile,
+            )
+        )
 
+    global_objects = initialize_vars(profile)
+    
+    update_current_users(global_objects)
+    port_user(global_objects)
+    
+    print('[bright_cyan]PSC update from JDE complete!')
+
+def initialize_vars(profile: str) -> dict:
+    """
+    Initialize variables for these imports
+
+    Parameters
+    ----------
+    profile : str
+        Name of the profile with correct database parameters.
+
+    Returns
+    -------
+    dict
+        Dictionary of initialization objects.
+
+    """
+    
+    # Connect to new (v2) and old (v1) databases
+    credOld = crd.Cred(f'{genericProfile}_old')
+    credNew = crd.Cred(f'{genericProfile}')
+    
+    connOld = psycopg2.connect(
+        "host={hst} user={usr} dbname={dbn} password={psw} sslmode={ssm}".format(
+            hst=credOld.config['host'],
+            usr=credOld.config['user'],
+            dbn=credOld.config['db'],
+            psw=credOld.password(),
+            ssm='require')
+        ) 
+    
+    connNew = psycopg2.connect(
+        "host={hst} user={usr} dbname={dbn} password={psw} sslmode={ssm}".format(
+            hst=credNew.config['host'],
+            usr=credNew.config['user'],
+            dbn=credNew.config['db'],
+            psw=credNew.password(),
+            ssm='require')
+        ) 
+    
+    return(
+        {
+            'conn_new': connNew,
+            'conn_old': connOld,
+            'cred_new': credNew,
+            'cred_old': credOld,
+            }
+        )
+
+def update_current_users(global_objects: dict) -> None:
+    """
+    0) Update any current users in the new database.
+
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
+
+    Returns
+    -------
+    None.
+
+    """
+
+    # MOVE ANY CURRENT USERS TO THE 100,000 BLOCK
+    
+    # Moving current users to some ridiculous user ID will ensure that inserted
+    # users will preserve their current ID (making the porting much easier) and
+    # allows removal and reinsertion of just the transferred users easier to
+    # identify
+    
+    cursorNew = global_objects['conn_new'].cursor()
+    
+    # Warn if there are any existing user in non-dev databases
+    if '_dev' not in global_objects['cred_new'].config['db']:
+        cursorNew.execute("select count(*) from public.app_user")
+        if cursorNew.fetchone()[0] > 0:
+            raise Exception("There are already users in the app_user table!")
+            
+    # Update each table in order
+    cursorNew.execute("update public.app_address set user_id=user_id+100000")
+    cursorNew.execute("update public.app_household set user_id=user_id+100000")
+    cursorNew.execute("update public.app_householdmembers set user_id=user_id+100000")
+    cursorNew.execute("update public.app_householdhist set user_id=user_id+100000")
+    cursorNew.execute("update public.app_iqprogram set user_id=user_id+100000")
+    cursorNew.execute("update public.app_eligibilityprogram set user_id=user_id+100000")
+    cursorNew.execute("update public.app_user set id=id+100000")
+    
+    global_objects['conn_new'].commit()
+    cursorNew.close()
+    
 # FILL NEW USERS TABLE --
 
 # Current name: users table is application_user
@@ -229,3 +328,9 @@ insert into public.app_eligibilityprogram ("created_at", "modified_at", "user_id
     select "created", "modified", "user_id_id", "document", (select id from public.app_eligibilityprogramrd where program_name='1040')
     from public.dashboard_form
     where document_title='1040' or document_title='1040 Form';
+    
+if __name__=='__main__':
+    
+    # Define the generic profile ('_old' will be appended to this for the v1
+    # connection)
+    genericProfile = prompt('Enter a generic database profile to use for porting')
