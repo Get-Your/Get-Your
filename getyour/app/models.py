@@ -123,13 +123,14 @@ class CIEmailField(CaseInsensitiveFieldMixin, models.EmailField):
     pass
 
 
-class User(TimeStampedModel, AbstractUser):
+class User(AbstractUser):
     username = None
     email = CIEmailField(_('email address'), unique=True)
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     phone_number = PhoneNumberField()
     has_viewed_dashboard = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
