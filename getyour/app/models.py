@@ -352,14 +352,6 @@ class EligibilityProgram(GenericTimeStampedModel):
         max_length=5000, upload_to=userfiles_path, null=True, default=None)
 
 
-class AddressLookup(TimeStampedModel):
-    address = models.CharField(max_length=100)
-
-
-class FutureEmail(TimeStampedModel):
-    connexion_communication = models.BooleanField(default=True, blank=True)
-
-
 def user_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'user_{0}/{1}'.format(instance.user_id.id, filename)

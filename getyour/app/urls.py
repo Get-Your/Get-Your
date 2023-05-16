@@ -35,7 +35,6 @@ urlpatterns = [
     path('quick_available', views.quick_available, name='quick_available'),
     path('quick_not_available', views.quick_not_available,
          name='quick_not_available'),
-    path('quick_coming_soon', views.quick_coming_soon, name='quick_coming_soon'),
     path('quick_not_found', views.quick_not_found, name='quick_not_found'),
     path('address_correction', views.address_correction, name='address_correction'),
     path('take_usps_address', views.take_usps_address, name='take_usps_address'),
@@ -43,8 +42,6 @@ urlpatterns = [
     # Create the IQ Program Quick Apply Page that has a parameter for the iq_program
     path('quick_apply/<str:iq_program>',
          views.quick_apply, name='quick_apply'),
-
-    path('coming_soon', views.coming_soon, name='coming_soon'),
     path('privacy_policy', views.privacy_policy, name='privacy_policy'),
     path('household_definition', views.household_definition,
          name='household_definition'),
