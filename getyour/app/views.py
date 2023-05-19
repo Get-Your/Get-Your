@@ -91,14 +91,14 @@ def index(request):
                 address_str = form.cleaned_data['address'].lower().replace(
                     'fort collins', '')
 
-                raw_address_dict, addressType = usaddress.tag(
+                raw_address_dict, address_type = usaddress.tag(
                     address_str,
                     tag_mapping,
                 )
 
                 # Only continue to validation, etc if a 'Street Address' is
                 # found by usaddress
-                if addressType != 'Street Address':
+                if address_type != 'Street Address':
                     raise NameError("The address cannot be parsed")
 
                 print(
@@ -118,7 +118,7 @@ def index(request):
                 )
 
                 # Ensure the necessary keys for USPS validation are included
-                uspsKeys = [
+                usps_keys = [
                     'name',
                     'address_1',
                     'address_2',
@@ -126,24 +126,30 @@ def index(request):
                     'state',
                     'zipcode']
                 raw_address_dict.update(
-                    {key: '' for key in uspsKeys if key not in raw_address_dict.keys()}
+                    {key: '' for key in usps_keys if key not in raw_address_dict.keys()}
                 )
 
                 # Validate to USPS address
                 address_dict = validate_usps(raw_address_dict)
 
-                # Check for IQ and Connexion services
-                is_in_gma, _ = address_check(address_dict)
+                # Check for IQ and Connexion (Internet Service Provider) services
+                is_in_gma, has_isp_service = address_check(address_dict)
 
-                if is_in_gma:
-                    return redirect(reverse("app:quick_available"))
-                else:
+                if not is_in_gma:
                     return redirect(reverse("app:quick_not_available"))
 
+                if is_in_gma and not has_isp_service:
+                    # Connexion status unknown, but since is_in_gma==True, it
+                    # will be available at some point
+                    request.session['address_dict'] = {
+                        'address': address_dict['AddressValidateResponse']['Address']['Address2'],
+                        'zipCode': address_dict['AddressValidateResponse']['Address']['Zip5'],
+                    }
+                    return redirect(reverse("app:quick_coming_soon"))
+                else:
+                    return redirect(reverse("app:quick_available"))
             except:
-                # TODO implement look into logs!
-                logging.warning("insert valid zipcode")
-                return (redirect(reverse("app:quick_not_found")))
+                return redirect(reverse("app:quick_not_found"))
 
     else:
         # Check if the app_status query parameter is present
@@ -154,8 +160,6 @@ def index(request):
                 # Set the app_status session variable to 'in_progress'
                 request.session['app_status'] = 'in_progress'
                 return redirect(reverse("app:index"))
-
-        form = AddressLookupForm()
 
         # Check if the user is logged in and has the 'app_status' session var
         # set to 'in_progress'
@@ -169,7 +173,7 @@ def index(request):
             request,
             'index.html',
             {
-                'form': form,
+                'form': AddressLookupForm(),
                 'is_prod': django_settings.IS_PROD,
                 'in_progress_app_saved': in_progress_app_saved,
                 'iq_programs': IQProgramRD.objects.filter(is_active=True),
@@ -485,9 +489,9 @@ def address_correction(request):
         if 'usps_address_validate' in request.session.keys() and \
             dict_address['AddressValidateResponse']['Address']['Address2'].lower() == q_orig['address'].lower() and \
                 dict_address['AddressValidateResponse']['Address']['Address1'].lower() == q_orig['address2'].lower() and \
-            dict_address['AddressValidateResponse']['Address']['City'].lower() == q_orig['city'].lower() and \
-            dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
-        str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
+        dict_address['AddressValidateResponse']['Address']['City'].lower() == q_orig['city'].lower() and \
+        dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
+            str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
 
             print('Exact (case-insensitive) address match!')
             return redirect(reverse("app:take_usps_address"))
@@ -665,6 +669,8 @@ def household_members(request):
 
 
 def quick_apply(request, iq_program):
+    in_gma_with_no_service = False
+
     # Get the IQProgramRD object for the iq_program
     iq_program = IQProgramRD.objects.get(
         program_name=iq_program)
@@ -672,13 +678,34 @@ def quick_apply(request, iq_program):
     # Create and save a new IQProgram object with the user_id and program_id
     IQProgram.objects.create(
         user_id=request.user.id, program_id=iq_program.id)
+    if iq_program.program_name == 'connexion':
+        # Get the user's address from the AddressRD table by joining the eligibility_address_id
+        # to the AddressRD table's id
+        addr = AddressRD.objects.get(
+            id=request.user.address.eligibility_address_id)
+        # Check for Connexion services
+        # Recreate the relevant parts of addressDict as if from validate_usps()
+        address_dict = {
+            'AddressValidateResponse': {
+                'Address': {
+                    'Address2': addr.address1,
+                    'Zip5': addr.zip_code,
+                },
+            },
+        }
+        is_in_gma, has_isp_service = address_check(address_dict)
+        # Connexion (Internet Service Provider) status unknown, but since isInGMA==True at this point in
+        # the application, Connexion will be available at some point
+        if is_in_gma and not has_isp_service:    # this covers both None and False
+            in_gma_with_no_service = True
 
     return render(
         request,
         "quick_apply.html",
         {
-            'programName': iq_program.program_name.title(),
+            'program_name': iq_program.program_name.title(),
             'title': f"{iq_program.program_name.title()} Quick Apply Complete",
+            'in_gma_with_no_service': in_gma_with_no_service,
             'is_prod': django_settings.IS_PROD,
         },
     )
@@ -774,6 +801,17 @@ def quick_not_found(request):
         'quick_not_found.html',
         {
             'title': "Quick Connexion Not Found",
+            'is_prod': django_settings.IS_PROD,
+        },
+    )
+
+
+def quick_coming_soon(request):
+    return render(
+        request,
+        'quick_coming_soon.html',
+        {
+            'title': "Quick Connexion Coming Soon",
             'is_prod': django_settings.IS_PROD,
         },
     )
