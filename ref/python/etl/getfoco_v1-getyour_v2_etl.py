@@ -127,8 +127,49 @@ def update_current_users(global_objects: dict) -> None:
     
     global_objects['conn_new'].commit()
     cursorNew.close()
+    
+def port_user(global_objects: dict) -> None:
+    """
+    1) Port 'user' from old to new database.
 
-# FILL NEW ADDRESSES TABLES --
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    cursorOld = global_objects['conn_old'].cursor()
+    cursorNew = global_objects['conn_new'].cursor()
+    
+    # FILL NEW USERS TABLE --
+    
+    # Current name: users table is application_user
+    # All fields transfer directly over *except* `created` and `modified`, which
+    # were removed in v2 because they duplicate the functionality of Django's
+    # internal `date_joined` and `last_login`, respectively.
+    
+    cursorOld.execute("""SELECT "id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived"
+                      from public.application_user""")
+    userList = cursorOld.fetchall()
+    
+    if len(userList) > 0:
+        cursorNew.execute("""insert into public.app_user ("id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived")
+                          VALUES {}""".format(
+                ', '.join(['%s']*len(userList))
+                ),
+            userList,
+            )
+        
+        global_objects['conn_new'].commit()
+        
+    cursorNew.close()
+    cursorOld.close()    
+    
 
 # Current names: lookup table is application_addressesnew_rearch, user table
 # is application_addresses_rearch.
@@ -318,47 +359,6 @@ insert into public.app_eligibilityprogram ("created_at", "modified_at", "user_id
     select "created", "modified", "user_id_id", "document", (select id from public.app_eligibilityprogramrd where program_name='1040')
     from public.dashboard_form
     where document_title='1040' or document_title='1040 Form';
-    
-def port_user(global_objects: dict) -> None:
-    """
-    8) Port 'user' from old to new database.
-
-    Parameters
-    ----------
-    global_objects : dict
-        Dictionary of objects used across all functions.
-
-    Returns
-    -------
-    None.
-
-    """
-    
-    cursorOld = global_objects['conn_old'].cursor()
-    cursorNew = global_objects['conn_new'].cursor()
-    
-    # FILL NEW USERS TABLE --
-    
-    # Current name: users table is application_user
-    # All fields transfer directly over *except* `created` and `modified`, which
-    # were removed in v2 because they duplicate the functionality of Django's
-    # internal `date_joined` and `last_login`, respectively.
-    
-    cursorOld.execute("""SELECT "id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived"
-                      from public.application_user""")
-    userList = cursorOld.fetchall()
-    
-    if len(userList) > 0:
-        cursorNew.execute("""insert into public.app_user ("id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived")
-                          VALUES ({})""".format(
-                ', '.join(['%s' for _ in range(len(userList[0]))])
-                ),
-            userList,
-            )
-        
-        global_objects['conn_new'].commit()
-        cursorNew.close()
-        cursorOld.close()    
         
         
 if __name__=='__main__':
