@@ -33,6 +33,7 @@ def run_full_porting(profile):
 
     global_objects = initialize_vars(profile)
     
+    currentUserAddition = 100000
     update_current_users(global_objects)
     port_user(global_objects)
     
@@ -116,13 +117,13 @@ def update_current_users(global_objects: dict) -> None:
             raise Exception("There are already users in the app_user table!")
             
     # Update each table in order
-    cursorNew.execute("update public.app_address set user_id=user_id+100000")
-    cursorNew.execute("update public.app_household set user_id=user_id+100000")
-    cursorNew.execute("update public.app_householdmembers set user_id=user_id+100000")
-    cursorNew.execute("update public.app_householdhist set user_id=user_id+100000")
-    cursorNew.execute("update public.app_iqprogram set user_id=user_id+100000")
-    cursorNew.execute("update public.app_eligibilityprogram set user_id=user_id+100000")
-    cursorNew.execute("update public.app_user set id=id+100000")
+    cursorNew.execute("update public.app_address set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=currentUserAddition))
+    cursorNew.execute("update public.app_household set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=currentUserAddition))
+    cursorNew.execute("update public.app_householdmembers set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=currentUserAddition))
+    cursorNew.execute("update public.app_householdhist set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=currentUserAddition))
+    cursorNew.execute("update public.app_iqprogram set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=currentUserAddition))
+    cursorNew.execute("update public.app_eligibilityprogram set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=currentUserAddition))
+    cursorNew.execute("update public.app_user set id=id+{cradd} where id<{cradd}".format(cradd=currentUserAddition))
     
     global_objects['conn_new'].commit()
     cursorNew.close()
