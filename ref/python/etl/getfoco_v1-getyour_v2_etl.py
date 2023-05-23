@@ -59,6 +59,7 @@ def run_full_porting(profile):
     update_current_users(global_objects)
     port_user(global_objects)
     port_address(global_objects)
+    port_eligibility(global_objects)
     
     print('[bright_cyan]PSC update from JDE complete!')
 
@@ -166,6 +167,8 @@ def port_user(global_objects: dict) -> None:
 
     """
     
+    print("Beginning user port...")
+    
     cursorOld = global_objects['conn_old'].cursor()
     cursorNew = global_objects['conn_new'].cursor()
     
@@ -193,6 +196,8 @@ def port_user(global_objects: dict) -> None:
     cursorNew.close()
     cursorOld.close()    
     
+    print("User port complete")
+    
 def port_address(global_objects: dict) -> None:
     """
     2) Port 'address' from old to new database.
@@ -207,6 +212,8 @@ def port_address(global_objects: dict) -> None:
     None.
     
     """
+    
+    print("Beginning address port...")
     
     cursorOld = global_objects['conn_old'].cursor()
     cursorNew = global_objects['conn_new'].cursor()
@@ -333,24 +340,61 @@ def port_address(global_objects: dict) -> None:
             
     cursorNew.close()
     cursorOld.close()  
+    
+    print("Address port complete")
+    
+def port_eligibility(global_objects: dict) -> None:
+    """
+    3) Port 'eligibility' from old to new database.
 
-# FILL NEW ELIGIBILITY TABLE --
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
 
-# Current name: eligibility table is application_eligibility_rearch
-# Field mapping is as such (application_eligibility, application_eligibility_rearch):
-#     created, created_at
-#     modified, modified_at
-#     user_id_id, user_id
-#     rent, duration_at_address
-#     dependents, number_persons_in_household
-#     <2021 or 2022>, depending on created date, ami_year
-#     AmiRange_min, ami_range_min
-#     AmiRange_max, ami_range_max
-#     True if GenericQualified='ACTIVE' else False, is_income_verified
+    Returns
+    -------
+    None.
+    
+    """
+    
+    print("Beginning eligibility port...")
+    
+    cursorOld = global_objects['conn_old'].cursor()
+    cursorNew = global_objects['conn_new'].cursor()
 
-insert into public.app_household ("created_at", "modified_at", "user_id", "is_updated", "duration_at_address", "number_persons_in_household", "ami_range_min", "ami_range_max", "is_income_verified", "rent_own")
-    select "created", "modified", "user_id_id", False, "rent", "dependents", "AmiRange_min", "AmiRange_max", (case when "GenericQualified"='ACTIVE' then true else false end), ''
-    from public.application_eligibility;
+    # FILL NEW ELIGIBILITY TABLE --
+    
+    # Current name: eligibility table is application_eligibility_rearch
+    # Field mapping is as such (application_eligibility, application_eligibility_rearch):
+    #     created, created_at
+    #     modified, modified_at
+    #     user_id_id, user_id
+    #     rent, duration_at_address
+    #     dependents, number_persons_in_household
+    #     <2021 or 2022>, depending on created date, ami_year
+    #     AmiRange_min, ami_range_min
+    #     AmiRange_max, ami_range_max
+    #     True if GenericQualified='ACTIVE' else False, is_income_verified
+    
+
+    cursorOld.execute("""SELECT "created", "modified", "user_id_id", False, (CASE WHEN "rent" NOT IN ('Rent', 'Own') THEN "rent" ELSE '' END), "dependents", "AmiRange_min", "AmiRange_max", (CASE WHEN "GenericQualified"='ACTIVE' THEN true ELSE false END), (CASE WHEN "rent" IN ('Rent', 'Own') THEN LOWER("rent") ELSE '' END) FROM public.application_eligibility""")
+    eligList = cursorOld.fetchall()
+    
+    if len(eligList) > 0:
+        cursorNew.execute("""insert into public.app_household ("created_at", "modified_at", "user_id", "is_updated", "duration_at_address", "number_persons_in_household", "ami_range_min", "ami_range_max", "is_income_verified", "rent_own")
+                          VALUES {}""".format(
+                ', '.join(['%s']*len(eligList))
+                ),
+            eligList,
+            )
+        
+        global_objects['conn_new'].commit()
+        
+    cursorNew.close()
+    cursorOld.close()   
+    
+    print("Eligibility port complete")
 
 # FILL NEW MOREINFO TABLE --
 
