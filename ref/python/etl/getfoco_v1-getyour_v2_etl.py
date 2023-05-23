@@ -61,8 +61,10 @@ def run_full_porting(profile):
     port_user(global_objects)
     port_address(global_objects)
     port_eligibility(global_objects)
+    # Note that there is no corresponding eligibility history in PROD or STAGE
     port_householdmembers(global_objects)
     port_iqprograms(global_objects)
+    port_eligibility_programs(global_objects)
     
     print('[bright_cyan]PSC update from JDE complete!')
 
@@ -544,75 +546,119 @@ def port_iqprograms(global_objects: dict) -> None:
     # Run for Connexion
     update_program(global_objects, 'connexion', 'ConnexionQualified')
     print("Connexion port complete")
+    
     # Run for Grocery Rebate
     update_program(global_objects, 'grocery', 'GRqualified')
     print("Grocery port complete")
+    
     # Run for Recreation
     update_program(global_objects, 'recreation', 'RecreationQualified')
     print("Recreation port complete")
+    
     # Run for SPIN
     update_program(global_objects, 'spin', 'SPINQualified')
     print("SPIN port complete")
+    
     # Run for defunct SPIN Community Pass
     update_program(global_objects, 'spin_community_pass', 'SpinAccessQualified_depr')
     print("SPIN Community Pass port complete")
     
     print("All iqprograms port complete")
+    
+def port_eligibility_programs(global_objects: dict) -> None:
+    """
+    6) Port 'eligibility program' from old to new database.
 
-# FILL ELIGIBILITY PROGRAMS TABLES --
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
 
-# Current name: application_programs_rearch
-# There is no field mapping for this; everything until now has been hardcoded in Python
-
-## getfoco_dev.public.application_programs_rearch has already been updated
-## with the program information, so there's no need to revisit old tables
-
-## TODO: Port getfoco_dev.public.application_programs_rearch
-## to public.app_eligibilityprogramrd in *all environments*
-
-# Current name: application_dashboard_form_rearch
-# Field mapping is as such (dashboard_form, application_dashboard_form_rearch):
-#     created, created_at
-#     modified, modified_at
-#     user_id_id, user_id
-#     document, document_path
-#     There's no direct mapping from dashboard_form to get the program_id, so I'm going to do it manually based on the unique document_title values *from PROD*
-
-insert into public.app_eligibilityprogram ("created_at", "modified_at", "user_id", "document_path", "program_id")
-    select "created", "modified", "user_id_id", "document", (select id from public.app_eligibilityprogramrd where program_name='snap')
-    from public.dashboard_form
-    where document_title='SNAP';
-
-insert into public.app_eligibilityprogram ("created_at", "modified_at", "user_id", "document_path", "program_id")
-    select "created", "modified", "user_id_id", "document", (select id from public.app_eligibilityprogramrd where program_name='medicaid')
-    from public.dashboard_form
-    where document_title='Medicaid';
-
-insert into public.app_eligibilityprogram ("created_at", "modified_at", "user_id", "document_path", "program_id")
-    select "created", "modified", "user_id_id", "document", (select id from public.app_eligibilityprogramrd where program_name='free_reduced_lunch')
-    from public.dashboard_form
-    where document_title='Free and Reduced Lunch';
-
-insert into public.app_eligibilityprogram ("created_at", "modified_at", "user_id", "document_path", "program_id")
-    select "created", "modified", "user_id_id", "document", (select id from public.app_eligibilityprogramrd where program_name='identification')
-    from public.dashboard_form
-    where document_title='Identification';
-
-insert into public.app_eligibilityprogram ("created_at", "modified_at", "user_id", "document_path", "program_id")
-    select "created", "modified", "user_id_id", "document", (select id from public.app_eligibilityprogramrd where program_name='ebb_acf')
-    from public.dashboard_form
-    where document_title='ACP Letter';
-
-insert into public.app_eligibilityprogram ("created_at", "modified_at", "user_id", "document_path", "program_id")
-    select "created", "modified", "user_id_id", "document", (select id from public.app_eligibilityprogramrd where program_name='leap')
-    from public.dashboard_form
-    where document_title='LEAP Letter';
-
-insert into public.app_eligibilityprogram ("created_at", "modified_at", "user_id", "document_path", "program_id")
-    select "created", "modified", "user_id_id", "document", (select id from public.app_eligibilityprogramrd where program_name='1040')
-    from public.dashboard_form
-    where document_title='1040' or document_title='1040 Form';
+    Returns
+    -------
+    None.
+    
+    """
+    
+    def update_documents(global_objects, program_name, document_title):
+        cursorOld = global_objects['conn_old'].cursor()
+        cursorNew = global_objects['conn_new'].cursor()
         
+        # FILL ELIGIBILITY PROGRAMS TABLES --
+        
+        # Current name: application_dashboard_form_rearch
+        # Field mapping is as such (dashboard_form, application_dashboard_form_rearch):
+        #     created, created_at
+        #     modified, modified_at
+        #     user_id_id, user_id
+        #     document, document_path
+        #     There's no direct mapping from dashboard_form to get the program_id, so I'm going to do it manually based on the unique document_title values *from PROD*
+            
+        # Pull the users' documents
+        cursorOld.execute(
+            """SELECT "created", "modified", "user_id_id", "document" FROM public.dashboard_form WHERE "document_title"='{dct}'""".format(
+                dct=document_title,
+                )
+            )
+        documentList = cursorOld.fetchall()
+        
+        # Add the new program ID from iqprogramrd to the end of each programList
+        # element
+        cursorNew.execute(
+            """SELECT "id" FROM public.app_eligibilityprogramrd WHERE "program_name"='{pnm}'""".format(
+                pnm=program_name,
+                )
+            )
+        idVal = cursorNew.fetchone()[0]
+        documentList = [tuple(list(x)+[idVal]) for x in documentList]
+        
+        # Insert into the new table
+        if len(documentList) > 0:
+            cursorNew.execute("""INSERT INTO public.app_eligibilityprogram ("created_at", "modified_at", "user_id", "document_path", "program_id")
+                              VALUES {}""".format(
+                    ', '.join(['%s']*len(documentList))
+                    ),
+                documentList,
+                )
+            
+            global_objects['conn_new'].commit()
+            
+        cursorNew.close()
+        cursorOld.close() 
+
+    print("Beginning eligibility programs port...")
+    
+    # Run for SNAP
+    update_documents(global_objects, 'snap', 'SNAP')
+    print("SNAP documents complete")
+    
+    # Run for Medicaid
+    update_documents(global_objects, 'medicaid', 'Medicaid')
+    print("Medicaid documents complete")
+    
+    # Run for Free and Reduced Lunch
+    update_documents(global_objects, 'free_reduced_lunch', 'Free and Reduced Lunch')
+    print("Free and Reduced Lunch documents complete")
+    
+    # Run for Identification
+    update_documents(global_objects, 'identification', 'Identification')
+    print("Identification documents complete")
+    
+    # Run for ACP
+    update_documents(global_objects, 'ebb_acf', 'ACP Letter')
+    print("ACP documents complete")
+    
+    # Run for LEAP
+    update_documents(global_objects, 'leap', 'LEAP Letter')
+    print("LEAP documents complete")
+    
+    # Run twice for 1040 (different titles)
+    update_documents(global_objects, '1040', '1040')
+    update_documents(global_objects, '1040', '1040 Form')
+    print("1040 documents complete")
+
+    print("All eligibility programs port complete")    
+
         
 if __name__=='__main__':
     
