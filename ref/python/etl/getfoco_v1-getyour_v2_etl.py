@@ -12,8 +12,30 @@ v2 Get Your database.
 from typer import prompt
 from rich import print
 import psycopg2
+import hashlib
 
 import coftc_cred_man as crd
+
+# NOTE that this is copied directly from getyour.app.build_hash on 2023-05-23.
+# If the source changes, this function MUST be updated to match
+def hash_address(address_dict: dict) -> str:
+    """ 
+    Create a SHA-1 hash from existing address values.
+    :param address_dict: Dictionary of user-entered address fields.
+    :returns str: String representation of SHA-1 address hash. SHA-1 hash is
+        160 bits; written as hex for 40 characters.
+    """
+    # Explicitly define address field order
+    keyList = ['address1', 'address2', 'city', 'state', 'zip_code']
+    # Concatenate string representations of each value in sequence.
+    # If value is string, convert to uppercase; if key DNE, use blank string.
+    concatVals = ''.join(
+        [address_dict[key].upper() if key in address_dict.keys() and isinstance(address_dict[key], str) \
+         else str(address_dict[key]) if key in address_dict.keys() \
+            else '' for key in keyList]
+            )
+    # Return SHA-1 hash of the concatenated strings
+    return hashlib.sha1(bytearray(concatVals, 'utf8')).hexdigest()
 
 def run_full_porting(profile):
     """
@@ -36,6 +58,7 @@ def run_full_porting(profile):
     currentUserAddition = 100000
     update_current_users(global_objects)
     port_user(global_objects)
+    port_address(global_objects)
     
     print('[bright_cyan]PSC update from JDE complete!')
 
@@ -170,48 +193,146 @@ def port_user(global_objects: dict) -> None:
     cursorNew.close()
     cursorOld.close()    
     
+def port_address(global_objects: dict) -> None:
+    """
+    2) Port 'address' from old to new database.
 
-# Current names: lookup table is application_addressesnew_rearch, user table
-# is application_addresses_rearch.
-# Place the same ID as the mailing and eligibility addresses for this initial
-# fill.
-# Field mapping is as such
-# (application_addresses, application_addressesnew_rearch, application_addresses_rearch):
-#     created, created_at, created_at
-#     modified, modified_at, modified_at
-#     user_id_id, NULL, user_id
-#     address, address1, NULL
-#     address2, address2, NULL
-#     city, city, NULL
-#     state, state, NULL
-#     zipCode, zip_code, NULL
-#     isInGMA, is_in_gma, NULL
-#     isInGMA, is_city_covered, NULL
-#     hasConnexion, has_connexion, NULL
-#     is_verified, is_verified, NULL
-#     NULL, id (auto-incremented), eligibility_address_id
-#     NULL, id (auto-incremented), mailing_address_id
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
 
-#When necessary: truncate addresses_new_rearch
-#truncate table public.application_addressesnew_rearch cascade;
+    Returns
+    -------
+    None.
+    
+    """
+    
+    cursorOld = global_objects['conn_old'].cursor()
+    cursorNew = global_objects['conn_new'].cursor()
 
-# Insert into the rearchitected lookup table
-# Ensure all parts of the input addresses are uppercase (to match the .clean() function in the model)
-insert into public.app_addressrd ("created_at", "modified_at", "address1", "address2", "city", "state", "zip_code", "is_in_gma", "is_city_covered", "has_connexion", "is_verified")
-    select "created", "modified", UPPER("address"), UPPER("address2"), UPPER("city"), UPPER("state"), "zipCode", "isInGMA", "isInGMA", "hasConnexion", "is_verified"
-    from public.application_addresses
-    order by "created" asc
-    on conflict do nothing;
+    # FILL NEW ADDRESSES TABLES --
+    
+    # Current names: lookup table is application_addressesnew_rearch, user table
+    # is application_addresses_rearch.
+    # Place the same ID as the mailing and eligibility addresses for this initial
+    # fill.
+    # Field mapping is as such
+    # (application_addresses, application_addressesnew_rearch, application_addresses_rearch):
+    #     created, created_at, created_at
+    #     modified, modified_at, modified_at
+    #     user_id_id, NULL, user_id
+    #     address, address1, NULL
+    #     address2, address2, NULL
+    #     city, city, NULL
+    #     state, state, NULL
+    #     zipCode, zip_code, NULL
+    #     isInGMA, is_in_gma, NULL
+    #     isInGMA, is_city_covered, NULL
+    #     hasConnexion, has_connexion, NULL
+    #     is_verified, is_verified, NULL
+    #     NULL, id (auto-incremented), eligibility_address_id
+    #     NULL, id (auto-incremented), mailing_address_id
 
-# Gather user ID and lookup table ID to insert into addresses_rearch
-insert into public.app_address ("created_at", "modified_at", "user_id", "eligibility_address_id", "mailing_address_id")
-    select r."created_at", r."modified_at", o."user_id_id", r."id", r."id" from public.application_addressesnew_rearch r
-        right join public.application_addresses o on 
-        upper(o."address")=r."address1" and
-        upper(o."address2")=r."address2" and
-        upper(o."city")=r."city" and
-        upper(o."state")=r."state" and
-        o."zipCode"=r."zip_code";
+    # Insert into the rearchitected lookup table
+    # Ensure all parts of the input addresses are uppercase (to match the
+    # .clean() function in the model).
+    # Note that isInGMA is selected twice; for is_in_gma and is_city_covered
+    # Note that address_sha1 will be appended to the end
+    
+    # fieldConversionList (<old name>, <new name>) is necessary for this
+    # because a SHA-1 hash is going to be calculated from the included fields
+    # Note that these fields are selected at the *beginning* of the query
+    fieldConversionList = [
+        ('address', 'address1'),
+        ('address2', 'address2'),
+        ('city', 'city'),
+        ('state', 'state'),
+        ('zipCode', 'zip_code'),
+        ]
+    cursorOld.execute("""SELECT {fd}, "created", "modified", "isInGMA", "isInGMA", "hasConnexion", "is_verified"
+        from public.application_addresses
+        order by "created" asc""".format(
+            fd=', '.join([f'UPPER("{x[0]}")' if x[0]!='zipCode' else f'"{x[0]}"' for x in fieldConversionList]),
+            )
+    )
+    addressList = cursorOld.fetchall()
+    
+    if len(addressList) > 0:
+        # Add the address hash to each addressList element
+        outAddressList = []
+        for idxitm,addritm in enumerate(addressList):
+            
+            # Create dictionary of element 1 of fieldConversionList
+            addressDict = {
+                key[1]: addritm[idx] for idx,key in enumerate(fieldConversionList)
+                }
+            
+            # Hash the address and append to addressList (need to recreate tuple)
+            outAddressList.append(tuple(list(addritm)+[hash_address(addressDict)]))
+            
+        # Verify that all addresses were converted to outAddressList in order
+        verifyList = [x==y[:-1] for x,y in zip(addressList,outAddressList)]
+        assert all(verifyList)
+    
+        # Loop through each record instead of a single statement with multiple
+        # records so that the ON CONFLICT UPDATE clause can work properly even
+        # for multiple source records
+        for addritm in outAddressList:
+            # The special 'excluded' table contains the conflicting insertion
+            # records. For these nullable Boolean records, Postgres OR works as
+            # such (in order of descending truthiness): TRUE > NULL > FALSE
+            cursorNew.execute("""insert into public.app_addressrd ("{fd}", "created_at", "modified_at", "is_in_gma", "is_city_covered", "has_connexion", "is_verified", "address_sha1")
+                              VALUES ({vl})
+                              ON CONFLICT (address_sha1) DO
+                                  UPDATE SET is_in_gma=app_addressrd.is_in_gma OR excluded.is_in_gma,
+                                  is_city_covered=app_addressrd.is_city_covered OR excluded.is_city_covered,
+                                  has_connexion=app_addressrd.has_connexion OR excluded.has_connexion""".format(
+                    fd='", "'.join([x[1] for x in fieldConversionList]),
+                    vl=', '.join(['%s']*len(addritm))
+                    ),
+                addritm,
+                )
+            
+        global_objects['conn_new'].commit()
+    
+        # Gather user ID and lookup table ID to insert into addresses_rearch
+        usrFields = [
+            'created',
+            'modified',
+            'user_id_id',
+            ]
+        cursorOld.execute(
+            """SELECT {adfd}, {usrfd} from public.application_addresses""".format(
+                adfd=', '.join([f'UPPER("{x[0]}")' if x[0]!='zipCode' else f'"{x[0]}"' for x in fieldConversionList]),
+                usrfd=', '.join([f'"{x}"' for x in usrFields])
+                )
+        )
+        userAddressList = cursorOld.fetchall()
+        
+        # Loop through each userAddressList item, gather the ID from app_addressrd,
+        # and insert into app_address
+        for usritm in userAddressList:
+            
+            # Create dictionary of element 1 of fieldConversionList
+            addressDict = {
+                key[1]: usritm[idx] for idx,key in enumerate(fieldConversionList)
+                }
+            
+            cursorNew.execute("""SELECT "id" FROM public.app_addressrd WHERE "address_sha1"=%s""", (hash_address(addressDict), ))
+            idVal = cursorNew.fetchone()[0]
+            
+            cursorNew.execute("""INSERT INTO public.app_address ("created_at", "modified_at", "user_id", "eligibility_address_id", "mailing_address_id")
+                              VALUES ({})""".format(
+                              ', '.join(['%s']*(len(usrFields)+2))
+                              ),
+                        list(usritm[-len(usrFields):])+[idVal, idVal],
+                        )
+
+        global_objects['conn_new'].commit()
+            
+    cursorNew.close()
+    cursorOld.close()  
 
 # FILL NEW ELIGIBILITY TABLE --
 
