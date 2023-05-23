@@ -13,6 +13,7 @@ from typer import prompt
 from rich import print
 import psycopg2
 import hashlib
+import json
 
 import coftc_cred_man as crd
 
@@ -60,6 +61,7 @@ def run_full_porting(profile):
     port_user(global_objects)
     port_address(global_objects)
     port_eligibility(global_objects)
+    port_householdmembers(global_objects)
     
     print('[bright_cyan]PSC update from JDE complete!')
 
@@ -395,34 +397,79 @@ def port_eligibility(global_objects: dict) -> None:
     cursorOld.close()   
     
     print("Eligibility port complete")
+    
+def port_householdmembers(global_objects: dict) -> None:
+    """
+    4) Port 'householdmembers' from old to new database.
+    
+    Note that this section *does* use the Phase 0 '_rearch' table as a
+    temporary conversion table (out of convenience).
 
-# FILL NEW MOREINFO TABLE --
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
 
-# Current name: application_moreinfo_rearch
-# Field mapping is as such (application_moreinfo, application_moreinfo_rearch):
-#     created, created_at
-#     modified, modified_at
-#     user_id_id, user_id
-#     dependentInformation, household_info
+    Returns
+    -------
+    None.
+    
+    """
+    
+    print("Beginning householdmembers port...")
+    
+    cursorOld = global_objects['conn_old'].cursor()
+    cursorNew = global_objects['conn_new'].cursor()
 
-# Truncate the (now-temporary) table first
-truncate table public.application_moreinfo_rearch;
-
-# Due to intensive conversions, the majority of this section needs to be run
-# via Django. Follow the directions below:
-print(
-      """Run the ETL from MoreInfo via Django with the following:
-1) Switch to branch `database-rearchitecture-p0-modifytable` in the GetFoco repo
-2) Run the GetFoco app using `settings.local_<target_database>db` (you may need to `makemigrations`/`migrate` first)
-3) Navigate to 127.0.0.1:8000/application/rearch_phase0 to write to public.application_moreinfo_rearch in the GetFoco database.
-Continue this script to finish porting to GetYour."""
-)
-
-# modified_at is written automatically, so now we need to overwrite it from the temporary fields
-update public.application_moreinfo_rearch set "created_at"="created_at_init_temp", "modified_at"="modified_at_init_temp";
-
-## TODO: move public.application_moreinfo_rearch to public.app_householdmembers
-## (directly, except for init_temp fields - ignore these completely)
+    # FILL NEW MOREINFO TABLE --
+    
+    # Current name: application_moreinfo_rearch
+    # Field mapping is as such (application_moreinfo, application_moreinfo_rearch):
+    #     created, created_at
+    #     modified, modified_at
+    #     user_id_id, user_id
+    #     dependentInformation, household_info
+    
+    # Truncate the (now-temporary) table first
+    cursorOld.execute("""truncate table public.application_moreinfo_rearch""")
+    global_objects['conn_old'].commit()
+    
+    # Due to intensive conversions, the majority of this section needs to be run
+    # via Django. Follow the directions below:
+    print(
+          """Run the ETL from MoreInfo via Django with the following:
+    1) Switch to branch ``database-rearchitecture-p0-modifytable`` in the GetFoco repo
+    2) Run the GetFoco app using ``settings.local_<target_database>db`` (you may need to ``makemigrations``/``migrate`` first)
+    3) Navigate to 127.0.0.1:8000/application/rearch_phase0 to write to public.application_moreinfo_rearch in the GetFoco database.
+    Continue this script to finish porting to GetYour."""
+    )
+    
+    # modified_at is written automatically, so now we need to overwrite it from the temporary fields
+    cursorOld.execute(
+        """update public.application_moreinfo_rearch set "created_at"="created_at_init_temp", "modified_at"="modified_at_init_temp" """
+        )
+    global_objects['conn_old'].commit()
+    
+    # Move public.application_moreinfo_rearch to public.app_householdmembers
+    # (directly, except for init_temp fields - ignore these completely)
+    cursorOld.execute("""SELECT "created_at", "modified_at", "user_id", "household_info" FROM public.application_moreinfo_rearch""")
+    membersList = cursorOld.fetchall()
+    
+    if len(membersList) > 0:
+        cursorNew.execute("""insert into public.app_householdmembers ("created_at", "modified_at", "user_id", "household_info")
+                          VALUES {}""".format(
+                ', '.join(['%s']*len(membersList))
+                ),
+            # Serialize the JSON in membersList
+            [tuple([json.dumps(y) if idx==len(x)-1 else y for idx,y in enumerate(x)]) for x in membersList],
+            )
+    
+        global_objects['conn_new'].commit()
+        
+    cursorNew.close()
+    cursorOld.close()   
+    
+    print("Householdmembers port complete")
 
 # FILL IQ PROGRAMS TABLES --
 
