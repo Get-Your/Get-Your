@@ -55,8 +55,8 @@ def initialize_vars(profile: str) -> dict:
     """
     
     # Connect to new (v2) and old (v1) databases
-    credOld = crd.Cred(f'{genericProfile}_old')
-    credNew = crd.Cred(f'{genericProfile}')
+    credOld = crd.Cred(f'{profile}_old')
+    credNew = crd.Cred(f'{profile}')
     
     connOld = psycopg2.connect(
         "host={hst} user={usr} dbname={dbn} password={psw} sslmode={ssm}".format(
