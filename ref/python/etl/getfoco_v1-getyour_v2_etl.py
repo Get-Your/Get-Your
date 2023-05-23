@@ -62,6 +62,7 @@ def run_full_porting(profile):
     port_address(global_objects)
     port_eligibility(global_objects)
     port_householdmembers(global_objects)
+    port_iqprograms(global_objects)
     
     print('[bright_cyan]PSC update from JDE complete!')
 
@@ -470,53 +471,93 @@ def port_householdmembers(global_objects: dict) -> None:
     cursorOld.close()   
     
     print("Householdmembers port complete")
+    
+def port_iqprograms(global_objects: dict) -> None:
+    """
+    5) Port 'iq programs' from old to new database.
 
-# FILL IQ PROGRAMS TABLES --
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
 
-## getfoco_dev.public.application_iqprogramqualifications_rearch has already
-## been updated with the program information, so there's no need to revisit
-## old tables
+    Returns
+    -------
+    None.
+    
+    """
+    
+    def update_program(global_objects, program_name, old_field_name):
+        cursorOld = global_objects['conn_old'].cursor()
+        cursorNew = global_objects['conn_new'].cursor()
+        
+        # FILL IQ PROGRAMS TABLES --
+        
+        ## getfoco_dev.public.application_iqprogramqualifications_rearch has already
+        ## been updated with the program information, so there's no need to revisit
+        ## old tables
+        
+        ## TODO: Port getfoco_dev.public.application_iqprogramqualifications_rearch
+        ## to public.app_iqprogramrd in *all environments*
+        
+        # Current name: application_iq_programs_rearch
+        # Field mapping is as such (application_eligibility, application_iq_programs_rearch):
+        #     created, applied_at
+        #     '1970-01-01 00:00:00', enrolled_at (this will need to be updated via Python based on the historical income verification returned extracts)
+        #     user_id_id, user_id
+        #     for the rest, there isn't so much a field mapping as a loose connectivity that I'll recreate through this query
+        
+        # Pull the users in this program
+        cursorOld.execute(
+            """SELECT "created", '1970-01-01 00:00:00', "user_id_id", (CASE WHEN "{fdn}"='ACTIVE' THEN true ELSE false END) FROM public.application_eligibility WHERE "{fdn}"='ACTIVE' or "{fdn}"='PENDING'""".format(
+                fdn=old_field_name,
+                )
+            )
+        programList = cursorOld.fetchall()
+        
+        # Add the new program ID from iqprogramrd to the end of each programList
+        # element
+        cursorNew.execute(
+            """SELECT "id" FROM public.app_iqprogramrd WHERE "program_name"='{pnm}'""".format(
+                pnm=program_name,
+                )
+            )
+        idVal = cursorNew.fetchone()[0]
+        programList = [tuple(list(x)+[idVal]) for x in programList]
+        
+        # Insert into the new table
+        if len(programList) > 0:
+            cursorNew.execute("""INSERT INTO public.app_iqprogram ("applied_at", "enrolled_at", "user_id", "is_enrolled", "program_id")
+                              VALUES {}""".format(
+                    ', '.join(['%s']*len(programList))
+                    ),
+                programList,
+                )
+            
+            global_objects['conn_new'].commit()
+            
+        cursorNew.close()
+        cursorOld.close() 
 
-## TODO: Port getfoco_dev.public.application_iqprogramqualifications_rearch
-## to public.app_iqprogramrd in *all environments*
-
-# Current name: application_iq_programs_rearch
-# Field mapping is as such (application_eligibility, application_iq_programs_rearch):
-#     created, applied_at
-#     '1970-01-01 00:00:00', enrolled_at (this will need to be updated via Python based on the historical income verification returned extracts)
-#     user_id_id, user_id
-#     for the rest, there isn't so much a field mapping as a loose connectivity that I'll recreate through this query
-
-# Also need the ID from app_iqprogramrd
-# Run for Connexion
-insert into public.app_iqpgrogram ("applied_at", "enrolled_at", "user_id", "is_enrolled", "program_id")
-    select "created", '1970-01-01 00:00:00', "user_id_id", (case when "ConnexionQualified"='ACTIVE' then true else false end), (select id from public.app_iqprogramrd where program_name='connexion')
-    from public.application_eligibility
-    where "ConnexionQualified"='ACTIVE' or "ConnexionQualified"='PENDING';
-
-# Run for Grocery Rebate
-insert into public.app_iqpgrogram ("applied_at", "enrolled_at", "user_id", "is_enrolled", "program_id")
-    select "created", '1970-01-01 00:00:00', "user_id_id", (case when "GRqualified"='ACTIVE' then true else false end), (select id from public.app_iqprogramrd where program_name='grocery')
-    from public.application_eligibility
-    where "GRqualified"='ACTIVE' or "GRqualified"='PENDING';
-
-# Run for Recreation
-insert into public.app_iqpgrogram ("applied_at", "enrolled_at", "user_id", "is_enrolled", "program_id")
-    select "created", '1970-01-01 00:00:00', "user_id_id", (case when "RecreationQualified"='ACTIVE' then true else false end), (select id from public.app_iqprogramrd where program_name='recreation')
-    from public.application_eligibility
-    where "RecreationQualified"='ACTIVE' or "RecreationQualified"='PENDING';
-
-# Run for SPIN
-insert into public.app_iqpgrogram ("applied_at", "enrolled_at", "user_id", "is_enrolled", "program_id")
-    select "created", '1970-01-01 00:00:00', "user_id_id", (case when "SPINQualified"='ACTIVE' then true else false end), (select id from public.app_iqprogramrd where program_name='spin')
-    from public.application_eligibility
-    where "SPINQualified"='ACTIVE' or "SPINQualified"='PENDING';
-
-# Run for defunct SPIN Community Pass
-insert into public.app_iqpgrogram ("applied_at", "enrolled_at", "user_id", "is_enrolled", "program_id")
-    select "created", '1970-01-01 00:00:00', "user_id_id", (case when "SpinAccessQualified_depr"='ACTIVE' then true else false end), (select id from public.app_iqprogramrd where program_name='spin_community_pass')
-    from public.application_eligibility
-    where "SpinAccessQualified_depr"='ACTIVE' or "SpinAccessQualified_depr"='PENDING';
+    print("Beginning iqprograms port...")
+    
+    # Run for Connexion
+    update_program(global_objects, 'connexion', 'ConnexionQualified')
+    print("Connexion port complete")
+    # Run for Grocery Rebate
+    update_program(global_objects, 'grocery', 'GRqualified')
+    print("Grocery port complete")
+    # Run for Recreation
+    update_program(global_objects, 'recreation', 'RecreationQualified')
+    print("Recreation port complete")
+    # Run for SPIN
+    update_program(global_objects, 'spin', 'SPINQualified')
+    print("SPIN port complete")
+    # Run for defunct SPIN Community Pass
+    update_program(global_objects, 'spin_community_pass', 'SpinAccessQualified_depr')
+    print("SPIN Community Pass port complete")
+    
+    print("All iqprograms port complete")
 
 # FILL ELIGIBILITY PROGRAMS TABLES --
 
