@@ -22,6 +22,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext_lazy as _
 
+from app.build_hash import hash_address
 
 # Create custom user manager class (because django only likes to use usernames as usernames not email)
 class CustomUserManager(BaseUserManager):
@@ -123,13 +124,14 @@ class CIEmailField(CaseInsensitiveFieldMixin, models.EmailField):
     pass
 
 
-class User(TimeStampedModel, AbstractUser):
+class User(AbstractUser):
     username = None
     email = CIEmailField(_('email address'), unique=True)
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     phone_number = PhoneNumberField()
     has_viewed_dashboard = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -154,7 +156,7 @@ class AddressRD(GenericTimeStampedModel):
     is_city_covered = models.BooleanField(null=True, default=None)
     has_connexion = models.BooleanField(null=True, default=None)
     is_verified = models.BooleanField(default=False)
-    address_sha1 = models.CharField(max_length=40, default="")
+    address_sha1 = models.CharField(max_length=40, unique=True)
 
     def clean(self):
         self.address1 = self.address1.upper()
@@ -162,21 +164,13 @@ class AddressRD(GenericTimeStampedModel):
         self.city = self.city.upper()
         self.state = self.state.upper()
 
-    class Meta:
-        # Create a composite unique key from the full address
-        # This makes the full address searchable as well as ensuring uniqueness
-        constraints = [
-            models.UniqueConstraint(
-                fields=[
-                    "address1",
-                    "address2",
-                    "city",
-                    "state",
-                    "zip_code",
-                ],
-                name="unq_full_address",
-            ),
-        ]
+        # Hash the address with SHA-1 (to guarantee uniqueness)
+        keyList = ['address1', 'address2', 'city', 'state', 'zip_code']
+        self.address_sha1 = hash_address(
+            {key: getattr(self, key) for key in keyList}
+        )
+
+        return(self)
 
 
 # Addresses model attached to user (will delete as user account is deleted too)

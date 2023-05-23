@@ -35,7 +35,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         {% else %}
         <p>Congrats on creating an account! <br> <br> With the information you provided we gathered all the programs you
             may qualify for! All you need to do now is to click on Quick Apply + for programs you may be interested in
-            to apply.</p>
+            to apply. If you don't see a program you're expecting or are having an issue, please call 970-416-8090.</p>
         {% endif %}
     </div>
 </div>
@@ -74,45 +74,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
         <!-- Mobile news section -->
         <div class="module">
-            <p style="color: #999999">City News </p>
+            {% include "partials/news_feed.html" %}
+        </div>
 
-            <div>
-                <p style="margin-bottom:0;"> Larimer County COVID-19 Information Center</p>
-                <p style="font-weight: 550; margin: 5px 0">
-                <ul>Call: 970-498-5500: Open Monday - Friday, 9:00 am - 4:30 pm</ul>
-                </p>
-                <p style="font-weight: 550; margin: 5px 0">
-                <ul>Text questions: 970-999-1770: response within 4 hours during the day
-                </ul>
-                <a href="https://www.larimer.org/health/communicable-disease/coronavirus-covid-19" target="_blank"
-                    style="font-weight: 550; margin: 5px 0">
-                    <ul>More Information Here</ul>
-                </a>
-                </p>
-                <p style="color:#999999;margin-top:0;">April 2022</p>
-            </div>
-
-            <!--CSV HERE / Also template for printing out all updates-->
-            <div>
-                <p style="margin-bottom:0;">Utility Affordability Programs</p>
-                <p style="font-weight: 550; margin: 5px 0"><a
-                        href="https://www.fcgov.com/utilities/manage-your-account/payment-options/utilities-affordability-portfolio"
-                        target="_blank">Check out Utility programs that can reduce your monthly expenses.</a>
-                </p>
-                <p style="color:#999999;margin-top:0;">April 2022</p>
-            </div>
-
-            <div>
-                <p style="margin-bottom:0;">United Way of Larimer County</p>
-                <p style="font-weight: 550; margin: 5px 0">Information is available for Larimer County residents in need
-                    of rent, food or utilities assistance.
-                    Also includes resources for seniors, small business, mental health support, families, unemployment
-                    and medical needs.
-                    <a href="https://uwaylc.org/Get-Help/" target="_blank">uwaylc.org/Get-Help/</a>
-
-                </p>
-                <p style="color:#999999;margin-top:0;">April 2022</p>
-            </div>
+        <div class="module">
+            {% include "partials/feedback_form.html" %}
         </div>
     </div>
 
@@ -200,18 +166,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <div class="item thin">
                 <!--CSV HERE-->
                 <hprogram style="color: var(--darkblue)"> {{active_programs}} </hprogram>
-                <p style="font-weight: 400; padding-left: 20px; ">Programs Active </p> <button class="button button2"
-                    onclick="myFunction()"><img src="{% static 'img/clipart249308.png' %}" alt="back"
-                        style="width:min(4.5vw,20px);"></button>
-                <button class="button button2" id="toggle-button2"><img src="{% static 'img/downArrow.svg' %}"
-                        style="position: absolute; bottom: 10px;right: 10px;"> </button>
+                <p style="font-weight: 400; padding-left: 20px; ">Programs Active</p>
+                <button id="active_programs_tooltip" class="button button2">
+                    <img src="{% static 'img/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px);">
+                </button>
+                <button class="button button2" id="toggle-button2">
+                    <img src="{% static 'img/downArrow.svg' %}" style="position: absolute; bottom: 10px;right: 10px;">
+                </button>
             </div>
 
             <div class="item collapsible active">
-                <div id="myDIV">
+                <div id="active_programs_info">
                     <p style="font-size: 15px;">Once your information is reviewed by the Get FoCo team, you will find
                         the programs you are approved for here! Checkback as it gets closer to your application's
-                        estimated date and be sure to check your email for communication from us.</p>
+                        estimated date and be sure to check your email for communication from us.
+                    </p>
                 </div>
                 {% for program in iq_programs %}
                 {% if program.status_for_user == 'ACTIVE' %}
@@ -232,80 +201,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
             <!-- Desktop News Section -->
             <div class="item large">
-                <p style="color: #999999">City News & Events </p>
-
-                <div>
-                    <p style="margin-bottom:0;"> Larimer County COVID-19 Information Center</p>
-                    <p style="font-weight: 550; margin: 5px 0">
-                    <ul>Call: 970-498-5500: Open Monday - Friday, 9:00 am - 4:30 pm</ul>
-                    </p>
-                    <p style="font-weight: 550; margin: 5px 0">
-                    <ul>Text questions: 970-999-1770: response within 4 hours during the day
-                    </ul>
-                    <a href="https://www.larimer.org/health/communicable-disease/coronavirus-covid-19" target="_blank"
-                        style="font-weight: 550; margin: 5px 0">
-                        <ul>More Information Here</ul>
-                    </a>
-                    </p>
-                    <p style="color:#999999;margin-top:0;">April 2022</p>
-                </div>
-
-                <div>
-                    <p style="margin-bottom:0;">Utility Affordability Programs</p>
-                    <p style="font-weight: 550; margin: 5px 0"><a
-                            href="https://www.fcgov.com/utilities/manage-your-account/payment-options/utilities-affordability-portfolio"
-                            target="_blank">Check out Utility programs that can reduce your monthly expenses.</a>
-                    </p>
-                    <p style="color:#999999;margin-top:0;">April 2022</p>
-                </div>
-
-                <div>
-                    <p style="margin-bottom:0;">Need Help?</p>
-                    <p style="font-weight: 550; margin: 5px 0">Information is available for Larimer County residents in
-                        need of rent, food or utilities assistance.
-                        Also includes resources for seniors, small business, mental health support, families,
-                        unemployment and medical needs.
-                        <a href="https://uwaylc.org/Get-Help/" target="_blank">uwaylc.org/Get-Help/</a>
-                    </p>
-                    <p style="color:#999999;margin-top:0;">April 2022</p>
-                </div>
+                {% include "partials/news_feed.html" %}
             </div>
 
             <!-- Feedback section -->
             <div class="item extraLarge" style="padding-left: 3%;">
-                <form action="{% url 'app:feedback' %}" method="post">
-                    {% csrf_token %}
-                    <p>Feedback</p>
-                    <div class="column" style="margin:0; width:100%;">
-                        <p style="font-weight: 600;">How would you rate your experience so far using the Get FoCo
-                            portal? </p>
-                        <div class="column" style="margin:0; width:100%;">
-                            <clearButton name="starRating" value="1" type="button"> <img
-                                    src="{% static 'img/reviewStarUnfilled.svg' %}" id="star1D"
-                                    style="width:min(10vw, 50px);" onclick="fillStarD(1)"> </clearButton>
-                            <clearButton name="starRating" value="2" type="button"> <img
-                                    src="{% static 'img/reviewStarUnfilled.svg' %}" id="star2D"
-                                    style="width:min(10vw, 50px);" onclick="fillStarD(2)"> </clearButton>
-                            <clearButton name="starRating" value="3" type="button"> <img
-                                    src="{% static 'img/reviewStarUnfilled.svg' %}" id="star3D"
-                                    style="width:min(10vw, 50px);" onclick="fillStarD(3)"> </clearButton>
-                            <clearButton name="starRating" value="4" type="button"> <img
-                                    src="{% static 'img/reviewStarUnfilled.svg' %}" id="star4D"
-                                    style="width:min(10vw, 50px);" onclick="fillStarD(4)"> </clearButton>
-                            <clearButton name="starRating" value="5" type="button"> <img
-                                    src="{% static 'img/reviewStarUnfilled.svg' %}" id="star5D"
-                                    style="width:min(10vw, 50px);" onclick="fillStarD(5)"> </clearButton>
-                        </div>
-                    </div>
-                    <div class="column" style="width:100%; margin:0; justify-content: flex-start;">
-                        <p style="font-weight: 800; margin-top: 25px;">How can we do better? Don't worry, your feedback
-                            is anonymous!</p>
-                        <textarea class="feedback" placeholder="Tell us how we're doing!" name="feedback_comments"
-                            maxlength="500" style="border-radius: 2vh;"></textarea>
-                        <button name="star_rating" id="submitD" style="width:90%"> <b>Share Feedback</b>
-                        </button>
-                    </div>
-                </form>
+                {% include "partials/feedback_form.html" %}
             </div>
         </div>
 
@@ -313,138 +214,44 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </div>
 </div>
 
-{% include "_spin_privacy_acknowledgement.html" %}
+{% include "partials/privacy_acknowledgement.html" %}
 
 <script>
-    document.querySelector('#toggle-button').addEventListener('click', function () {
-        document.querySelector('.item.collapsible.pending').classList.toggle('collapsed');
-    });
+    $(document).ready(function () {
+        $("#toggle-button").click(function () {
+            $(".item.collapsible.pending").toggleClass("collapsed");
+        });
 
-    document.querySelector('#toggle-button2').addEventListener('click', function () {
-        document.querySelector('.item.collapsible.active').classList.toggle('collapsed');
-    });
+        $("#toggle-button2").click(function () {
+            $(".item.collapsible.active").toggleClass("collapsed");
+        });
 
-    document.querySelector('#toggle-button1').addEventListener('click', function () {
-        document.querySelector('.item.collapsible.qualifyfor').classList.toggle('collapsed');
-    });
+        $("#toggle-button1").click(function () {
+            $(".item.collapsible.qualifyfor").toggleClass("collapsed");
+        });
 
-    function myFunction() {
-        var x = document.getElementById("myDIV");
-        if (x.style.display === "block") {
-            x.style.display = "none";
+        $(".close").click(function () {
+            $("#modalDashboard").css("display", "none");
+        });
+
+        $("#active_programs_tooltip").click(function () {
+            $("#active_programs_info").toggle();
+        });
+
+        $(window).click(function (event) {
+            if (event.target.id === "modalDashboard") {
+                $("#modalDashboard").css("display", "none");
+            }
+        });
+
+        // Get the has_viewed_dashboard value of the user
+        var has_viewed_dashboard = "{{ proxy_viewed_dashboard }}" === "True";
+        // If the user has viewed the dashboard, do not show the modal
+        if (has_viewed_dashboard) {
+            $("#modalDashboard").css("display", "none");
         } else {
-            x.style.display = "block";
+            $("#modalDashboard").css("display", "block");
         }
-    }
-
-    var image6 = document.getElementById("star1D");
-    var image7 = document.getElementById("star2D");
-    var image8 = document.getElementById("star3D");
-    var image9 = document.getElementById("star4D");
-    var image10 = document.getElementById("star5D");
-    function fillStarD(value) {
-        switch (value) {
-            case 1:
-                if (image6.getAttribute('src') == "{% static 'img/reviewStarUnfilled.svg' %}") {
-                    image6.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    document.getElementById("submitD").value = value;
-                    return value;
-                }
-                else if ((image7.getAttribute('src') || image8.getAttribute('src') || image9.getAttribute('src') || image10.getAttribute('src')) == "{% static 'img/reviewStarFilled.svg' %}") {
-                    image10.src = "{% static 'img/reviewStarUnfilled.svg' %}";
-                    image9.src = "{% static 'img/reviewStarUnfilled.svg' %}";
-                    image8.src = "{% static 'img/reviewStarUnfilled.svg' %}";
-                    image7.src = "{% static 'img/reviewStarUnfilled.svg' %}";
-                }
-                break;
-
-            case 2:
-                if (image7.getAttribute('src') == "{% static 'img/reviewStarUnfilled.svg' %}") {
-                    image7.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    image6.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    document.getElementById("submitD").value = value;
-                    return value;
-
-                }
-                else if ((image8.getAttribute('src') || image9.getAttribute('src') || image10.getAttribute('src')) == "{% static 'img/reviewStarFilled.svg' %}") {
-                    image10.src = "{% static 'img/reviewStarUnfilled.svg' %}";
-                    image9.src = "{% static 'img/reviewStarUnfilled.svg' %}";
-                    image8.src = "{% static 'img/reviewStarUnfilled.svg' %}";
-                }
-
-                break;
-
-
-            case 3:
-                if (image8.getAttribute('src') == "{% static 'img/reviewStarUnfilled.svg' %}") {
-                    image8.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    image7.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    image6.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    document.getElementById("submitD").value = value;
-                    return value;
-                }
-                else if ((image9.getAttribute('src') || image10.getAttribute('src')) == "{% static 'img/reviewStarFilled.svg' %}") {
-                    image10.src = "{% static 'img/reviewStarUnfilled.svg' %}";
-                    image9.src = "{% static 'img/reviewStarUnfilled.svg' %}";
-                }
-
-                break;
-
-            case 4:
-                if (image9.getAttribute('src') == "{% static 'img/reviewStarUnfilled.svg' %}") {
-                    image9.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    image8.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    image7.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    image6.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    document.getElementById("submitD").value = value;
-                    return value;
-                }
-                else if (image10.getAttribute('src') == "{% static 'img/reviewStarFilled.svg' %}") {
-                    image10.src = "{% static 'img/reviewStarUnfilled.svg' %}";
-                }
-
-                break;
-
-            case 5:
-                if (image10.getAttribute('src') == "{% static 'img/reviewStarUnfilled.svg' %}") {
-                    image10.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    image9.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    image8.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    image7.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    image6.src = "{% static 'img/reviewStarFilled.svg' %}";
-                    document.getElementById("submitD").value = value;
-                    return value;
-                }
-
-                break;
-        }
-    }
-
-    // Get the modal
-    var modal = document.getElementById("modalDashboard");
-
-
-    // Get the <span> element that closes the modal
-    var span = document.getElementsByClassName("close")[0];
-
-
-    // When the user clicks on <span> (x), close the modal
-    span.onclick = function () {
-        modal.style.display = "none";
-    }
-
-    // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function (event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
-
-    // Get the has_viewed_dashboard value of the user
-    var has_viewed_dashboard = "{{ proxy_viewed_dashboard }}" === "True";
-    // If the user has viewed the dashboard, do not show the modal
-    if (has_viewed_dashboard) {
-        modal.style.display = "none";
-    }
+    });
 </script>
 {% endblock %}
