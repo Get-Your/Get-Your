@@ -66,7 +66,9 @@ def run_full_porting(profile):
     port_iqprograms(global_objects)
     port_eligibility_programs(global_objects)
     
-    print('[bright_cyan]PSC update from JDE complete!')
+    verify_transfer(global_objects)
+    
+    print('[bright_cyan]Transfer to the new database complete!')
 
 def initialize_vars(profile: str) -> dict:
     """
@@ -658,6 +660,229 @@ def port_eligibility_programs(global_objects: dict) -> None:
     print("1040 documents complete")
 
     print("All eligibility programs port complete")    
+    
+def verify_transfer(global_objects: dict) -> None:
+    """
+    Verify the proper transfer of all data.
+
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
+
+    Returns
+    -------
+    None.
+    
+    """
+    
+    print("Beginning verification...")
+    print("\nNOTE THAT app_householdmembers WILL NEED TO BE MANUALLY SPOTCHECKED\n\n")
+    
+    cursorOld = global_objects['conn_old'].cursor()
+    cursorNew = global_objects['conn_new'].cursor()
+
+    cursorOld.execute("""SELECT "id" from public.application_user order by "id" asc""")
+    oldIdList = [x[0] for x in cursorOld.fetchall()]
+    
+    cursorNew.execute(
+        """SELECT "id" from public.app_user where "id"<{curadd} order by "id" asc""".format(
+            curadd=currentUserAddition))
+    newIdList = [x[0] for x in cursorNew.fetchall()]
+    
+    # Verify the lists are equal
+    assert oldIdList==newIdList
+    
+    # Remove the beginning of newIdList in case of error
+    # removeIdUntil=276; newIdList=[x for x in newIdList if x>=removeIdUntil]
+    
+    try:
+        maxIdx = len(newIdList)
+        # Loop through all users < currentUserAddition
+        for idx,usrid in enumerate(newIdList):
+            
+            # Reset program_name so as not to confuse error messaging
+            program_name = ''
+            
+            ## Address
+            currentTest = 'address'
+            fieldConversionList = [
+                ('created', 'created_at'),
+                ('modified', 'modified_at'),
+                ('address', 'address1'),
+                ('address2', 'address2'),
+                ('city', 'city'),
+                ('state', 'state'),
+                ('zipCode', 'zip_code'),
+                ('is_verified', 'is_verified'),
+                ('isInGMA', 'is_in_gma'),
+                ('isInGMA', 'is_city_covered'),
+                ('hasConnexion', 'has_connexion'),
+                ]
+            
+            cursorOld.execute(
+                """select "{fd}" from public.application_addresses where "user_id_id"={usr}""".format(
+                    fd='", "'.join([x[0] for x in fieldConversionList]),
+                    usr=usrid,
+                    )
+                )
+            oldRec = cursorOld.fetchall()
+            
+            cursorNew.execute(
+                """select r."{fd}" from public.app_addressrd r 
+                inner join public.app_address a on a."eligibility_address_id"=r."id" 
+                where a."user_id"={usr}""".format(
+                    fd='", r."'.join([x[1] for x in fieldConversionList]),
+                    usr=usrid,
+                    )
+                )
+            newRec = cursorNew.fetchall()
+            
+            if len(oldRec)>0 or len(newRec)>0:
+                # Verify all non-Boolean-lookup values match
+                assert oldRec[0][:-3]==newRec[0][:-3]
+                
+                # Verify that the final 3 values are truthier in newRec than oldRec
+                # True > False > None
+                assert all([True if (y==True and (x==False or x is None)) or (y==False and x is None) else y==x for x,y in zip(oldRec[0][-3:], newRec[0][-3:])])
+            
+            ## Household
+            currentTest = 'household'
+            fieldConversionList = [
+                ('"created"', 'created_at'),
+                ('"modified"', 'modified_at'),
+                ("""(CASE WHEN "rent" NOT IN ('Rent', 'Own') THEN "rent" ELSE '' END)""", 'duration_at_address'),
+                ('"dependents"', 'number_persons_in_household'),
+                ('"AmiRange_min"', 'ami_range_min'),
+                ('"AmiRange_max"', 'ami_range_max'),
+                ("""(CASE WHEN "GenericQualified"='ACTIVE' THEN true ELSE false END)""", 'is_income_verified'),
+                ("""(CASE WHEN "rent" IN ('Rent', 'Own') THEN LOWER("rent") ELSE '' END)""", 'rent_own'),
+                ]
+            
+            cursorOld.execute(
+                """select {fd} from public.application_eligibility where "user_id_id"={usr}""".format(
+                    fd=', '.join([x[0] for x in fieldConversionList]),
+                    usr=usrid,
+                    )
+                )
+            oldRec = cursorOld.fetchall()
+            
+            cursorNew.execute(
+                """select "{fd}" from public.app_household 
+                where "user_id"={usr}""".format(
+                    fd='", "'.join([x[1] for x in fieldConversionList]),
+                    usr=usrid,
+                    )
+                )
+            newRec = cursorNew.fetchall()
+            
+            # Verify all values match
+            assert oldRec==newRec
+            
+            ## IQ programs
+            currentTest = 'iq programs'
+            programList = [
+                ('connexion', 'ConnexionQualified'),
+                ('grocery', 'GRqualified'),
+                ('recreation', 'RecreationQualified'),
+                ('spin', 'SPINQualified'),
+                ('spin_community_pass', 'SpinAccessQualified_depr'),
+                ]
+            for program_name, old_field_name in programList:
+                fieldConversionList = [
+                    ('created', 'applied_at'),
+                    ("""(CASE WHEN "{fdn}"='ACTIVE' THEN true ELSE false END)""".format(fdn=old_field_name), 'is_enrolled'),
+                    ]
+                
+                cursorOld.execute(
+                    """select {fd} from public.application_eligibility where "user_id_id"={usr} and ("{fdn}"='ACTIVE' or "{fdn}"='PENDING')""".format(
+                        fd=', '.join([x[0] for x in fieldConversionList]),
+                        usr=usrid,
+                        fdn=old_field_name,
+                        )
+                    )
+                oldRec = cursorOld.fetchall()
+                
+                # Gather the program ID
+                cursorNew.execute(
+                    """SELECT "id" FROM public.app_iqprogramrd WHERE "program_name"='{pnm}'""".format(
+                        pnm=program_name,
+                        )
+                    )
+                programId = cursorNew.fetchone()[0]
+                
+                cursorNew.execute(
+                    """select "{fd}" from public.app_iqprogram 
+                    where "user_id"={usr} and "program_id"={prid}""".format(
+                        fd='", "'.join([x[1] for x in fieldConversionList]),
+                        usr=usrid,
+                        prid=programId,
+                        )
+                    )
+                newRec = cursorNew.fetchall()
+                
+                # Verify all values match
+                assert oldRec==newRec
+                
+            ## Eligibility programs
+            currentTest = 'eligibility programs'
+            fieldConversionList = [
+                ('created', 'created_at'),
+                ('modified', 'modified_at'),
+                ('document', 'document_path'),
+                ]
+            
+            documentsList = [
+                ('snap', 'SNAP'),
+                ('medicaid', 'Medicaid'),
+                ('free_reduced_lunch', 'Free and Reduced Lunch'),
+                ('identification', 'Identification'),
+                ('ebb_acf', 'ACP Letter'),
+                ('leap', 'LEAP Letter'),
+                ('1040', '1040'),
+                ('1040', '1040 Form'),
+                ]
+            for program_name, document_title in documentsList:
+                cursorOld.execute(
+                    """select "{fd}" from public.dashboard_form where "user_id_id"={usr} and "document_title"='{dct}'""".format(
+                        fd='", "'.join([x[0] for x in fieldConversionList]),
+                        usr=usrid,
+                        dct=document_title,
+                        )
+                    )
+                oldRec = cursorOld.fetchall()
+                
+                # Gather the program ID
+                cursorNew.execute(
+                    """SELECT "id" FROM public.app_eligibilityprogramrd WHERE "program_name"='{pnm}'""".format(
+                        pnm=program_name,
+                        )
+                    )
+                programId = cursorNew.fetchone()[0]
+                
+                cursorNew.execute(
+                    """select "{fd}" from public.app_eligibilityprogram
+                    where "user_id"={usr} and "program_id"={prid}""".format(
+                        fd='", "'.join([x[1] for x in fieldConversionList]),
+                        usr=usrid,
+                        prid=programId,
+                        )
+                    )
+                newRec = cursorNew.fetchall()
+                
+                # Verify all values match
+                assert oldRec==newRec
+    
+            if idx % 10 == 0:
+                print("{:.2f}% complete".format(100*(idx+1)/maxIdx))
+                
+    except AssertionError:
+        raise AssertionError("Error at ID {}: {} ({})".format(usrid, currentTest, program_name))
+
+    cursorNew.close()
+    cursorOld.close() 
+    
+    print('ALL {} USERS VERIFIED'.format(maxIdx-1))
 
         
 if __name__=='__main__':
