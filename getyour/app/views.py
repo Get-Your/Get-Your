@@ -36,8 +36,8 @@ from django.db.models.query_utils import Q
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
-from app.forms import HouseholdForm, UserForm, AddressForm, AddressLookupForm, FutureEmailForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm, FeedbackForm
-from app.backend import address_check, serialize_household_members, validate_usps, enroll_connexion_updates, model_to_dict, authenticate, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, blob_storage_upload, broadcast_email, broadcast_sms, broadcast_email_pw_reset
+from app.forms import HouseholdForm, UserForm, AddressForm, AddressLookupForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm, FeedbackForm
+from app.backend import address_check, serialize_household_members, validate_usps, model_to_dict, authenticate, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, blob_storage_upload, broadcast_email, broadcast_sms, broadcast_email_pw_reset
 from app.models import AddressRD, Address, EligibilityProgram, Household, IQProgram, User, IQProgramRD, EligibilityProgramRD
 from app.decorators import set_update_mode
 from app.qualification_status import QualificationStatus
@@ -83,82 +83,73 @@ def index(request):
         form = AddressLookupForm(request.POST or None)
         if form.is_valid():
             try:
-                form.save()
-
                 # Use usaddress to try to parse the input text into an address
 
                 # Clean the data
                 # Remove 'fort collins' - the multi-word city can confuse the
                 # parser
-                addressStr = form.cleaned_data['address'].lower().replace(
+                address_str = form.cleaned_data['address'].lower().replace(
                     'fort collins', '')
 
-                rawAddressDict, addressType = usaddress.tag(
-                    addressStr,
+                raw_address_dict, address_type = usaddress.tag(
+                    address_str,
                     tag_mapping,
                 )
 
                 # Only continue to validation, etc if a 'Street Address' is
                 # found by usaddress
-                if addressType != 'Street Address':
+                if address_type != 'Street Address':
                     raise NameError("The address cannot be parsed")
 
                 print(
                     'Address parsing found',
-                    rawAddressDict,
+                    raw_address_dict,
                 )
 
                 # Help out parsing with educated guesses
-                # if 'state' not in rawAddressDict.keys():
-                rawAddressDict['state'] = 'CO'
-                # if 'city' not in rawAddressDict.keys():
-                rawAddressDict['city'] = 'Fort Collins'
+                # if 'state' not in raw_address_dict.keys():
+                raw_address_dict['state'] = 'CO'
+                # if 'city' not in raw_address_dict.keys():
+                raw_address_dict['city'] = 'Fort Collins'
 
                 print(
                     'Updated address parsing is',
-                    rawAddressDict,
+                    raw_address_dict,
                 )
 
                 # Ensure the necessary keys for USPS validation are included
-                uspsKeys = [
+                usps_keys = [
                     'name',
                     'address_1',
                     'address_2',
                     'city',
                     'state',
                     'zipcode']
-                rawAddressDict.update(
-                    {key: '' for key in uspsKeys if key not in rawAddressDict.keys()}
+                raw_address_dict.update(
+                    {key: '' for key in usps_keys if key not in raw_address_dict.keys()}
                 )
 
                 # Validate to USPS address
-                addressDict = validate_usps(rawAddressDict)
+                address_dict = validate_usps(raw_address_dict)
 
-                # Check for IQ and Connexion services
-                isInGMA, hasConnexion = address_check(addressDict)
+                # Check for IQ and Connexion (Internet Service Provider) services
+                is_in_gma, has_isp_service = address_check(address_dict)
 
-                if isInGMA:
-                    # Connexion status unknown, but since isInGMA==True, it
-                    # will be available at some point
-                    if not hasConnexion:    # this covers both None and False
-                        # Write a dictionary to the session var with 'address'
-                        # and 'zipCode' for use when quick-applying for Connexion
-                        request.session['address_dict'] = {
-                            'address': addressDict['AddressValidateResponse']['Address']['Address2'],
-                            'zipCode': addressDict['AddressValidateResponse']['Address']['Zip5'],
-                        }
-                        return redirect(reverse("app:quick_coming_soon"))
-
-                    else:  # hasConnexion==True is the only remaining option
-                        return redirect(reverse("app:quick_available"))
-
-                else:
+                if not is_in_gma:
                     return redirect(reverse("app:quick_not_available"))
 
+                if is_in_gma and not has_isp_service:
+                    # Connexion status unknown, but since is_in_gma==True, it
+                    # will be available at some point
+                    request.session['address_dict'] = {
+                        'address': address_dict['AddressValidateResponse']['Address']['Address2'],
+                        'zipCode': address_dict['AddressValidateResponse']['Address']['Zip5'],
+                    }
+                    return redirect(reverse("app:quick_coming_soon"))
+                else:
+                    return redirect(reverse("app:quick_available"))
             except:
-                # TODO implement look into logs!
-                logging.warning("insert valid zipcode")
-                return (redirect(reverse("app:quick_not_found")))
+                return redirect(reverse("app:quick_not_found"))
 
     else:
         # Check if the app_status query parameter is present
@@ -169,8 +160,6 @@ def index(request):
                 # Set the app_status session variable to 'in_progress'
                 request.session['app_status'] = 'in_progress'
                 return redirect(reverse("app:index"))
-
-        form = AddressLookupForm()
 
         # Check if the user is logged in and has the 'app_status' session var
         # set to 'in_progress'
@@ -184,7 +173,7 @@ def index(request):
             request,
             'index.html',
             {
-                'form': form,
+                'form': AddressLookupForm(),
                 'is_prod': django_settings.IS_PROD,
                 'in_progress_app_saved': in_progress_app_saved,
                 'iq_programs': IQProgramRD.objects.filter(is_active=True),
@@ -500,9 +489,9 @@ def address_correction(request):
         if 'usps_address_validate' in request.session.keys() and \
             dict_address['AddressValidateResponse']['Address']['Address2'].lower() == q_orig['address'].lower() and \
                 dict_address['AddressValidateResponse']['Address']['Address1'].lower() == q_orig['address2'].lower() and \
-            dict_address['AddressValidateResponse']['Address']['City'].lower() == q_orig['city'].lower() and \
-            dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
-        str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
+        dict_address['AddressValidateResponse']['Address']['City'].lower() == q_orig['city'].lower() and \
+        dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
+            str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
 
             print('Exact (case-insensitive) address match!')
             return redirect(reverse("app:take_usps_address"))
@@ -545,7 +534,8 @@ def take_usps_address(request):
                 ('Zip5', 'zip_code'),
             ]
             instance = AddressRD.objects.get(
-                address_sha1=hash_address({key: dict_ref[ref_key] for ref_key,key in field_map})
+                address_sha1=hash_address(
+                    {key: dict_ref[ref_key] for ref_key, key in field_map})
             )
         except AddressRD.DoesNotExist:
             instance = AddressRD(
@@ -679,6 +669,8 @@ def household_members(request):
 
 
 def quick_apply(request, iq_program):
+    in_gma_with_no_service = False
+
     # Get the IQProgramRD object for the iq_program
     iq_program = IQProgramRD.objects.get(
         program_name=iq_program)
@@ -693,7 +685,7 @@ def quick_apply(request, iq_program):
             id=request.user.address.eligibility_address_id)
         # Check for Connexion services
         # Recreate the relevant parts of addressDict as if from validate_usps()
-        addressDict = {
+        address_dict = {
             'AddressValidateResponse': {
                 'Address': {
                     'Address2': addr.address1,
@@ -701,18 +693,19 @@ def quick_apply(request, iq_program):
                 },
             },
         }
-        _, has_connexion = address_check(addressDict)
-        # Connexion status unknown, but since isInGMA==True at this point in
+        is_in_gma, has_isp_service = address_check(address_dict)
+        # Connexion (Internet Service Provider) status unknown, but since isInGMA==True at this point in
         # the application, Connexion will be available at some point
-        if not has_connexion:    # this covers both None and False
-            return redirect(reverse("app:coming_soon"))
+        if is_in_gma and not has_isp_service:    # this covers both None and False
+            in_gma_with_no_service = True
 
     return render(
         request,
         "quick_apply.html",
         {
-            'programName': iq_program.program_name.title(),
+            'program_name': iq_program.program_name.title(),
             'title': f"{iq_program.program_name.title()} Quick Apply Complete",
+            'in_gma_with_no_service': in_gma_with_no_service,
             'is_prod': django_settings.IS_PROD,
         },
     )
@@ -814,100 +807,11 @@ def quick_not_found(request):
 
 
 def quick_coming_soon(request):
-
-    if request.method == "POST":
-        form = FutureEmailForm(request.POST or None)
-        if form.is_valid():
-            try:
-                form.save()
-            except AttributeError:
-                print("Error Email Saving")
-            else:
-                request.session['connexion_communication'] = form.cleaned_data['connexion_communication']
-                return redirect(reverse("app:account"))
-
-    form = FutureEmailForm()
     return render(
         request,
         'quick_coming_soon.html',
         {
-            'form': form,
-            'model_url': reverse("app:quick_coming_soon"),
             'title': "Quick Connexion Coming Soon",
-            'is_prod': django_settings.IS_PROD,
-        },
-    )
-
-
-def coming_soon(request):
-
-    if request.method == "POST":
-        form = FutureEmailForm(request.POST or None)
-        if form.is_valid():
-            try:
-                form.save()
-
-                doEnroll = form.cleaned_data['connexion_communication']
-                enrollFailure = False
-                if doEnroll is True:
-                    try:
-                        enroll_connexion_updates(request)
-                    except AssertionError:
-                        enrollFailure = True
-
-                return render(
-                    request,
-                    "quick_apply.html",
-                    {
-                        'programName': 'Reduced-Rate Connexion',
-                        'enroll_failure': enrollFailure,
-                        'is_enrolled': doEnroll,
-                        'title': "Reduced-Rate Connexion Quick Apply Complete",
-                        'is_prod': django_settings.IS_PROD,
-                    },
-                )
-
-            except AttributeError:
-                print("Error Email Saving")
-
-    # If this application was started with quick_coming_soon and the address
-    # entered there matches the application, skip to quick_apply.html
-    if 'address_dict' in request.session.keys() and 'connexion_communication' in request.session.keys():
-        addr = request.user.addresses
-        if request.session['address_dict']['address'] == addr.address and request.session['address_dict']['zipCode'] == str(addr.zipCode):
-
-            doEnroll = request.session['connexion_communication']
-            enrollFailure = False
-            if doEnroll is True:
-                try:
-                    enroll_connexion_updates(request)
-                except AssertionError:
-                    enrollFailure = True
-
-            # Remove the session vars after use
-            del request.session['address_dict']
-            del request.session['connexion_communication']
-
-            return render(
-                request,
-                "quick_apply.html",
-                {
-                    'programName': 'Reduced-Rate Connexion',
-                    'enroll_failure': enrollFailure,
-                    'is_enrolled': doEnroll,
-                    'title': "Reduced-Rate Connexion Quick Apply Complete",
-                    'is_prod': django_settings.IS_PROD,
-                },
-            )
-
-    form = FutureEmailForm()
-    return render(
-        request,
-        'coming_soon.html',
-        {
-            'form': form,
-            'model_url': reverse("app:coming_soon"),
-            'title': "Reduced-Rate Connexion Communication",
             'is_prod': django_settings.IS_PROD,
         },
     )

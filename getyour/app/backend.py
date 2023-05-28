@@ -264,58 +264,6 @@ def gma_lookup(coord_string):
         return False
 
 
-def enroll_connexion_updates(request):
-    """
-    Enroll a user in Connexion service update emails.
-
-    Parameters
-    ----------
-    request : django.core.handlers.wsgi.WSGIRequest
-        User request for the calling page, to be passed through to this
-        function.
-
-    Raises
-    ------
-    AssertionError
-        Designates a failure when writing to the Connexion-update service.
-
-    Returns
-    -------
-    None. No return designates a successful write to the service.
-
-    """
-
-    usr = request.user
-    addr = request.user.addresses
-
-    print(usr.email)
-    print(usr.phone_number.national_number)
-    print("{ad}, {zc}".format(ad=addr.address, zc=addr.zipCode))
-
-    url = "https://www.fcgov.com/webservices/codeforamerica/"
-    params = {
-        'email': usr.email,
-        # Retrieve just the 10-digit phone number
-        'phone': usr.phone_number.national_number,
-        # Create an address string recognized by the City system
-        'address': "{ad}, {zc}".format(ad=addr.address, zc=addr.zipCode),
-    }
-    payload = urllib.parse.urlencode(params)
-
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded'
-    }
-    response = requests.post(url, data=payload, headers=headers)
-
-    # raise AssertionError('error test')
-
-    # This seems to rely on the 'errors' return rather than status code, so
-    # need to verify both (kick back an error if either are not good)
-    if response.status_code != requests.codes.okay or response.json()['errors'] != '':
-        print(response.json()['errors'])
-        raise AssertionError('subscription request could not be completed')
-
-
 def validate_usps(inobj):
     if isinstance(inobj, http.request.QueryDict):
         # Combine fields into Address
@@ -571,7 +519,7 @@ def get_users_iq_programs(user_id, users_ami_range_max):
         program.eligibility_review_status = 'We are reviewing your application! Stay tuned here and check your email for updates.' if status_for_user == 'PENDING' else '',
         program.eligibility_review_time_period = program.program.friendly_eligibility_review_period if hasattr(
             program, 'program') else program.friendly_eligibility_review_period
-        program.learn_more_link  = program.program.learn_more_link if hasattr(
+        program.learn_more_link = program.program.learn_more_link if hasattr(
             program, 'program') else program.learn_more_link
     return programs
 

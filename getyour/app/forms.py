@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django import forms
 from django.contrib.auth.password_validation import validate_password
-from app.models import HouseholdMembers, User, AddressLookup, FutureEmail, Household, AddressRD, EligibilityProgram, Feedback
+from app.models import HouseholdMembers, User, Household, AddressRD, EligibilityProgram, Feedback
 
 
 class UserForm(forms.ModelForm):
@@ -133,22 +133,8 @@ class HouseholdMembersForm(forms.ModelForm):
         fields = ['name', 'birthdate']
 
 
-class AddressLookupForm(forms.ModelForm):
-    class Meta:
-        model = AddressLookup
-        fields = ['address']
-        labels = {
-            'address': 'Address',
-        }
-
-
-class FutureEmailForm(forms.ModelForm):
-    class Meta:
-        model = FutureEmail
-        fields = ['connexion_communication']
-        labels = {
-            'connexion_communication': 'Subscribe me to service updates! By checking this box, I agree to receive communications from Fort Collins Connexion. I understand I may opt out at any time.'
-        }
+class AddressLookupForm(forms.Form):
+    address = forms.CharField(label='Address')
 
 
 class FileUploadForm(forms.ModelForm):
