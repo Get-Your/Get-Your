@@ -40,7 +40,7 @@ from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProg
 
 def broadcast_sms(phone_Number):
     message_to_broadcast = (
-        "Thank you for creating an account with Get FoCo! Be sure to review the programs you qualify for on your dashboard and click on Quick Apply to finish the application process!")
+        "Thank you for creating an account with Get FoCo! Be sure to review the programs you qualify for on your dashboard and click on Apply Now to finish the application process!")
     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
     client.messages.create(to=phone_Number,
                            from_=settings.TWILIO_NUMBER,
@@ -463,7 +463,7 @@ def build_qualification_button(users_enrollment_status):
             "textColor": "white"
         },
         '': {
-            "text": "Quick Apply +",
+            "text": "Apply Now +",
             "color": "",
             "textColor": ""
         },
@@ -480,11 +480,15 @@ def map_iq_enrollment_status(program):
         return ''
 
 
-def get_users_iq_programs(user_id, users_ami_range_max):
-    """ Get the iq programs for the user where their ami range is less than or equal to the users ami range
-    or where the user has already applied to the program
+def get_users_iq_programs(user_id, users_ami_range_max, users_eligiblity_address):
+    """ 
+    Get the iq programs for the user where the user is geographically eligible, as well as 
+    where their ami range is less than or equal to the users max ami range
+    or where the user has already applied to the program. Additionaly filter out
     params:
         user_id: the id of the user
+        users_ami_range_max: the max ami range for the user
+        users_eligiblity_address: the eligibility address for the user
     returns:
         a list of users iq programs
     """
@@ -499,6 +503,12 @@ def get_users_iq_programs(user_id, users_ami_range_max):
         (Q(is_active=True) & Q(ami_threshold__gte=Decimal(
             float(users_ami_range_max))) & ~Q(id__in=users_iq_programs_ids))
     ))
+
+    # Filter out the active programs that the user is not geographically eligible for.
+    # If the IQ program's req_is_city_covered is true, then check to make sure
+    # the user's eligibility address is_city_covered.
+    active_iq_programs = [
+        program for program in active_iq_programs if not (program.req_is_city_covered and not users_eligiblity_address.is_city_covered)]
 
     programs = list(chain(users_iq_programs, active_iq_programs))
     for program in programs:
@@ -521,6 +531,10 @@ def get_users_iq_programs(user_id, users_ami_range_max):
             program, 'program') else program.friendly_eligibility_review_period
         program.learn_more_link = program.program.learn_more_link if hasattr(
             program, 'program') else program.learn_more_link
+        program.autoapply_ami_threshold = program.program.autoapply_ami_threshold if hasattr(
+            program, 'program') else program.autoapply_ami_threshold
+        program.ami_threshold = program.program.ami_threshold if hasattr(
+            program, 'program') else program.ami_threshold
     return programs
 
 

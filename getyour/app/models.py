@@ -16,13 +16,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import hashlib
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext_lazy as _
 
-from app.build_hash import hash_address
 
 # Create custom user manager class (because django only likes to use usernames as usernames not email)
 class CustomUserManager(BaseUserManager):
@@ -166,11 +166,31 @@ class AddressRD(GenericTimeStampedModel):
 
         # Hash the address with SHA-1 (to guarantee uniqueness)
         keyList = ['address1', 'address2', 'city', 'state', 'zip_code']
-        self.address_sha1 = hash_address(
+        self.address_sha1 = self.hash_address(
             {key: getattr(self, key) for key in keyList}
         )
 
-        return(self)
+        return (self)
+
+    @staticmethod
+    def hash_address(address_dict: dict) -> str:
+        """ 
+        Create a SHA-1 hash from existing address values.
+        :param address_dict: Dictionary of user-entered address fields.
+        :returns str: String representation of SHA-1 address hash. SHA-1 hash is
+            160 bits; written as hex for 40 characters.
+        """
+        # Explicitly define address field order
+        keyList = ['address1', 'address2', 'city', 'state', 'zip_code']
+        # Concatenate string representations of each value in sequence.
+        # If value is string, convert to uppercase; if key DNE, use blank string.
+        concatVals = ''.join(
+            [address_dict[key].upper() if key in address_dict.keys() and isinstance(address_dict[key], str)
+             else str(address_dict[key]) if key in address_dict.keys()
+                else '' for key in keyList]
+        )
+        # Return SHA-1 hash of the concatenated strings
+        return hashlib.sha1(bytearray(concatVals, 'utf8')).hexdigest()
 
 
 # Addresses model attached to user (will delete as user account is deleted too)
@@ -271,6 +291,15 @@ class IQProgramRD(GenericTimeStampedModel):
     friendly_eligibility_review_period = models.CharField(max_length=5000)
 
     is_active = models.BooleanField(default=True)
+
+    # All fields beginning with `req_` are Boolean and specify whether the matching
+    # field in `app_addressrd` is a filter for the program (e.g. a program with
+    # `req_is_city_covered`==True will require a user’s `app_address.eligibility_address_id`
+    # to have `app_addressrd.is_city_covered`=True, but `req_is_in_gma`==False will
+    # ignore `app_addressrd.is_in_gma`)
+    autoapply_ami_threshold = models.BooleanField(default=False)
+    req_is_in_gma = models.BooleanField(default=False)
+    req_is_city_covered = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.ami_threshold)

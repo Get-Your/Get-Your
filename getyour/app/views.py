@@ -17,12 +17,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import json
-from django.db import IntegrityError
 import usaddress
 import magic
 import datetime
 import logging
 from decimal import Decimal
+from urllib.parse import urlencode
 from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings as django_settings
 from django.shortcuts import render, redirect, reverse
@@ -36,12 +36,12 @@ from django.db.models.query_utils import Q
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
+from django.db import IntegrityError
 from app.forms import HouseholdForm, UserForm, AddressForm, AddressLookupForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm, FeedbackForm
-from app.backend import address_check, serialize_household_members, validate_usps, model_to_dict, authenticate, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, blob_storage_upload, broadcast_email, broadcast_sms, broadcast_email_pw_reset
+from app.backend import address_check, serialize_household_members, validate_usps, authenticate, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, blob_storage_upload, broadcast_email, broadcast_sms, broadcast_email_pw_reset
 from app.models import AddressRD, Address, EligibilityProgram, Household, IQProgram, User, IQProgramRD, EligibilityProgramRD
 from app.decorators import set_update_mode
 from app.qualification_status import QualificationStatus
-from app.build_hash import hash_address
 
 
 form_page_number = 6
@@ -283,50 +283,95 @@ def account(request):
     )
 
 
+@set_update_mode
 def address(request):
+    if request.session.get('application_addresses'):
+        del request.session['application_addresses']
+
     if request.method == "POST":
-        instance = AddressRD(
-            address1=request.POST['address1'],
-            address2=request.POST['address2'],
-            city=request.POST['city'],
-            state=request.POST['state'],
-            zip_code=request.POST['zip_code'],
-        )
-        request.session['in_progress_address'] = json.dumps(
-            model_to_dict(instance), cls=DjangoJSONEncoder)
+        addresses = []
+        # 'no' means the user has a different mailing address
+        # compared to their eligibility address
+        if request.POST.get('mailing_address') == 'no' or request.POST.get('update_mode'):
+            mailing_address = {
+                'address1': request.POST['mailing_address1'],
+                'address2': request.POST['mailing_address2'],
+                'city': request.POST['mailing_city'],
+                'state': request.POST['mailing_state'],
+                'zipcode': request.POST['mailing_zip_code'],
+            }
+            addresses.append(
+                {
+                    'address': mailing_address,
+                    'type': 'mailing',
+                    'processed': False
+                })
+
+        if not request.POST.get('update_mode'):
+            eligibility_address = {
+                'address1': request.POST['address1'],
+                'address2': request.POST['address2'],
+                'city': request.POST['city'],
+                'state': request.POST['state'],
+                'zipcode': request.POST['zip_code'],
+            }
+            addresses.append(
+                {
+                    'address': eligibility_address,
+                    'type': 'eligibility',
+                    'processed': False
+                })
+
+        request.session['application_addresses'] = json.dumps(
+            addresses)
         return redirect(reverse("app:address_correction"))
     else:
-        form = AddressForm()
+        same_address = True
+        if request.session.get('update_mode'):
+            existing = Address.objects.get(user=request.user)
+            mailing_address = AddressRD.objects.get(
+                id=existing.mailing_address_id)
+            mailing_address = AddressForm(instance=mailing_address)
+            # Will be unused if the user is in update mode
+            eligibility_address = AddressForm()
+        else:
+            try:
+                existing = Address.objects.get(user=request.user)
+                same_address = True if existing.mailing_address_id == existing.eligibility_address_id else False
+                eligibility_address = AddressForm(
+                    instance=AddressRD.objects.get(
+                        id=existing.eligibility_address_id)
+                )
+                mailing_address = AddressForm(
+                    instance=AddressRD.objects.get(
+                        id=existing.mailing_address_id)
+                )
+            except Address.DoesNotExist:
+                eligibility_address = AddressForm()
+                mailing_address = AddressForm()
         return render(
             request,
             'address.html',
             {
-                'form': form,
+                'eligibility_address_form': eligibility_address,
+                'mailing_address_form': mailing_address,
+                'same_address': same_address,
                 'step': 2,
-                'request.user': request.user,
                 'form_page_number': form_page_number,
                 'title': "Address",
                 'is_prod': django_settings.IS_PROD,
+                'update_mode': request.session.get('update_mode'),
             },
         )
 
 
 def address_correction(request):
     try:
-        address = json.loads(request.session['in_progress_address'])
-        q = QueryDict('', mutable=True)
-        q.update({"address": address['address1'],
-                  "address2": address['address2'],
-                  "city": address['city'],
-                  "state": address['state'],
-                  "zipcode": str(address['zip_code']), })
-
-        q_orig = QueryDict('', mutable=True)
-        q_orig.update({"address": address['address1'],
-                       "address2": address['address2'],
-                       "city": address['city'],
-                       "state": address['state'],
-                       "zipcode": str(address['zip_code']), })
+        addresses = json.loads(request.session['application_addresses'])
+        in_progress_address = [
+            address for address in addresses if not address['processed']][0]['address']
+        q = QueryDict(urlencode(in_progress_address), mutable=True)
+        q_orig = QueryDict(urlencode(in_progress_address), mutable=True)
 
         # Loop through maxLoopIdx+1 times to try different methods of
         # parsing the address
@@ -343,7 +388,7 @@ def address_correction(request):
             try:
                 if idx in (0, 1):
                     addressStr = "{ad1} {ad2}, {ct}, {st} {zp}".format(
-                        ad1=q['address'].replace('#', ''),
+                        ad1=q['address1'].replace('#', ''),
                         ad2=q['address2'].replace('#', ''),
                         ct=q['city'],
                         st=q['state'],
@@ -443,7 +488,7 @@ def address_correction(request):
 
         program_string_2 = [validationAddress['Address2'],
                             validationAddress['Address1'],
-                            validationAddress['City'] + " " + validationAddress['State'] + " " + str(validationAddress['Zip5'])]
+                            validationAddress['City'] + " " + validationAddress['State'] + " " + validationAddress['Zip5']]
         print('program_string_2', program_string_2)
 
     except TypeError as msg:
@@ -487,18 +532,18 @@ def address_correction(request):
         else:
             q_orig = {key: q_orig[key] for key in q_orig.keys()}
         if 'usps_address_validate' in request.session.keys() and \
-            dict_address['AddressValidateResponse']['Address']['Address2'].lower() == q_orig['address'].lower() and \
+            dict_address['AddressValidateResponse']['Address']['Address2'].lower() == q_orig['address1'].lower() and \
                 dict_address['AddressValidateResponse']['Address']['Address1'].lower() == q_orig['address2'].lower() and \
-        dict_address['AddressValidateResponse']['Address']['City'].lower() == q_orig['city'].lower() and \
-        dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
-            str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
+            dict_address['AddressValidateResponse']['Address']['City'].lower() == q_orig['city'].lower() and \
+            dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
+        str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
 
             print('Exact (case-insensitive) address match!')
             return redirect(reverse("app:take_usps_address"))
 
     print('Address match not found - proceeding to addressCorrection')
-    program_string = [address['address1'], address['address2'],
-                      address['city'] + " " + address['state'] + " " + str(address['zip_code'])]
+    program_string = [in_progress_address['address1'], in_progress_address['address2'],
+                      in_progress_address['city'] + " " + in_progress_address['state'] + " " + in_progress_address['zipcode']]
     return render(
         request,
         'address_correction.html',
@@ -522,7 +567,7 @@ def take_usps_address(request):
         # Check for and store GMA and Connexion status
         is_in_gma, has_connexion = address_check(dict_address)
 
-        # Check if an addressnew_rearch object exists by using the
+        # Check if an AddressRD object exists by using the
         # dict_address. If the address is not found, create a new one.
         try:
             dict_ref = dict_address['AddressValidateResponse']['Address']
@@ -534,7 +579,7 @@ def take_usps_address(request):
                 ('Zip5', 'zip_code'),
             ]
             instance = AddressRD.objects.get(
-                address_sha1=hash_address(
+                address_sha1=AddressRD.hash_address(
                     {key: dict_ref[ref_key] for ref_key, key in field_map})
             )
         except AddressRD.DoesNotExist:
@@ -557,25 +602,84 @@ def take_usps_address(request):
         instance.is_verified = True
         instance.save()
 
-        if is_in_gma:
+        # Get the first address in the list of addresses
+        # that is not yet processed
+        addresses = json.loads(request.session['application_addresses'])
+        address = [
+            address for address in addresses if not address['processed']][0]
+
+        # Mark the address as processed and create a new key on the
+        # dictionary for storing the instance.
+        address['processed'] = True
+        address['instance'] = instance.pk
+
+        # Save the updated list of addresses to the session
+        request.session['application_addresses'] = json.dumps(addresses)
+
+        # Check if we need to process any other addresses
+        if [address for address in addresses if not address['processed']]:
+            return redirect(reverse('app:address_correction'))
+
+        # Check to see if a address with the type 'eligibility' exists in the
+        # request.session['application_addresses'].
+        eligibility_addresses = [
+            address for address in addresses if address['type'] == 'eligibility']
+        mailing_addresses = [
+            address for address in addresses if address['type'] == 'mailing']
+        if eligibility_addresses:
             try:
                 # Create and save a record for the user's address using
                 # the Address object
-                Address.objects.create(
-                    user=request.user,
-                    eligibility_address=instance,
-                    mailing_address=instance,
-                )
+                if mailing_addresses:
+                    Address.objects.create(
+                        user=request.user,
+                        eligibility_address=AddressRD.objects.get(
+                            id=eligibility_addresses[0]['instance']),
+                        mailing_address=AddressRD.objects.get(
+                            id=mailing_addresses[0]['instance']
+                        ),
+                    )
+                else:
+                    Address.objects.create(
+                        user=request.user,
+                        eligibility_address=AddressRD.objects.get(
+                            id=eligibility_addresses[0]['instance']),
+                        mailing_address=AddressRD.objects.get(
+                            id=eligibility_addresses[0]['instance']),
+                    )
             except IntegrityError:
                 # Update the user's address record if it already exists
                 # (e.g. if the user is updating their address)
-                address = Address.objects.get(user=request.user)
-                address.eligibility_address = instance
-                address.mailing_address = instance
+                if mailing_addresses:
+                    address = Address.objects.get(user=request.user)
+                    address.eligibility_address = AddressRD.objects.get(
+                        id=eligibility_addresses[0]['instance']
+                    )
+                    address.mailing_address = AddressRD.objects.get(
+                        id=mailing_addresses[0]['instance']
+                    )
+                else:
+                    address = Address.objects.get(user=request.user)
+                    address.eligibility_address = AddressRD.objects.get(
+                        id=eligibility_addresses[0]['instance']
+                    )
+                    address.mailing_address = AddressRD.objects.get(
+                        id=eligibility_addresses[0]['instance']
+                    )
 
-            return redirect(reverse("app:household"))
+                address.save()
+
+            return redirect(reverse('app:household'))
         else:
-            return redirect(reverse("app:not_available"))
+            # We're in update_mode here, so we're only updating the users
+            # mailing address. Then redirecting them to their settings page.
+            address = Address.objects.get(user=request.user)
+            address.mailing_address = AddressRD.objects.get(
+                id=mailing_addresses[0]['instance']
+            )
+            address.save()
+            return redirect(f"{reverse('app:user_settings')}?page_updated=address")
+
     except KeyError or TypeError:
         print("USPS couldn't figure it out!")
         # HTTP_REFERER sends this button press back to the same page
@@ -585,6 +689,9 @@ def take_usps_address(request):
 
 @set_update_mode
 def household(request):
+    if request.session.get('application_addresses'):
+        del request.session['application_addresses']
+
     if request.method == "POST":
         # Check if the update_mode exists in the POST data.
         update_mode = request.POST.get('update_mode')
@@ -704,7 +811,7 @@ def quick_apply(request, iq_program):
         "quick_apply.html",
         {
             'program_name': iq_program.program_name.title(),
-            'title': f"{iq_program.program_name.title()} Quick Apply Complete",
+            'title': f"{iq_program.program_name.title()} Application Complete",
             'in_gma_with_no_service': in_gma_with_no_service,
             'is_prod': django_settings.IS_PROD,
         },
@@ -757,17 +864,6 @@ def programs(request):
             'step': 4,
             'form_page_number': form_page_number,
             'title': "Programs",
-            'is_prod': django_settings.IS_PROD,
-        },
-    )
-
-
-def not_available(request):
-    return render(
-        request,
-        'not_available.html',
-        {
-            'title': "Address Not in Service Area",
             'is_prod': django_settings.IS_PROD,
         },
     )
@@ -943,13 +1039,21 @@ def files(request):
                     Q(user_id=request.user.id)
                 ).update(ami_range_min=lowest_ami['program__ami_threshold'], ami_range_max=lowest_ami['program__ami_threshold'])
 
-                # Check if the user's lowest_ami is <= 0.3. If it is, auto enroll them in the
-                # Grocery Rebate program by adding a record to the IQProgram table
-                if Decimal(float(lowest_ami['program__ami_threshold'])) <= 0.3:
-                    IQProgram.objects.create(
-                        user_id=request.user.id,
-                        program_id=1,
-                    )
+                # Get the user's eligibility address
+                eligibility_address = AddressRD.objects.filter(
+                    id=request.user.address.eligibility_address_id).first()
+
+                # Now get all of the IQ Programs
+                users_iq_programs = get_users_iq_programs(
+                    request.user.id, lowest_ami['program__ami_threshold'], eligibility_address)
+                # For every IQ program, check if the user should be automatically enrolled in it if the program
+                # has autoapply_ami_threshold set to True and the user's lowest_ami is <= the program's ami_threshold
+                for program in users_iq_programs:
+                    if program.autoapply_ami_threshold and Decimal(float(lowest_ami['program__ami_threshold'])) <= Decimal(float(program.ami_threshold)):
+                        IQProgram.objects.create(
+                            user_id=request.user.id,
+                            program_id=program.id,
+                        )
 
                 return redirect(reverse("app:broadcast"))
     else:
@@ -1019,6 +1123,7 @@ def user_settings(request):
             'is_prod': django_settings.IS_PROD,
             "routes": {
                 "account": reverse('app:account'),
+                "address": reverse('app:address'),
                 "household": reverse('app:household'),
             },
             "page_updated": json.dumps({'page_updated': page_updated}, cls=DjangoJSONEncoder),
@@ -1134,15 +1239,18 @@ def notify_remaining(request):
 
 
 def qualified_programs(request):
-    programs = get_users_iq_programs(
-        request.user.id, request.user.household.ami_range_max)
+    # Get the user's eligibility address
+    eligibility_address = AddressRD.objects.filter(
+        id=request.user.address.eligibility_address_id).first()
+    users_iq_programs = get_users_iq_programs(
+        request.user.id, request.user.household.ami_range_max, eligibility_address)
 
     order_by = request.GET.get('order_by')
     if order_by and order_by == 'eligible':
-        programs = sorted(programs, key=lambda x: (
+        users_iq_programs = sorted(users_iq_programs, key=lambda x: (
             x.status_for_user, x.status_for_user))
     elif order_by:
-        programs = sorted(programs, key=lambda x: (
+        users_iq_programs = sorted(users_iq_programs, key=lambda x: (
             x.status_for_user.lower() != order_by, x.status_for_user))
 
     return render(
@@ -1154,7 +1262,7 @@ def qualified_programs(request):
             "program_list_color": "var(--yellow)",
             "Settings_color": "white",
             "Privacy_Policy_color": "white",
-            "iq_programs": programs,
+            "iq_programs": users_iq_programs,
             'is_prod': django_settings.IS_PROD,
         },
     )
@@ -1166,47 +1274,6 @@ def feedback(request):
         if form.is_valid():
             form.save()
             return redirect(reverse("app:feedback_received"))
-        else:
-            print("form is not valid")
-    else:
-        form = FeedbackForm()
-    if request.user.eligibility.GenericQualified == QualificationStatus.PENDING.name or request.user.eligibility.GenericQualified == QualificationStatus.ACTIVE.name:
-        text = "Based on your information, you may qualify! Be on the lookout for an email or phone call."
-        text2 = "Based on your information you may also qualify for the city's Grocery Rebate Tax program!"
-        text3 = "By clicking on the link below, we can send your information over and quick apply for you."
-        text4 = "Click here to quick apply for Grocery Rebate Tax Program"
-        text5 = ""
-        text6 = "Click here to quick apply for Recreation"
-        text7 = "The Get FoCo Office is working on a timeline to respond to applications within the next two weeks."
-    else:
-        text = "Based on your info, you may be over the pre-tax income limit. At this time you do not qualify. If your income changes, please apply again."
-        text2 = ""
-        text3 = ""
-        text4 = ""
-        text5 = "Grocery Rebate Tax Program"
-        text6 = "Utilities Income-Qualified Assistance Program"
-        text7 = "The Get FoCo Office is working on a timeline to respond to applications within the next two weeks."
-
-    if request.user.eligibility.GRqualified == QualificationStatus.PENDING.name or request.user.eligibility.GRqualified == QualificationStatus.ACTIVE.name:
-        text2 = "Thank you for quick applying for the Grocery Rebate Tax Program."
-        text3 = "Expect an update within 3 weeks - check your email!"
-        text4 = ""
-
-    return render(
-        request,
-        'index.html',
-        context={
-            "program_string": text,
-            "program_string2": text2,
-            "program_string3": text3,
-            "program_string4": text4,
-            "program_string5": text5,
-            "program_string6": text6,
-            "program_string7": text7,
-            'title': "Feedback",
-            'is_prod': django_settings.IS_PROD,
-        },
-    )
 
 
 def feedback_received(request):
@@ -1226,9 +1293,12 @@ def dashboard(request):
     active_programs = 0
     pending_programs = 0
 
-    iq_programs = get_users_iq_programs(
-        request.user.id, request.user.household.ami_range_max)
-    for program in iq_programs:
+    # Get the user's eligibility address
+    eligibility_address = AddressRD.objects.filter(
+        id=request.user.address.eligibility_address_id).first()
+    users_iq_programs = get_users_iq_programs(
+        request.user.id, request.user.household.ami_range_max, eligibility_address)
+    for program in users_iq_programs:
         # If the program's visibility is 'block' or the status is `ACTIVE` or `PENDING`, it means the user is eligible for the program
         # so we'll count it for their total number of programs they qualify for
         if program.status_for_user == 'ACTIVE' or program.status_for_user == 'PENDING' or program.status_for_user == '':
@@ -1263,7 +1333,7 @@ def dashboard(request):
             "program_list_color": "white",
             "Settings_color": "white",
             "Privacy_Policy_color": "white",
-            "iq_programs": iq_programs,
+            "iq_programs": users_iq_programs,
             "qualified_programs": qualified_programs,
             "pending_programs": pending_programs,
             "active_programs": active_programs,
@@ -1277,8 +1347,11 @@ def dashboard(request):
 
 
 def programs_list(request):
-    programs = get_users_iq_programs(
-        request.user.id, request.user.household.ami_range_max)
+    # Get the user's eligibility address
+    eligibility_address = AddressRD.objects.filter(
+        id=request.user.address.eligibility_address_id).first()
+    users_iq_programs = get_users_iq_programs(
+        request.user.id, request.user.household.ami_range_max, eligibility_address)
     return render(
         request,
         'programs_list.html',
@@ -1290,7 +1363,7 @@ def programs_list(request):
             "Privacy_Policy_color": "white",
             'title': "Programs List",
             'is_prod': django_settings.IS_PROD,
-            'iq_programs': programs,
+            'iq_programs': users_iq_programs,
         },
     )
 

@@ -31,7 +31,6 @@ urlpatterns = [
     path('programs', views.programs, name='programs'),
 
     # Available/NotAvailable Digital Equity in your area
-    path('not_available', views.not_available, name='not_available'),
     path('quick_available', views.quick_available, name='quick_available'),
     path('quick_not_available', views.quick_not_available,
          name='quick_not_available'),
