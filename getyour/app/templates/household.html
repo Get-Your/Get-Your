@@ -85,7 +85,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <label class="labelword" style="position:relative">{{ form.number_persons_in_household.label }}</label> <a
             href="{% url 'app:household_definition' %}"><img src="{% static 'img/clipart249308.png' %}" alt="info"
                 style="width:min(4.5vw,20px);"></a>
-        {% if update_mode is True %}
+        {% if update_mode %}
         <input class="fill" type="text" name="{{ form.number_persons_in_household.name }}"
             id="{{ form.number_persons_in_household.id_for_label}}" value="{{ form.number_persons_in_household.value }}"
             style="height: 3vh;" required>
@@ -96,7 +96,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     <div class="footer">
-        {% if update_mode is True %}
+        {% if update_mode %}
         <input type="hidden" name="update_mode" value="true">
         <button type="submit">CONFIRM</button>
         {% else %}
