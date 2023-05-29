@@ -37,7 +37,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 from app.forms import HouseholdForm, UserForm, AddressForm, AddressLookupForm, FutureEmailForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm, FeedbackForm
-from app.backend import address_check, serialize_household_members, validate_usps, enroll_connexion_updates, model_to_dict, authenticate, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, blob_storage_upload, broadcast_email, broadcast_sms, broadcast_email_pw_reset
+from app.backend import address_check, serialize_household_members, validate_usps, enroll_connexion_updates, model_to_dict, authenticate, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, broadcast_email, broadcast_sms, broadcast_email_pw_reset
 from app.models import AddressRD, Address, EligibilityProgram, Household, IQProgram, User, IQProgramRD, EligibilityProgramRD
 from app.decorators import set_update_mode
 from app.qualification_status import QualificationStatus
@@ -1003,9 +1003,6 @@ def files(request):
                 instance.document_path.save(datetime.datetime.now(
                 ).isoformat() + "_" + str(fileAmount) + "_" + str(f), f)
                 fileNames.append(str(instance.document_path))
-                # Below is blob / storage code for Azure! Files automatically uploaded to the storage
-                f.seek(0)
-                blob_storage_upload(str(instance.document_path.url), f)
 
             # below the code to update the database to allow for MULTIPLE files AND change the name of the database upload!
             instance.document_path = str(fileNames)

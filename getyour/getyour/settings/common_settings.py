@@ -109,9 +109,10 @@ PHONENUMBER_DEFAULT_REGION = 'US'
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
 
-# Media path for file uploads
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'
+# Media storage and common Azure setting
+# Ref https://stackoverflow.com/a/54767932/5438550 for details
+AZURE_LOCATION = "" # Subdirectory-like prefix to the blob name
+DEFAULT_FILE_STORAGE = 'getyour.settings.custom_azure.AzureMediaStorage'
 
 # Logging
 str = str((datetime.now().time()))
