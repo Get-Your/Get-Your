@@ -1,0 +1,34 @@
+{% load static %}
+<div class="nav">
+    {% if display_back_link %}
+    <a id="backBtn" class="row" href="{{ back_link }}">
+        <div class="fadeSmall">
+            <img class="back-btn" src="{% static 'img/BackArrow-darkblue.svg' %}" alt="back">
+        </div>
+        <div class="fadeLarge">
+            <img class="back-btn" src="{% static 'img/BackArrow-white.svg' %}" alt="back">
+        </div>
+        <p style="font-weight: 700;">BACK</p>
+    </a>
+    {% endif %}
+
+    {% if display_save_link %}
+    <a class="p2 mr-5" href="{% url 'app:index' %}?app_status=in_progress">
+        Save & Logout
+    </a>
+    {% endif %}
+</div>
+
+<style>
+    .mr-5 {
+        margin-right: 5px;
+    }
+
+    .back-btn {
+        width:max(4.5vw, 16px);
+    }
+
+    #backBtn {
+        text-decoration: none;
+    }
+</style>

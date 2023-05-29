@@ -16,12 +16,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from decimal import Decimal
 import json
-import hashlib
 import datetime
 import urllib.parse
 import requests
+from enum import Enum
+from decimal import Decimal
 from azure.storage.blob import BlockBlobService
 from twilio.rest import Client
 from sendgrid.helpers.mail import Mail
@@ -36,6 +36,45 @@ from django.conf import settings
 from django.db.models import Q
 from django.core.serializers.json import DjangoJSONEncoder
 from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram
+
+
+form_page_number = 6
+
+# Use the following tag mapping for USPS standards for all functions
+tag_mapping = {
+    'Recipient': 'recipient',
+    'AddressNumber': 'address_2',
+    'AddressNumberPrefix': 'address_2',
+    'AddressNumberSuffix': 'address_2',
+    'StreetName': 'address_2',
+    'StreetNamePreDirectional': 'address_2',
+    'StreetNamePreModifier': 'address_2',
+    'StreetNamePreType': 'address_2',
+    'StreetNamePostDirectional': 'address_2',
+    'StreetNamePostModifier': 'address_2',
+    'StreetNamePostType': 'address_2',
+    'CornerOf': 'address_2',
+    'IntersectionSeparator': 'address_2',
+    'LandmarkName': 'address_2',
+    'USPSBoxGroupID': 'address_2',
+    'USPSBoxGroupType': 'address_2',
+    'USPSBoxID': 'address_2',
+    'USPSBoxType': 'address_2',
+    'BuildingName': 'address_1',
+    'OccupancyType': 'address_1',
+    'OccupancyIdentifier': 'address_1',
+    'SubaddressIdentifier': 'address_1',
+    'SubaddressType': 'address_1',
+    'PlaceName': 'city',
+    'StateName': 'state',
+    'ZipCode': 'zipcode',
+}
+
+
+class QualificationStatus(Enum):
+    NOTQUALIFIED = 'NOT QUALIFIED'
+    PENDING = 'PENDING'
+    ACTIVE = 'ACTIVE'
 
 
 def broadcast_sms(phone_Number):

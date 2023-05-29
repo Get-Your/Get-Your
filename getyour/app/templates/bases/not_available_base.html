@@ -1,4 +1,4 @@
-"""
+<!--
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
 Copyright (C) 2023
@@ -15,13 +15,26 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
-from django.apps import AppConfig
+-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
 
+{% include "partials/head.html" with title=title css="application" %}
 
-class AppConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'app'
+<body>
+    {% include "partials/environment_banner.html" with is_prod=is_prod db_env_str=db_env_str %}
 
-    def ready(self):
-        import app.signals
+    <div class="content spaceAround" style="padding: 0 0 0 2vw;">
+
+        <h1><b>Your address wasn't found in our service area, so we can't extend support to you.</b></h1>
+        <p style="margin-top: 2vh;">If you think this is in error, please press "Back to Address". For further help
+            please call: 970-416-8090.</p>
+    </div>
+</body>
+
+{% block footerdiv %}
+<div class="footer" style="width:100%">
+    <button onclick="location.href='{% url 'app:address' %}'"> BACK TO ADDRESS </button>
+</div>
+{% endblock %}

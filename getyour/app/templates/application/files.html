@@ -1,0 +1,290 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2023
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% extends "bases/application_base.html" %}
+{% load static %}
+
+{% block navigation %}
+{% url 'app:programs' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=True back_link=back_link %}
+{% endblock %}
+
+{% block body %}
+
+<div class="sideNav">
+    <div class="fadeSmall">
+        <img style="display: block; margin-left: auto; margin-right: auto; width: 50%;"
+            src="{% static 'img/CityLogoWhite-01.png' %}">
+        <h1><b>Almost Done!</b></h1>
+        <p><b>Why are you asking for these documents?</b></p>
+        <p>The documents that you upload will help verify your address and further determine which programs you may be
+            eligible for.</p>
+        <p>An identification card can be any of the following:
+        <ul>
+            <p style="color:white">Colorado Driver's License or Colorado Identification card</p>
+            <p style="color:white">A United States Military or Military Dependent's Identification Card</p>
+            <p style="color:white">A United States Coast Guard Merchant Mariner card </p>
+            <p style="color:white">A Native Tribal Document</p>
+            <p style="color:white">Copy of Applicant's Birth Certificate from any States</p>
+            <p style="color:white">United States Passport</p>
+            <p style="color:white">For additional accepted proof of identification, <a
+                    href="https://drive.google.com/file/d/1eyJ4sMmoEw2_lLJFVFlAzQcNFk8oF2Lj/view"
+                    style="color:var(--yellow)" target="_blank">please click here</a></p>
+        </ul>
+        </p>
+    </div>
+</div>
+
+{% if message %}
+<div style="color:red; margin-bottom: 5%;">{{ message }} </div>
+{% endif %}
+
+<div style="margin-top: 3vh;">
+    <p style="margin-bottom: 25px;">To get verified, please upload your</p>
+
+    <ul id="document_upload_list">
+        {% for program in eligiblity_programs %}
+        <li>{{program.program__friendly_name}}</li>
+        {% endfor %}
+    </ul>
+
+    <div style="margin-bottom: 25px;">
+        {% for program, program_was_selected in programs.items %}
+        {% if program_was_selected %}
+        {% for option in program_options %}
+        {% if option.document_description == program %}
+        <p style="font-weight: 800;">{{ option.document_description }}</p>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <p>Uploaded documents are secure & not shared with anyone outside of Fort Collins' income eligible programs. </p>
+
+</div>
+
+<div class=fadeLarge>
+    <h6> Upload Files Below:</h6>
+</div>
+<div class=fadeSmall>
+    <br>
+    <br>
+</div>
+<form action="{% url 'app:files' %}" method="post" autocomplete="false" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if form.errors %}
+    {% for error in field.errors %}
+    <div class="alert alert-danger">
+        <strong>{{ error|escape }}</strong>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="row" style="justify-content: space-between;">
+        <p style="font-weight: 800;">Files: <buttonQuestion id="fileTooltipBtn"><img id
+                    src="{% static 'img/clipart249308.png' %}" alt="back"
+                    style="width:min(4.5vw,20px); display: inline;"></buttonQuestion>
+        </p>
+        <select name="id" id="eligiblity_program">
+            {% for program in eligiblity_programs %}
+            <option class="option files" value="{{ program.id }}">{{ program.program__friendly_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="upload-btn-wrapper" style="width:100%; align-items: center; margin-top: 3vh;">
+        <button class="buttonFileUpload" id="toggleColorButton">
+            <div class="row" style="justify-content: space-between;">
+                <img src="{% static 'img/upload.svg' %}" alt="back" style="width:15vw; margin-right: 5vw;">
+                <div style="display:flex; flex-direction:column;align-items:flex-start;">
+                    <div class=fadeSmall>
+                        <p style="color:white; font-weight: 400;text-align: left; margin-bottom: 5px;">Upload Documents:
+                            Upload multiple files by pressing Ctrl and clicking each file. </p>
+                    </div>
+                    <div class=fadeLarge>
+                        <p style="color:white; font-weight: 400;text-align: left; margin-bottom: 5px;">Click Here to
+                            Upload Documents </p>
+                    </div>
+                    <p style="color:white;font-weight: 200;">PDF, PNG or JPEG</p>
+                </div>
+            </div>
+        </button>
+        <input type="file" name="document_path" id="document_path" required multiple>
+    </div>
+
+    <div class="footer">
+        <button type="submit"> CONTINUE </button>
+    </div>
+</form>
+
+<style>
+    /* This is work around for styling the sweet alert correctly
+    We're applying styles directly to the body element, so we have
+    to override the body styles with specific selectors. */
+    .swal2-icon-show {
+        overflow-x: visible;
+    }
+
+    li {
+        font-weight: bold;
+    }
+
+    .buttonFileUpload {
+        margin: auto;
+        width: 100%;
+        font-family: Montserrat;
+        font-size: 3.2vh;
+        color: white;
+        padding: 3.5vh;
+        background-color: var(--darkblue);
+        border: 1px solid white;
+        border-radius: 2vh;
+        color: white;
+        height: auto;
+        font-size: max(3.8vw, 16px);
+        font-weight: 700;
+    }
+
+    .upload-btn-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+    }
+
+    .upload-btn-wrapper input[type=file] {
+        font-size: 100px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+    }
+
+    @media screen and (min-width: 768px) {
+        li {
+            font-size: x-large;
+        }
+
+        #eligiblity_program {
+            background-color: white;
+        }
+
+        #document_upload_list {
+            color: #13467D;
+        }
+    }
+
+    @media screen and (max-width: 767px) {
+        li {
+            font-size: medium;
+        }
+
+        #document_upload_list {
+            color: #ffffff;
+        }
+    }
+
+    /* Remove default anchor tag styling for the #backBtn */
+    #backBtn {
+        text-decoration: none;
+    }
+</style>
+
+<script>
+    var fileUploadSuccessful = JSON.parse('{{ file_upload|escapejs }}')['success_status'];
+
+    $(document).ready(function () {
+        // Remove the onclick attr from the backBtn
+        $("#backBtn").removeAttr("onclick");
+        $("#backBtn").attr("href", "{% url 'app:programs' %}");
+
+        var fileUploadButton = $(".upload-btn-wrapper");
+        $("input[type='file']").css("height", fileUploadButton.height());
+
+        $(window).resize(function () {
+            var fileUploadButtonHeight = fileUploadButton.height();
+            $("input[type='file']").css("height", fileUploadButtonHeight);
+        });
+
+        $("#fileTooltipBtn").click(function () {
+            var modalContent = `
+                <div class ="fadeSmall">
+                    <p style="color: var(--darkblue);">If you are uploading multiple files, be sure to click and <b>hold</b> the Ctrl key on your keyboard and click on each file. See an example below!</p>
+                </div>
+
+                <div class ="fadeLarge">
+                    <p style="color: var(--darkblue);">Be sure to take your pictures first and then choose gallery or similar and long press or hold on each item to upload multiple files. See an example below!</p>
+                </div>
+
+                <div class="fadeSmall">
+                    <img src="{% static 'img/step_5_desktop_instructions.gif' %}">
+                </div>
+                <div class="fadeLarge">
+                    <img src="{% static 'img/step_5_mobile_instructions.gif' %}">
+                </div>
+            `;
+            Swal.fire({
+                title: 'Uploading Multiple Files',
+                html: modalContent,
+                confirmButtonColor: '#13467D',
+                confirmButtonText: 'Continue'
+            })
+        });
+
+        $("#document_path").change(function (event) {
+            $("#toggleColorButton").css("background-color", "green");
+        });
+
+        if (fileUploadSuccessful === null) {
+            // The user has come to the page for the first time
+            // or has refreshed the page
+            Swal.fire({
+                title: 'File Upload',
+                html: "<img src=\"{% static 'img/sample_documents.png' %}\" alt=\"Sample Documents\" style=\"margin-bottom:15px\"><p style=\"color:#13467D\">Please upload a card, a copy of an email, or a letter from qualifying programs. Take a screen shot like the example of the EBT card. Please make sure the names and information are clear.</p>",
+                confirmButtonColor: '#13467D',
+                confirmButtonText: 'Continue'
+            })
+        } else if (fileUploadSuccessful) {
+            Swal.fire({
+                title: 'File Upload',
+                html: "<img src=\"{% static 'img/sample_documents.png' %}\" alt=\"Sample Documents\" style=\"margin-bottom:15px\"><p style=\"color:#13467D\">Please upload a card, a copy of an email, or a letter from qualifying programs. Take a screen shot like the example of the EBT card. Please make sure the names and information are clear.</p>",
+                confirmButtonColor: '#13467D',
+                confirmButtonText: 'Continue'
+            })
+        } else if (fileUploadSuccessful) {
+            Swal.fire({
+                title: 'Your file has been uploaded!',
+                html: "<img src=\"{% static 'img/sample_documents.png' %}\" alt=\"Sample Documents\" style=\"margin-bottom:15px\"><p style=\"color:#13467D\">Please upload a card, a copy of an email, or a letter from qualifying programs. Take a screen shot like the example of the EBT card. Please make sure the names and information are clear.</p>",
+                title: 'Your file has been uploaded!',
+                html: "<img src=\"{% static 'img/sample_documents.png' %}\" alt=\"Sample Documents\" style=\"margin-bottom:15px\"><p style=\"color:#13467D\">Please upload a card, a copy of an email, or a letter from qualifying programs. Take a screen shot like the example of the EBT card. Please make sure the names and information are clear.</p>",
+                icon: 'success',
+                confirmButtonColor: '#13467D',
+                confirmButtonText: 'Continue'
+            })
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: 'File is not a valid file type. Please upload either JPG, PNG, OR PDF.',
+                icon: 'error',
+                confirmButtonColor: '#13467D',
+                confirmButtonText: 'Continue'
+            })
+        }
+    });
+</script>
+{% endblock %}

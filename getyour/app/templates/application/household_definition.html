@@ -1,0 +1,68 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2023
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+{% include "partials/head.html" with title="Household Definition" css="application" %}
+
+<body>
+    {% include "partials/environment_banner.html" with is_prod=is_prod db_env_str=db_env_str %}
+
+    <div class="fadeLarge">
+        <div class="nav">
+            <a class="row" onClick="window.history.back();return false;">
+                <div class="fadeLarge"><img src="{% static 'img/BackArrow-white.svg' %}" alt="back"
+                        style="width:8vw; margin-right: 5px;"></div>
+                <div class="fadeSmall"><img src="{% static 'img/BackArrow-darkblue.svg' %}" alt="back"
+                        style="width:8vw; margin-right: 5px;"></div>
+                <p style="font-weight: 700;">BACK</p>
+            </a>
+
+        </div>
+    </div>
+
+    <div class="fadeSmall">
+        <div class="navClean">
+            <a class="row" onClick="window.history.back();return false;">
+                <div class="fadeLarge"><img src="{% static 'img/BackArrow-white.svg' %}" alt="back"
+                        style="width:8vw; margin-right: 5px;"></div>
+                <div class="fadeSmall"><img src="{% static 'img/BackArrow-darkblue.svg' %}" alt="back"
+                        style="width:8vw; margin-right: 5px;"></div>
+                <p style="font-weight: 700;">BACK</p>
+            </a>
+        </div>
+    </div>
+
+    <div class="content spaceAround" style="padding: 0 0 0 3vw;">
+        <div>
+            <p>
+                <b>
+                    "Household" means the applicant and any other people claimed on your federal tax return. This could
+                    include your spouse, and your children by birth or adoption, step children, foster children and
+                    children under legal guardianship who live with you in your home as submitted on your federal income
+                    tax return.
+                </b>
+            </p>
+        </div>
+    </div>
+
+</body>
+
+</html>
