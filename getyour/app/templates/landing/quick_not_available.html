@@ -16,10 +16,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-{% extends "bases/not_available_base.html" %}
+{% extends "bases/availability_base.html" %}
 
-{% block backurl %}
-<a class="row" href="{% url 'app:index' %}#Check Availability">
-    <p style=" font-weight: 700;">BACK</p>
-</a>
+{% block navigation %}
+{% url 'app:index' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link|add:"#Check Availability" %}
+{% endblock %}
+
+{% block content %}
+<h1><b>Your address wasn't found in our service area, so we can't extend support to you.</b></h1>
+<p style="margin-top: 2vh;">If you think this is in error, please call: 970-416-8090.</p>
+{% endblock %}
+
+{% block footer %}
 {% endblock %}

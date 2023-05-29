@@ -16,12 +16,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-{% extends "bases/available_base.html" %}
+{% extends "bases/availability_base.html" %}
 
-{% block backurl %}
-<a href="{% url 'app:index' %}" style="margin-left:auto; margin-right:10px; text-decoration: none;">
-    <p class=p2 alt="back" style="margin-left:auto; margin-right: 5px;" onclick="location.href='{% url 'app:index' %}'">
-        EXIT
-    </p>
-</a>
+{% block navigation %}
+{% url 'app:index' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link|add:"#Check Availability" %}
+{% endblock %}
+
+{% block content %}
+<h1><b>Your address is in the Get FoCo service area and Connexion is available and ready!</b></h1>
+<p style="margin-top: 2vh;">Click the continue button below to start your application now!</p>
+{% endblock %}
+
+{% block footer %}
+<a class="footer-btn" href="{% url 'app:get_ready' %}">CONTINUE</a>
 {% endblock %}

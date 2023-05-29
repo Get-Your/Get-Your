@@ -19,37 +19,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% load static %}
 <!DOCTYPE html>
 <html lang="en" style="background-color: white;">
-<!--Get the various stylesheets I need like my fonts and CSS-->
 
-<head>
-    <title>Privacy Policy</title>
-    <link href="{% static 'css/styles_app.css' %}" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&display=swap" rel="stylesheet">
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SL59NNQRH0"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'G-SL59NNQRH0');
-    </script>
-</head>
+{% include "partials/head.html" with title="Privacy Policy" css="application" %}
 
 <body style="background-color: white;">
-
-    {% if is_prod is not True %}
-    {% if is_prod is False %}
-    {% firstof "TESTING" as db_env_str %}
-    {% else %}
-    {% firstof "STAGING" as db_env_str %}
-    {% endif %}
-    <div style="background-color: #FF5E5E; text-align: center; font-size: x-large; ">WARNING: THIS SITE IS FOR {{ db_env_str }} ONLY<br>To enroll in Get FoCo, go to <a href="https://getfoco.fcgov.com"
-            target="_blank">https://getfoco.fcgov.com</a> instead</div>
-    {% endif %}
+    {% include "partials/environment_banner.html" with is_prod=is_prod db_env_str=db_env_str %}
 
     {% if user_logged_in %}
     <div class=nav>
@@ -66,9 +40,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     {% endif %}
     <div class="content spaceAround">
         <h1 style="color:var(--yellow)"><b>Privacy Policy</b></h1>
-        <p style="color:#000000; margin-top: 2vh;"> Your privacy is important to us. We will only share your
+        <p style="color:#000000; margin-top: 2vh;">
+            Your privacy is important to us. We will only share your
             information, without your consent, with other City of Fort Collins income eligible services to evaluate your
-            eligibility and make applying for these programs easier. </p>
+            eligibility and make applying for these programs easier.
+        </p>
 
     </div>
 </body>

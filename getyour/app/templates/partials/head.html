@@ -23,11 +23,11 @@
     <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
     <title> {{ title }}</title>
     {% if css == "dashboard" %}
-    <link href="{% static 'css/styles_dashboard.css' %}" rel="stylesheet">
+    <link href="{% static 'css/styles_dashboard.css' %}?cache_breaker={% now 'YmdHmmss' %}" rel="stylesheet">
     {% elif css == "application" %}
-    <link href="{% static 'css/styles_app.css' %}" rel="stylesheet">
+    <link href="{% static 'css/styles_app.css' %}?cache_breaker={% now 'YmdHmmss' %}" rel="stylesheet">
     {% else %}
-    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    <link href="{% static 'css/styles.css' %}?cache_breaker={% now 'YmdHmmss' %}" rel="stylesheet">
     {% endif %}
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&display=swap" rel="stylesheet">

@@ -18,37 +18,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 {% extends "bases/availability_base.html" %}
 {% load static %}
-{% block backurl %}
-<a class="row" href="{% url 'app:index' %}" style="text-decoration: none;">
-    <div class="fadeLarge">
-        <img class="back-btn" src="{% static 'img/BackArrow-white.svg' %}" alt="back">
-    </div>
-    <div class="fadeSmall">
-        <img class="back-btn" src="{% static 'img/BackArrow-darkblue.svg' %}" alt="back">
-    </div>
-    <p style="font-weight: 700;">BACK</p>
-</a>
 
-<style>
-    .nav {
-        display: flex;
-        justify-content: space-between;
-        width: 70%;
-        padding: 5% 5%;
-        margin-left: 0px;
-    }
-
-    .back-btn {
-        width: 8vw;
-        margin-right: 5px;
-    }
-</style>
+{% block navigation %}
+{% url 'app:index' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
 {% endblock %}
 
 {% block content %}
 <h1 style="overflow: hidden; padding: auto;">
-    <b>Your address is covered by Get FoCo but Connexion is not quite
-        ready.</b>
+    <b>
+        Your address is covered by Get FoCo but Connexion is not quite
+        ready.
+    </b>
 </h1>
 <p style="margin-top: 2vh;">
     Continue to the application to apply for Reduced-Rate Connexion. Once you've applied you'll also be able to
@@ -56,8 +37,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </p>
 {% endblock %}
 
-{% block footerdiv %}
-<div class="footer" style="width:100%">
-    <button onclick="location.href='{% url 'app:account' %}'"> CONTINUE </button>
-</div>
+{% block footer %}
+<a class="footer-btn" href="{% url 'app:get_ready' %}">CONTINUE</a>
 {% endblock %}
