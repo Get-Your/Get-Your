@@ -23,7 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% include "partials/head.html" with title=title css="dashboard" %}
 
 <body>
-    {% include "partials/environment_banner.html" is_prod=is_prod db_env_str=db_env_str %}
+    {% include "partials/environment_banner.html" with is_prod=is_prod db_env_str=db_env_str %}
 
     <div style="display: flex; justify-content: flex-end;padding: 10px; " id="google_translate_element"></div>
     
@@ -128,6 +128,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             });
         });
     </script>
+
+    <style>
+        @media screen and (min-width: 768px) {
+            .sideNav {
+                width: 320px;
+                float: left;
+            }
+        }
+    </style>
 </body>
 
 </html>

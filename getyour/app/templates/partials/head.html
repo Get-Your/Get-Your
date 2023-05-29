@@ -23,7 +23,7 @@
     <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
     <title> {{ title }}</title>
     {% if css == "dashboard" %}
-    <link href="{% static 'css/styles_dashboard.css' %}?cache_breaker={% now 'YmdHmmss' %}" rel="stylesheet">
+    <link href="{% static 'css/dashboard_styles.css' %}?cache_breaker={% now 'YmdHmmss' %}" rel="stylesheet">
     {% elif css == "application" %}
     <link href="{% static 'css/styles_app.css' %}?cache_breaker={% now 'YmdHmmss' %}" rel="stylesheet">
     {% else %}
@@ -32,6 +32,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&display=swap" rel="stylesheet">
 
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jshashes/1.0.7/hashes.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.3.min.js"
         integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
     <script src="https://kit.fontawesome.com/e9a96b76c2.js" crossorigin="anonymous"></script>

@@ -25,13 +25,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% endblock %}
 
 {% block body %}
-<div class="sideNav">
-    <div class="fadeSmall">
-        <img style="display: block; margin-left: auto; margin-right: auto; width: 50%;"
-            src="{% static 'img/CityLogoWhite-01.png' %}">
-        <h1> <b>Provide your address so we can find programs you may qualify for!</b></h1>
-    </div>
-</div>
+<p id="application_step" class="application-step">STEP {{ step }} OF {{ form_page_number }}</p>
+
+{% with header="Provide your address so we can find programs you may qualify for!" %}
+{% include "partials/side_content.html" with header=header %}
+{% endwith %}
 
 {% if update_mode is None %}
 <h2 style="font-weight: 700; margin:5vh 0"> Where do you live? </h2>

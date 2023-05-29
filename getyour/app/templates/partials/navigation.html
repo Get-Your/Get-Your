@@ -1,7 +1,7 @@
 {% load static %}
 <div class="nav">
     {% if display_back_link %}
-    <a id="backBtn" class="row" href="{{ back_link }}">
+    <a id="back-btn" class="row" href="{{ back_link }}">
         <div class="fadeSmall">
             <img class="back-btn" src="{% static 'img/BackArrow-darkblue.svg' %}" alt="back">
         </div>
@@ -13,8 +13,8 @@
     {% endif %}
 
     {% if display_save_link %}
-    <a class="p2 mr-5" href="{% url 'app:index' %}?app_status=in_progress">
-        Save & Logout
+    <a id="save-btn" class="p2 mr-5" href="{% url 'app:index' %}?app_status=in_progress">
+        <p>Save & Logout</p>
     </a>
     {% endif %}
 </div>
@@ -28,7 +28,13 @@
         width:max(4.5vw, 16px);
     }
 
-    #backBtn {
+    #save-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #back-btn, #save-btn {
         text-decoration: none;
     }
 </style>

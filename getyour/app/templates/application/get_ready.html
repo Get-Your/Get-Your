@@ -21,10 +21,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 {% block navigation %}
 {% url 'app:index' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=True back_link=back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
 {% endblock %}
 
 {% block body %}
+
+{% with header="You're on your way to greatness!" description="Get FoCo has great things in store for you." %}
+{% include "partials/side_content.html" with header=header description=description %}
+{% endwith %}
+
 <h2 style="font-weight: 700; margin:5vh 0"> Before we get started... </h2>
 
 <p>To speed up the process, if you have any of the <b>necessary</b> items below, it'd be handy to have them ready now!
@@ -49,16 +54,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     Fort Collins income eligible services to evaluate your eligibility and make applying for these programs easier.
 </p>
 
-<div class="sideNav">
-    <div class="fadeSmall">
-        <img style="display: block; margin-left: auto; margin-right: auto; width: 50%;"
-            src="{% static 'img/CityLogoWhite-01.png' %}">
-        <h1><b>You're on your way to greatness!</b></h1>
-        <p>Get FoCo has great things in store for you.</p>
-    </div>
-</div>
-
 <div class="footer">
+    <!-- <a class="footer-btn" href="{% url 'app:account' %}">APPLY</a> -->
     <button onclick="location.href='{% url 'app:account' %}'"> APPLY </button>
 </div>
 
