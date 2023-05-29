@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import usaddress
-from django.conf import settings as django_settings
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import logout
 from app.forms import AddressLookupForm
@@ -121,7 +120,6 @@ def index(request):
             'landing/index.html',
             {
                 'form': AddressLookupForm(),
-                'is_prod': django_settings.IS_PROD,
                 'in_progress_app_saved': in_progress_app_saved,
                 'iq_programs': IQProgramRD.objects.filter(is_active=True),
             },
@@ -138,7 +136,6 @@ def privacy_policy(request):
         request,
         'landing/privacy_policy.html',
         {
-            'is_prod': django_settings.IS_PROD,
             'user_logged_in': user_logged_in,
         },
     )
@@ -150,7 +147,6 @@ def programs_info(request):
         'landing/programs_info.html',
         {
             'title': "Programs List",
-            'is_prod': django_settings.IS_PROD,
             'iq_programs': IQProgramRD.objects.all(),
         },
     )
@@ -162,7 +158,6 @@ def quick_available(request):
         'landing/quick_available.html',
         {
             'title': "Quick Connexion Available",
-            'is_prod': django_settings.IS_PROD,
         },
     )
 
@@ -173,7 +168,6 @@ def quick_not_available(request):
         'landing/quick_not_available.html',
         {
             'title': "Quick Connexion Not Available",
-            'is_prod': django_settings.IS_PROD,
         },
     )
 
@@ -184,7 +178,6 @@ def quick_not_found(request):
         'landing/quick_not_found.html',
         {
             'title': "Quick Connexion Not Found",
-            'is_prod': django_settings.IS_PROD,
         },
     )
 
@@ -195,6 +188,5 @@ def quick_coming_soon(request):
         'landing/quick_coming_soon.html',
         {
             'title': "Quick Connexion Coming Soon",
-            'is_prod': django_settings.IS_PROD,
         },
     )

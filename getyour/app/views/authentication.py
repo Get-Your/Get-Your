@@ -16,7 +16,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.conf import settings as django_settings
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login, get_user_model, authenticate
 from django.http import HttpResponse
@@ -65,7 +64,6 @@ def password_reset_request(request):
         {
             "password_reset_form": password_reset_form,
             'title': "Password Reset Request",
-            'is_prod': django_settings.IS_PROD,
         },
     )
 
@@ -98,7 +96,6 @@ def login_user(request):
                 {
                     "message": "Invalid username and/or password",
                     'title': "Login",
-                    'is_prod': django_settings.IS_PROD,
                 },
             )
 
@@ -119,6 +116,5 @@ def login_user(request):
             "authentication/login.html",
             {
                 'title': "Login",
-                'is_prod': django_settings.IS_PROD,
             },
         )

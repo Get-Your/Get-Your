@@ -18,7 +18,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import json
 from django.core.serializers.json import DjangoJSONEncoder
-from django.conf import settings as django_settings
 from django.shortcuts import render, redirect, reverse
 from app.forms import FeedbackForm
 from app.backend import address_check, get_users_iq_programs
@@ -77,7 +76,6 @@ def dashboard(request):
             "active_programs": active_programs,
             "clientName": request.user.first_name,
             "clientEmail": request.user.email,
-            'is_prod': django_settings.IS_PROD,
             'proxy_viewed_dashboard': proxy_viewed_dashboard,
             'badge_visible': request.user.household.is_income_verified,
         },
@@ -122,7 +120,6 @@ def quick_apply(request, iq_program):
             'program_name': iq_program.program_name.title(),
             'title': f"{iq_program.program_name.title()} Application Complete",
             'in_gma_with_no_service': in_gma_with_no_service,
-            'is_prod': django_settings.IS_PROD,
         },
     )
 
@@ -148,7 +145,6 @@ def user_settings(request):
             "name": request.user.first_name,
             "lastName": request.user.last_name,
             "email": request.user.email,
-            'is_prod': django_settings.IS_PROD,
             "routes": {
                 "account": reverse('app:account'),
                 "address": reverse('app:address'),
@@ -184,7 +180,6 @@ def qualified_programs(request):
             "Settings_color": "white",
             "Privacy_Policy_color": "white",
             "iq_programs": users_iq_programs,
-            'is_prod': django_settings.IS_PROD,
         },
     )
 
@@ -203,7 +198,6 @@ def feedback_received(request):
         "dashboard/feedback_received.html",
         {
             'title': "Feedback Received",
-            'is_prod': django_settings.IS_PROD,
         },
     )
 
@@ -224,7 +218,6 @@ def programs_list(request):
             "Settings_color": "white",
             "Privacy_Policy_color": "white",
             'title': "Programs List",
-            'is_prod': django_settings.IS_PROD,
             'iq_programs': users_iq_programs,
         },
     )

@@ -23,7 +23,6 @@ import datetime
 import logging
 from decimal import Decimal
 from urllib.parse import urlencode
-from django.conf import settings as django_settings
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login
 from django.http import QueryDict, HttpResponseRedirect, JsonResponse
@@ -44,7 +43,6 @@ def notify_remaining(request):
         {
             "next_page": page,
             "title": "Notify Remaining Steps",
-            "is_prod": django_settings.IS_PROD,
         },
     )
 
@@ -53,9 +51,6 @@ def household_definition(request):
     return render(
         request,
         "application/household_definition.html",
-        {
-            "is_prod": django_settings.IS_PROD,
-        },
     )
 
 
@@ -69,7 +64,6 @@ def get_ready(request):
             'step': 0,
             'form_page_number': form_page_number,
             'title': "Ready some Necessary Documents",
-            'is_prod': django_settings.IS_PROD,
             'eligiblity_programs': eligiblity_programs,
         },
     )
@@ -155,7 +149,6 @@ def account(request):
             'step': 1,
             'form_page_number': form_page_number,
             'title': "Account",
-            'is_prod': django_settings.IS_PROD,
             'update_mode': request.session.get('update_mode'),
         },
     )
@@ -237,7 +230,6 @@ def address(request):
                 'step': 2,
                 'form_page_number': form_page_number,
                 'title': "Address",
-                'is_prod': django_settings.IS_PROD,
                 'update_mode': request.session.get('update_mode'),
             },
         )
@@ -431,7 +423,6 @@ def address_correction(request):
             'program_string': program_string,
             'program_string_2': program_string_2,
             'title': "Address Correction",
-            'is_prod': django_settings.IS_PROD,
         },
     )
 
@@ -605,7 +596,6 @@ def household(request):
             'step': 3,
             'form_page_number': form_page_number,
             'title': "Household",
-            'is_prod': django_settings.IS_PROD,
             'update_mode': request.session.get('update_mode'),
         },
     )
@@ -646,7 +636,6 @@ def household_members(request):
             'form': form,
             'form_page_number': form_page_number,
             'title': "Household Members",
-            'is_prod': django_settings.IS_PROD,
             'update_mode': request.session.get('update_mode'),
             'form_data': json.dumps(household_info) if household_info else [],
         },
@@ -699,7 +688,6 @@ def programs(request):
             'step': 4,
             'form_page_number': form_page_number,
             'title': "Programs",
-            'is_prod': django_settings.IS_PROD,
         },
     )
 
@@ -757,7 +745,6 @@ def files(request):
                             'form_page_number': form_page_number,
                             'title': "Files",
                             'file_upload': json.dumps({'success_status': False}),
-                            'is_prod': django_settings.IS_PROD,
                         },
                     )
 
@@ -788,7 +775,6 @@ def files(request):
                         'form_page_number': form_page_number,
                         'title': "Files",
                         'file_upload': json.dumps({'success_status': True}),
-                        'is_prod': django_settings.IS_PROD,
                     },
                 )
             else:
@@ -832,7 +818,6 @@ def files(request):
                 'form_page_number': form_page_number,
                 'title': "Files",
                 'file_upload': json.dumps({'success_status': None}),
-                'is_prod': django_settings.IS_PROD,
             },
         )
 
@@ -858,6 +843,5 @@ def broadcast(request):
             'step': 6,
             'form_page_number': form_page_number,
             'title': "Broadcast",
-            'is_prod': django_settings.IS_PROD,
         },
     )
