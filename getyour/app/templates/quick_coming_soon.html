@@ -16,19 +16,39 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-{% extends 'coming_soon_base.html' %}
-
+{% extends 'availability_base.html' %}
+{% load static %}
 {% block backurl %}
-<a href="{% url 'app:index' %}" style="margin-left:auto; margin-right:10px; text-decoration: none;">
-    <p class=p2 alt="back" style="margin-left:auto; margin-right: 5px;" onclick="location.href='{% url 'app:index' %}'">
-        EXIT</p>
+<a class="row" href="{% url 'app:index' %}" style="text-decoration: none;">
+    <div class="fadeLarge"><img src="{% static 'img/BackArrow-white.svg' %}" alt="back"
+            style="width:8vw; margin-right: 5px;"></div>
+    <div class="fadeSmall"><img src="{% static 'img/BackArrow-darkblue.svg' %}" alt="back"
+            style="width:8vw; margin-right: 5px;"></div>
+    <p style="font-weight: 700;">BACK</p>
 </a>
+
+<style>
+    .nav {
+        display: flex;
+        justify-content: space-between;
+        width: 70%;
+        padding: 5% 5%;
+        margin-left: 0px;
+    }
+</style>
 {% endblock %}
 
-{% block maintext %}
+{% block content %}
 <h1 style="overflow: hidden; padding: auto;"><b>Your address is covered by Get FoCo but Connexion is not quite
         ready.</b></h1>
-<p style="margin-top: 2vh;">Subscribe for updates when Connexion will be available for your address, and/or continue to
-    the application to pre-enroll. If the box is checked, you'll be enrolled in Connexion updates once you Quick Apply
-    for Reduced-Rate Connexion after completing the application.</p>
+<p style="margin-top: 2vh;">
+    Continue to the application to apply for Reduced-Rate Connexion. Once you've applied you'll also be able to
+    sign up for updates on when Connexion will be available at your address.
+</p>
+{% endblock %}
+
+{% block footerdiv %}
+<div class="footer" style="width:100%">
+    <button onclick="location.href='{% url 'app:account' %}'"> CONTINUE </button>
+</div>
 {% endblock %}

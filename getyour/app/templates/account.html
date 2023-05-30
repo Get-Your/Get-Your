@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% load static %}
 {% block body %}
 
-{% if update_mode is True %}
+{% if update_mode %}
 <h2 style="font-weight: 700; margin:5vh 0"> Update Your Account Information</h2>
 {% else %}
 <h2 style="font-weight: 700; margin:5vh 0"> Create an Account </h2>
@@ -118,7 +118,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     <div class="footer">
-        {% if update_mode is True %}
+        {% if update_mode %}
         <input type="hidden" name="update_mode" value="true">
         <button type="submit"> CONFIRM </button>
         {% else %}

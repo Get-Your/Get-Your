@@ -33,6 +33,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 <div class="iq_program_container">
+    {% if my_list|length == 0 %}
+    <p style="margin: 0px 25px 0px 25px; text-align: center;">It looks like you you don't qualify for any programs. If
+        you think this is a
+        mistake, please <a
+            href="mailto: GetFoCo@fcgov.com?subject=Income Qualification Question - Get FoCo&body=Hello Get FoCo team, I seem to be having an issue with qualification, can you help clarify the qualifications for the available progrms?"
+            style="font-style: none;">contact us</a>.</p>
+    {% else %}
     {% for program in iq_programs %}
     <div class="modulequickApply">
         <div class="row" style="margin:0; width:100%">
@@ -45,24 +52,32 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <a href="#" onclick="return false;" id="spinPrivacyAcknowledgement"
                 style="text-decoration: none; text-align: center;">
                 <div class="quickapply link"
-                    style="background-color: {{ program.button.color }}; color: {{ program.button.textColor }}">{{ program.button.text }}</div>
+                    style="background-color: {{ program.button.color }}; color: {{ program.button.textColor }}">
+                    {{ program.button.text }}
+                </div>
             </a>
             {% else %}
             <a style="text-decoration: none; text-align: center;">
                 <div class="quickapply link"
-                    style="background-color: {{ program.button.color }}; color: {{ program.button.textColor }}">{{ program.button.text }}</div>
+                    style="background-color: {{ program.button.color }}; color: {{ program.button.textColor }}">
+                    {{ program.button.text }}
+                </div>
             </a>
             {% endif %}
             {% else %}
             {% if program.status_for_user == '' %}
             <a href="{{ program.quick_apply_link }}" style="text-decoration: none">
                 <div class="quickapply link"
-                    style="background-color: {{ program.button.color }}; color: {{ program.button.textColor }}">{{ program.button.text }}</div>
+                    style="background-color: {{ program.button.color }}; color: {{ program.button.textColor }}">
+                    {{ program.button.text }}
+                </div>
             </a>
             {% else %}
             <a style="text-decoration: none">
                 <div class="quickapply link"
-                    style="background-color: {{ program.button.color }}; color: {{ program.button.textColor }}">{{ program.button.text }}</div>
+                    style="background-color: {{ program.button.color }}; color: {{ program.button.textColor }}">
+                    {{ program.button.text }}
+                </div>
             </a>
             {% endif %}
             {% endif %}
@@ -79,6 +94,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
     {% endfor %}
+    {% endif %}
 </div>
 
 <div class="extraspace"></div>

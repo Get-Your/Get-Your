@@ -31,7 +31,6 @@ urlpatterns = [
     path('programs', views.programs, name='programs'),
 
     # Available/NotAvailable Digital Equity in your area
-    path('not_available', views.not_available, name='not_available'),
     path('quick_available', views.quick_available, name='quick_available'),
     path('quick_not_available', views.quick_not_available,
          name='quick_not_available'),
@@ -43,8 +42,6 @@ urlpatterns = [
     # Create the IQ Program Quick Apply Page that has a parameter for the iq_program
     path('quick_apply/<str:iq_program>',
          views.quick_apply, name='quick_apply'),
-
-    path('coming_soon', views.coming_soon, name='coming_soon'),
     path('privacy_policy', views.privacy_policy, name='privacy_policy'),
     path('household_definition', views.household_definition,
          name='household_definition'),

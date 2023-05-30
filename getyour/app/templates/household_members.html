@@ -47,7 +47,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     {% endfor %}
 
     <div class="footer">
-        {% if update_mode is True %}
+        {% if update_mode %}
         <input type="hidden" name="update_mode" value="true">
         <button type="submit"> CONFIRM </button>
         {% else %}
