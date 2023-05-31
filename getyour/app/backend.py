@@ -22,7 +22,6 @@ import urllib.parse
 import requests
 from enum import Enum
 from decimal import Decimal
-from azure.storage.blob import BlockBlobService
 from twilio.rest import Client
 from sendgrid.helpers.mail import Mail
 from sendgrid import SendGridAPIClient
@@ -412,20 +411,6 @@ def serialize_household_members(request):
     household_info = json.loads(json.dumps(
         {'persons_in_household': household_members}, cls=DjangoJSONEncoder))
     return household_info
-
-
-def blob_storage_upload(filename, file):
-    blob_service_client = BlockBlobService(
-        account_name=settings.BLOB_STORE_NAME,
-        account_key=settings.BLOB_STORE_KEY,
-        endpoint_suffix=settings.BLOB_STORE_SUFFIX,
-    )
-
-    blob_service_client.create_blob_from_bytes(
-        container_name=settings.USER_FILES_CONTAINER,
-        blob_name=filename,
-        blob=file.read(),
-    )
 
 
 def authenticate(username=None, password=None):

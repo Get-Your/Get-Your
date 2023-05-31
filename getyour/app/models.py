@@ -356,7 +356,7 @@ class EligibilityProgramRD(GenericTimeStampedModel):
 
 def userfiles_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    return 'user_{0:05}/{1}'.format(instance.user_id, filename)
+    return 'user_{0}/{1}'.format(instance.user_id, filename)
 
 
 class EligibilityProgram(GenericTimeStampedModel):

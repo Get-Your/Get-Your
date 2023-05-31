@@ -30,7 +30,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.query_utils import Q
 from django.db import IntegrityError
 from app.forms import HouseholdForm, UserForm, AddressForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm
-from app.backend import form_page_number, tag_mapping, address_check, serialize_household_members, validate_usps, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, blob_storage_upload, broadcast_email, broadcast_sms
+from app.backend import form_page_number, tag_mapping, address_check, serialize_household_members, validate_usps, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, broadcast_email, broadcast_sms
 from app.models import AddressRD, Address, EligibilityProgram, Household, IQProgram, User, EligibilityProgramRD
 from app.decorators import set_update_mode
 
@@ -754,9 +754,6 @@ def files(request):
                 instance.document_path.save(datetime.datetime.now(
                 ).isoformat() + "_" + str(fileAmount) + "_" + str(f), f)
                 fileNames.append(str(instance.document_path))
-                # Below is blob / storage code for Azure! Files automatically uploaded to the storage
-                f.seek(0)
-                blob_storage_upload(str(instance.document_path.url), f)
 
             # below the code to update the database to allow for MULTIPLE files AND change the name of the database upload!
             instance.document_path = str(fileNames)
