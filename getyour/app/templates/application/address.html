@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 {% block navigation %}
 {% url 'app:account' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=True back_link=back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=True back_link=back_link|add:"?app_status=in_progress" %}
 {% endblock %}
 
 {% block body %}

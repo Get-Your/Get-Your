@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 {% block navigation %}
 {% url 'app:programs' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=True back_link=back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=True back_link=back_link|add:"?app_status=in_progress" %}
 {% endblock %}
 
 {% block body %}
@@ -142,6 +142,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         overflow-x: visible;
     }
 
+    .swal2-container {
+        position: fixed;
+    }
+
+    #swal2-title {
+        color: var(--darkblue);
+    }
+
     li {
         font-weight: bold;
     }
@@ -199,21 +207,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             color: #ffffff;
         }
     }
-
-    /* Remove default anchor tag styling for the #backBtn */
-    #backBtn {
-        text-decoration: none;
-    }
 </style>
 
 <script>
     var fileUploadSuccessful = JSON.parse('{{ file_upload|escapejs }}')['success_status'];
 
     $(document).ready(function () {
-        // Remove the onclick attr from the backBtn
-        $("#backBtn").removeAttr("onclick");
-        $("#backBtn").attr("href", "{% url 'app:programs' %}");
-
         var fileUploadButton = $(".upload-btn-wrapper");
         $("input[type='file']").css("height", fileUploadButton.height());
 

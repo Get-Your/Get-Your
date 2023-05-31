@@ -57,25 +57,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <button onclick="location.href='{% url 'app:dashboard' %}'"> CONTINUE </button>
 </div>
 
-<style>
-    .p2 {
-        margin-left: auto;
-    }
-</style>
-
-<script>
-    $(document).ready(function () {
-        // Select a paragraph element with the p2 class
-        var saveAndLogoutBtn = $(".p2");
-
-        // Replace the onclick attribute value of the p2 element
-        // by replacing the existing string to the following value
-        // "location.href='/?app_status=not_started'"
-        saveAndLogoutBtn.attr("onclick", "location.href='/?app_status=not_started'");
-
-        // Hide the application navigation row, since the user has completed the application
-        $("#backBtn").hide();
-    });
-</script>
-
 {% endblock %}

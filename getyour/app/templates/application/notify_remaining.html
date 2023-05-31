@@ -19,20 +19,37 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% extends "bases/application_base.html" %}
 {% load static %}
 
-{% block navigation %}
-{% url 'app:index' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
-{% endblock %}
+<div class="flex-container">
+    {% block navigation %}
+    {% url 'app:index' as back_link %}
+    {% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
+    {% endblock %}
 
-{% block body %}
-<div class="content spaceAround" style="padding: 0 0 0 3vw;">
-    <!--NOTE: For the future have numbers change based on database-->
-    <h2 style="font-weight: 400;">We see you have not finished your application. </br></br> <b> Would you like to
-            continue from where you left off?</b></h2>
-    <!--Whatever I need in the other pages, I can enter it here-->
+    {% block body %}
+    <h2 style="font-weight: 400;">We see you have not finished your application. </br></br>
+        <b> Would you like to
+            continue from where you left off?</b>
+    </h2>
+    <a class="footer-btn" href="{% url next_page %}"> CONTINUE </a>
+</div>
 
-</div>
-<div class="footer" style="width:100%">
-    <button onclick="location.href='{% url next_page %}'"> CONTINUE </button>
-</div>
+<style>
+    .flex-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @media screen and (min-width : 768px) {
+        .nav {
+            margin-left: auto !important;
+            margin-right: auto !important;
+            padding: 5% 5% !important;
+        }
+
+        .content {
+            margin-left: auto !important;
+        }
+    }
+</style>
 {% endblock %}

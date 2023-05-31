@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <!DOCTYPE html>
 <html lang="en">
 
-{% include "partials/head.html" with title="Settings" css="dashboard" %}
+{% include "partials/head.html" with title="Settings" css="application" %}
 
 <body class="h-100">
     {% include "partials/environment_banner.html" with is_prod=is_prod db_env_str=db_env_str %}
@@ -28,16 +28,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     {% url 'app:dashboard' as back_link %}
     {% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
 
-    <div class="nav">
-        <a class="row" onClick="window.history.back();return false;">
-            <div class=fadeSmall><img src="{% static 'img/BackArrow-darkblue.svg' %}" alt="back"
-                    style="width:max(4.5vw, 16px); margin-right: 5px"></div>
-            <div class=fadeLarge><img src="{% static 'img/BackArrow-white.svg' %}" alt="back"
-                    style="width:max(4.5vw, 16px); margin-right: 5px;"></div>
-            <p style="font-weight: 700;">BACK</p>
-        </a>
-
-    </div>
     <div class="container desktop">
         {% block body %}
 
