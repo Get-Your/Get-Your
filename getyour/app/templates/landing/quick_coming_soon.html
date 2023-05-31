@@ -1,0 +1,42 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2023
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% extends "bases/availability_base.html" %}
+{% load static %}
+
+{% block navigation %}
+{% url 'app:index' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
+{% endblock %}
+
+{% block content %}
+<h1 style="overflow: hidden; padding: auto;">
+    <b>
+        Your address is covered by Get FoCo but Connexion is not quite
+        ready.
+    </b>
+</h1>
+<p style="margin-top: 2vh;">
+    Continue to the application to apply for Reduced-Rate Connexion. Once you've applied you'll also be able to
+    sign up for updates on when Connexion will be available at your address.
+</p>
+{% endblock %}
+
+{% block footer %}
+<a class="footer-btn" href="{% url 'app:get_ready' %}">CONTINUE</a>
+{% endblock %}
