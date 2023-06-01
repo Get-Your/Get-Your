@@ -46,7 +46,7 @@ SITE_HOSTNAME = env("HOST")
 IS_PROD = False
 
 # SECURITY WARNING: don't run with debug turned on for any live site!
-DEBUG = True
+# Moved to Azure App Service environment var
 
 # ANDREW: Make sure to change this later!
 CSRF_TRUSTED_ORIGINS = [f"https://{SITE_HOSTNAME}"]
