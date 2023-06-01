@@ -1,0 +1,46 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2023
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% extends "bases/availability_base.html" %}
+{% block content %}
+<div class="content spaceAround">
+    {% if 'grocery' in program_name|lower %}
+    <h1><b>Thank you for applying to the {{ program_name }} program!</b></h1>
+    {% else %}
+    <h1><b>Thank you for applying to the {{ program_name }} program! We'll let you know when you've been
+            enrolled.</b></h1>
+    {% endif %}
+
+    {% if 'grocery' in program_name|lower %}
+        <h1><b>Thank you for applying to the {{ program_name }} program!</b></h1>
+    {% else %}
+        <h1><b>Thank you for applying to the {{ program_name }} program! We'll let you know when you've been
+                enrolled.</b></h1>
+        {% if in_gma_with_no_service %}
+            <p style="color:red">Connexion isn't quite available at your address, but your reduced rate will be applied once the service is ready and you call to activate it. In the meantime, please go to <a href="https://fcconnexion.com/service-availability/#notify" target="_blank">the Connexion site</a> and fill out the service notification form.
+            </p>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block footerdiv %}
+<div class="footer">
+    <button onclick="location.href='{% url 'app:dashboard' %}'"> CONTINUE </button>
+</div>
+{% endblock %}

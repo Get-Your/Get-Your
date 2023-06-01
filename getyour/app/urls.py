@@ -19,44 +19,53 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
-from . import views
+from app.views import landing, authentication, application, dashboard
 
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('address', views.address, name='address'),
-    path('account', views.account, name='account'),
-    path('household', views.household, name='household'),
-    path('household_members', views.household_members, name='household_members'),
-    path('programs', views.programs, name='programs'),
-
+    # Landing URLs
+    path('', landing.index, name='index'),
     # Available/NotAvailable Digital Equity in your area
-    path('quick_available', views.quick_available, name='quick_available'),
-    path('quick_not_available', views.quick_not_available,
+    path('quick_available', landing.quick_available, name='quick_available'),
+    path('quick_not_available', landing.quick_not_available,
          name='quick_not_available'),
-    path('quick_coming_soon', views.quick_coming_soon, name='quick_coming_soon'),
-    path('quick_not_found', views.quick_not_found, name='quick_not_found'),
-    path('address_correction', views.address_correction, name='address_correction'),
-    path('take_usps_address', views.take_usps_address, name='take_usps_address'),
+    path('quick_coming_soon', landing.quick_coming_soon, name='quick_coming_soon'),
+    path('quick_not_found', landing.quick_not_found, name='quick_not_found'),
+    path('programs_info', landing.programs_info, name='programs_info'),
+    path('privacy_policy', landing.privacy_policy, name='privacy_policy'),
 
-    # Create the IQ Program Quick Apply Page that has a parameter for the iq_program
-    path('quick_apply/<str:iq_program>',
-         views.quick_apply, name='quick_apply'),
-    path('privacy_policy', views.privacy_policy, name='privacy_policy'),
-    path('household_definition', views.household_definition,
+    # Application URLs
+    path('address', application.address, name='address'),
+    path('account', application.account, name='account'),
+    path('household', application.household, name='household'),
+    path('household_members', application.household_members,
+         name='household_members'),
+    path('programs', application.programs, name='programs'),
+    path('address_correction', application.address_correction,
+         name='address_correction'),
+    path('take_usps_address', application.take_usps_address,
+         name='take_usps_address'),
+    path('household_definition', application.household_definition,
          name='household_definition'),
-    path('get_ready', views.get_ready, name='get_ready'),
+    path('get_ready', application.get_ready, name='get_ready'),
+    path('files', application.files, name='files'),
+    path('broadcast', application.broadcast, name='broadcast'),
+    path('notify_remaining', application.notify_remaining, name='notify_remaining'),
 
-    path('feedback', views.feedback, name='feedback'),
-    path('files', views.files, name='files'),
-    path('login', views.login_user, name='login'),
-    path('broadcast', views.broadcast, name='broadcast'),
-    path('feedback_received', views.feedback_received, name="feedback_received"),
-    path('notify_remaining', views.notify_remaining, name='notify_remaining'),
-    path('dashboard', views.dashboard, name='dashboard'),
-    path('qualified_programs', views.qualified_programs, name='qualified_programs'),
-    path('programs_list', views.programs_list, name='programs_list'),
-    path('programs_info', views.programs_info, name='programs_info'),
-    path('user_settings', views.user_settings, name='user_settings'),
-    path("password_reset", views.password_reset_request, name="password_reset")
-]
+    # Dashboard URLs
+    path('quick_apply/<str:iq_program>',
+         dashboard.quick_apply, name='quick_apply'),
+    path('feedback', dashboard.feedback, name='feedback'),
+    path('feedback_received', dashboard.feedback_received,
+         name="feedback_received"),
+    path('dashboard', dashboard.dashboard, name='dashboard'),
+    path('qualified_programs', dashboard.qualified_programs,
+         name='qualified_programs'),
+    path('programs_list', dashboard.programs_list, name='programs_list'),
+    path('user_settings', dashboard.user_settings, name='user_settings'),
+
+    # Authentication URLs
+    path('login', authentication.login_user, name='login'),
+    path("password_reset", authentication.password_reset_request,
+         name="password_reset")
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
