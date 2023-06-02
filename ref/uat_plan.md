@@ -145,6 +145,12 @@ For the following verifications, note that program qualification (for v2.0.0) de
 - *Test:* Verify the links in the 'City News' section
 - *Expected result:* This section should give the expected information and lead to expected pages
 
+----
+
+- *Test:* Fill out various portions of the 'Feedback' section
+- *Expected result:* The section should successfully submit the feedback and display a 'success' message and a button to return to the Dashboard
+- ***Admin** expected result:* Verify that the feedback entry is stored in the `app_feedback` table
+
 Go through each subsection, starting with the [Programs menu item](#programs-menu-item).
 
 ### Programs menu item
