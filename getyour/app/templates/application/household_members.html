@@ -1,0 +1,95 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2023
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% extends "bases/application_base.html" %}
+{% load static %}
+
+{% block navigation %}
+{% url 'app:household' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=True back_link=back_link|add:"?app_status=in_progress" %}
+{% endblock %}
+
+{% block body %}
+<p id="application_step" class="application-step">STEP {{ step }} OF {{ form_page_number }}</p>
+
+{% with header="Share basic information about your income" description="Your information will not be shared with anyone outside of the departments of City of Fort Collins' income eligible programs. They are meant to determine potential assistance programs you may qualify for." %}
+{% include "partials/side_content.html" with header=header description=description%}
+{% endwith %}
+
+<form action="{% url 'app:household_members' %}" method="post" autocomplete="false">
+    {% csrf_token %}
+
+    <div>
+        <label class="labelword">You indicated you had {{ dependent }} individual(s) in your household, what are their
+            names and birthdates?</label>
+    </div>
+
+    {% for number in list %}
+    {{form}}
+    {% endfor %}
+
+    <div class="footer">
+        {% if update_mode %}
+        <input type="hidden" name="update_mode" value="true">
+        <button type="submit"> CONFIRM </button>
+        {% else %}
+        <button type="submit"> CONTINUE </button>
+        {% endif %}
+    </div>
+</form>
+
+<style>
+    label[for="id_name"] {
+        margin-top: 35px;
+    }
+</style>
+
+<script>
+    var update_mode = "{{ update_mode|yesno:'true:false'|safe }}";
+    var formData = JSON.parse('{{ form_data | escapejs }}');
+
+    var household_names = document.getElementsByName("name");
+    var household_birthdates = document.getElementsByName("birthdate");
+
+    if (update_mode) {
+        // Check if the new number of household members is different from the old number of household members
+        // If it is let the user know to check over the names and birthdates
+        if (household_names.length !== formData.persons_in_household.length) {
+            Swal.fire({
+                title: 'Household Information',
+                text: 'The members of your household have changed since you last submitted your application. Please make sure their names and birthdays are up to date.',
+                icon: 'info',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#13467D'
+            });
+        }
+    }
+
+    try {
+        for (var i = 0; i < household_names.length; i++) {
+            if (formData.persons_in_household[i]) {
+                household_names[i].value = formData.persons_in_household[i].name;
+                household_birthdates[i].value = formData.persons_in_household[i].birthdate;
+            }
+        }
+    } catch (error) {
+        console.warn("User had no household members to prefill form");
+    }
+
+</script>
+{% endblock %}

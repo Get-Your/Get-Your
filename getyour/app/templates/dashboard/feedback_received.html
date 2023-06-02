@@ -1,0 +1,39 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2023
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+{% include "partials/head.html" with title="Feedback Received" css="dashboard" %}
+
+<body>
+    {% include "partials/environment_banner.html" with is_prod=is_prod db_env_str=db_env_str %}
+
+    <div class="content spaceAround">
+        <!--NOTE: For the future have numbers change based on database-->
+        <h1><b>Thank you for submitting your feedback!</b></h1>
+        <!--Whatever I need in the other pages, I can enter it here-->
+
+    </div>
+    <div class="footer">
+        <button onclick="location.href='{% url 'app:dashboard' %}'"> CONTINUE </button>
+    </div>
+</body>
+
+</html>

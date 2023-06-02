@@ -1,0 +1,33 @@
+<div id="modalSpin" class="modal Dashboard" style="display: none">
+    <!-- Modal content -->
+    <div class="modal-content">
+        <span id="closeSpin" class="close">&times;</span>
+        <p>Privacy Acknowledgement</p>
+        <p>By clicking "Agree" below, you understand the City of Fort Collins and GetFoCo will share your name and email
+            address with Spin Community in order to register you in the program.</p>
+        <a href="{% url 'app:quick_apply' iq_program='spin'  %}" style="text-decoration: none">
+            <div class="quickapply link" style="background-color: {{SPINButtonColor}}; color: {{SPINButtonTextColor}}">
+                Agree</div>
+        </a>
+    </div>
+</div>
+
+<style>
+    @media screen and (max-width: 767px) {
+        .modal {
+            padding-top: 270px;
+        }
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        $("#spinPrivacyAcknowledgement").click(function () {
+            $("#modalSpin").css("display", "block");
+        });
+
+        $("#closeSpin").click(function () {
+            $("#modalSpin").css("display", "none");
+        });
+    });
+</script>
