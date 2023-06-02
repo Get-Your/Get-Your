@@ -1,6 +1,8 @@
 # User Acceptance Testing Plan
 Use this document for guidelines on UAT for new Get FoCo releases.
 
+When an issue is found, use the [UAT bug template](https://github.com/Get-Your/Get-Your/issues/new?assignees=&labels=bug%2C+uat&projects=&template=uat-bug.md&title=) to submit the issue to the development team.
+
 > Note that this document is intended to cover all sections, such as for major releases.
 
 # Plan
