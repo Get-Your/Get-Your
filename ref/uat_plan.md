@@ -45,6 +45,7 @@ Select 'apply' - this leads to [Create an Account](#step-1-create-an-account-pag
 - Enter account information
     - *Test:* Try invalid email addresses, phone numbers, passwords
     - *Expected result:* The system should notify for all invalid input and not resort to a 'Server Error' after clicking 'create'
+    - ***Admin** expected result:* Verify that the data are stored properly in the `app_user` table
 
 > Note that the final email address and phone number entered here (before moving on to the next testing step) will be used for the final [communication sent page](#step-6-we-sent-you-an-email-and-a-text-page-broadcast), so it will be helpful to end on a real email address and real phone number.
 
@@ -54,18 +55,25 @@ Select 'create' - this should notify that your account has been created and lead
 - Enter address (leave the 'mailing address' question as 'Yes')
     - *Test:* Enter slightly-incorrect and invalid addresses and click 'continue' after each
     - *Expected result:* The `/address_correction` page should be able to correct the slightly-incorrect addresses and should display a 'not found' message (rather than an error) for the invalid addresses
+    - ***Admin** expected result:* Verify that the data are stored properly in the `app_address` and `app_addressrd` tables. The data should not be stored until after an address is verified, at which point the address is stored in `app_addressrd` with its corresponding ID stored in `app_address` for *both* the `eligibility_address_id` and the `mailing_address_id`
 - Enter an address to move forward with and select 'No' for the 'mailing address' question
     - *Test:* \<same tests as previous address\>
     - *Expected result:* \<same results as previous address\>
+    - ***Admin** expected result:* Verify that the data are stored properly in the `app_address` and `app_addressrd` tables. The data should not be stored until after an address is verified, at which point the each address is stored in `app_addressrd` with its corresponding ID stored in `app_address`; the first address has its ID as the `eligibility_address_id`; the mailing address is `mailing_address_id`
 
 Select both addresses (or as many as are necesssary) in `/address_correction` to confirm - this leads to [Household information](#step-3-household-information-page-household).
 
 ## Step 3: Household information page (/household)
 - Make a selection for rent/own
+    - ***Admin** test:* Select various radio buttons
+    - ***Admin** expected result:* Verify that the data are stored properly in the `app_household` table
 - Make a select for 'How long have you lived at this address?'
+    - ***Admin** test:* Select various radio buttons
+    - ***Admin** expected result:* Verify that the data are stored properly in the `app_household` table
 - Enter input in 'How many individuals are in your household?'
     - *Test:* Test any input including invalid values (e.g. text, negative numbers)
     - *Expected result:* You should be notified on this page if a value in invalid
+    - ***Admin** expected result:* Verify that the data are stored properly in the `app_household` table
 
 Select 'continue' - this leads to [Household member information](#step-3b-names-and-birthdates-of-household-members-household_members).
 
@@ -73,9 +81,12 @@ Select 'continue' - this leads to [Household member information](#step-3b-names-
 - Enter 'first and last name' for each individual
     - *Test:* Try to invalidate the form
     - *Expected result:* There shouldn't be any errors. As of v2.0.0, there isn't any logic behind this text box, so it shouldn't be able to be broken
+    - ***Admin** expected result:* Verify that the data are stored properly in the `app_householdmembers` table
+    
 - Enter birthdate for each individual
     - *Test:* Try invalid birthdates
     - *Expected result:* There shouldn't be any errors. As of v2.0.0, there isn't any logic behind the birthdate input
+    - ***Admin** expected result:* Verify that the data are stored properly in the `app_householdmembers` table
 
 Select 'continue' - this leads to [Eligibility Programs](#step-4-are-you-currently-enrolled-in-any-of-the-following-page-programs).
 
@@ -83,6 +94,7 @@ Select 'continue' - this leads to [Eligibility Programs](#step-4-are-you-current
 - Select any combination of programs
     - *Test:* Test any combination of selected programs
     - *Expected result:* The selected combination should be displayed on the next 'file upload' page (the back arrow on the 'file upload' page will return you to the program-selection page)
+    - ***Admin** expected result:* Verify that the data are stored properly in the `app_eligibilityprogram` table. There should be a record for each program under the applicant's `user_id`, with each `program_id` reflecting the selected program(s)
 
 Enter the final combination of programs and select 'continue' - this leads to [File Upload](#step-5-file-upload-page-files).
 
@@ -90,6 +102,7 @@ Enter the final combination of programs and select 'continue' - this leads to [F
 - Upload file for each program (approved file types are PDF, PNG, or JPEG)
     - *Test:* Try uploading multiple files, non-approved file types, non-approved file types that are renamed to approved extensions. Do this for any program in the dropdown and try changing the dropdown value
     - *Expected result:* The platform should keep track of what programs have already had files uploaded and display a message when you attempt to submit non-approved file types
+    - ***Admin** expected result:* Verify that the data are stored properly in the `app_eligibilityprogram` table. Each record from the [Eligibility Programs](#step-4-are-you-currently-enrolled-in-any-of-the-following-page-programs) section should have `document_path` filled with the path to the filename. Also verify that each file is stored at the specified path in Azure Blob Storage.
 
 Select 'continue' after each upload - after uploading for all programs, this leads to [Communication Sent](#step-6-we-sent-you-an-email-and-a-text-page-broadcast).
 
@@ -121,6 +134,11 @@ For the following verifications, note that program qualification (for v2.0.0) de
 
 - *Test:* Verify that the 'programs active' section has the expected programs
 - *Expected result:* The only programs that should show here are once the admin enrolls the user
+
+----
+
+- ***Admin** test:* For the logged-in user, alter the apply/enroll status for each program (in the `app_iqprogram` table, toggle `is_enrolled` to flip apply/enroll status; remove the record for the program to remove the 'applied' status).
+- ***Admin** expected result:* Verify that the expected outcomes are reflected on the user's Dashboard (on page refresh)
 
 ----
 
@@ -159,6 +177,7 @@ Select 'settings' on the menu. On the resulting page:
 
     - *Test:* Change any information (noting the change) and select 'confirm'
     - *Expected result:* If you changed first or last name, the new name should be displayed on the 'settings' page. Select 'account' again and verify that all information that was changed is populated on the page
+    - ***Admin** expected result:* Verify that the data changes are reflected in the `app_user` table
 
     - Select 'confirm' to return to the 'settings' page
 
@@ -172,6 +191,7 @@ Select 'settings' on the menu. On the resulting page:
         - Select 'confirm'
         - If the address confirmation displays, verify that the suggested address is correct and select the address
     - *Expected result:* From the 'settings' page, select 'address' again and verify that all information that was changed is populated on the page
+    - ***Admin** expected result:* Verify that the data changes are reflected in the `app_address` table
 
     - Select 'confirm' to return to the 'settings' page
 
@@ -186,6 +206,8 @@ Select 'settings' on the menu. On the resulting page:
         - If the change was to the 'number of individuals', verify that the popup on the next page reflects a change and prompts you to verify your information
         - If no change was made to 'number of individuals', there should be no prompt and the [household member information](#step-3b-names-and-birthdates-of-household-members-household_members) page should be auto-populated with your previous inputs
         - Make any changes to the household member information and select 'confirm'
+    - ***Admin** expected result:* Verify that the previous data have been stored in the `app_householdhist` table
+    - ***Admin** expected result:* Verify that the data changes are reflected in the `app_household` table
         
     ----
 
