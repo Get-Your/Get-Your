@@ -71,9 +71,11 @@ def get_ready(request):
 
 @set_update_mode
 def account(request):
+    # Check the boolean value of update_mode in the session var
+    # None is returned if the var DNE (None is falsey for bool checks)
+    update_mode = request.session.get('update_mode')
+
     if request.method == "POST":
-        # Check if the update_mode exists in the POST data.
-        update_mode = request.POST.get('update_mode')
         try:
             existing = request.user
             if update_mode:
@@ -134,7 +136,7 @@ def account(request):
                 }
             return JsonResponse(data)
     else:
-        if request.session.get('update_mode'):
+        if update_mode:
             # Query the users table for the user's data
             user = User.objects.get(id=request.user.id)
             form = UserUpdateForm(instance=user)
@@ -149,7 +151,7 @@ def account(request):
             'step': 1,
             'form_page_number': form_page_number,
             'title': "Account",
-            'update_mode': request.session.get('update_mode'),
+            'update_mode': update_mode,
         },
     )
 
@@ -159,11 +161,15 @@ def address(request):
     if request.session.get('application_addresses'):
         del request.session['application_addresses']
 
+    # Check the boolean value of update_mode in the session var
+    # None is returned if the var DNE (None is falsey for bool checks)
+    update_mode = request.session.get('update_mode')
+
     if request.method == "POST":
         addresses = []
         # 'no' means the user has a different mailing address
         # compared to their eligibility address
-        if request.POST.get('mailing_address') == 'no' or request.POST.get('update_mode'):
+        if request.POST.get('mailing_address') == 'no' or update_mode:
             mailing_address = {
                 'address1': request.POST['mailing_address1'],
                 'address2': request.POST['mailing_address2'],
@@ -178,7 +184,7 @@ def address(request):
                     'processed': False
                 })
 
-        if not request.POST.get('update_mode'):
+        if not update_mode:
             eligibility_address = {
                 'address1': request.POST['address1'],
                 'address2': request.POST['address2'],
@@ -198,7 +204,7 @@ def address(request):
         return redirect(reverse("app:address_correction"))
     else:
         same_address = True
-        if request.session.get('update_mode'):
+        if update_mode:
             existing = Address.objects.get(user=request.user)
             mailing_address = AddressRD.objects.get(
                 id=existing.mailing_address_id)
@@ -230,7 +236,7 @@ def address(request):
                 'step': 2,
                 'form_page_number': form_page_number,
                 'title': "Address",
-                'update_mode': request.session.get('update_mode'),
+                'update_mode': update_mode,
             },
         )
 
@@ -561,9 +567,11 @@ def household(request):
     if request.session.get('application_addresses'):
         del request.session['application_addresses']
 
+    # Check the boolean value of update_mode in the session var
+    # None is returned if the var DNE (None is falsey for bool checks)
+    update_mode = request.session.get('update_mode')        
+
     if request.method == "POST":
-        # Check if the update_mode exists in the POST data.
-        update_mode = request.POST.get('update_mode')
         try:
             existing = request.user.household
             form = HouseholdForm(request.POST, instance=existing)
@@ -573,6 +581,7 @@ def household(request):
         instance = form.save(commit=False)
         instance.user_id = request.user.id
         instance.is_income_verified = False
+        instance.is_updated = update_mode
         instance.save()
         if update_mode:
             return redirect(f'{reverse("app:household_members")}?update_mode=1')
@@ -580,7 +589,7 @@ def household(request):
             return redirect(reverse("app:household_members"))
 
     else:
-        if request.session.get('update_mode'):
+        if update_mode:
             # Query the users table for the user's data
             eligibility = Household.objects.get(
                 user_id=request.user.id)
@@ -596,16 +605,18 @@ def household(request):
             'step': 3,
             'form_page_number': form_page_number,
             'title': "Household",
-            'update_mode': request.session.get('update_mode'),
+            'update_mode': update_mode,
         },
     )
 
 
 @set_update_mode
 def household_members(request):
+    # Check the boolean value of update_mode in the session var
+    # None is returned if the var DNE (None is falsey for bool checks)
+    update_mode = request.session.get('update_mode') 
+
     if request.method == "POST":
-        # Check if the update_mode exists in the POST data.
-        update_mode = request.POST.get('update_mode')
         try:
             existing = request.user.householdmembers
             form = HouseholdMembersForm(request.POST, instance=existing)
@@ -636,7 +647,7 @@ def household_members(request):
             'form': form,
             'form_page_number': form_page_number,
             'title': "Household Members",
-            'update_mode': request.session.get('update_mode'),
+            'update_mode': update_mode,
             'form_data': json.dumps(household_info) if household_info else [],
         },
     )
