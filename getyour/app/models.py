@@ -132,6 +132,7 @@ class User(AbstractUser):
     phone_number = PhoneNumberField()
     has_viewed_dashboard = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False)
+    is_updated = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -206,11 +207,13 @@ class Address(GenericTimeStampedModel):
         on_delete=models.DO_NOTHING,    # don't remove this value if address is deleted
         related_name='+',   # don't relate AddressesNew_rearch id with this field
     )
+    is_mailing_address_updated = models.BooleanField(default=False)
     eligibility_address = models.ForeignKey(
         AddressRD,
         on_delete=models.DO_NOTHING,    # don't remove this value if address is deleted
         related_name='+',   # don't relate AddressesNew_rearch id with this field
     )
+    is_eligibility_address_updated = models.BooleanField(default=False)
 
 
 # Eligibility model class attached to user (will delete as user account is deleted too)

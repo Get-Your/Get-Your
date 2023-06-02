@@ -86,7 +86,9 @@ def account(request):
             form = UserForm(request.POST or None)
 
         if form.is_valid() and update_mode:
-            form.save()
+            instance = form.save(commit=False)
+            instance.is_updated = update_mode
+            instance.save()
             return JsonResponse({"redirect": f"{reverse('app:user_settings')}?page_updated=account"})
         elif form.is_valid():
             passwordCheck = form.passwordCheck()
@@ -434,6 +436,14 @@ def address_correction(request):
 
 
 def take_usps_address(request):
+    # Check the boolean value of update_mode session var
+    # Set as false if session var DNE
+    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False
+
+    # TODO: Update this renewal_mode placeholder to the same mechanics as
+    # update_mode
+    renewal_mode = False
+
     try:
         # Use the session var created in addressCorrection(), then remove it
         dict_address = request.session['usps_address_validate']
@@ -542,6 +552,11 @@ def take_usps_address(request):
                         id=eligibility_addresses[0]['instance']
                     )
 
+                # Eligibility address changes only take place in renewal mode
+                # Mailing address changes can take place in either mode
+                address.is_eligibility_address_updated = renewal_mode
+                address.is_mailing_address_updated = update_mode or renewal_mode
+
                 address.save()
 
             return redirect(reverse('app:household'))
@@ -552,6 +567,7 @@ def take_usps_address(request):
             address.mailing_address = AddressRD.objects.get(
                 id=mailing_addresses[0]['instance']
             )
+            address.is_mailing_address_updated = update_mode
             address.save()
             return redirect(f"{reverse('app:user_settings')}?page_updated=address")
 
