@@ -71,9 +71,9 @@ def get_ready(request):
 
 @set_update_mode
 def account(request):
-    # Check the boolean value of update_mode in the session var
-    # None is returned if the var DNE (None is falsey for bool checks)
-    update_mode = request.session.get('update_mode')
+    # Check the boolean value of update_mode session var
+    # Set as false if session var DNE
+    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False
 
     if request.method == "POST":
         try:
@@ -161,9 +161,9 @@ def address(request):
     if request.session.get('application_addresses'):
         del request.session['application_addresses']
 
-    # Check the boolean value of update_mode in the session var
-    # None is returned if the var DNE (None is falsey for bool checks)
-    update_mode = request.session.get('update_mode')
+    # Check the boolean value of update_mode session var
+    # Set as false if session var DNE
+    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False
 
     if request.method == "POST":
         addresses = []
@@ -567,9 +567,9 @@ def household(request):
     if request.session.get('application_addresses'):
         del request.session['application_addresses']
 
-    # Check the boolean value of update_mode in the session var
-    # None is returned if the var DNE (None is falsey for bool checks)
-    update_mode = request.session.get('update_mode')        
+    # Check the boolean value of update_mode session var
+    # Set as false if session var DNE
+    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False    
 
     if request.method == "POST":
         try:
@@ -612,9 +612,9 @@ def household(request):
 
 @set_update_mode
 def household_members(request):
-    # Check the boolean value of update_mode in the session var
-    # None is returned if the var DNE (None is falsey for bool checks)
-    update_mode = request.session.get('update_mode') 
+    # Check the boolean value of update_mode session var
+    # Set as false if session var DNE
+    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False
 
     if request.method == "POST":
         try:
