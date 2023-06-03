@@ -89,6 +89,16 @@ def quick_apply(request, iq_program):
     iq_program = IQProgramRD.objects.get(
         program_name=iq_program)
     
+    # Get the user's get_users_iq_programs and check if 
+    # the IQProgramRD object is in the list. If it is not,
+    # throw a 500 error, else continue
+    eligibility_address = AddressRD.objects.filter(
+        id=request.user.address.eligibility_address_id).first()
+    users_iq_programs = get_users_iq_programs(
+        request.user.id, request.user.household.ami_range_max, eligibility_address)
+    if iq_program not in users_iq_programs:
+        raise Exception(f"User is not eligible for {iq_program.program_name}.")
+    
     # Check if the user and program already exist in the IQProgram table
     # If they do not, create a new IQProgram object
     if not IQProgram.objects.filter(user_id=request.user.id, program_id=iq_program.id).exists():
