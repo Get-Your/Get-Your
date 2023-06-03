@@ -20,8 +20,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% load static %}
 
 {% block navigation %}
+{% if update_mode %}
+{% url 'app:user_settings' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
+{% else %}
 {% url 'app:get_ready' as back_link %}
 {% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
+{% endif %}
 {% endblock %}
 
 {% block body %}

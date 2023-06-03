@@ -88,10 +88,14 @@ def quick_apply(request, iq_program):
     # Get the IQProgramRD object for the iq_program
     iq_program = IQProgramRD.objects.get(
         program_name=iq_program)
+    
+    # Check if the user and program already exist in the IQProgram table
+    # If they do not, create a new IQProgram object
+    if not IQProgram.objects.filter(user_id=request.user.id, program_id=iq_program.id).exists():
+        # Create and save a new IQProgram object with the user_id and program_id
+        IQProgram.objects.create(
+            user_id=request.user.id, program_id=iq_program.id)
 
-    # Create and save a new IQProgram object with the user_id and program_id
-    IQProgram.objects.create(
-        user_id=request.user.id, program_id=iq_program.id)
     if iq_program.program_name == 'connexion':
         # Get the user's address from the AddressRD table by joining the eligibility_address_id
         # to the AddressRD table's id
