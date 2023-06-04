@@ -144,14 +144,24 @@ class User(AbstractUser):
     
     # Define non-database attributes
     @property
-    def update_or_renewal_mode(self):
-        # Return update_or_renewal_mode for use in saving historical values
-        return getattr(self, '_update_or_renewal_mode', False)
+    def update_mode(self):
+        # Return update_mode for use in saving historical values
+        return getattr(self, '_update_mode', False)
     
-    @update_or_renewal_mode.setter
-    def update_or_renewal_mode(self, val):
-        # Setter for update_or_renewal_mode
-        self._update_or_renewal_mode = val    
+    @update_mode.setter
+    def update_mode(self, val):
+        # Setter for update_mode
+        self._update_mode = val    
+
+    @property
+    def renewal_mode(self):
+        # Return renewal_mode for use in saving historical values
+        return getattr(self, '_renewal_mode', False)
+    
+    @renewal_mode.setter
+    def renewal_mode(self, val):
+        # Setter for renewal_mode
+        self._renewal_mode = val   
     
 class UserHist(models.Model):
     id = models.AutoField(primary_key=True)
@@ -293,14 +303,24 @@ class Household(GenericTimeStampedModel):
 
     # Define non-database attributes
     @property
-    def update_or_renewal_mode(self):
-        # Return update_or_renewal_mode for use in saving historical values
-        return getattr(self, '_update_or_renewal_mode', False)
+    def update_mode(self):
+        # Return update_mode for use in saving historical values
+        return getattr(self, '_update_mode', False)
     
-    @update_or_renewal_mode.setter
-    def update_or_renewal_mode(self, val):
-        # Setter for update_or_renewal_mode
-        self._update_or_renewal_mode = val        
+    @update_mode.setter
+    def update_mode(self, val):
+        # Setter for update_mode
+        self._update_mode = val    
+
+    @property
+    def renewal_mode(self):
+        # Return renewal_mode for use in saving historical values
+        return getattr(self, '_renewal_mode', False)
+    
+    @renewal_mode.setter
+    def renewal_mode(self, val):
+        # Setter for renewal_mode
+        self._renewal_mode = val      
 
 
 class HouseholdMembers(GenericTimeStampedModel):

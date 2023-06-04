@@ -93,7 +93,8 @@ def account(request):
             instance = form.save(commit=False)
 
             # Set the attribute to let pre_save know to save history
-            instance.update_or_renewal_mode = update_mode or renewal_mode
+            instance.update_mode = update_mode
+            instance.renewal_mode = renewal_mode
 
             instance.save()
             return JsonResponse({"redirect": f"{reverse('app:user_settings')}?page_updated=account"})
@@ -612,7 +613,8 @@ def household(request):
         instance.is_income_verified = False
 
         # Set the attribute to let pre_save know to save history
-        instance.update_or_renewal_mode = update_mode or renewal_mode
+        instance.update_mode = update_mode
+        instance.renewal_mode = renewal_mode
         
         instance.save()
         if update_mode:
