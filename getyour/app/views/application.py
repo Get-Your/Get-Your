@@ -75,6 +75,10 @@ def account(request):
     # Set as false if session var DNE
     update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False
 
+    # TODO: Update this renewal_mode placeholder to the same mechanics as
+    # update_mode
+    renewal_mode = False
+
     if request.method == "POST":
         try:
             existing = request.user
@@ -87,7 +91,10 @@ def account(request):
 
         if form.is_valid() and update_mode:
             instance = form.save(commit=False)
-            instance.is_updated = update_mode
+
+            # Set the attribute to let pre_save know to save history
+            instance.update_or_renewal_mode = update_mode or renewal_mode
+
             instance.save()
             return JsonResponse({"redirect": f"{reverse('app:user_settings')}?page_updated=account"})
         elif form.is_valid():
@@ -552,10 +559,9 @@ def take_usps_address(request):
                         id=eligibility_addresses[0]['instance']
                     )
 
-                # Eligibility address changes only take place in renewal mode
-                # Mailing address changes can take place in either mode
-                address.is_eligibility_address_updated = renewal_mode
-                address.is_mailing_address_updated = update_mode or renewal_mode
+                # Set the attributes to let pre_save know to save history
+                address.update_mode = update_mode
+                address.renewal_mode = renewal_mode
 
                 address.save()
 
@@ -567,7 +573,10 @@ def take_usps_address(request):
             address.mailing_address = AddressRD.objects.get(
                 id=mailing_addresses[0]['instance']
             )
-            address.is_mailing_address_updated = update_mode
+
+            # Set the attribute to let pre_save know to save history
+            address.update_mode = update_mode
+
             address.save()
             return redirect(f"{reverse('app:user_settings')}?page_updated=address")
 
@@ -585,7 +594,11 @@ def household(request):
 
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
-    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False    
+    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False   
+
+    # TODO: Update this renewal_mode placeholder to the same mechanics as
+    # update_mode
+    renewal_mode = False 
 
     if request.method == "POST":
         try:
@@ -597,7 +610,10 @@ def household(request):
         instance = form.save(commit=False)
         instance.user_id = request.user.id
         instance.is_income_verified = False
-        instance.is_updated = update_mode
+
+        # Set the attribute to let pre_save know to save history
+        instance.update_or_renewal_mode = update_mode or renewal_mode
+        
         instance.save()
         if update_mode:
             return redirect(f'{reverse("app:household_members")}?update_mode=1')

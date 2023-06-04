@@ -142,6 +142,16 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
     
+    # Define non-database attributes
+    @property
+    def update_or_renewal_mode(self):
+        # Return update_or_renewal_mode for use in saving historical values
+        return getattr(self, '_update_or_renewal_mode', False)
+    
+    @update_or_renewal_mode.setter
+    def update_or_renewal_mode(self, val):
+        # Setter for update_or_renewal_mode
+        self._update_or_renewal_mode = val    
     
 class UserHist(models.Model):
     id = models.AutoField(primary_key=True)
@@ -227,6 +237,27 @@ class Address(GenericTimeStampedModel):
     )
     is_eligibility_address_updated = models.BooleanField(default=False)
 
+    # Define non-database attributes
+    @property
+    def update_mode(self):
+        # Return update_mode for use in saving historical values
+        return getattr(self, '_update_mode', False)
+    
+    @update_mode.setter
+    def update_mode(self, val):
+        # Setter for update_mode
+        self._update_mode = val    
+
+    @property
+    def renewal_mode(self):
+        # Return renewal_mode for use in saving historical values
+        return getattr(self, '_renewal_mode', False)
+    
+    @renewal_mode.setter
+    def renewal_mode(self, val):
+        # Setter for renewal_mode
+        self._renewal_mode = val    
+
 
 class AddressHist(models.Model):
     id = models.AutoField(primary_key=True)
@@ -259,6 +290,17 @@ class Household(GenericTimeStampedModel):
     ami_range_max = models.DecimalField(
         max_digits=3, decimal_places=2, null=True, default=None)
     rent_own = models.CharField(max_length=200)
+
+    # Define non-database attributes
+    @property
+    def update_or_renewal_mode(self):
+        # Return update_or_renewal_mode for use in saving historical values
+        return getattr(self, '_update_or_renewal_mode', False)
+    
+    @update_or_renewal_mode.setter
+    def update_or_renewal_mode(self, val):
+        # Setter for update_or_renewal_mode
+        self._update_or_renewal_mode = val        
 
 
 class HouseholdMembers(GenericTimeStampedModel):
