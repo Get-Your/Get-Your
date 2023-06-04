@@ -141,6 +141,18 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+    
+    
+class UserHist(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(
+        User,
+        related_name='user_history',
+        # don't remove the user history if a user account is deleted
+        on_delete=models.DO_NOTHING,
+    )
+    created = models.DateTimeField(auto_now_add=True)
+    historical_values = models.JSONField(null=True, blank=True)
 
 
 class AddressRD(GenericTimeStampedModel):
@@ -214,6 +226,18 @@ class Address(GenericTimeStampedModel):
         related_name='+',   # don't relate AddressesNew_rearch id with this field
     )
     is_eligibility_address_updated = models.BooleanField(default=False)
+
+
+class AddressHist(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(
+        User,
+        related_name='address_history',
+        # don't remove the address history if a user account is deleted
+        on_delete=models.DO_NOTHING,
+    )
+    created = models.DateTimeField(auto_now_add=True)
+    historical_values = models.JSONField(null=True, blank=True)
 
 
 # Eligibility model class attached to user (will delete as user account is deleted too)
