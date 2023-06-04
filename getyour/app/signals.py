@@ -20,7 +20,7 @@ import json
 from django.db.models.signals import pre_save
 from django.core.serializers.json import DjangoJSONEncoder
 from django.dispatch import receiver
-from app.models import Household, HouseholdHist, User, UserHist, Address, AddressHist
+from app.models import Household, HouseholdHist, User, UserHist, Address, AddressHist, HouseholdMembers, HouseholdMembersHist
 from app.backend import changed_modelfields_to_dict
 
 
@@ -54,6 +54,44 @@ def household_pre_save(sender, instance, **kwargs):
             # has changed
             if household_history.historical_values != {}:
                 household_history.save()
+                # Set is_updated if any values have changed
+                instance.is_updated = True
+            else:
+                # If renewal_mode, set is_updated regardless of values have changed
+                instance.is_updated = instance.renewal_mode
+
+
+@receiver(pre_save, sender=HouseholdMembers)
+def householdmembers_pre_save(sender, instance, **kwargs):
+    # Run historical save if update or renewal mode
+    if instance.update_mode or instance.renewal_mode:
+        try:
+            # Save the previous values of the fields that have been updated in the
+            # user's householdmembers data to the database in the
+            # householdmembershist table
+            householdmembers_history = HouseholdMembersHist(
+                user=instance.user,
+                # Convert the updated household objects to a dictionary and then to
+                # a JSON string and set it to the historical_values field
+                historical_values=json.loads(
+                    json.dumps(
+                        changed_modelfields_to_dict(
+                            sender.objects.get(pk=instance.pk),
+                            instance,
+                            ), cls=DjangoJSONEncoder
+                        )
+                    )
+                )
+
+        except HouseholdMembers.DoesNotExist:
+            # No historical data to use for the update
+            pass
+
+        else:
+            # Save or perform operations with the original instance if any field
+            # has changed
+            if householdmembers_history.historical_values != {}:
+                householdmembers_history.save()
                 # Set is_updated if any values have changed
                 instance.is_updated = True
             else:

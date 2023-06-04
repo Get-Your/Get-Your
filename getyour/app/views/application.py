@@ -92,7 +92,7 @@ def account(request):
         if form.is_valid() and update_mode:
             instance = form.save(commit=False)
 
-            # Set the attribute to let pre_save know to save history
+            # Set the attributes to let pre_save know to save history
             instance.update_mode = update_mode
             instance.renewal_mode = renewal_mode
 
@@ -575,7 +575,7 @@ def take_usps_address(request):
                 id=mailing_addresses[0]['instance']
             )
 
-            # Set the attribute to let pre_save know to save history
+            # Set the attributes to let pre_save know to save history
             address.update_mode = update_mode
 
             address.save()
@@ -612,7 +612,7 @@ def household(request):
         instance.user_id = request.user.id
         instance.is_income_verified = False
 
-        # Set the attribute to let pre_save know to save history
+        # Set the attributes to let pre_save know to save history
         instance.update_mode = update_mode
         instance.renewal_mode = renewal_mode
         
@@ -650,6 +650,10 @@ def household_members(request):
     # Set as false if session var DNE
     update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False
 
+    # TODO: Update this renewal_mode placeholder to the same mechanics as
+    # update_mode
+    renewal_mode = False
+
     if request.method == "POST":
         try:
             existing = request.user.householdmembers
@@ -660,6 +664,11 @@ def household_members(request):
         instance = form.save(commit=False)
         instance.user_id = request.user.id
         instance.household_info = serialize_household_members(request)
+
+        # Set the attribute to let pre_save know to save history
+        instance.update_mode = update_mode
+        instance.renewal_mode = renewal_mode
+        
         instance.save()
         if update_mode:
             return redirect(f"{reverse('app:user_settings')}?page_updated=household")
