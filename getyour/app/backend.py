@@ -34,6 +34,7 @@ from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.db.models import Q
 from django.core.serializers.json import DjangoJSONEncoder
+from phonenumber_field.phonenumber import PhoneNumber
 from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram
 
 
@@ -372,21 +373,45 @@ def broadcast_email_pw_reset(email, content):
         print(e.message)
 
 
-def model_to_dict(model):
+def changed_modelfields_to_dict(
+        previous_instance,
+        current_instance,
+        include_fk=False,
+        ):
     """
     Convert a model object to a dictionary. If a property is a datetime object,
     it will be converted to a string. If there is a nested model, it will be
     excluded from the dictionary.
     :param model: model object
     """
+
+    # Initialize output
     model_dict = {}
-    for field in model._meta.get_fields():
-        if field.is_relation:
+
+    # Compare the current instance with the previous instance
+    changed_fields = []
+    for field in current_instance._meta.fields:
+        if not include_fk and field.is_relation:
             continue
-        value = getattr(model, field.name)
-        if isinstance(value, datetime.datetime):
-            value = value.strftime('%Y-%m-%d %H:%M:%S')
-        model_dict[field.name] = value
+
+        # Determine if the field has been modified
+        field_name = field.name
+        if getattr(current_instance, field_name) != getattr(previous_instance, field_name):
+            try:
+                value = getattr(previous_instance, field_name)
+                if field.is_relation:
+                    # Designate the field name and value as 'id'
+                    model_dict[f"{field.name}_id"] = value.id
+                else:
+                    if isinstance(value, datetime.datetime):
+                        value = value.strftime('%Y-%m-%d %H:%M:%S')
+                    elif isinstance(value, PhoneNumber):
+                        value = value.as_e164
+                    model_dict[field.name] = value
+                
+            except AttributeError:
+                pass
+            
     return model_dict
 
 

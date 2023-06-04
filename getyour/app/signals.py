@@ -20,26 +20,92 @@ import json
 from django.db.models.signals import pre_save
 from django.core.serializers.json import DjangoJSONEncoder
 from django.dispatch import receiver
-from app.models import Household, HouseholdHist
-from app.backend import model_to_dict
+from app.models import Household, HouseholdHist, User, UserHist, Address, AddressHist
+from app.backend import changed_modelfields_to_dict
 
 
 @receiver(pre_save, sender=Household)
 def household_pre_save(sender, instance, **kwargs):
     try:
-        # Save the user's current household data to the database in the
-        # household history table.
-        users_household = Household.objects.get(user_id=instance.user_id)
+        # Save the previous values of the fields that have been updated in the
+        # user's household data to the database in the householdhist table
         household_history = HouseholdHist.objects.create(
             user=instance.user,
-            # Convert the household object to a dictionary and then to a JSON string
-            # and set it to the historical_household field
-            historical_values=json.loads(json.dumps(
-                model_to_dict(users_household), cls=DjangoJSONEncoder))
-        )
-    except Household.DoesNotExist:
-        users_household = None
+            # Convert the updated household objects to a dictionary and then to
+            # a JSON string and set it to the historical_values field
+            historical_values=json.loads(
+                json.dumps(
+                    changed_modelfields_to_dict(
+                        sender.objects.get(pk=instance.pk),
+                        instance,
+                        ), cls=DjangoJSONEncoder
+                    )
+                )
+            )
 
-    if users_household:
+    except Household.DoesNotExist:
+        # No historical data to use for the update
+        pass
+
+    else:
         # Save or perform operations with the original instance
         household_history.save()
+
+
+@receiver(pre_save, sender=User)
+def user_pre_save(sender, instance, **kwargs):
+    try:
+        # Save the previous values of the fields that have been updated in the
+        # user's account data to the database in the userhist table
+        user_history = UserHist.objects.create(
+            user=instance,
+            # Convert the updated user objects to a dictionary and then to
+            # a JSON string and set it to the historical_values field
+            historical_values=json.loads(
+                json.dumps(
+                    changed_modelfields_to_dict(
+                        sender.objects.get(pk=instance.pk),
+                        instance,
+                        ), cls=DjangoJSONEncoder
+                    )
+                )
+            )
+
+    except User.DoesNotExist:
+        # No historical data to use for the update
+        pass
+
+    else:
+        # Save or perform operations with the original instance
+        user_history.save()
+
+
+@receiver(pre_save, sender=Address)
+def address_pre_save(sender, instance, **kwargs):
+    try:
+        # Save the previous values of the fields that have been updated in the
+        # user's address data to the database in the addresshist table. Since
+        # the AddressRD data don't change, only the Address data need to be
+        # preserved
+        address_history = AddressHist.objects.create(
+            user=instance.user,
+            # Convert the updated address objects to a dictionary and then to
+            # a JSON string and set it to the historical_values field
+            historical_values=json.loads(
+                json.dumps(
+                    changed_modelfields_to_dict(
+                        sender.objects.get(pk=instance.pk),
+                        instance,
+                        include_fk=True,
+                        ), cls=DjangoJSONEncoder
+                    )
+                )
+            )
+
+    except Address.DoesNotExist:
+        # No historical data to use for the update
+        pass
+
+    else:
+        # Save or perform operations with the original instance
+        address_history.save()

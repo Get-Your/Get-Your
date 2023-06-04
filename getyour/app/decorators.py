@@ -26,9 +26,12 @@ def set_update_mode(view_func):
     """
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        # Get the success query string parameter
+        # Get the update_mode query string parameter
         update_mode = request.GET.get('update_mode')
-        if update_mode:
+
+        # Check explicitly in case the query string is used another way later
+        if update_mode == '1':
+            # This session var will be the global bool for update_mode
             request.session['update_mode'] = True
             return redirect(request.path)
 
