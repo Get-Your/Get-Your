@@ -519,14 +519,20 @@ def map_iq_enrollment_status(program):
         return ''
 
 
-def get_users_iq_programs(user_id, users_ami_range_max, users_eligiblity_address):
+def get_users_iq_programs(
+        user_id,
+        users_income_as_fraction_of_ami,
+        users_eligiblity_address,
+        ):
     """ 
-    Get the iq programs for the user where the user is geographically eligible, as well as 
-    where their ami range is less than or equal to the users max ami range
-    or where the user has already applied to the program. Additionaly filter out
+    Get the iq programs for the user where the user is geographically eligible,
+    as well as where their ami range is less than or equal to the users max ami
+    range or where the user has already applied to the program. Additionaly
+    filter out
     params:
         user_id: the id of the user
-        users_ami_range_max: the max ami range for the user
+        users_income_as_fraction_of_ami: the user's household income as fraction
+            of ami
         users_eligiblity_address: the eligibility address for the user
     returns:
         a list of users iq programs
@@ -540,7 +546,7 @@ def get_users_iq_programs(user_id, users_ami_range_max, users_eligiblity_address
         program.program_id for program in users_iq_programs]
     active_iq_programs = list(IQProgramRD.objects.filter(
         (Q(is_active=True) & Q(ami_threshold__gte=Decimal(
-            float(users_ami_range_max))) & ~Q(id__in=users_iq_programs_ids))
+            float(users_income_as_fraction_of_ami))) & ~Q(id__in=users_iq_programs_ids))
     ))
 
     # Filter out the active programs that the user is not geographically eligible for.

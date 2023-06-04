@@ -34,7 +34,7 @@ def dashboard(request):
     eligibility_address = AddressRD.objects.filter(
         id=request.user.address.eligibility_address_id).first()
     users_iq_programs = get_users_iq_programs(
-        request.user.id, request.user.household.ami_range_max, eligibility_address)
+        request.user.id, request.user.household.income_as_fraction_of_ami, eligibility_address)
     for program in users_iq_programs:
         # If the program's visibility is 'block' or the status is `ACTIVE` or `PENDING`, it means the user is eligible for the program
         # so we'll count it for their total number of programs they qualify for
@@ -160,7 +160,7 @@ def qualified_programs(request):
     eligibility_address = AddressRD.objects.filter(
         id=request.user.address.eligibility_address_id).first()
     users_iq_programs = get_users_iq_programs(
-        request.user.id, request.user.household.ami_range_max, eligibility_address)
+        request.user.id, request.user.household.income_as_fraction_of_ami, eligibility_address)
 
     order_by = request.GET.get('order_by')
     if order_by and order_by == 'eligible':
@@ -207,7 +207,7 @@ def programs_list(request):
     eligibility_address = AddressRD.objects.filter(
         id=request.user.address.eligibility_address_id).first()
     users_iq_programs = get_users_iq_programs(
-        request.user.id, request.user.household.ami_range_max, eligibility_address)
+        request.user.id, request.user.household.income_as_fraction_of_ami, eligibility_address)
     return render(
         request,
         'dashboard/programs_list.html',
