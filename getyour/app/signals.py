@@ -127,11 +127,12 @@ def address_pre_save(sender, instance, **kwargs):
             pass
 
         else:
-            # Save or perform operations with the original instance
-            address_history.save()
-
-        # Ensure ``is_..._updated`` is set (regardless whether any field changes)
-        # Eligibility address changes only take place in renewal mode
-        # Mailing address changes can take place in either mode
-        instance.is_eligibility_address_updated = instance.renewal_mode
-        instance.is_mailing_address_updated = instance.update_mode or instance.renewal_mode
+            # Save or perform operations with the original instance if any field
+            # has changed
+            if address_history.historical_values != {}:
+                address_history.save()
+                # Set is_updated if any values have changed
+                instance.is_updated = True
+            else:
+                # If renewal_mode, set is_updated regardless of values have changed
+                instance.is_updated = instance.renewal_mode
