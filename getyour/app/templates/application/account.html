@@ -162,7 +162,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     var same = document.getElementById("same");
     var complex = document.getElementById("complex");
 
-    {% if update_mode is None %}
+    {% if not update_mode %}
     var myInput = document.getElementById("password");
     var myInput2 = document.getElementById("password2");
 
