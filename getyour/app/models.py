@@ -142,6 +142,26 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
     
+    # Define non-database attributes
+    @property
+    def update_mode(self):
+        # Return update_mode for use in saving historical values
+        return getattr(self, '_update_mode', False)
+    
+    @update_mode.setter
+    def update_mode(self, val):
+        # Setter for update_mode
+        self._update_mode = val    
+
+    @property
+    def renewal_mode(self):
+        # Return renewal_mode for use in saving historical values
+        return getattr(self, '_renewal_mode', False)
+    
+    @renewal_mode.setter
+    def renewal_mode(self, val):
+        # Setter for renewal_mode
+        self._renewal_mode = val   
     
 class UserHist(models.Model):
     id = models.AutoField(primary_key=True)
@@ -219,13 +239,33 @@ class Address(GenericTimeStampedModel):
         on_delete=models.DO_NOTHING,    # don't remove this value if address is deleted
         related_name='+',   # don't relate AddressesNew_rearch id with this field
     )
-    is_mailing_address_updated = models.BooleanField(default=False)
     eligibility_address = models.ForeignKey(
         AddressRD,
         on_delete=models.DO_NOTHING,    # don't remove this value if address is deleted
         related_name='+',   # don't relate AddressesNew_rearch id with this field
     )
-    is_eligibility_address_updated = models.BooleanField(default=False)
+    is_updated = models.BooleanField(default=False)
+
+    # Define non-database attributes
+    @property
+    def update_mode(self):
+        # Return update_mode for use in saving historical values
+        return getattr(self, '_update_mode', False)
+    
+    @update_mode.setter
+    def update_mode(self, val):
+        # Setter for update_mode
+        self._update_mode = val    
+
+    @property
+    def renewal_mode(self):
+        # Return renewal_mode for use in saving historical values
+        return getattr(self, '_renewal_mode', False)
+    
+    @renewal_mode.setter
+    def renewal_mode(self, val):
+        # Setter for renewal_mode
+        self._renewal_mode = val    
 
 
 class AddressHist(models.Model):
@@ -260,6 +300,39 @@ class Household(GenericTimeStampedModel):
         max_digits=3, decimal_places=2, null=True, default=None)
     rent_own = models.CharField(max_length=200)
 
+    # Define non-database attributes
+    @property
+    def update_mode(self):
+        # Return update_mode for use in saving historical values
+        return getattr(self, '_update_mode', False)
+    
+    @update_mode.setter
+    def update_mode(self, val):
+        # Setter for update_mode
+        self._update_mode = val    
+
+    @property
+    def renewal_mode(self):
+        # Return renewal_mode for use in saving historical values
+        return getattr(self, '_renewal_mode', False)
+    
+    @renewal_mode.setter
+    def renewal_mode(self, val):
+        # Setter for renewal_mode
+        self._renewal_mode = val      
+
+
+class HouseholdHist(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(
+        User,
+        related_name='household_history',
+        # don't remove the household history if a user account is deleted
+        on_delete=models.DO_NOTHING,
+    )
+    created = models.DateTimeField(auto_now_add=True)
+    historical_values = models.JSONField(null=True, blank=True)
+
 
 class HouseholdMembers(GenericTimeStampedModel):
     user = models.OneToOneField(
@@ -271,14 +344,36 @@ class HouseholdMembers(GenericTimeStampedModel):
     # Store the household info (individuals' names and birthdates) as JSON for
     # quick storage and reference
     household_info = models.JSONField(null=True, blank=True)
+    is_updated = models.BooleanField(default=False)
+
+    # Define non-database attributes
+    @property
+    def update_mode(self):
+        # Return update_mode for use in saving historical values
+        return getattr(self, '_update_mode', False)
+    
+    @update_mode.setter
+    def update_mode(self, val):
+        # Setter for update_mode
+        self._update_mode = val    
+
+    @property
+    def renewal_mode(self):
+        # Return renewal_mode for use in saving historical values
+        return getattr(self, '_renewal_mode', False)
+    
+    @renewal_mode.setter
+    def renewal_mode(self, val):
+        # Setter for renewal_mode
+        self._renewal_mode = val          
 
 
-class HouseholdHist(models.Model):
+class HouseholdMembersHist(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(
         User,
-        related_name='eligibility_history',
-        # don't remove the eligibility history if a user account is deleted
+        related_name='householdmembers_history',
+        # don't remove the household member history if a user account is deleted
         on_delete=models.DO_NOTHING,
     )
     created = models.DateTimeField(auto_now_add=True)

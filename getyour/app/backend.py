@@ -376,7 +376,6 @@ def broadcast_email_pw_reset(email, content):
 def changed_modelfields_to_dict(
         previous_instance,
         current_instance,
-        include_fk=False,
         ):
     """
     Convert a model object to a dictionary. If a property is a datetime object,
@@ -391,9 +390,6 @@ def changed_modelfields_to_dict(
     # Compare the current instance with the previous instance
     changed_fields = []
     for field in current_instance._meta.fields:
-        if not include_fk and field.is_relation:
-            continue
-
         # Determine if the field has been modified
         field_name = field.name
         if getattr(current_instance, field_name) != getattr(previous_instance, field_name):
@@ -411,7 +407,7 @@ def changed_modelfields_to_dict(
                 
             except AttributeError:
                 pass
-            
+
     return model_dict
 
 
