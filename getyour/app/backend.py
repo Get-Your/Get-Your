@@ -438,10 +438,6 @@ def authenticate(username=None, password=None):
     User = get_user_model()
     try:  # to allow authentication through phone number or any other field, modify the below statement
         user = User.objects.get(email=username)
-        print(user)
-        print(password)
-        print(user.password)
-        print(user.check_password(password))
         if user.check_password(password):
             return user
         return None

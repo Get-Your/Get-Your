@@ -29,6 +29,7 @@ from django.http import QueryDict, HttpResponseRedirect, JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.query_utils import Q
 from django.db import IntegrityError
+from django.forms.utils import ErrorList
 from app.forms import HouseholdForm, UserForm, AddressForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm
 from app.backend import form_page_number, tag_mapping, address_check, serialize_household_members, validate_usps, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, broadcast_email, broadcast_sms
 from app.models import AddressRD, Address, EligibilityProgram, Household, IQProgram, User, EligibilityProgramRD
@@ -133,16 +134,29 @@ def account(request):
         else:
             # AJAX data function below, sends data to AJAX function in account.html, if clients make a mistake via email or phone number, page lets them know and DOESN'T refresh web page
             # let's them know via AJAX
-            errorMessages = dict(form.errors.items())
-            if "email" in errorMessages:
-                data = {
-                    'result': "error",
-                    'message': errorMessages["email"]
-                }
-            elif "phone_number" in errorMessages:
-                data = {
-                    'result': "error",
-                    'message':  errorMessages["phone_number"]
+            error_messages = dict(form.errors.items())
+            
+            # Create message_dict by parsing strings or all items of ErrorList,
+            # where applicable. Use the prettified field name as each key
+            message_dict = {}
+            for keyitm in error_messages.keys():
+                val = error_messages[keyitm]
+
+                # Gather the list of error messages and flatten it
+                message_list = [[y for y in val] if isinstance(val, ErrorList) else val]
+                flattened_messages = [item for items in message_list for item in items]
+
+                # Write the messages as a string
+                message_dict.update({
+                    keyitm.replace('_', ' ').title(): '. '.join(flattened_messages)
+                    })
+            # Create error message data by prepending the prettified field name
+            # and joining as newlines
+            data = {
+                'result': 'error',
+                'message': '\n'.join(
+                    [f"{keyitm}: {message_dict[keyitm]}" for keyitm in message_dict.keys()]
+                    )
                 }
             return JsonResponse(data)
     else:
