@@ -852,7 +852,7 @@ def files(request):
                 # Now save the value of the ami_threshold to the user's household
                 Household.objects.filter(
                     Q(user_id=request.user.id)
-                ).update(ami_range_min=lowest_ami['program__ami_threshold'], ami_range_max=lowest_ami['program__ami_threshold'])
+                ).update(income_as_fraction_of_ami=lowest_ami['program__ami_threshold'])
 
                 # Get the user's eligibility address
                 eligibility_address = AddressRD.objects.filter(
