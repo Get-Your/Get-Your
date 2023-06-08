@@ -578,8 +578,8 @@ def get_users_iq_programs(
             program, 'program') else program.friendly_eligibility_review_period
         program.learn_more_link = program.program.learn_more_link if hasattr(
             program, 'program') else program.learn_more_link
-        program.autoapply_ami_threshold = program.program.autoapply_ami_threshold if hasattr(
-            program, 'program') else program.autoapply_ami_threshold
+        program.enable_autoapply = program.program.enable_autoapply if hasattr(
+            program, 'program') else program.enable_autoapply
         program.ami_threshold = program.program.ami_threshold if hasattr(
             program, 'program') else program.ami_threshold
     return programs
