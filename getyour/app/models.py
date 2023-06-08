@@ -412,12 +412,14 @@ class IQProgramRD(GenericTimeStampedModel):
 
     is_active = models.BooleanField(default=True)
 
+    # Enable auto-apply for the designated program
+    enable_autoapply = models.BooleanField(default=False)
+
     # All fields beginning with `req_` are Boolean and specify whether the matching
     # field in `app_addressrd` is a filter for the program (e.g. a program with
     # `req_is_city_covered`==True will require a user’s `app_address.eligibility_address_id`
     # to have `app_addressrd.is_city_covered`=True, but `req_is_in_gma`==False will
     # ignore `app_addressrd.is_in_gma`)
-    autoapply_ami_threshold = models.BooleanField(default=False)
     req_is_in_gma = models.BooleanField(default=False)
     req_is_city_covered = models.BooleanField(default=False)
 
