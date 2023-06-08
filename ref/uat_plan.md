@@ -49,7 +49,7 @@ Select 'apply' - this leads to [Create an Account](#step-1-create-an-account-pag
     - *Expected result:* The system should notify for all invalid input and not resort to a 'Server Error' after clicking 'create'
     - ***Admin** expected result:* Verify that the data are stored properly in the `app_user` table
 
-> Note that the final email address and phone number entered here (before moving on to the next testing step) will be used for the final [communication sent page](#step-6-we-sent-you-an-email-and-a-text-page-broadcast), so it will be helpful to end on a real email address and real phone number.
+> Note that the final email address and phone number entered here (before moving on to the next testing step) will be used for the final [communication sent page](#step-6-we-sent-you-an-email-and-a-text-page-broadcast), so it will be helpful to end on a real email address and real phone number. BE CAREFUL NOT TO USE A RANDOM PHONE NUMBER OR EMAIL ADDRESS, AS THIS WILL SEND A REAL TEXT AND EMAIL.
 
 Select 'create' - this should notify that your account has been created and leads to [Where do you live](#step-2-where-do-you-live-page-address).
 
