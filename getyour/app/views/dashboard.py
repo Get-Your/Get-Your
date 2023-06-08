@@ -95,7 +95,7 @@ def quick_apply(request, iq_program):
     eligibility_address = AddressRD.objects.filter(
         id=request.user.address.eligibility_address_id).first()
     users_iq_programs = get_users_iq_programs(
-        request.user.id, request.user.household.ami_range_max, eligibility_address)
+        request.user.id, request.user.household.income_as_fraction_of_ami, eligibility_address)
     if iq_program not in users_iq_programs:
         raise Exception(f"User is not eligible for {iq_program.program_name}.")
     
