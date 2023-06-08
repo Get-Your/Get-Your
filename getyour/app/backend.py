@@ -547,8 +547,7 @@ def get_users_iq_programs(
     users_iq_programs_ids = [
         program.program_id for program in users_iq_programs]
     active_iq_programs = list(IQProgramRD.objects.filter(
-        (Q(is_active=True) & Q(ami_threshold__gte=Decimal(
-            float(users_income_as_fraction_of_ami))) & ~Q(id__in=users_iq_programs_ids))
+        (Q(is_active=True) & Q(ami_threshold__gte=users_income_as_fraction_of_ami) & ~Q(id__in=users_iq_programs_ids))
     ))
 
     # Filter out the active programs that the user is not geographically eligible for.

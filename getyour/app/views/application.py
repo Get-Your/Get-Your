@@ -864,7 +864,7 @@ def files(request):
                 # For every IQ program, check if the user should be automatically enrolled in it if the program
                 # has enable_autoapply set to True and the user's lowest_ami is <= the program's ami_threshold
                 for program in users_iq_programs:
-                    if program.enable_autoapply and Decimal(float(lowest_ami['program__ami_threshold'])) <= Decimal(float(program.ami_threshold)):
+                    if program.enable_autoapply and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
                         IQProgram.objects.create(
                             user_id=request.user.id,
                             program_id=program.id,
