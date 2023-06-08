@@ -32,8 +32,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 style="display: inline;" href="https://getfocoprod-test.azurewebsites.us/#Available%20Programs" target="_blank">Available Programs</a> to view each program's qualifications. </p>
         {% else %}
         <p>Congrats on creating an account! <br> <br> With the information you provided we gathered all the programs you
-            may qualify for! All you need to do now is to click on Apply Now + for programs you may be interested in
-            to apply. If you don't see a program you're expecting or are having an issue, please call 970-416-8090.</p>
+            may qualify for! All you need to do now is to click Apply Now to apply for programs you're interested in.
+            If you don't see a program you're expecting or are having an issue, please call 970-416-8090.</p>
         {% endif %}
     </div>
 </div>
@@ -46,7 +46,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 href="{% url 'app:qualified_programs' %}?order_by=active">
                 <div class="module" style="margin-left: 0;margin-right:1.5vw;padding: 1vw ;">
                     <hprogram style="color: var(--darkblue)"> {{active_programs}} </hprogram>
-                    <h3 style="font-weight: 400; margin: 0; ">Programs Active </h3>
+                    <h3 style="font-weight: 400; margin: 0; ">Active Program(s)</h3>
                 </div>
             </a>
             <a style="color:var(--white); font-weight: 800; text-decoration: none;"
@@ -64,7 +64,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 <div class="module" style="padding: 1vw ;margin:0 5vw;">
                     <div class="row" style="align-items: center;">
                         <hprogram style="color: #4CAD00;margin:0"> {{qualified_programs}} </hprogram>
-                        <h3 style="font-weight: 400; margin: 0 0 0 5vw ;">Programs You May Qualify For </h3>
+                        {% if pending_programs|add:active_programs > 0 %}
+                            <h3 style="font-weight: 400; margin: 0 0 0 5vw ;">Additional Program(s) Available </h3>
+                        {% else %}
+                            <h3 style="font-weight: 400; margin: 0 0 0 5vw ;">Program(s) Available for You </h3>
+                        {% endif %}
                     </div>
                 </div>
             </a>
@@ -90,7 +94,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <!--CSV HERE-->
                     <hprogram style="color: #4CAD00;margin:0"> {{qualified_programs}} </hprogram>
                 </a>
-                <p style="font-weight: 400; padding-left: 15px;">Programs You May Qualify For </p>
+                {% if pending_programs|add:active_programs > 0 %}
+                    <p style="font-weight: 400; padding-left: 15px;">Additional Program(s) Available</p>
+                {% else %}
+                    <p style="font-weight: 400; padding-left: 15px;">Program(s) Available for You</p>
+                {% endif %}
                 <button class="button button2" id="toggle-button1"><img src="{% static 'img/downArrow.svg' %}"
                         style="position: absolute; bottom: 10px;right: 10px;"> </button>
             </div>
@@ -164,7 +172,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <div class="item thin">
                 <!--CSV HERE-->
                 <hprogram style="color: var(--darkblue)"> {{active_programs}} </hprogram>
-                <p style="font-weight: 400; padding-left: 20px; ">Programs Active</p>
+                <p style="font-weight: 400; padding-left: 20px; ">Active Program(s)</p>
                 <button id="active_programs_tooltip" class="button button2">
                     <img src="{% static 'img/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px);">
                 </button>

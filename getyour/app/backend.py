@@ -504,7 +504,7 @@ def build_qualification_button(users_enrollment_status):
             "textColor": "white"
         },
         '': {
-            "text": "Apply Now +",
+            "text": "Apply Now",
             "color": "",
             "textColor": ""
         },
