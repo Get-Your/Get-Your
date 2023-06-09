@@ -719,7 +719,7 @@ def verify_transfer(global_objects: dict) -> None:
             maxIdx = len(newIdList)
             # Loop through all users < global_objects['current_user_offset']
             for idx,usrid in enumerate(newIdList):
-                
+
                 # Reset program_name so as not to confuse error messaging
                 program_name = ''
                 
@@ -743,8 +743,8 @@ def verify_transfer(global_objects: dict) -> None:
                     ]
                 
                 cursorOld.execute(
-                    """select "{fd}" from public.application_addresses where "user_id_id"={usr}""".format(
-                        fd='", "'.join([x[0] for x in fieldConversionList]),
+                    """select {fd} from public.application_addresses where "user_id_id"={usr}""".format(
+                        fd=', '.join([f'UPPER("{x[0]}")' if x[0] in ('address', 'address2', 'city', 'state') else f'"{x[0]}"' for x in fieldConversionList]),
                         usr=usrid,
                         )
                     )
