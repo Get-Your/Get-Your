@@ -854,21 +854,20 @@ def verify_transfer(global_objects: dict) -> None:
                     ]
                 
                 documentsList = [
-                    ('snap', 'SNAP'),
-                    ('medicaid', 'Medicaid'),
-                    ('free_reduced_lunch', 'Free and Reduced Lunch'),
-                    ('identification', 'Identification'),
-                    ('ebb_acf', 'ACP Letter'),
-                    ('leap', 'LEAP Letter'),
-                    ('1040', '1040'),
-                    ('1040', '1040 Form'),
+                    ('snap', ('SNAP',)),
+                    ('medicaid', ('Medicaid',)),
+                    ('free_reduced_lunch', ('Free and Reduced Lunch',)),
+                    ('identification', ('Identification',)),
+                    ('ebb_acf', ('ACP Letter',)),
+                    ('leap', ('LEAP Letter',)),
+                    ('1040', ('1040', '1040 Form')),
                     ]
-                for program_name, document_title in documentsList:
+                for program_name, document_titles in documentsList:
                     cursorOld.execute(
-                        """select "{fd}" from public.dashboard_form where "user_id_id"={usr} and "document_title"='{dct}'""".format(
+                        """select "{fd}" from public.dashboard_form where "user_id_id"={usr} and ({dct})""".format(
                             fd='", "'.join([x[0] for x in fieldConversionList]),
                             usr=usrid,
-                            dct=document_title,
+                            dct=' or '.join([f""""document_title"='{x}'""" for x in document_titles]),
                             )
                         )
                     oldRec = cursorOld.fetchall()
