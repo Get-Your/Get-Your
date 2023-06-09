@@ -9,7 +9,6 @@ v2 Get Your database.
 
 """
 
-from typer import prompt
 from rich import print
 import psycopg2
 import hashlib
@@ -55,6 +54,13 @@ def run_full_porting(profile):
         )
 
     global_objects = initialize_vars(profile)
+    
+    print(
+        "[bold red]Before starting this process, confirm that you've used DBeaver Data Compare to directly copy all data in [green]app_iqprogramrd[/green] and [green]app_eligibilityprogramrd[/green] from [green]getyour_dev[/green] to [green]{}[/green]".format(
+            global_objects['cred_new'].config['db'],
+            )
+        )
+    _ = input(": ")
     
     currentUserAddition = 100000
     update_current_users(global_objects)
@@ -441,13 +447,16 @@ def port_householdmembers(global_objects: dict) -> None:
     
     # Due to intensive conversions, the majority of this section needs to be run
     # via Django. Follow the directions below:
-    print(
+    _ = input(
           """Run the ETL from MoreInfo via Django with the following:
     1) Switch to branch ``database-rearchitecture-p0-modifytable`` in the GetFoco repo
     2) Run the GetFoco app using ``settings.local_<target_database>db`` (you may need to ``makemigrations``/``migrate`` first)
     3) Navigate to 127.0.0.1:8000/application/rearch_phase0 to write to public.application_moreinfo_rearch in the GetFoco database.
-    Continue this script to finish porting to GetYour."""
+    Continue this script to finish porting to GetYour.
+    
+    Press any key to continue (when this is complete)."""
     )
+    
     
     # modified_at is written automatically, so now we need to overwrite it from the temporary fields
     cursorOld.execute(
@@ -500,9 +509,6 @@ def port_iqprograms(global_objects: dict) -> None:
         ## getfoco_dev.public.application_iqprogramqualifications_rearch has already
         ## been updated with the program information, so there's no need to revisit
         ## old tables
-        
-        ## TODO: Port getfoco_dev.public.application_iqprogramqualifications_rearch
-        ## to public.app_iqprogramrd in *all environments*
         
         # Current name: application_iq_programs_rearch
         # Field mapping is as such (application_eligibility, application_iq_programs_rearch):
@@ -889,4 +895,4 @@ if __name__=='__main__':
     
     # Define the generic profile ('_old' will be appended to this for the v1
     # connection)
-    genericProfile = prompt('Enter a generic database profile to use for porting')        
+    genericProfile = input('Enter a generic database profile to use for porting: ')        
