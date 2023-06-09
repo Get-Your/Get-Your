@@ -726,8 +726,11 @@ def verify_transfer(global_objects: dict) -> None:
                 ## Address
                 currentTest = 'address'
                 fieldConversionList = [
-                    ('created', 'created_at'),
-                    ('modified', 'modified_at'),
+                    # Skip dates, since addresses are combined above into the
+                    # addressrd using the newest version (so either would likely
+                    # error out)
+                    # ('created', 'created_at'),
+                    # ('modified', 'modified_at'),
                     ('address', 'address1'),
                     ('address2', 'address2'),
                     ('city', 'city'),
