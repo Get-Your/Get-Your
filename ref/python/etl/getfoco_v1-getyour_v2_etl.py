@@ -395,11 +395,11 @@ def port_eligibility(global_objects: dict) -> None:
     #     True if GenericQualified='ACTIVE' else False, is_income_verified
     
 
-    cursorOld.execute("""SELECT "created", "modified", "user_id_id", False, (CASE WHEN "rent" NOT IN ('Rent', 'Own') THEN "rent" ELSE '' END), "dependents", "AmiRange_min", "AmiRange_max", (CASE WHEN "GenericQualified"='ACTIVE' THEN true ELSE false END), (CASE WHEN "rent" IN ('Rent', 'Own') THEN LOWER("rent") ELSE '' END) FROM public.application_eligibility""")
+    cursorOld.execute("""SELECT "created", "modified", "user_id_id", False, (CASE WHEN "rent" NOT IN ('Rent', 'Own') THEN "rent" ELSE '' END), "dependents", "AmiRange_max", (CASE WHEN "GenericQualified"='ACTIVE' THEN true ELSE false END), (CASE WHEN "rent" IN ('Rent', 'Own') THEN LOWER("rent") ELSE '' END) FROM public.application_eligibility""")
     eligList = cursorOld.fetchall()
     
     if len(eligList) > 0:
-        cursorNew.execute("""insert into public.app_household ("created_at", "modified_at", "user_id", "is_updated", "duration_at_address", "number_persons_in_household", "ami_range_min", "ami_range_max", "is_income_verified", "rent_own")
+        cursorNew.execute("""insert into public.app_household ("created_at", "modified_at", "user_id", "is_updated", "duration_at_address", "number_persons_in_household", "income_as_fraction_of_ami", "is_income_verified", "rent_own")
                           VALUES {}""".format(
                 ', '.join(['%s']*len(eligList))
                 ),
@@ -763,8 +763,7 @@ def verify_transfer(global_objects: dict) -> None:
                 ('"modified"', 'modified_at'),
                 ("""(CASE WHEN "rent" NOT IN ('Rent', 'Own') THEN "rent" ELSE '' END)""", 'duration_at_address'),
                 ('"dependents"', 'number_persons_in_household'),
-                ('"AmiRange_min"', 'ami_range_min'),
-                ('"AmiRange_max"', 'ami_range_max'),
+                ('"AmiRange_max"', 'income_as_fraction_of_ami'),
                 ("""(CASE WHEN "GenericQualified"='ACTIVE' THEN true ELSE false END)""", 'is_income_verified'),
                 ("""(CASE WHEN "rent" IN ('Rent', 'Own') THEN LOWER("rent") ELSE '' END)""", 'rent_own'),
                 ]
