@@ -873,8 +873,9 @@ def verify_transfer(global_objects: dict) -> None:
                     ]
                 for program_name, document_titles in documentsList:
                     cursorOld.execute(
-                        """select "{fd}" from public.dashboard_form where "user_id_id"={usr} and ({dct})""".format(
+                        """select "{fd}" from public.dashboard_form where "user_id_id"={usr} and ({dct}) order by "{crf}" """.format(
                             fd='", "'.join([x[0] for x in fieldConversionList]),
+                            crf=fieldConversionList[0][0],
                             usr=usrid,
                             dct=' or '.join([f""""document_title"='{x}'""" for x in document_titles]),
                             )
@@ -891,8 +892,9 @@ def verify_transfer(global_objects: dict) -> None:
                     
                     cursorNew.execute(
                         """select "{fd}" from public.app_eligibilityprogram
-                        where "user_id"={usr} and "program_id"={prid}""".format(
+                        where "user_id"={usr} and "program_id"={prid} order by "{crf}" """.format(
                             fd='", "'.join([x[1] for x in fieldConversionList]),
+                            crf=fieldConversionList[0][1],
                             usr=usrid,
                             prid=programId,
                             )
