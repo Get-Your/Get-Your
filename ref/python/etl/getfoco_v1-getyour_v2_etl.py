@@ -75,6 +75,9 @@ def run_full_porting(profile):
     
     verify_transfer(global_objects)
     
+    global_objects['conn_old'].close()
+    global_objects['conn_new'].close()
+    
     print('[bright_cyan]Transfer to the new database complete!')
 
 def initialize_vars(profile: str) -> dict:
@@ -719,7 +722,13 @@ def verify_transfer(global_objects: dict) -> None:
             maxIdx = len(newIdList)
             # Loop through all users < global_objects['current_user_offset']
             for idx,usrid in enumerate(newIdList):
-
+                
+                # Set the index that previously errored out
+                previousErrorIdx = 0
+                if idx < previousErrorIdx:
+                    progress.update(verifyTask, advance=1)
+                    continue
+                
                 # Reset program_name so as not to confuse error messaging
                 program_name = ''
                 
