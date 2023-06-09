@@ -62,7 +62,7 @@ def run_full_porting(profile):
         )
     _ = input(": ")
     
-    currentUserAddition = 100000
+    global_objects['current_user_offset'] = 100000
     update_current_users(global_objects)
     port_user(global_objects)
     port_address(global_objects)
@@ -114,12 +114,16 @@ def initialize_vars(profile: str) -> dict:
             ssm='require')
         ) 
     
+    # Record the offset value for any current users
+    currentUserOffset = 100000
+    
     return(
         {
             'conn_new': connNew,
             'conn_old': connOld,
             'cred_new': credNew,
             'cred_old': credOld,
+            'current_user_offset': currentUserOffset
             }
         )
 
@@ -154,13 +158,13 @@ def update_current_users(global_objects: dict) -> None:
             raise Exception("There are already users in the app_user table!")
             
     # Update each table in order
-    cursorNew.execute("update public.app_address set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=currentUserAddition))
-    cursorNew.execute("update public.app_household set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=currentUserAddition))
-    cursorNew.execute("update public.app_householdmembers set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=currentUserAddition))
-    cursorNew.execute("update public.app_householdhist set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=currentUserAddition))
-    cursorNew.execute("update public.app_iqprogram set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=currentUserAddition))
-    cursorNew.execute("update public.app_eligibilityprogram set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=currentUserAddition))
-    cursorNew.execute("update public.app_user set id=id+{cradd} where id<{cradd}".format(cradd=currentUserAddition))
+    cursorNew.execute("update public.app_address set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=global_objects['current_user_offset']))
+    cursorNew.execute("update public.app_household set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=global_objects['current_user_offset']))
+    cursorNew.execute("update public.app_householdmembers set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=global_objects['current_user_offset']))
+    cursorNew.execute("update public.app_householdhist set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=global_objects['current_user_offset']))
+    cursorNew.execute("update public.app_iqprogram set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=global_objects['current_user_offset']))
+    cursorNew.execute("update public.app_eligibilityprogram set user_id=user_id+{cradd} where user_id<{cradd}".format(cradd=global_objects['current_user_offset']))
+    cursorNew.execute("update public.app_user set id=id+{cradd} where id<{cradd}".format(cradd=global_objects['current_user_offset']))
     
     global_objects['conn_new'].commit()
     cursorNew.close()
@@ -192,12 +196,12 @@ def port_user(global_objects: dict) -> None:
     # were removed in v2 because they duplicate the functionality of Django's
     # internal `date_joined` and `last_login`, respectively.
     
-    cursorOld.execute("""SELECT "id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived"
+    cursorOld.execute("""SELECT "id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived", false
                       from public.application_user""")
     userList = cursorOld.fetchall()
     
     if len(userList) > 0:
-        cursorNew.execute("""insert into public.app_user ("id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived")
+        cursorNew.execute("""insert into public.app_user ("id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived", "is_updated")
                           VALUES {}""".format(
                 ', '.join(['%s']*len(userList))
                 ),
@@ -342,11 +346,11 @@ def port_address(global_objects: dict) -> None:
             cursorNew.execute("""SELECT "id" FROM public.app_addressrd WHERE "address_sha1"=%s""", (hash_address(addressDict), ))
             idVal = cursorNew.fetchone()[0]
             
-            cursorNew.execute("""INSERT INTO public.app_address ("created_at", "modified_at", "user_id", "eligibility_address_id", "mailing_address_id")
+            cursorNew.execute("""INSERT INTO public.app_address ("created_at", "modified_at", "user_id", "eligibility_address_id", "mailing_address_id", "is_updated")
                               VALUES ({})""".format(
-                              ', '.join(['%s']*(len(usrFields)+2))
+                              ', '.join(['%s']*(len(usrFields)+3))
                               ),
-                        list(usritm[-len(usrFields):])+[idVal, idVal],
+                        list(usritm[-len(usrFields):])+[idVal, idVal, False],
                         )
 
         global_objects['conn_new'].commit()
@@ -466,11 +470,11 @@ def port_householdmembers(global_objects: dict) -> None:
     
     # Move public.application_moreinfo_rearch to public.app_householdmembers
     # (directly, except for init_temp fields - ignore these completely)
-    cursorOld.execute("""SELECT "created_at", "modified_at", "user_id", "household_info" FROM public.application_moreinfo_rearch""")
+    cursorOld.execute("""SELECT "created_at", "modified_at", "user_id", "household_info", false FROM public.application_moreinfo_rearch""")
     membersList = cursorOld.fetchall()
     
     if len(membersList) > 0:
-        cursorNew.execute("""insert into public.app_householdmembers ("created_at", "modified_at", "user_id", "household_info")
+        cursorNew.execute("""insert into public.app_householdmembers ("created_at", "modified_at", "user_id", "household_info", "is_updated")
                           VALUES {}""".format(
                 ', '.join(['%s']*len(membersList))
                 ),
@@ -693,7 +697,7 @@ def verify_transfer(global_objects: dict) -> None:
     
     cursorNew.execute(
         """SELECT "id" from public.app_user where "id"<{curadd} order by "id" asc""".format(
-            curadd=currentUserAddition))
+            curadd=global_objects['current_user_offset']))
     newIdList = [x[0] for x in cursorNew.fetchall()]
     
     # Verify the lists are equal
@@ -704,7 +708,7 @@ def verify_transfer(global_objects: dict) -> None:
     
     try:
         maxIdx = len(newIdList)
-        # Loop through all users < currentUserAddition
+        # Loop through all users < global_objects['current_user_offset']
         for idx,usrid in enumerate(newIdList):
             
             # Reset program_name so as not to confuse error messaging
