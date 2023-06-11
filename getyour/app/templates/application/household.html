@@ -32,23 +32,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% block body %}
 <p id="application_step" class="application-step">STEP {{ step }} OF {{ form_page_number }}</p>
 
-<div id="myModal" class="modal">
-    <!-- Modal content -->
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <p style="color: var(--darkblue);">Drop down bar not appearing? Make sure you enter how many individuals are in
-            your household <b>first</b> to reveal the drop down bar. <br><br>
-            If you are on mobile be sure to click on "Done" after entering the number of individuals.</p>
-
-        <br>
-        <br>
-        <br>
-        <div class="fadeSmall"><img src="{% static 'img/Step3Instructions.gif' %}"></div>
-        <div class="fadeLarge"><img src="{% static 'img/Step3InstructionsMobile.gif' %}"></div>
-
-    </div>
-</div>
-
 {% with header="Share basic information about your income" description="Your information will not be shared with anyone outside of the departments of City of Fort Collins' income eligible programs. They are meant to determine potential assistance programs you may qualify for." %}
 {% include "partials/side_content.html" with header=header description=description%}
 {% endwith %}
@@ -84,14 +67,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <label class="labelword" style="position:relative">{{ form.number_persons_in_household.label }}</label> <a
             href="{% url 'app:household_definition' %}"><img src="{% static 'img/clipart249308.png' %}" alt="info"
                 style="width:min(4.5vw,20px);"></a>
-        {% if update_mode %}
         <input class="fill" type="text" name="{{ form.number_persons_in_household.name }}"
-            id="{{ form.number_persons_in_household.id_for_label}}" value="{{ form.number_persons_in_household.value }}"
-            style="height: 3vh;" pattern="[1-9]\d*" title="Number of household members must be a positive whole number" required>
-        {% else %}
-        <input class="fill" type="text" name="{{ form.number_persons_in_household.name }}"
-            id="{{ form.number_persons_in_household.id_for_label}}" style="height: 3vh;" pattern="[1-9]\d*" title="Number of household members must be a positive whole number" required>
-        {% endif %}
+            value="{{ form.number_persons_in_household.value|default:'' }}"
+            id="{{ form.number_persons_in_household.id_for_label}}" style="height: 3vh;" pattern="[1-9]\d*"
+            title="Number of household members must be a positive whole number" required>
     </div>
 
     <div class="footer">
@@ -103,26 +82,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         {% endif %}
     </div>
 </form>
-
-<script>
-    $(document).ready(function () {
-        // Get the modal
-        var modal = document.getElementById("myModal");
-
-        // Get the <span> element that closes the modal
-        var span = document.getElementsByClassName("close")[0];
-
-        // When the user clicks on <span> (x), close the modal
-        span.onclick = function () {
-            modal.style.display = "none";
-        }
-
-        // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function (event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-    });
-</script>
 {% endblock %}

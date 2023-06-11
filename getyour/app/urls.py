@@ -63,6 +63,7 @@ urlpatterns = [
          name='qualified_programs'),
     path('programs_list', dashboard.programs_list, name='programs_list'),
     path('user_settings', dashboard.user_settings, name='user_settings'),
+    path('privacy', dashboard.privacy, name='privacy'),
 
     # Authentication URLs
     path('login', authentication.login_user, name='login'),

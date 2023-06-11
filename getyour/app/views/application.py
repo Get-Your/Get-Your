@@ -83,14 +83,17 @@ def account(request):
     if request.method == "POST":
         try:
             existing = request.user
-            if update_mode:
+            if update_mode or not request.user.has_viewed_dashboard:
                 form = UserUpdateForm(request.POST, instance=existing)
             else:
                 form = UserForm(request.POST, instance=existing)
         except AttributeError or ObjectDoesNotExist:
             form = UserForm(request.POST or None)
 
-        if form.is_valid() and update_mode:
+        # Checking the `has_viewed_dashboard` attribute of the user object
+        # allows us to determine if the user has already completed the application
+        # or if they're returning to update their information from the initial application
+        if form.is_valid() and (update_mode or not request.user.has_viewed_dashboard):
             instance = form.save(commit=False)
 
             # Set the attributes to let pre_save know to save history
@@ -98,7 +101,14 @@ def account(request):
             instance.renewal_mode = renewal_mode
 
             instance.save()
-            return JsonResponse({"redirect": f"{reverse('app:user_settings')}?page_updated=account"})
+
+            if not update_mode:
+                data = {
+                    'result': "success",
+                }
+                return JsonResponse(data)
+            else:
+                return JsonResponse({"redirect": f"{reverse('app:user_settings')}?page_updated=account"})
         elif form.is_valid():
             passwordCheck = form.passwordCheck()
             passwordCheckDuplicate = form.passwordCheckDuplicate()
@@ -118,6 +128,7 @@ def account(request):
                     'message': passwordCheckDuplicate
                 }
                 return JsonResponse(data)
+            
             try:
                 user = form.save()
                 login(request, user)
@@ -160,11 +171,11 @@ def account(request):
                 }
             return JsonResponse(data)
     else:
-        if update_mode:
-            # Query the users table for the user's data
+        try:
             user = User.objects.get(id=request.user.id)
             form = UserUpdateForm(instance=user)
-        else:
+            update_mode = True
+        except Exception:
             form = UserForm()
 
     return render(
@@ -638,12 +649,12 @@ def household(request):
             return redirect(reverse("app:household_members"))
 
     else:
-        if update_mode:
+        try:
             # Query the users table for the user's data
             eligibility = Household.objects.get(
                 user_id=request.user.id)
             form = HouseholdForm(instance=eligibility)
-        else:
+        except Exception:
             form = HouseholdForm()
 
     return render(

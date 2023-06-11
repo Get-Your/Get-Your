@@ -156,6 +156,10 @@ def user_settings(request):
         request,
         'dashboard/user_settings.html',
         {
+            "dashboard_color": "white",
+            "program_list_color": "white",
+            "Settings_color": "var(--yellow)",
+            "Privacy_Policy_color": "white",
             "name": request.user.first_name,
             "lastName": request.user.last_name,
             "email": request.user.email,
@@ -165,6 +169,19 @@ def user_settings(request):
                 "household": reverse('app:household'),
             },
             "page_updated": json.dumps({'page_updated': page_updated}, cls=DjangoJSONEncoder),
+        },
+    )
+
+
+def privacy(request):
+    return render(
+        request,
+        'dashboard/privacy.html',
+        {
+            "dashboard_color": "white",
+            "program_list_color": "white",
+            "Settings_color": "white",
+            "Privacy_Policy_color": "var(--yellow)",
         },
     )
 

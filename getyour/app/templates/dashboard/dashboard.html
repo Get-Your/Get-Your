@@ -29,10 +29,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <p>We're sorry, currently you do not qualify for any programs. If you think this is an error please <a
                 href="mailto: GetFoCo@fcgov.com?subject=Income Qualification Question - Get FoCo&body=Hello Get FoCo team, I seem to be having an issue with qualification. Can you help clarify the qualifications for the available programs?"
                 style="font-style: none;">contact us</a>. <br> <br> In addition, please visit <a
-                style="display: inline;" href="https://getfocoprod-test.azurewebsites.us/#Available%20Programs" target="_blank">Available Programs</a> to view each program's qualifications. </p>
+                style="display: inline;" href="https://getfocoprod-test.azurewebsites.us/#Available%20Programs"
+                target="_blank">Available Programs</a> to view each program's qualifications. </p>
         {% else %}
-        <p>Congrats on creating an account! <br> <br> With the information you provided we gathered all the programs you
-            may qualify for! All you need to do now is to click Apply Now to apply for programs you're interested in.
+        <p>Congrats on creating an account! <br> <br> With the information you provided we gathered all your available
+            programs!
+            All you need to do now is to click Apply Now to apply for programs you're interested in.
             If you don't see a program you're expecting or are having an issue, please call 970-416-8090.</p>
         {% endif %}
     </div>
@@ -65,9 +67,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <div class="row" style="align-items: center;">
                         <hprogram style="color: #4CAD00;margin:0"> {{qualified_programs}} </hprogram>
                         {% if pending_programs|add:active_programs > 0 %}
-                            <h3 style="font-weight: 400; margin: 0 0 0 5vw ;">Additional Program(s) Available </h3>
+                        <h3 style="font-weight: 400; margin: 0 0 0 5vw ;">Additional Program(s) Available</h3>
                         {% else %}
-                            <h3 style="font-weight: 400; margin: 0 0 0 5vw ;">Program(s) Available for You </h3>
+                        <h3 style="font-weight: 400; margin: 0 0 0 5vw ;">Program(s) Available for You</h3>
                         {% endif %}
                     </div>
                 </div>
@@ -95,9 +97,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <hprogram style="color: #4CAD00;margin:0"> {{qualified_programs}} </hprogram>
                 </a>
                 {% if pending_programs|add:active_programs > 0 %}
-                    <p style="font-weight: 400; padding-left: 15px;">Additional Program(s) Available</p>
+                <p style="font-weight: 400; padding-left: 15px;">Additional Program(s) Available</p>
                 {% else %}
-                    <p style="font-weight: 400; padding-left: 15px;">Program(s) Available for You</p>
+                <p style="font-weight: 400; padding-left: 15px;">Program(s) Available for You</p>
                 {% endif %}
                 <button class="button button2" id="toggle-button1"><img src="{% static 'img/downArrow.svg' %}"
                         style="position: absolute; bottom: 10px;right: 10px;"> </button>

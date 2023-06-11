@@ -65,27 +65,27 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </style>
 
 <script>
-    var update_mode = "{{ update_mode|yesno:'true:false'|safe }}";
+    var update_mode = "{{ update_mode }}" === "True";
     var formData = JSON.parse('{{ form_data | escapejs }}');
 
     var household_names = document.getElementsByName("name");
     var household_birthdates = document.getElementsByName("birthdate");
 
-    if (update_mode) {
-        // Check if the new number of household members is different from the old number of household members
-        // If it is let the user know to check over the names and birthdates
-        if (household_names.length !== formData.persons_in_household.length) {
-            Swal.fire({
-                title: 'Household Information',
-                text: 'The members of your household have changed since you last submitted your application. Please make sure their names and birthdays are up to date.',
-                icon: 'info',
-                confirmButtonText: 'Ok',
-                confirmButtonColor: '#13467D'
-            });
-        }
-    }
-
     try {
+        if (update_mode) {
+            // Check if the new number of household members is different from the old number of household members
+            // If it is let the user know to check over the names and birthdates
+            if (household_names.length !== formData.persons_in_household.length) {
+                Swal.fire({
+                    title: 'Household Information',
+                    text: 'The members of your household have changed since you last submitted your application. Please make sure their names and birthdays are up to date.',
+                    icon: 'info',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#13467D'
+                });
+            }
+        }
+
         for (var i = 0; i < household_names.length; i++) {
             if (formData.persons_in_household[i]) {
                 household_names[i].value = formData.persons_in_household[i].name;
@@ -93,8 +93,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             }
         }
     } catch (error) {
-        console.warn("User had no household members to prefill form");
+        console.warn("User has no household members");
     }
-
 </script>
 {% endblock %}
