@@ -57,15 +57,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <div class="input" style="width:100%">
             <!--TODO: Save input-->
             <input class="fill" value="{{ field.value|default:'' }}" name="{{ field.name }}" id="state"
-                maxlength="{{ field.max_length }}" type="text" style="width:80%;" required autocomplete="off">
+                maxlength="{{ field.max_length }}" type="text" style="width:80%;" autocomplete="off" required>
             <label class="label">{{field.label}}</label>
         </div>
         <div class="input" style="width:100%">
             <!--TODO: change this to dropdown menu with data-->
             <input class="fill" value="{{ eligibility_address_form.zip_code.value|default:'' }}"
-                name="{{ eligibility_address_form.zip_code.name }}" id="zip_code"
-                maxlength="{{ eligibility_address_form.zip_code.max_length }}" type="number" style="width:100%;"
-                required autocomplete="off">
+                name="{{ eligibility_address_form.zip_code.name }}" id="zip_code" pattern="[0-9]{5}"
+                title="Please enter a 5-digit Zip Code" maxlength="5" type="text" style="width:100%;" autocomplete="off"
+                required>
             <label class="label">{{ eligibility_address_form.zip_code.label }}</label>
         </div>
     </div>
@@ -102,16 +102,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <div class="input" style="width:100%">
                 <!--TODO: Save input-->
                 <input class="fill" value="{{ field.value|default:'' }}" name="mailing_{{ field.name }}"
-                    id="mailing_state" maxlength="{{ field.max_length }}" type="text" style="width:80%;" required
-                    autocomplete="off">
+                    id="mailing_state" maxlength="{{ field.max_length }}" type="text" style="width:80%;"
+                    autocomplete="off" required>
                 <label class="label">{{field.label}}</label>
             </div>
             <div class="input" style="width:100%">
                 <!--TODO: change this to dropdown menu with data-->
                 <input class="fill" value="{{ mailing_address_form.zip_code.value|default:'' }}"
-                    name="mailing_{{ mailing_address_form.zip_code.name }}" id="mailing_zip_code"
-                    maxlength="{{ mailing_address_form.zip_code.max_length }}" type="number" style="width:100%;"
-                    required autocomplete="off">
+                    name="mailing_{{ mailing_address_form.zip_code.name }}" id="mailing_zip_code" pattern="[0-9]{5}"
+                    title="Please enter a 5-digit Zip Code" maxlength="5" type="text" style="width:100%;"
+                    autocomplete="off" required>
                 <label class="label">{{ mailing_address_form.zip_code.label }}</label>
             </div>
         </div>
@@ -139,16 +139,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </form>
 
 <script>
-
     $(document).ready(function () {
-        $("#mailing_zip_code, #zip_code").blur(function () {
-            zipCheck(this);
-        });
-
-        $("#mailing_state, #state").blur(function () {
-            stateNameToAbbreviation(this);
-        });
-
         {% if not update_mode %}
         var sameAddress = "{{ same_address }}" === "True";
         var mailingAddressHtml = $("#mailing_address_wrapper").html();
@@ -182,136 +173,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         }
     }
     {% endif %}
-
-    function stateNameToAbbreviation(stateName) {
-        var states = {
-            "arizona": "AZ",
-            "alabama": "AL",
-            "alaska": "AK",
-            "arkansas": "AR",
-            "california": "CA",
-            "colorado": "CO",
-            "connecticut": "CT",
-            "district of columbia": "DC",
-            "delaware": "DE",
-            "florida": "FL",
-            "georgia": "GA",
-            "hawaii": "HI",
-            "idaho": "ID",
-            "illinois": "IL",
-            "indiana": "IN",
-            "iowa": "IA",
-            "kansas": "KS",
-            "kentucky": "KY",
-            "louisiana": "LA",
-            "maine": "ME",
-            "maryland": "MD",
-            "massachusetts": "MA",
-            "michigan": "MI",
-            "minnesota": "MN",
-            "mississippi": "MS",
-            "missouri": "MO",
-            "montana": "MT",
-            "nebraska": "NE",
-            "nevada": "NV",
-            "new hampshire": "NH",
-            "new jersey": "NJ",
-            "new mexico": "NM",
-            "new york": "NY",
-            "north carolina": "NC",
-            "north dakota": "ND",
-            "ohio": "OH",
-            "oklahoma": "OK",
-            "oregon": "OR",
-            "pennsylvania": "PA",
-            "rhode island": "RI",
-            "south carolina": "SC",
-            "south dakota": "SD",
-            "tennessee": "TN",
-            "texas": "TX",
-            "utah": "UT",
-            "vermont": "VT",
-            "virginia": "VA",
-            "washington": "WA",
-            "west virginia": "WV",
-            "wisconsin": "WI",
-            "wyoming": "WY",
-            "american samoa": "AS",
-            "guam": "GU",
-            "northern mariana islands": "MP",
-            "puerto rico": "PR",
-            "us virgin islands": "VI",
-            "us minor outlying islands": "UM",
-
-            "az": "AZ",
-            "al": "AL",
-            "ak": "AK",
-            "ar": "AR",
-            "ca": "CA",
-            "co": "CO",
-            "ct": "CT",
-            "dc": "DC",
-            "de": "DE",
-            "fl": "FL",
-            "ga": "GA",
-            "hi": "HI",
-            "id": "ID",
-            "il": "IL",
-            "in": "IN",
-            "ia": "IA",
-            "ks": "KS",
-            "ky": "KY",
-            "la": "LA",
-            "me": "ME",
-            "md": "MD",
-            "ma": "MA",
-            "mi": "MI",
-            "mn": "MN",
-            "ms": "MS",
-            "mo": "MO",
-            "mt": "MT",
-            "ne": "NE",
-            "nv": "NV",
-            "nh": "NH",
-            "nj": "NJ",
-            "nm": "NM",
-            "ny": "NY",
-            "nc": "NC",
-            "nd ": "ND",
-            "oh": "OH",
-            "ok": "OK",
-            "or": "OR",
-            "pa": "PA",
-            "ri ": "RI",
-            "sc ": "SC",
-            "sd ": "SD",
-            "tn": "TN",
-            "tx": "TX",
-            "ut": "UT",
-            "vt": "VT",
-            "va": "VA",
-            "wa": "WA",
-            "wv ": "WV",
-            "wi": "WI",
-            "wy": "WY",
-            "as": "AS",
-            "gu": "GU",
-            "mp  ": "MP",
-            "pr ": "PR",
-            "vi": "VI",
-            "um": "UM"
-        }
-
-        stateName.value = stateName.value.trim().replace(/[^\w ]/g, "").toLowerCase();
-        //Trim, remove all non-word characters with the exception of spaces, and convert to lowercase
-        if (stateName.value != null) {
-            stateName.value = states[stateName.value];
-        }
-        if (stateName.value == "undefined") {
-            stateName.value = "";
-            alert("Please re-enter your state again")
-        }
-    }
 
     function zipCheck(zipCode) {
         if (zipCode.value.length != 5) {
