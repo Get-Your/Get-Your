@@ -87,10 +87,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         {% if update_mode %}
         <input class="fill" type="text" name="{{ form.number_persons_in_household.name }}"
             id="{{ form.number_persons_in_household.id_for_label}}" value="{{ form.number_persons_in_household.value }}"
-            style="height: 3vh;" required>
+            style="height: 3vh;" pattern="[1-9]\d*" title="Number of household members must be a positive whole number" required>
         {% else %}
         <input class="fill" type="text" name="{{ form.number_persons_in_household.name }}"
-            id="{{ form.number_persons_in_household.id_for_label}}" style="height: 3vh;" required>
+            id="{{ form.number_persons_in_household.id_for_label}}" style="height: 3vh;" pattern="[1-9]\d*" title="Number of household members must be a positive whole number" required>
         {% endif %}
     </div>
 
