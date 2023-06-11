@@ -191,6 +191,22 @@ def address(request):
 
     if request.method == "POST":
         addresses = []
+
+        if not update_mode:
+            eligibility_address = {
+                'address1': request.POST['address1'],
+                'address2': request.POST['address2'],
+                'city': request.POST['city'],
+                'state': request.POST['state'],
+                'zipcode': request.POST['zip_code'],
+            }
+            addresses.append(
+                {
+                    'address': eligibility_address,
+                    'type': 'eligibility',
+                    'processed': False
+                })
+            
         # 'no' means the user has a different mailing address
         # compared to their eligibility address
         if request.POST.get('mailing_address') == 'no' or update_mode:
@@ -205,21 +221,6 @@ def address(request):
                 {
                     'address': mailing_address,
                     'type': 'mailing',
-                    'processed': False
-                })
-
-        if not update_mode:
-            eligibility_address = {
-                'address1': request.POST['address1'],
-                'address2': request.POST['address2'],
-                'city': request.POST['city'],
-                'state': request.POST['state'],
-                'zipcode': request.POST['zip_code'],
-            }
-            addresses.append(
-                {
-                    'address': eligibility_address,
-                    'type': 'eligibility',
                     'processed': False
                 })
 

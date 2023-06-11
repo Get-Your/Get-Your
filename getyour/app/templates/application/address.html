@@ -37,7 +37,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% endwith %}
 
 {% if not update_mode %}
-<h2 style="font-weight: 700; margin:5vh 0"> Where do you live? </h2>
+<h2 style="font-weight: 700; margin:5vh 0"> Where do you live?</h2>
+<h5 class="address-header" style="font-weight: 700"> Home Address</h5>
 {% endif %}
 
 <form action="{% url 'app:address' %}" method="post" autocomplete="false" enctype="multipart/form-data">
@@ -95,7 +96,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     {% endif %}
 
     <div id="mailing_address_wrapper">
-        <h2 style="font-weight: 700; margin:5vh 0"> What's your mailing address? </h2>
+        <h2 style="font-weight: 700; margin:5vh 0"> What's your mailing address?</h2>
+        <h5 class="address-header" style="font-weight: 700;"> Mailing Address</h5>
         {% for field in mailing_address_form %}
         {% if field.label == "State" %}
         <div class="row" style="width:100%">
@@ -137,6 +139,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         {% endif %}
     </div>
 </form>
+
+<style>
+    @media screen and (max-width : 767px) {
+        .address-header {
+            color: white;
+            margin-top: 0px;
+            margin-bottom: 10px;
+        }
+    }
+
+    @media screen and (min-width: 768px) {
+        .address-header {
+            color: var(--darkblue);
+            margin-top: 0px;
+            margin-bottom: 10px;
+        }
+    }
+</style>
 
 <script>
     $(document).ready(function () {
