@@ -270,9 +270,9 @@ def address_correction(request):
     try:
         addresses = json.loads(request.session['application_addresses'])
         in_progress_address = [
-            address for address in addresses if not address['processed']][0]['address']
-        q = QueryDict(urlencode(in_progress_address), mutable=True)
-        q_orig = QueryDict(urlencode(in_progress_address), mutable=True)
+            address for address in addresses if not address['processed']][0]
+        q = QueryDict(urlencode(in_progress_address['address']), mutable=True)
+        q_orig = QueryDict(urlencode(in_progress_address['address']), mutable=True)
 
         # Loop through maxLoopIdx+1 times to try different methods of
         # parsing the address
@@ -443,8 +443,8 @@ def address_correction(request):
             return redirect(reverse("app:take_usps_address"))
 
     print('Address match not found - proceeding to addressCorrection')
-    program_string = [in_progress_address['address1'], in_progress_address['address2'],
-                      in_progress_address['city'] + " " + in_progress_address['state'] + " " + in_progress_address['zipcode']]
+    program_string = [in_progress_address['address']['address1'], in_progress_address['address']['address2'],
+                      in_progress_address['address']['city'] + " " + in_progress_address['address']['state'] + " " + in_progress_address['address']['zipcode']]
     return render(
         request,
         'application/address_correction.html',
@@ -453,6 +453,7 @@ def address_correction(request):
             'form_page_number': form_page_number,
             'program_string': program_string,
             'program_string_2': program_string_2,
+            'address_type': in_progress_address['type'],
             'title': "Address Correction",
         },
     )

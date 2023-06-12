@@ -38,7 +38,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 {% if not update_mode %}
 <h2 style="font-weight: 700; margin:5vh 0"> Where do you live?</h2>
-<h5 class="address-header" style="font-weight: 700"> Home Address</h5>
 {% endif %}
 
 <form action="{% url 'app:address' %}" method="post" autocomplete="false" enctype="multipart/form-data">
@@ -97,7 +96,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     <div id="mailing_address_wrapper">
         <h2 style="font-weight: 700; margin:5vh 0"> What's your mailing address?</h2>
-        <h5 class="address-header" style="font-weight: 700;"> Mailing Address</h5>
         {% for field in mailing_address_form %}
         {% if field.label == "State" %}
         <div class="row" style="width:100%">
