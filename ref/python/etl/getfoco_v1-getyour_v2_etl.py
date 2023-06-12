@@ -200,7 +200,7 @@ def port_user(global_objects: dict) -> None:
     # were removed in v2 because they duplicate the functionality of Django's
     # internal `date_joined` and `last_login`, respectively.
     
-    cursorOld.execute("""SELECT "id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", "has_viewed_dashboard", "is_archived", false
+    cursorOld.execute("""SELECT "id", "password", "last_login", "is_superuser", "is_staff", "is_active", "date_joined", "email", "first_name", "last_name", "phone_number", false, "is_archived", false
                       from public.application_user""")
     userList = cursorOld.fetchall()
     
@@ -926,4 +926,4 @@ if __name__=='__main__':
     
     # Define the generic profile ('_old' will be appended to this for the v1
     # connection)
-    genericProfile = input('Enter a generic database profile to use for porting: ')        
+    profile = input('Enter a generic database profile to use for porting: ')        
