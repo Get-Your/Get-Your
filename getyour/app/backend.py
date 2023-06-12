@@ -542,6 +542,9 @@ def get_users_iq_programs(
     # Get the IQ programs that a user has already applied to
     users_iq_programs = list(IQProgram.objects.select_related(
         'program').filter(user_id=user_id))
+    
+    # Filter only programs that are active
+    users_iq_programs = [x for x in users_iq_programs if x.program.is_active]
 
     # Get the IQ programs a user is eligible for
     users_iq_programs_ids = [
