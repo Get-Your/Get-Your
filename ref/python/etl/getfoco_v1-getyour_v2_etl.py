@@ -57,8 +57,11 @@ def run_full_porting(profile):
     global_objects = initialize_vars(profile)
     
     print(
-        "[bold red]Before starting this process, confirm that you've used DBeaver Data Compare to directly copy all data in [green]app_iqprogramrd[/green] and [green]app_eligibilityprogramrd[/green] from [green]getyour_dev[/green] to [green]{}[/green]".format(
-            global_objects['cred_new'].config['db'],
+        """[bold red]Before starting this process, confirm that\n
+        - You've used DBeaver Data Compare to directly copy all data in [green]app_iqprogramrd[/green] and [green]app_eligibilityprogramrd[/green] from [green]getyour_dev[/green] to [green]{dbn}[/green]\n
+        - You've switched to branch [green]database-rearchitecture-p0-modifytable[/green] in the GetFoco repo and run [green]makemigrations[/green] then [green]migrate[/green] against the {dbo} database""".format(
+            dbn=global_objects['cred_new'].config['db'],
+            dbo=global_objects['cred_old'].config['db'],
             )
         )
     _ = input(": ")
@@ -458,8 +461,8 @@ def port_householdmembers(global_objects: dict) -> None:
     print(
           """\nRun the ETL from MoreInfo via Django with the following:
     1) Switch to branch [green]database-rearchitecture-p0-modifytable[/green] in the GetFoco repo
-    2) Run the GetFoco app using [green]settings.local_{tdb}db[/green] (you may need to [green]makemigrations[/green]/[green]migrate[/green] first)
-    3) Navigate to 127.0.0.1:8000/application/rearch_phase0 to write to public.application_moreinfo_rearch in the GetFoco database.
+    2) Run the GetFoco app using [green]settings.local_{tdb}db[/green]
+    3) Navigate to 127.0.0.1:8000/application/rearch_phase0 to write to public.application_moreinfo_rearch in the GetFoco database. When the page loads, this step is complete.
     Continue this script to finish porting to GetYour.\n""".format(
         tdb=global_objects['cred_new'].config['db'].split('_')[-1],
         )
