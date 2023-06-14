@@ -78,6 +78,8 @@ def run_full_porting(profile):
     
     verify_transfer(global_objects)
     
+    add_missing_records(global_objects)
+    
     global_objects['conn_old'].close()
     global_objects['conn_new'].close()
     
@@ -923,6 +925,76 @@ def verify_transfer(global_objects: dict) -> None:
     cursorOld.close() 
     
     print('ALL {} USERS VERIFIED'.format(maxIdx-1))
+    
+    
+def add_missing_records(global_objects: dict) -> None:
+    """
+    Add missing 'identification' file records to the v2 data model.
+    
+    This issue is caused by program names being hardcoded into the v1.x app:
+    the app would identify when users needed to upload their ID and it
+    therefore wouldn't be stored in the database for us to port. This function
+    adds a blank ID field to each user that doesn't already have an ID upload
+    field.
+
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
+
+    Returns
+    -------
+    None.
+    
+    """
+    
+    print("Beginning addition of missing identification records...")
+    
+    cursorOld = global_objects['conn_old'].cursor()
+    cursorNew = global_objects['conn_new'].cursor()
+    
+    # Collect all users *in app_eligibility* (meaning they have at least one
+    # program selected)
+    cursorNew.execute("select distinct user_id from public.app_eligibilityprogram where user_id not in (select distinct user_id from public.app_eligibilityprogram where program_id=1) order by user_id")
+    missingRecUsers = [x[0] for x in cursorNew.fetchall()]
+    
+    # Loop through each user and add the missing ID record (with generic
+    # timestamps)
+    for usrid in missingRecUsers:
+        cursorNew.execute(
+            """INSERT INTO public.app_eligibilityprogram (created_at, modified_at, document_path, program_id, user_id) 
+            VALUES ('1970-01-01T00:00:00-0000', '1970-01-01T00:00:00-0000', '', 1, %s)""",
+            (usrid,),
+            )
+        
+    global_objects['conn_new'].commit()
+    
+    # Verify that each user in the eligibilityprogram table has exactly one
+    # ID record
+    # ACTUALLY this won't work because users have uploaded multiple ID file
+    # records (erroneous), so use this instead:
+        # Verify that each user in the eligibilityprogram table has *at least
+        # one* eligibility record AND no more than one record if any have an
+        # empty document_path
+        
+    # Ensure each user has at least one ID record
+    cursorNew.execute("select count(*) from public.app_eligibilityprogram where program_id=1 group by user_id")
+    perUserCount = [x[0] for x in cursorNew.fetchall()]
+    assert all(True for x in perUserCount if x>0)
+    
+    # Ensure each user with a blank ID upload has *only* one ID record
+    cursorNew.execute(
+        """select count(*) from public.app_eligibilityprogram where program_id=1 and user_id in (
+            select distinct user_id from public.app_eligibilityprogram where program_id=1 and document_path=''
+        ) group by user_id"""
+    )
+    blankUserCount = [x[0] for x in cursorNew.fetchall()]
+    assert len(blankUserCount) == sum(blankUserCount)
+
+    print('Missing identification records successfully added')
+
+    cursorNew.close()
+    cursorOld.close() 
 
         
 if __name__=='__main__':
