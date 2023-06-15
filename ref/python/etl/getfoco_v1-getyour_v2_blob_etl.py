@@ -15,8 +15,8 @@ from azure.storage.blob import BlobServiceClient
 from rich.progress import Progress
 
 # Enter a generic database profile to use for porting
-genericProfile = 'getfoco_dev'
-print(f"Beginning blob transfer for '{genericProfile}'")
+profile = 'getfoco_prod'
+print(f"Beginning blob transfer for '{profile}'")
 
 load_dotenv()
 
@@ -24,10 +24,10 @@ load_dotenv()
 # and any leading zeros after 'user_' in the process
 # Then transfer back to the storage account
 
-if '_dev' in genericProfile:            
+if '_dev' in profile:            
     storageAccountName = 'devgetfocofilestore'
     STORAGEACCOUNT_SAS = os.getenv("DEVFILESTORE_SAS")
-elif '_stage' in genericProfile:            
+elif '_stage' in profile:            
     storageAccountName = 'stagegetfocofilestore'
     STORAGEACCOUNT_SAS = os.getenv("STAGEFILESTORE_SAS")
 else:
@@ -121,7 +121,7 @@ with Progress() as progress:
         total=len(uploadList),
         )
 
-    for uplitm in uploadList:
+    for idxitm,uplitm in enumerate(uploadList):
         
         uplPath = localDirectory.joinpath(uplitm)
         # Copy from local directory to target blob storage (recursively).
@@ -153,10 +153,12 @@ with Progress() as progress:
                 )       
             
         # If successful, delete uplPath from local disk
-        if uplPath.is_dir():
-            shutil.rmtree(uplPath)
-        else:
-            uplPath.unlink()
+        # But don't delete if '_prod' is in profile
+        if '_prod' not in profile:
+            if uplPath.is_dir():
+                shutil.rmtree(uplPath)
+            else:
+                uplPath.unlink()
             
         progress.update(uploadTask, advance=1)
         
