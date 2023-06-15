@@ -75,6 +75,7 @@ def run_full_porting(profile):
     port_householdmembers(global_objects)
     port_iqprograms(global_objects)
     port_eligibility_programs(global_objects)
+    port_feedback(global_objects)
     
     verify_transfer(global_objects)
     
@@ -751,6 +752,83 @@ def port_eligibility_programs(global_objects: dict) -> None:
 
     print("All eligibility programs port complete")    
     
+    
+def port_feedback(global_objects: dict) -> None:
+    """
+    3) Port 'feedback' from old to new database.
+
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
+
+    Returns
+    -------
+    None.
+    
+    """
+    
+    print("Beginning user feedback port...")
+    
+    cursorOld = global_objects['conn_old'].cursor()
+    cursorNew = global_objects['conn_new'].cursor()
+
+    # FILL NEW ELIGIBILITY TABLE --
+    
+    # Current name: eligibility table is application_eligibility_rearch
+    # Field mapping is as such (application_eligibility, application_eligibility_rearch):
+    #     created, created_at
+    #     modified, modified_at
+    #     user_id_id, user_id
+    #     rent, duration_at_address
+    #     dependents, number_persons_in_household
+    #     <2021 or 2022>, depending on created date, ami_year
+    #     AmiRange_min, ami_range_min
+    #     AmiRange_max, ami_range_max
+    #     True if GenericQualified='ACTIVE' else False, is_income_verified
+    
+
+    cursorOld.execute("""SELECT "id", "created", "modified", "feedbackComments", "starRating" FROM public.dashboard_feedback""")
+    feedbackList = cursorOld.fetchall()
+    
+    if len(feedbackList) > 0:
+        cursorNew.execute("""insert into public.app_feedback ("id", "created", "modified", "feedback_comments", "star_rating")
+                          VALUES {}""".format(
+                ', '.join(['%s']*len(feedbackList))
+                ),
+            feedbackList,
+            )
+        
+        global_objects['conn_new'].commit()
+        
+    # Set autoincrement sequence to continue after the last record
+    tableName = 'app_feedback'
+    sequenceColumn = 'id'
+    cursorNew.execute(
+        """select max({col}) from public.{tbl}""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            )
+        )
+    maxVal = cursorNew.fetchone()[0]
+    
+    # Set the last value of the sequence to maxVal and advance for the next
+    # insert
+    cursorNew.execute(
+        """SELECT setval('{tbl}_{col}_seq', {mxv})""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            mxv=maxVal,
+            )
+        )
+    global_objects['conn_new'].commit()
+        
+    cursorNew.close()
+    cursorOld.close()   
+    
+    print("User feedback port complete")
+    
+    
 def verify_transfer(global_objects: dict) -> None:
     """
     Verify the proper transfer of all data.
@@ -990,11 +1068,22 @@ def verify_transfer(global_objects: dict) -> None:
                     prg=program_name,
                     )
                 )
+            
+    # Verify proper user feedback migration. This isn't connected to users, so
+    # it's done in its own section
+    cursorOld.execute("""SELECT "id", "created", "modified", "feedbackComments", "starRating" FROM public.dashboard_feedback order by "id" asc""")
+    oldFeedbackList = cursorOld.fetchall()
+    
+    cursorNew.execute("""SELECT "id", "created", "modified", "feedback_comments", "star_rating" from public.app_feedback order by "id" asc""")
+    newFeedbackList = cursorNew.fetchall()
+    
+    # Verify the lists are equal
+    assert oldFeedbackList==newFeedbackList
 
     cursorNew.close()
     cursorOld.close() 
     
-    print('ALL {} USERS VERIFIED'.format(maxIdx-1))
+    print('ALL FEEDBACK AND {} USERS VERIFIED'.format(maxIdx-1))
     
     
 def add_missing_records(global_objects: dict) -> None:
