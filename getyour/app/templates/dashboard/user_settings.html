@@ -1,0 +1,126 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2023
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+{% include "partials/head.html" with title="Settings" css="application" %}
+
+<body class="h-100">
+    {% include "partials/environment_banner.html" with is_prod=is_prod db_env_str=db_env_str %}
+
+    {% url 'app:dashboard' as back_link %}
+    {% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
+
+    <div class="container desktop">
+        {% block body %}
+
+        <h1>{{name}}</h1>
+        <h1 class="mb-3">{{lastName}}</h1>
+
+        <!-- Create a div that centers the content nested inside of it-->
+        <p class="pb-15">Manage your account information, including updating your account, address, and household
+            information.
+        </p>
+        <div class="w-100">
+            <a href="{{routes.account}}?update_mode=1" class="simple-and-cool-button">Account</a>
+            <a href="{{routes.address}}?update_mode=1" class="simple-and-cool-button">Address</a>
+            <a href="{{routes.household}}?update_mode=1" class="simple-and-cool-button">Household</a>
+        </div>
+
+        {% endblock %}
+    </div>
+
+    <style>
+        .h-100 {
+            height: 100vh;
+        }
+
+        .w-100 {
+            width: 100%;
+        }
+
+        .mb-3 {
+            margin-bottom: 3%;
+        }
+
+        .pb-15 {
+            padding-bottom: 15px;
+        }
+
+        .container {
+            margin-bottom: 5vw;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .simple-and-cool-button {
+            border: 0.1em solid;
+            cursor: pointer;
+            display: block;
+            font-family: 'Montserrat', sans-serif;
+            text-decoration: none;
+            font-size: 1.0em;
+            margin: 0.5em 0.0em 1.0em 0.0em;
+            padding: 1.9em;
+            padding-top: 0.5em;
+            padding-bottom: 0.5em;
+            text-align: center;
+            -moz-border-radius: 0.5em;
+            -webkit-border-radius: 0.5em;
+            border-radius: 0.5em;
+            -moz-transition: all 0.3s ease-in-out;
+            -o-transition: all 0.3s ease-in-out;
+            -webkit-transition: all 0.3s ease-in-out;
+            transition: all 0.3s ease-in-out;
+            background-color: var(--lightblue);
+            color: white;
+            border-color: var(--lightblue);
+            border-radius: 3vh;
+        }
+
+        @media screen and (max-width: 767px) {
+            .container {
+                margin: 6vw;
+                height: 50vh;
+            }
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            var page_updated = JSON.parse('{{ page_updated | escapejs }}');
+
+            if (page_updated['page_updated']) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: `Your ${page_updated['page_updated']} information was saved!`,
+                    icon: 'success',
+                    confirmButtonColor: '#13467D',
+                });
+
+                $("a.row").attr("onclick", "window.location='dashboard'");
+                $("a.row > p").text("Dashboard");
+            }
+        });
+    </script>
+
+</body>
+
+</html>
