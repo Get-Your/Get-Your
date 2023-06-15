@@ -58,7 +58,7 @@ def run_full_porting(profile):
     
     print(
         """[bold red]Before starting this process, confirm that\n
-        - You've used DBeaver Data Compare to directly copy all data in [green]app_iqprogramrd[/green] and [green]app_eligibilityprogramrd[/green] from [green]getyour_dev[/green] to [green]{dbn}[/green]\n
+        - You've run [green]C:\\Users\\TiCampbell\\OneDrive - City of Fort Collins\\python\\get_foco\\sql\\v2_release\\initial_programrd_fills.sql[/green] against the {dbn} database\n
         - You've switched to branch [green]database-rearchitecture-p0-modifytable[/green] in the GetFoco repo and run [green]makemigrations[/green] then [green]migrate[/green] against the {dbo} database""".format(
             dbn=global_objects['cred_new'].config['db'],
             dbo=global_objects['cred_old'].config['db'],
@@ -219,6 +219,29 @@ def port_user(global_objects: dict) -> None:
         
         global_objects['conn_new'].commit()
         
+    # Set autoincrement sequence to continue after the last record (this will
+    # account for offset users as well)
+    tableName = 'app_user'
+    sequenceColumn = 'id'
+    cursorNew.execute(
+        """select max({col}) from public.{tbl}""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            )
+        )
+    maxVal = cursorNew.fetchone()[0]
+    
+    # Set the last value of the sequence to maxVal and advance for the next
+    # insert
+    cursorNew.execute(
+        """SELECT setval('{tbl}_{col}_seq', {mxv})""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            mxv=maxVal,
+            )
+        )
+    global_objects['conn_new'].commit()
+        
     cursorNew.close()
     cursorOld.close()    
     
@@ -363,6 +386,28 @@ def port_address(global_objects: dict) -> None:
                         )
 
         global_objects['conn_new'].commit()
+        
+    # Set autoincrement sequence to continue after the last record
+    tableName = 'app_addressrd'
+    sequenceColumn = 'id'
+    cursorNew.execute(
+        """select max({col}) from public.{tbl}""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            )
+        )
+    maxVal = cursorNew.fetchone()[0]
+    
+    # Set the last value of the sequence to maxVal and advance for the next
+    # insert
+    cursorNew.execute(
+        """SELECT setval('{tbl}_{col}_seq', {mxv})""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            mxv=maxVal,
+            )
+        )
+    global_objects['conn_new'].commit()
             
     cursorNew.close()
     cursorOld.close()  
@@ -584,6 +629,31 @@ def port_iqprograms(global_objects: dict) -> None:
     # Run for defunct SPIN Community Pass
     update_program(global_objects, 'spin_community_pass', 'SpinAccessQualified_depr')
     print("SPIN Community Pass port complete")
+    
+    # Set autoincrement sequence to continue after the last record
+    cursorNew = global_objects['conn_new'].cursor()
+    tableName = 'app_iqprogram'
+    sequenceColumn = 'id'
+    cursorNew.execute(
+        """select max({col}) from public.{tbl}""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            )
+        )
+    maxVal = cursorNew.fetchone()[0]
+    
+    # Set the last value of the sequence to maxVal and advance for the next
+    # insert
+    cursorNew.execute(
+        """SELECT setval('{tbl}_{col}_seq', {mxv})""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            mxv=maxVal,
+            )
+        )
+    global_objects['conn_new'].commit()
+    
+    cursorNew.close()
     
     print("All iqprograms port complete")
     
@@ -992,6 +1062,28 @@ def add_missing_records(global_objects: dict) -> None:
     assert len(blankUserCount) == sum(blankUserCount)
 
     print('Missing identification records successfully added')
+    
+    # Set autoincrement sequence to continue after the last record
+    tableName = 'app_eligibilityprogram'
+    sequenceColumn = 'id'
+    cursorNew.execute(
+        """select max({col}) from public.{tbl}""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            )
+        )
+    maxVal = cursorNew.fetchone()[0]
+    
+    # Set the last value of the sequence to maxVal and advance for the next
+    # insert
+    cursorNew.execute(
+        """SELECT setval('{tbl}_{col}_seq', {mxv})""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            mxv=maxVal,
+            )
+        )
+    global_objects['conn_new'].commit()
 
     cursorNew.close()
     cursorOld.close() 
