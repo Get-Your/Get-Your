@@ -14,6 +14,9 @@ from rich.progress import Progress
 import psycopg2
 import hashlib
 import json
+from decimal import Decimal
+import warnings
+import pendulum
 
 import coftc_cred_man as crd
 
@@ -80,6 +83,7 @@ def run_full_porting(profile):
     verify_transfer(global_objects)
     
     add_missing_records(global_objects)
+    update_income_values(global_objects)
     
     global_objects['conn_old'].close()
     global_objects['conn_new'].close()
@@ -1177,6 +1181,150 @@ def add_missing_records(global_objects: dict) -> None:
     cursorNew.close()
     cursorOld.close() 
 
+
+def update_income_values(global_objects: dict) -> None:
+    """
+    For non-income-verified applicants using the v1 app (i.e. before this ETL
+    is run), income_as_fraction_of_ami was self-selected, which means it may
+    not match the Eligibility Program selection. The v2 extract won't include
+    income at all, so these values need to be updated to match the selected
+    Eligibility Programs.
+    
+    ALSO, v2 doesn't store income values until all necessary files are
+    uploaded, so remove the value if there are blank "document_path" for any
+    user.
+
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
+
+    Returns
+    -------
+    None.
+    
+    """
+    
+    print("Beginning update of income values...")
+    warnings.warn("WARNING: there is no verification for this section")
+    
+    cursorNew = global_objects['conn_new'].cursor()
+    
+    # Collect all users who haven't been income-verified
+    cursorNew.execute(
+        """select user_id, from public.app_household
+        where is_income_verified=false order by h.user_id""")
+    nonVerifiedUsers = [x[0] for x in cursorNew.fetchall()]
+    
+    # Collect all programs with auto-apply enabled
+    cursorNew.execute(
+        """select id, ami_threshold from public.app_iqprogramrd where enable_autoapply=true"""
+        )
+    autoApplyIdThreshold = cursorNew.fetchall()
+    
+    # Loop through each user and 
+    # a) remove the income_as_fraction value if they have un-uploaded files or
+    # b) use the app logic to find the minimum AMI and update their income value
+    for usrid in nonVerifiedUsers:
+        # Check for user not in table or missing files (blank document_path)
+        cursorNew.execute(
+            """select count(*) from public.app_eligibilityprogram p 
+            left join public.app_eligibilityprogramrd r on r.id=p.program_id 
+            where r.is_active=true and user_id={} and p.document_path=''""".format(
+            usrid,
+            )
+        )
+        existingUserAndDocsCount = cursorNew.fetchone()[0]
+        
+        if existingUserAndDocsCount > 0:
+            # If there are missing files (or the user doesn't exist in
+            # eligibilityprogram), remove the income value
+            cursorNew.execute(
+                """update public.app_household set income_as_fraction_of_ami=null where user_id={}""".format(
+                    usrid,
+                    )
+                )
+            
+        else:
+            # If there are no missing files (and therefore the user exists),
+            # find the minimum AMI of the selected programs
+            cursorNew.execute(
+                """select min(ami_threshold) from public.app_eligibilityprogram p 
+                left join public.app_eligibilityprogramrd r on r.id=p.program_id 
+                where r.is_active=true and user_id={}""".format(
+                usrid,
+                )
+            )
+            minAmi = cursorNew.fetchone()[0]
+        
+            if minAmi == Decimal('1'):
+                # The two "programs" with ami_threshold==1 are Identification
+                # (id==1) and 1040 (id==2). If there is no program_id==2,
+                # update the income value, else leave it alone
+                cursorNew.execute(
+                    """select count(*) from public.app_eligibilityprogram 
+                    where user_id={} and program_id=2""".format(
+                    usrid,
+                    )
+                )
+                has1040 = cursorNew.fetchone()[0]
+                
+                if has1040 == 0:
+                    cursorNew.execute(
+                        """update public.app_household set income_as_fraction_of_ami=%s where user_id={}""".format(
+                            usrid,
+                            ),
+                        (minAmi,),
+                        )
+                    
+            else:
+                # If minAmi < 1, update the income value with minAmi
+                cursorNew.execute(
+                    """update public.app_household set income_as_fraction_of_ami=%s where user_id={}""".format(
+                        usrid,
+                        ),
+                    (minAmi,),
+                    )
+                
+                # Go through all auto-apply and auto-apply each user for any
+                # programs they qualify for and aren't already applied/enrolled
+                for prgmid, prgmthreshold in autoApplyIdThreshold:
+                    cursorNew.execute(
+                        """select count(*) from public.app_iqprogram where user_id={uid} and program_id={pid}""".format(
+                            uid=usrid,
+                            pid=prgmid,
+                            )
+                        )
+                    recCount = cursorNew.fetchone()[0]
+                    
+                    # Compare minAmi and the program threshold if there isn't a
+                    # record for this user+program
+                    if recCount == 0:
+                        if minAmi <= prgmthreshold:
+                            cursorNew.execute(
+                                """insert into public.app_iqprogram ("applied_at", "is_enrolled", "program_id", "user_id") 
+                                VALUES ({})""".format(
+                                    ', '.join(['%s']*4)
+                                    ),
+                                (pendulum.now(), False, prgmid, usrid),
+                                )
+        
+    global_objects['conn_new'].commit()
+    
+    ## Verify that all auto-apply programs have only one record per user
+    for prgmid, prgmthreshold in autoApplyIdThreshold:
+        cursorNew.execute(
+            """select count(*) from public.app_iqprogram where program_id={} group by user_id""".format(
+                prgmid,
+                )
+            )
+        userCounts = [x[0] for x in cursorNew.fetchall()]
+        
+        # Since this is only users in the iqprogram table, each count should
+        # be one
+        assert len(userCounts) == sum(userCounts)    
+
+    cursorNew.close()
         
 if __name__=='__main__':
     
