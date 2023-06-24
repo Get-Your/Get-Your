@@ -83,7 +83,7 @@ def account(request):
     if request.method == "POST":
         try:
             existing = request.user
-            if update_mode or not request.user.has_viewed_dashboard:
+            if update_mode or (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard):
                 form = UserUpdateForm(request.POST, instance=existing)
             else:
                 form = UserForm(request.POST, instance=existing)
@@ -93,7 +93,7 @@ def account(request):
         # Checking the `has_viewed_dashboard` attribute of the user object
         # allows us to determine if the user has already completed the application
         # or if they're returning to update their information from the initial application
-        if form.is_valid() and (update_mode or not request.user.has_viewed_dashboard):
+        if form.is_valid() and (update_mode or (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard)):
             instance = form.save(commit=False)
 
             # Set the attributes to let pre_save know to save history
