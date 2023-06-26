@@ -35,19 +35,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <p><b>Why are you asking for these documents?</b></p>
         <p>The documents that you upload will help verify your address and further determine which programs you may be
             eligible for.</p>
-        <p>An identification card can be any of the following:
-        <ul>
-            <p style="color:white">Colorado Driver's License or Colorado Identification card</p>
-            <p style="color:white">A United States Military or Military Dependent's Identification Card</p>
-            <p style="color:white">A United States Coast Guard Merchant Mariner card </p>
-            <p style="color:white">A Native Tribal Document</p>
-            <p style="color:white">Copy of Applicant's Birth Certificate from any States</p>
-            <p style="color:white">United States Passport</p>
-            <p style="color:white">For additional accepted proof of identification, <a
-                    href="https://drive.google.com/file/d/1eyJ4sMmoEw2_lLJFVFlAzQcNFk8oF2Lj/view"
-                    style="color:var(--yellow)" target="_blank">please click here</a></p>
-        </ul>
-        </p>
     </div>
 </div>
 
@@ -114,11 +101,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <div class="row" style="justify-content: space-between;">
                 <img src="{% static 'img/upload.svg' %}" alt="back" style="width:15vw; margin-right: 5vw;">
                 <div style="display:flex; flex-direction:column;align-items:flex-start;">
-                    <div class=fadeSmall>
+                    <div class="fadeSmall">
                         <p style="color:white; font-weight: 400;text-align: left; margin-bottom: 5px;">Upload Documents:
                             Upload multiple files by pressing Ctrl and clicking each file. </p>
                     </div>
-                    <div class=fadeLarge>
+                    <div class="fadeLarge">
                         <p style="color:white; font-weight: 400;text-align: left; margin-bottom: 5px;">Click Here to
                             Upload Documents </p>
                     </div>
@@ -268,8 +255,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             })
         } else if (fileUploadSuccessful) {
             Swal.fire({
-                title: 'Your file has been uploaded!',
-                html: "<img src=\"{% static 'img/sample_documents.png' %}\" alt=\"Sample Documents\" style=\"margin-bottom:15px\"><p style=\"color:#13467D\">Please upload a card, a copy of an email, or a letter from qualifying programs. Take a screen shot like the example of the EBT card. Please make sure the names and information are clear.</p>",
                 title: 'Your file has been uploaded!',
                 html: "<img src=\"{% static 'img/sample_documents.png' %}\" alt=\"Sample Documents\" style=\"margin-bottom:15px\"><p style=\"color:#13467D\">Please upload a card, a copy of an email, or a letter from qualifying programs. Take a screen shot like the example of the EBT card. Please make sure the names and information are clear.</p>",
                 icon: 'success',

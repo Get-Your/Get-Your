@@ -376,7 +376,7 @@ def broadcast_email_pw_reset(email, content):
 def changed_modelfields_to_dict(
         previous_instance,
         current_instance,
-        ):
+):
     """
     Convert a model object to a dictionary. If a property is a datetime object,
     it will be converted to a string. If there is a nested model, it will be
@@ -404,30 +404,33 @@ def changed_modelfields_to_dict(
                     elif isinstance(value, PhoneNumber):
                         value = value.as_e164
                     model_dict[field.name] = value
-                
+
             except AttributeError:
                 pass
 
     return model_dict
 
 
-def serialize_household_members(request):
+def serialize_household_members(request, file_paths):
     """
     Serialize the household members from the request body. Into a list of dictionaries.
     then convert the list of dictionaries into json, so it can be stored in the users
     household_info. Each dictionary should have a 'name' and 'birthdate
     :param request: request object
     """
-    # Parse the form data from the request body into a dictionary
-    data = urllib.parse.parse_qs(request.body.decode('utf-8'))
-
     # Extract the household member data and exclude csrfmiddlewaretoken
-    household_members_data = {k: v for k,
-                              v in data.items() if k != 'csrfmiddlewaretoken'}
+    household_members_data = {
+        k: request.POST.getlist(k)
+        for k in request.POST.keys()
+        if k != 'csrfmiddlewaretoken'
+    }
 
     # Create a list of dictionaries with 'name' and 'birthdate' keys
-    household_members = [{'name': data['name'][i], 'birthdate': data['birthdate'][i]}
-                         for i in range(len(household_members_data['name']))]
+    household_members = [{
+        'name': household_members_data['name'][i],
+        'birthdate': household_members_data['birthdate'][i],
+        'identification_path': file_paths[i]
+    } for i in range(len(household_members_data['name']))]
 
     household_info = json.loads(json.dumps(
         {'persons_in_household': household_members}, cls=DjangoJSONEncoder))
@@ -525,7 +528,7 @@ def get_users_iq_programs(
         user_id,
         users_income_as_fraction_of_ami,
         users_eligiblity_address,
-        ):
+):
     """ 
     Get the iq programs for the user where the user is geographically eligible,
     as well as where their ami range is less than or equal to the users max ami
@@ -542,7 +545,7 @@ def get_users_iq_programs(
     # Get the IQ programs that a user has already applied to
     users_iq_programs = list(IQProgram.objects.select_related(
         'program').filter(user_id=user_id))
-    
+
     # Filter only programs that are active
     users_iq_programs = [x for x in users_iq_programs if x.program.is_active]
 
@@ -550,7 +553,8 @@ def get_users_iq_programs(
     users_iq_programs_ids = [
         program.program_id for program in users_iq_programs]
     active_iq_programs = list(IQProgramRD.objects.filter(
-        (Q(is_active=True) & Q(ami_threshold__gte=users_income_as_fraction_of_ami) & ~Q(id__in=users_iq_programs_ids))
+        (Q(is_active=True) & Q(ami_threshold__gte=users_income_as_fraction_of_ami) & ~Q(
+            id__in=users_iq_programs_ids))
     ))
 
     # Filter out the active programs that the user is not geographically eligible for.

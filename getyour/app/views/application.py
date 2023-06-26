@@ -21,18 +21,22 @@ import usaddress
 import magic
 import datetime
 import logging
-from decimal import Decimal
+import base64
+import io
+import re
 from urllib.parse import urlencode
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import QueryDict, HttpResponseRedirect, JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.query_utils import Q
 from django.db import IntegrityError
 from django.forms.utils import ErrorList
+from django.core.files.storage import default_storage
 from app.forms import HouseholdForm, UserForm, AddressForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm
 from app.backend import form_page_number, tag_mapping, address_check, serialize_household_members, validate_usps, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, broadcast_email, broadcast_sms
-from app.models import AddressRD, Address, EligibilityProgram, Household, IQProgram, User, EligibilityProgramRD
+from app.models import userfiles_path, AddressRD, Address, EligibilityProgram, Household, IQProgram, User, EligibilityProgramRD
 from app.decorators import set_update_mode
 
 
@@ -74,7 +78,8 @@ def get_ready(request):
 def account(request):
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
-    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False
+    update_mode = request.session.get(
+        'update_mode') if request.session.get('update_mode') else False
 
     # TODO: Update this renewal_mode placeholder to the same mechanics as
     # update_mode
@@ -83,7 +88,7 @@ def account(request):
     if request.method == "POST":
         try:
             existing = request.user
-            if update_mode or not request.user.has_viewed_dashboard:
+            if update_mode or (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard):
                 form = UserUpdateForm(request.POST, instance=existing)
             else:
                 form = UserForm(request.POST, instance=existing)
@@ -93,7 +98,7 @@ def account(request):
         # Checking the `has_viewed_dashboard` attribute of the user object
         # allows us to determine if the user has already completed the application
         # or if they're returning to update their information from the initial application
-        if form.is_valid() and (update_mode or not request.user.has_viewed_dashboard):
+        if form.is_valid() and (update_mode or (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard)):
             instance = form.save(commit=False)
 
             # Set the attributes to let pre_save know to save history
@@ -128,7 +133,7 @@ def account(request):
                     'message': passwordCheckDuplicate
                 }
                 return JsonResponse(data)
-            
+
             try:
                 user = form.save()
                 login(request, user)
@@ -146,7 +151,7 @@ def account(request):
             # AJAX data function below, sends data to AJAX function in account.html, if clients make a mistake via email or phone number, page lets them know and DOESN'T refresh web page
             # let's them know via AJAX
             error_messages = dict(form.errors.items())
-            
+
             # Create message_dict by parsing strings or all items of ErrorList,
             # where applicable. Use the prettified field name as each key
             message_dict = {}
@@ -154,21 +159,23 @@ def account(request):
                 val = error_messages[keyitm]
 
                 # Gather the list of error messages and flatten it
-                message_list = [[y for y in val] if isinstance(val, ErrorList) else val]
-                flattened_messages = [item for items in message_list for item in items]
+                message_list = [[y for y in val]
+                                if isinstance(val, ErrorList) else val]
+                flattened_messages = [
+                    item for items in message_list for item in items]
 
                 # Write the messages as a string
                 message_dict.update({
                     keyitm.replace('_', ' ').title(): '. '.join(flattened_messages)
-                    })
+                })
             # Create error message data by prepending the prettified field name
             # and joining as newlines
             data = {
                 'result': 'error',
                 'message': '\n'.join(
                     [f"{keyitm}: {message_dict[keyitm]}" for keyitm in message_dict.keys()]
-                    )
-                }
+                )
+            }
             return JsonResponse(data)
     else:
         try:
@@ -198,7 +205,8 @@ def address(request):
 
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
-    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False
+    update_mode = request.session.get(
+        'update_mode') if request.session.get('update_mode') else False
 
     if request.method == "POST":
         addresses = []
@@ -217,7 +225,7 @@ def address(request):
                     'type': 'eligibility',
                     'processed': False
                 })
-            
+
         # 'no' means the user has a different mailing address
         # compared to their eligibility address
         if request.POST.get('mailing_address') == 'no' or update_mode:
@@ -283,7 +291,8 @@ def address_correction(request):
         in_progress_address = [
             address for address in addresses if not address['processed']][0]
         q = QueryDict(urlencode(in_progress_address['address']), mutable=True)
-        q_orig = QueryDict(urlencode(in_progress_address['address']), mutable=True)
+        q_orig = QueryDict(
+            urlencode(in_progress_address['address']), mutable=True)
 
         # Loop through maxLoopIdx+1 times to try different methods of
         # parsing the address
@@ -446,9 +455,9 @@ def address_correction(request):
         if 'usps_address_validate' in request.session.keys() and \
             dict_address['AddressValidateResponse']['Address']['Address2'].lower() == q_orig['address1'].lower() and \
                 dict_address['AddressValidateResponse']['Address']['Address1'].lower() == q_orig['address2'].lower() and \
-            dict_address['AddressValidateResponse']['Address']['City'].lower() == q_orig['city'].lower() and \
-            dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
-        str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
+        dict_address['AddressValidateResponse']['Address']['City'].lower() == q_orig['city'].lower() and \
+        dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
+            str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
 
             print('Exact (case-insensitive) address match!')
             return redirect(reverse("app:take_usps_address"))
@@ -473,7 +482,8 @@ def address_correction(request):
 def take_usps_address(request):
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
-    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False
+    update_mode = request.session.get(
+        'update_mode') if request.session.get('update_mode') else False
 
     # TODO: Update this renewal_mode placeholder to the same mechanics as
     # update_mode
@@ -622,11 +632,12 @@ def household(request):
 
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
-    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False   
+    update_mode = request.session.get(
+        'update_mode') if request.session.get('update_mode') else False
 
     # TODO: Update this renewal_mode placeholder to the same mechanics as
     # update_mode
-    renewal_mode = False 
+    renewal_mode = False
 
     if request.method == "POST":
         try:
@@ -642,7 +653,7 @@ def household(request):
         # Set the attributes to let pre_save know to save history
         instance.update_mode = update_mode
         instance.renewal_mode = renewal_mode
-        
+
         instance.save()
         if update_mode:
             return redirect(f'{reverse("app:household_members")}?update_mode=1')
@@ -675,7 +686,8 @@ def household(request):
 def household_members(request):
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
-    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False
+    update_mode = request.session.get(
+        'update_mode') if request.session.get('update_mode') else False
 
     # TODO: Update this renewal_mode placeholder to the same mechanics as
     # update_mode
@@ -684,18 +696,104 @@ def household_members(request):
     if request.method == "POST":
         try:
             existing = request.user.householdmembers
-            form = HouseholdMembersForm(request.POST, instance=existing)
-        except AttributeError or ObjectDoesNotExist:
-            form = HouseholdMembersForm(request.POST or None)
 
-        instance = form.save(commit=False)
+            form = HouseholdMembersForm(
+                request.POST, instance=existing)
+        except AttributeError or ObjectDoesNotExist:
+            form = HouseholdMembersForm(
+                request.POST or None)
+
+        file_paths = []
+        if form.is_valid():
+            instance = form.save(commit=False)
+
+            # fileAmount = 0
+            # process is as follows:
+            # 1) file is physically saved from the buffer
+            # 2) file is then SCANNED using magic
+            # 3) file is then deleted or nothing happens if magic sees it's ok
+
+            # update, magic no longer needs to scan from saved file, can now scan from buffer! so with this in mind
+            '''
+            1) For loop #1 file(s) scanned first
+            2) For Loop #2 file saved if file(s) are valid
+            '''
+            identification_paths = request.POST.getlist('identification_path')
+            updated_identification_paths = []
+
+            for _, base64_content in enumerate(identification_paths):
+                # Decode the Base64 string
+                decoded_bytes = base64.b64decode(base64_content)
+                # Create a buffer from the decoded bytes
+                buffer = io.BytesIO(decoded_bytes).getvalue()
+                # fileValidation found below
+                filetype = magic.from_buffer(buffer)
+                logging.info(filetype)
+
+                # Check if any of the following strings ("PNG", "JPEG", "JPG", "PDF") are in the filetype
+                if any(x in filetype for x in ["PNG", "JPEG", "JPG", "PDF"]):
+                    pass
+                else:
+                    logging.error(
+                        "File is not a valid file type. file is: " + filetype)
+                    return render(
+                        request,
+                        "application/household_members.html",
+                        {
+                            'step': 3,
+                            "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
+                            'dependent': str(request.user.household.number_persons_in_household),
+                            'list': list(range(request.user.household.number_persons_in_household)),
+                            'form': form,
+                            'form_page_number': form_page_number,
+                            'title': "Household Members",
+                            'update_mode': update_mode,
+                            'form_data': json.dumps(household_info) if household_info else [],
+                        },
+                    )
+                
+                # Regular expression pattern for matching PNG, JPEG, JPG, or PDF file extensions
+                pattern = r'(?i)\b(png|jpe?g|pdf)\b'
+                # Search for the pattern in the filetype string
+                match = re.search(pattern, filetype, re.IGNORECASE)
+                # Extract the matched file extension
+                file_extension = match.group(1).lower()
+                file_name = f"household_member_id.{file_extension}"
+                # Assuming file_name is already defined
+                updated_base64_content = base64_content + "," + file_name
+                updated_identification_paths.append(updated_base64_content)
+
+            fileAmount = 0
+            for f in updated_identification_paths:
+                file_name = f.split(",")[1]
+                file_contents = f.split(",")[0]
+                content_type = {
+                    "png": "image/png",
+                    "jpg": "image/jpeg",
+                    "jpeg": "image/jpeg",
+                    "pdf": "application/pdf"
+                }.get(file_name.split(".")[1], "text/plain")
+
+                # Decode the Base64 string
+                decoded_bytes = base64.b64decode(file_contents)
+
+                # Create a buffer from the decoded bytes
+                buffer = io.BytesIO(decoded_bytes)
+                fileAmount += 1
+                file_path = userfiles_path(request.user, datetime.datetime.now(
+                ).isoformat() + "_" + str(fileAmount) + "_" + file_name)
+
+                uploaded_file = SimpleUploadedFile(file_name, buffer.read(), content_type)
+                file_paths.append(file_path)
+                default_storage.save(file_path, uploaded_file)
+
         instance.user_id = request.user.id
-        instance.household_info = serialize_household_members(request)
+        instance.household_info = serialize_household_members(request, file_paths)
 
         # Set the attribute to let pre_save know to save history
         instance.update_mode = update_mode
         instance.renewal_mode = renewal_mode
-        
+
         instance.save()
         if update_mode:
             return redirect(f"{reverse('app:user_settings')}?page_updated=household")
@@ -746,19 +844,13 @@ def programs(request):
                 program_id=value,
             ))
 
-        # Create a EligibilityProgram object for the program_rearch with the program_name = 'identification'
-        selected_eligibility_programs.append(EligibilityProgram(
-            user_id=request.user.id,
-            program_id=EligibilityProgramRD.objects.get(
-                program_name='identification').id,
-        ))
         EligibilityProgram.objects.bulk_create(
             selected_eligibility_programs)
         return redirect(reverse("app:files"))
     else:
         # Get all of the programs (except the one with identification and where is_active is False) from the application_EligibilityProgramRD table
         # ordered by the friendly_name field acending
-        programs = EligibilityProgramRD.objects.filter(~Q(program_name='identification')).filter(
+        programs = EligibilityProgramRD.objects.filter(
             is_active=True).order_by('friendly_name')
 
     return render(
@@ -771,6 +863,7 @@ def programs(request):
             'title': "Programs",
         },
     )
+
 
 @set_update_mode
 def files(request):
@@ -803,7 +896,6 @@ def files(request):
             '''
             for f in request.FILES.getlist('document_path'):
                 # fileValidation found below
-                # filetype = magic.from_file("mobileVers/" + instance.document.url)
                 filetype = magic.from_buffer(f.read())
                 logging.info(filetype)
 
