@@ -1213,8 +1213,8 @@ def update_income_values(global_objects: dict) -> None:
     
     # Collect all users who haven't been income-verified
     cursorNew.execute(
-        """select user_id, from public.app_household
-        where is_income_verified=false order by h.user_id""")
+        """select user_id from public.app_household
+        where is_income_verified=false order by user_id""")
     nonVerifiedUsers = [x[0] for x in cursorNew.fetchall()]
     
     # Collect all programs with auto-apply enabled
@@ -1226,51 +1226,74 @@ def update_income_values(global_objects: dict) -> None:
     # Loop through each user and 
     # a) remove the income_as_fraction value if they have un-uploaded files or
     # b) use the app logic to find the minimum AMI and update their income value
-    for usrid in nonVerifiedUsers:
-        # Check for user not in table or missing files (blank document_path)
-        cursorNew.execute(
-            """select count(*) from public.app_eligibilityprogram p 
-            left join public.app_eligibilityprogramrd r on r.id=p.program_id 
-            where r.is_active=true and user_id={} and p.document_path=''""".format(
-            usrid,
+    
+    with Progress() as progress:
+    
+        updateTask = progress.add_task(
+            "[bright_cyan]Updating...",
+            total=len(nonVerifiedUsers),
             )
-        )
-        existingUserAndDocsCount = cursorNew.fetchone()[0]
         
-        if existingUserAndDocsCount > 0:
-            # If there are missing files (or the user doesn't exist in
-            # eligibilityprogram), remove the income value
+        for usrid in nonVerifiedUsers:
+            # Check for user not in table or missing files (blank document_path)
             cursorNew.execute(
-                """update public.app_household set income_as_fraction_of_ami=null where user_id={}""".format(
-                    usrid,
-                    )
-                )
-            
-        else:
-            # If there are no missing files (and therefore the user exists),
-            # find the minimum AMI of the selected programs
-            cursorNew.execute(
-                """select min(ami_threshold) from public.app_eligibilityprogram p 
-                left join public.app_eligibilityprogramrd r on r.id=p.program_id 
-                where r.is_active=true and user_id={}""".format(
+                """select distinct p.user_id, m.missing_count from public.app_eligibilityprogram p 
+                    left join public.app_eligibilityprogramrd r on r.id=p.program_id
+                    left join (select ip.user_id, count(*) as missing_count from public.app_eligibilityprogram ip 
+                        left join public.app_eligibilityprogramrd ir on ir.id=ip.program_id 
+                        where ir.is_active=true and ip.document_path='' 
+                        group by ip.user_id) m on m.user_id=p.user_id 
+                    where r.is_active=true and p.user_id={}""".format(
                 usrid,
                 )
             )
-            minAmi = cursorNew.fetchone()[0]
-        
-            if minAmi == Decimal('1'):
-                # The two "programs" with ami_threshold==1 are Identification
-                # (id==1) and 1040 (id==2). If there is no program_id==2,
-                # update the income value, else leave it alone
+            # Output will be None if no user; (user_id, not None) if missing files;
+            # (user_id, None) if no missing files
+            userMissingFilesCount = cursorNew.fetchone()
+            
+            if userMissingFilesCount is None or userMissingFilesCount[1] is not None:
+                # If the user doesn't exist in eligibilityprograms or there are
+                # missing files, remove the income value
                 cursorNew.execute(
-                    """select count(*) from public.app_eligibilityprogram 
-                    where user_id={} and program_id=2""".format(
+                    """update public.app_household set income_as_fraction_of_ami=null where user_id={}""".format(
+                        usrid,
+                        )
+                    )
+                
+            else:
+                # If there are no missing files (and therefore the user exists),
+                # find the minimum AMI of the selected programs
+                cursorNew.execute(
+                    """select min(ami_threshold) from public.app_eligibilityprogram p 
+                    left join public.app_eligibilityprogramrd r on r.id=p.program_id 
+                    where r.is_active=true and user_id={}""".format(
                     usrid,
                     )
                 )
-                has1040 = cursorNew.fetchone()[0]
-                
-                if has1040 == 0:
+                minAmi = cursorNew.fetchone()[0]
+            
+                if minAmi == Decimal('1'):
+                    # The two "programs" with ami_threshold==1 are Identification
+                    # (id==1) and 1040 (id==2). If there is no program_id==2,
+                    # update the income value, else leave it alone
+                    cursorNew.execute(
+                        """select count(*) from public.app_eligibilityprogram 
+                        where user_id={} and program_id=2""".format(
+                        usrid,
+                        )
+                    )
+                    has1040 = cursorNew.fetchone()[0]
+                    
+                    if has1040 == 0:
+                        cursorNew.execute(
+                            """update public.app_household set income_as_fraction_of_ami=%s where user_id={}""".format(
+                                usrid,
+                                ),
+                            (minAmi,),
+                            )
+                        
+                else:
+                    # If minAmi < 1, update the income value with minAmi
                     cursorNew.execute(
                         """update public.app_household set income_as_fraction_of_ami=%s where user_id={}""".format(
                             usrid,
@@ -1278,37 +1301,30 @@ def update_income_values(global_objects: dict) -> None:
                         (minAmi,),
                         )
                     
-            else:
-                # If minAmi < 1, update the income value with minAmi
-                cursorNew.execute(
-                    """update public.app_household set income_as_fraction_of_ami=%s where user_id={}""".format(
-                        usrid,
-                        ),
-                    (minAmi,),
-                    )
-                
-                # Go through all auto-apply and auto-apply each user for any
-                # programs they qualify for and aren't already applied/enrolled
-                for prgmid, prgmthreshold in autoApplyIdThreshold:
-                    cursorNew.execute(
-                        """select count(*) from public.app_iqprogram where user_id={uid} and program_id={pid}""".format(
-                            uid=usrid,
-                            pid=prgmid,
-                            )
-                        )
-                    recCount = cursorNew.fetchone()[0]
-                    
-                    # Compare minAmi and the program threshold if there isn't a
-                    # record for this user+program
-                    if recCount == 0:
-                        if minAmi <= prgmthreshold:
-                            cursorNew.execute(
-                                """insert into public.app_iqprogram ("applied_at", "is_enrolled", "program_id", "user_id") 
-                                VALUES ({})""".format(
-                                    ', '.join(['%s']*4)
-                                    ),
-                                (pendulum.now(), False, prgmid, usrid),
+                    # Go through all auto-apply and auto-apply each user for any
+                    # programs they qualify for and aren't already applied/enrolled
+                    for prgmid, prgmthreshold in autoApplyIdThreshold:
+                        cursorNew.execute(
+                            """select count(*) from public.app_iqprogram where user_id={uid} and program_id={pid}""".format(
+                                uid=usrid,
+                                pid=prgmid,
                                 )
+                            )
+                        recCount = cursorNew.fetchone()[0]
+                        
+                        # Compare minAmi and the program threshold if there isn't a
+                        # record for this user+program
+                        if recCount == 0:
+                            if minAmi <= prgmthreshold:
+                                cursorNew.execute(
+                                    """insert into public.app_iqprogram ("applied_at", "is_enrolled", "program_id", "user_id") 
+                                    VALUES ({})""".format(
+                                        ', '.join(['%s']*4)
+                                        ),
+                                    (pendulum.now(), False, prgmid, usrid),
+                                    )
+    
+            progress.update(updateTask, advance=1)
         
     global_objects['conn_new'].commit()
     
