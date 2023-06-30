@@ -84,6 +84,7 @@ def run_full_porting(profile):
     
     add_missing_records(global_objects)
     update_income_values(global_objects)
+    update_program_records(global_objects)
     
     global_objects['conn_old'].close()
     global_objects['conn_new'].close()
@@ -1323,8 +1324,63 @@ def update_income_values(global_objects: dict) -> None:
         # Since this is only users in the iqprogram table, each count should
         # be one
         assert len(userCounts) == sum(userCounts)    
+        
+    print("Income values updated")
 
     cursorNew.close()
+    
+def update_program_records(global_objects: dict) -> None:
+    """
+    The function modifies some records to account for missing logic in the v1
+    app that had to be included in the extracts. The v2 app includes all logic
+    related to program eligibility, so the extract will no longer account for
+    these cases; this function modifies applicable records (created with the
+    v1 app) so that the v2 extract doesn't have to account for them.
+    
+    For example, the v1 extract included logic to ensure an applicant's address
+    was in the GMA; since v2 handles this in the app, the extract no longer
+    needs that logic (and records prior to v2 need to be updated to match v2
+    logic).
+    
+    Remove these iqprogram records here.
+
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
+
+    Returns
+    -------
+    None.
+    
+    """
+    
+    print("Beginning update IQ program application records...")
+    warnings.warn("WARNING: there is no verification for this section")
+    
+    cursorNew = global_objects['conn_new'].cursor()
+    
+    # Find the app_iqprogram record IDs to delete
+    cursorNew.execute(
+        """select i.id from public.app_address a
+        inner join public.app_addressrd r on a.eligibility_address_id=r.id
+        right join (select ii.user_id, ii.id, ir.req_is_in_gma, ir.req_is_city_covered from public.app_iqprogram ii 
+                    inner join public.app_iqprogramrd ir on ir.id=ii.program_id) i on i.user_id=a.user_id
+        where (i.req_is_in_gma=true and r.is_in_gma=false) or (i.req_is_city_covered=true and r.is_city_covered=false)"""
+        )
+    deleteIqProgramIds = [x[0] for x in cursorNew.fetchall()]
+    
+    # Delete the found records
+    cursorNew.execute(
+        """delete from public.app_iqprogram where id in ({})""".format(
+            ', '.join([str(x) for x in deleteIqProgramIds]),
+            )
+        )
+    global_objects['conn_new'].commit()
+    
+    cursorNew.close()
+    
+    print("Program records updated")
         
 if __name__=='__main__':
     
