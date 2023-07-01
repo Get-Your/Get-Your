@@ -143,8 +143,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                         imageUrl: e.target.result,
                         imageAlt: "The uploaded file"
                     }).then((result) => {
-                        // Set the background color of the file-upload-btn to green
+                        // Set the background color of the file-upload-btn to green and
+                        // change the text of the button to "Uploaded" and disable the button
                         $(this).css("background-color", "green");
+                        $(this).text("File Uploaded");
                     });
 
                     // Set the value of the nearest id_identification_path to the file
