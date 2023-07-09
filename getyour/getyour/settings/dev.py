@@ -17,10 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import os
-from pathlib import Path
 from environ import Env
-from datetime import datetime
-
 from getyour.settings.common_settings import *
 
 env = Env()
@@ -77,6 +74,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # add whitenoise
+    'getyour.middleware.RenewalModeMiddleware',
 ]
 
 ROOT_URLCONF = 'getyour.urls'

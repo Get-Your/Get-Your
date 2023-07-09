@@ -18,10 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import json
 import datetime
-import urllib.parse
 import requests
 from enum import Enum
-from decimal import Decimal
 from twilio.rest import Client
 from sendgrid.helpers.mail import Mail
 from sendgrid import SendGridAPIClient
@@ -33,6 +31,7 @@ from django.contrib.auth.backends import UserModel
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.db.models import Q
+from django.db.models.fields.files import FieldFile
 from django.core.serializers.json import DjangoJSONEncoder
 from phonenumber_field.phonenumber import PhoneNumber
 from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram
@@ -376,28 +375,33 @@ def broadcast_email_pw_reset(email, content):
 def changed_modelfields_to_dict(
         previous_instance,
         current_instance,
+        pre_delete=False,
 ):
     """
     Convert a model object to a dictionary. If a property is a datetime object,
     it will be converted to a string. If there is a nested model, it will be
-    excluded from the dictionary.
-    :param model: model object
+    excluded from the dictionary. If pre_delete is True, the previous instance
+    is returned as a dictionary.
+    :param previous_instance: model object
+    :param current_instance: model object
+    :param pre_delete: boolean
     """
 
     # Initialize output
     model_dict = {}
 
-    # Compare the current instance with the previous instance
-    changed_fields = []
-    for field in current_instance._meta.fields:
-        # Determine if the field has been modified
-        field_name = field.name
-        if getattr(current_instance, field_name) != getattr(previous_instance, field_name):
+    if pre_delete:
+        for field in previous_instance._meta.fields:
+            # Determine if the field has been modified
+            field_name = field.name
             try:
                 value = getattr(previous_instance, field_name)
                 if field.is_relation:
                     # Designate the field name and value as 'id'
                     model_dict[f"{field.name}_id"] = value.id
+                elif isinstance(value, FieldFile):
+                    # save the value so it can be json serialized
+                    model_dict[field.name] = str(value)
                 else:
                     if isinstance(value, datetime.datetime):
                         value = value.strftime('%Y-%m-%d %H:%M:%S')
@@ -407,6 +411,30 @@ def changed_modelfields_to_dict(
 
             except AttributeError:
                 pass
+    else:
+        # Compare the current instance with the previous instance
+        for field in current_instance._meta.fields:
+            # Determine if the field has been modified
+            field_name = field.name
+            if getattr(current_instance, field_name) != getattr(previous_instance, field_name):
+                try:
+                    value = getattr(previous_instance, field_name)
+                    if field.is_relation:
+                        # Designate the field name and value as 'id'
+                        model_dict[f"{field.name}_id"] = value.id
+                    # check if the field is FieldFile
+                    elif isinstance(value, FieldFile):
+                        # save the value so it can be json serialized
+                        model_dict[field.name] = str(value)
+                    else:
+                        if isinstance(value, datetime.datetime):
+                            value = value.strftime('%Y-%m-%d %H:%M:%S')
+                        elif isinstance(value, PhoneNumber):
+                            value = value.as_e164
+                        model_dict[field.name] = value
+
+                except AttributeError:
+                    pass
 
     return model_dict
 
@@ -506,6 +534,11 @@ def build_qualification_button(users_enrollment_status):
             "color": "blue",
             "textColor": "white"
         },
+        'RENEWAL': {
+            "text": "Renew",
+            "color": "orange",
+            "textColor": "white"
+        },
         '': {
             "text": "Apply Now",
             "color": "",
@@ -516,10 +549,12 @@ def build_qualification_button(users_enrollment_status):
 
 def map_iq_enrollment_status(program):
     try:
-        if program.is_enrolled:
+        if program.is_enrolled and program.has_renewed:
             return "ACTIVE"
-        else:
+        elif not program.is_enrolled and not program.has_renewed:
             return "PENDING"
+        elif program.is_enrolled and not program.has_renewed:
+            return "RENEWAL"
     except Exception:
         return ''
 
@@ -588,6 +623,8 @@ def get_users_iq_programs(
             program, 'program') else program.enable_autoapply
         program.ami_threshold = program.program.ami_threshold if hasattr(
             program, 'program') else program.ami_threshold
+        program.id = program.program.id if hasattr(
+            program, 'program') else program.id
     return programs
 
 
@@ -601,3 +638,46 @@ def get_in_progress_eligiblity_file_uploads(request):
         Q(user_id=request.user.id) & Q(document_path='')
     ).select_related('program').values('id', 'program__id', 'program__friendly_name')
     return users_in_progress_file_uploads
+
+
+def save_renewal_action(request, action, status='completed', data={}):
+    """Saves a renewal action to the database
+    Args:
+        request (HttpRequest): The request object
+        action (str): The action to save
+    """
+    user = UserModel.objects.get(id=request.user.id)
+    if hasattr(user, 'last_renewal_action'):
+        last_renewal_action = user.last_renewal_action if user.last_renewal_action else {}
+
+        # Check if the action exists in the last renewal action
+        if action in last_renewal_action:
+            last_renewal_action[action] = {'status': status, 'data': data}
+        else:
+            last_renewal_action[action] = {'status': status, 'data': data}
+
+        user.last_renewal_action = json.loads(
+            json.dumps(last_renewal_action, cls=DjangoJSONEncoder))
+        user.save()
+
+
+def what_page_renewal(last_renewal_action):
+    """Returns the what page for the renewal flow
+    Returns:
+        str: The what page for the renewal flow
+    """
+    pages = {
+        'account': 'app:account',
+        'address': 'app:address',
+        'household': 'app:household',
+        'household_members': 'app:household_members',
+        'eligibility_programs': 'app:eligibility_programs',
+        'files': 'app:files'
+    }
+
+    for page, url in pages.items():
+        if page not in last_renewal_action:
+            return url
+
+    # Default return if all pages are present
+    return None

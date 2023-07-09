@@ -141,6 +141,8 @@ class User(AbstractUser):
     has_viewed_dashboard = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False)
     is_updated = models.BooleanField(default=False)
+    last_renewed_at = models.DateTimeField(null=True, blank=True)
+    last_renewal_action = models.JSONField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -459,6 +461,40 @@ class IQProgram(IQProgramTimeStampedModel):
     )
 
     is_enrolled = models.BooleanField(default=False)
+    has_renewed = models.BooleanField(default=False)
+
+    # Define non-database attributes
+    @property
+    def update_mode(self):
+        # Return update_mode for use in saving historical values
+        return getattr(self, '_update_mode', False)
+
+    @update_mode.setter
+    def update_mode(self, val):
+        # Setter for update_mode
+        self._update_mode = val
+
+    @property
+    def renewal_mode(self):
+        # Return renewal_mode for use in saving historical values
+        return getattr(self, '_renewal_mode', False)
+
+    @renewal_mode.setter
+    def renewal_mode(self, val):
+        # Setter for renewal_mode
+        self._renewal_mode = val
+
+
+class IQProgramHist(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(
+        User,
+        related_name='iqprogram_history',
+        # don't remove the iq program history if a user account is deleted
+        on_delete=models.DO_NOTHING,
+    )
+    created = models.DateTimeField(auto_now_add=True)
+    historical_values = models.JSONField(null=True, blank=True)
 
 
 class EligibilityProgramRD(GenericTimeStampedModel):
@@ -505,6 +541,39 @@ class EligibilityProgram(GenericTimeStampedModel):
     # the path
     document_path = models.FileField(
         max_length=5000, upload_to=userfiles_path, null=True, default=None)
+
+    # Define non-database attributes
+    @property
+    def update_mode(self):
+        # Return update_mode for use in saving historical values
+        return getattr(self, '_update_mode', False)
+
+    @update_mode.setter
+    def update_mode(self, val):
+        # Setter for update_mode
+        self._update_mode = val
+
+    @property
+    def renewal_mode(self):
+        # Return renewal_mode for use in saving historical values
+        return getattr(self, '_renewal_mode', False)
+
+    @renewal_mode.setter
+    def renewal_mode(self, val):
+        # Setter for renewal_mode
+        self._renewal_mode = val
+
+
+class EligibilityProgramHist(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(
+        User,
+        related_name='eligibility_program_history',
+        # don't remove the eligibility program history if a user account is deleted
+        on_delete=models.DO_NOTHING,
+    )
+    created = models.DateTimeField(auto_now_add=True)
+    historical_values = models.JSONField(null=True, blank=True)
 
 
 def user_directory_path(instance, filename):

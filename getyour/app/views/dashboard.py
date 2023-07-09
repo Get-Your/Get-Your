@@ -25,10 +25,18 @@ from app.models import AddressRD, IQProgram, IQProgramRD
 
 
 def dashboard(request):
+    # Check if the users renewal_mode session variable is set to True
+    app_renewed = False
+    if request.session.get('renewal_mode', False) and request.session.get("app_renewed", False):
+        app_renewed = True
+        request.session['renewal_mode'] = False
+        request.session['app_renewed'] = False
+
     request.session['update_mode'] = False
     qualified_programs = 0
     active_programs = 0
     pending_programs = 0
+    renewal_programs = 0
 
     # Get the user's eligibility address
     eligibility_address = AddressRD.objects.filter(
@@ -38,7 +46,7 @@ def dashboard(request):
     for program in users_iq_programs:
         # If the program's visibility is 'block' or the status is `ACTIVE` or `PENDING`, it means the user is eligible for the program
         # so we'll count it for their total number of programs they qualify for
-        if program.status_for_user == 'ACTIVE' or program.status_for_user == 'PENDING' or program.status_for_user == '':
+        if program.status_for_user == 'ACTIVE' or program.status_for_user == 'PENDING' or program.status_for_user == 'RENEWAL' or program.status_for_user == '':
             qualified_programs += 1
 
         # If a program's status_for_user is 'PENDING' add 1 to the pending number and subtract 1 from the qualified_programs
@@ -48,6 +56,9 @@ def dashboard(request):
         # If a program's status_for_user is 'ACTIVE' add 1 to the active number and subtract 1 from the qualified_programs
         elif program.status_for_user == 'ACTIVE':
             active_programs += 1
+            qualified_programs -= 1
+        elif program.status_for_user == 'RENEWAL':
+            renewal_programs += 1
             qualified_programs -= 1
 
     # By default we assume the user has viewed the dashboard, but if they haven't
@@ -74,10 +85,10 @@ def dashboard(request):
             "qualified_programs": qualified_programs,
             "pending_programs": pending_programs,
             "active_programs": active_programs,
-            "clientName": request.user.first_name,
-            "clientEmail": request.user.email,
+            "renewal_programs": renewal_programs,
             'proxy_viewed_dashboard': proxy_viewed_dashboard,
             'badge_visible': request.user.household.is_income_verified,
+            'app_renewed': app_renewed,
         },
     )
 
