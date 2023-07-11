@@ -127,10 +127,11 @@ class HouseholdMembersForm(forms.ModelForm):
     name = forms.CharField(label='First & Last Name of Individual')
     birthdate = forms.DateField(
         label="Their Birthdate", widget=forms.widgets.DateInput(attrs={'type': 'date'}))
+    identification_path = forms.CharField(widget=forms.HiddenInput())
 
     class Meta:
         model = HouseholdMembers
-        fields = ['name', 'birthdate']
+        fields = ['name', 'birthdate', 'identification_path', ]
 
 
 class AddressLookupForm(forms.Form):

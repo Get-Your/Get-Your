@@ -17,10 +17,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import json
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, pre_delete
 from django.core.serializers.json import DjangoJSONEncoder
 from django.dispatch import receiver
-from app.models import Household, HouseholdHist, User, UserHist, Address, AddressHist, HouseholdMembers, HouseholdMembersHist
+from app.models import Household, HouseholdHist, User, UserHist, Address, AddressHist, HouseholdMembers, HouseholdMembersHist, EligibilityProgram, EligibilityProgramHist, IQProgram, IQProgramHist
 from app.backend import changed_modelfields_to_dict
 
 
@@ -40,10 +40,10 @@ def household_pre_save(sender, instance, **kwargs):
                         changed_modelfields_to_dict(
                             sender.objects.get(pk=instance.pk),
                             instance,
-                            ), cls=DjangoJSONEncoder
-                        )
+                        ), cls=DjangoJSONEncoder
                     )
                 )
+            )
 
         except Household.DoesNotExist:
             # No historical data to use for the update
@@ -78,10 +78,10 @@ def householdmembers_pre_save(sender, instance, **kwargs):
                         changed_modelfields_to_dict(
                             sender.objects.get(pk=instance.pk),
                             instance,
-                            ), cls=DjangoJSONEncoder
-                        )
+                        ), cls=DjangoJSONEncoder
                     )
                 )
+            )
 
         except HouseholdMembers.DoesNotExist:
             # No historical data to use for the update
@@ -116,10 +116,10 @@ def user_pre_save(sender, instance, **kwargs):
                         changed_modelfields_to_dict(
                             sender.objects.get(pk=instance.pk),
                             instance,
-                            ), cls=DjangoJSONEncoder
-                        )
+                        ), cls=DjangoJSONEncoder
                     )
                 )
+            )
 
         except User.DoesNotExist:
             # No historical data to use for the update
@@ -133,6 +133,7 @@ def user_pre_save(sender, instance, **kwargs):
                 # Set is_updated if any values have changed
                 instance.is_updated = True
             else:
+                user_history.save()
                 # If renewal_mode, set is_updated regardless of values have changed
                 instance.is_updated = instance.renewal_mode
 
@@ -155,10 +156,10 @@ def address_pre_save(sender, instance, **kwargs):
                         changed_modelfields_to_dict(
                             sender.objects.get(pk=instance.pk),
                             instance,
-                            ), cls=DjangoJSONEncoder
-                        )
+                        ), cls=DjangoJSONEncoder
                     )
                 )
+            )
 
         except Address.DoesNotExist:
             # No historical data to use for the update
@@ -172,5 +173,84 @@ def address_pre_save(sender, instance, **kwargs):
                 # Set is_updated if any values have changed
                 instance.is_updated = True
             else:
+                # If renewal_mode, set is_updated regardless of values have changed
+                instance.is_updated = instance.renewal_mode
+
+
+@receiver(pre_delete, sender=IQProgram)
+def iqprogram_pre_delete(sender, instance, **kwargs):
+    # Run historical save if update or renewal mode
+    if instance.update_mode or instance.renewal_mode:
+        try:
+            # Save the previous values of the fields that have been updated in the
+            # user's iq program data to the database in the
+            # iqprogramhist table
+            iqprogram_history = IQProgramHist(
+                user=instance.user,
+                # Convert the updated household objects to a dictionary and then to
+                # a JSON string and set it to the historical_values field
+                historical_values=json.loads(
+                    json.dumps(
+                        changed_modelfields_to_dict(
+                            sender.objects.get(pk=instance.pk),
+                            instance,
+                            pre_delete=True
+                        ), cls=DjangoJSONEncoder
+                    )
+                )
+            )
+
+        except IQProgram.DoesNotExist:
+            # No historical data to use for the update
+            pass
+
+        else:
+            # Save or perform operations with the original instance if any field
+            # has changed
+            if iqprogram_history.historical_values != {}:
+                iqprogram_history.save()
+                # Set is_updated if any values have changed
+                instance.is_updated = True
+            else:
+                iqprogram_history.save()
+                # If renewal_mode, set is_updated regardless of values have changed
+                instance.is_updated = instance.renewal_mode
+
+
+@receiver([pre_save, pre_delete], sender=EligibilityProgram)
+def eligiblity_program_pre_save_and_delete(sender, instance, **kwargs):
+    # Run historical save if update or renewal mode
+    if instance.update_mode or instance.renewal_mode:
+        try:
+            # Save the previous values of the fields that have been updated in the
+            # user's eligiblity program data to the database in the
+            # eligiblityprogramhist table
+            eligiblity_program_history = EligibilityProgramHist(
+                user=instance.user,
+                # Convert the updated household objects to a dictionary and then to
+                # a JSON string and set it to the historical_values field
+
+                historical_values=json.loads(
+                    json.dumps(changed_modelfields_to_dict(
+                        sender.objects.get(pk=instance.pk),
+                        instance,
+                        pre_delete=True
+                    ), cls=DjangoJSONEncoder)
+                )
+            )
+
+        except EligibilityProgram.DoesNotExist:
+            # No historical data to use for the update
+            pass
+
+        else:
+            # Save or perform operations with the original instance if any field
+            # has changed
+            if eligiblity_program_history.historical_values != {}:
+                eligiblity_program_history.save()
+                # Set is_updated if any values have changed
+                instance.is_updated = True
+            else:
+                eligiblity_program_history.save()
                 # If renewal_mode, set is_updated regardless of values have changed
                 instance.is_updated = instance.renewal_mode

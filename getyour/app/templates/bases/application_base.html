@@ -93,6 +93,34 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             }
         }
     </style>
+
+    {% if renewal_mode %}
+    <script>
+        function checkFormChanges() {
+            const $form = $("form");
+            const originalValues = {};
+
+            // Store the original values of the form fields
+            $form.find("input, select, textarea").each(function () {
+                originalValues[this.name] = $(this).val();
+            });
+
+            // Check for changes when a form field loses focus
+            $form.find("input, select, textarea").on("input blur", function () {
+                const $field = $(this);
+                if ($field.val() !== originalValues[$field.attr("name")]) {
+                    $("button[type=submit]").text("UPDATE");
+                } else {
+                    $("button[type=submit]").text("CONFIRM");
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            checkFormChanges();
+        });
+    </script>
+    {% endif %}
 </body>
 
 </html>
