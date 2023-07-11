@@ -626,7 +626,10 @@ def household(request):
 
         instance = form.save(commit=False)
         instance.user_id = request.user.id
-        instance.is_income_verified = False
+
+        # Initialize is_income_verified (if first time through the application)
+        if not update_mode:
+            instance.is_income_verified = False
 
         # Set the attributes to let pre_save know to save history
         instance.update_mode = update_mode

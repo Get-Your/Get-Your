@@ -14,6 +14,9 @@ from rich.progress import Progress
 import psycopg2
 import hashlib
 import json
+from decimal import Decimal
+import warnings
+import pendulum
 
 import coftc_cred_man as crd
 
@@ -58,7 +61,7 @@ def run_full_porting(profile):
     
     print(
         """[bold red]Before starting this process, confirm that\n
-        - You've used DBeaver Data Compare to directly copy all data in [green]app_iqprogramrd[/green] and [green]app_eligibilityprogramrd[/green] from [green]getyour_dev[/green] to [green]{dbn}[/green]\n
+        - You've run [green]C:\\Users\\TiCampbell\\OneDrive - City of Fort Collins\\python\\get_foco\\sql\\v2_release\\initial_programrd_fills.sql[/green] against the {dbn} database\n
         - You've switched to branch [green]database-rearchitecture-p0-modifytable[/green] in the GetFoco repo and run [green]makemigrations[/green] then [green]migrate[/green] against the {dbo} database""".format(
             dbn=global_objects['cred_new'].config['db'],
             dbo=global_objects['cred_old'].config['db'],
@@ -75,10 +78,13 @@ def run_full_porting(profile):
     port_householdmembers(global_objects)
     port_iqprograms(global_objects)
     port_eligibility_programs(global_objects)
+    port_feedback(global_objects)
     
     verify_transfer(global_objects)
     
     add_missing_records(global_objects)
+    update_income_values(global_objects)
+    update_program_records(global_objects)
     
     global_objects['conn_old'].close()
     global_objects['conn_new'].close()
@@ -218,6 +224,29 @@ def port_user(global_objects: dict) -> None:
             )
         
         global_objects['conn_new'].commit()
+        
+    # Set autoincrement sequence to continue after the last record (this will
+    # account for offset users as well)
+    tableName = 'app_user'
+    sequenceColumn = 'id'
+    cursorNew.execute(
+        """select max({col}) from public.{tbl}""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            )
+        )
+    maxVal = cursorNew.fetchone()[0]
+    
+    # Set the last value of the sequence to maxVal and advance for the next
+    # insert
+    cursorNew.execute(
+        """SELECT setval('{tbl}_{col}_seq', {mxv})""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            mxv=maxVal,
+            )
+        )
+    global_objects['conn_new'].commit()
         
     cursorNew.close()
     cursorOld.close()    
@@ -363,6 +392,28 @@ def port_address(global_objects: dict) -> None:
                         )
 
         global_objects['conn_new'].commit()
+        
+    # Set autoincrement sequence to continue after the last record
+    tableName = 'app_addressrd'
+    sequenceColumn = 'id'
+    cursorNew.execute(
+        """select max({col}) from public.{tbl}""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            )
+        )
+    maxVal = cursorNew.fetchone()[0]
+    
+    # Set the last value of the sequence to maxVal and advance for the next
+    # insert
+    cursorNew.execute(
+        """SELECT setval('{tbl}_{col}_seq', {mxv})""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            mxv=maxVal,
+            )
+        )
+    global_objects['conn_new'].commit()
             
     cursorNew.close()
     cursorOld.close()  
@@ -585,6 +636,31 @@ def port_iqprograms(global_objects: dict) -> None:
     update_program(global_objects, 'spin_community_pass', 'SpinAccessQualified_depr')
     print("SPIN Community Pass port complete")
     
+    # Set autoincrement sequence to continue after the last record
+    cursorNew = global_objects['conn_new'].cursor()
+    tableName = 'app_iqprogram'
+    sequenceColumn = 'id'
+    cursorNew.execute(
+        """select max({col}) from public.{tbl}""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            )
+        )
+    maxVal = cursorNew.fetchone()[0]
+    
+    # Set the last value of the sequence to maxVal and advance for the next
+    # insert
+    cursorNew.execute(
+        """SELECT setval('{tbl}_{col}_seq', {mxv})""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            mxv=maxVal,
+            )
+        )
+    global_objects['conn_new'].commit()
+    
+    cursorNew.close()
+    
     print("All iqprograms port complete")
     
 def port_eligibility_programs(global_objects: dict) -> None:
@@ -680,6 +756,83 @@ def port_eligibility_programs(global_objects: dict) -> None:
     print("1040 documents complete")
 
     print("All eligibility programs port complete")    
+    
+    
+def port_feedback(global_objects: dict) -> None:
+    """
+    3) Port 'feedback' from old to new database.
+
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
+
+    Returns
+    -------
+    None.
+    
+    """
+    
+    print("Beginning user feedback port...")
+    
+    cursorOld = global_objects['conn_old'].cursor()
+    cursorNew = global_objects['conn_new'].cursor()
+
+    # FILL NEW ELIGIBILITY TABLE --
+    
+    # Current name: eligibility table is application_eligibility_rearch
+    # Field mapping is as such (application_eligibility, application_eligibility_rearch):
+    #     created, created_at
+    #     modified, modified_at
+    #     user_id_id, user_id
+    #     rent, duration_at_address
+    #     dependents, number_persons_in_household
+    #     <2021 or 2022>, depending on created date, ami_year
+    #     AmiRange_min, ami_range_min
+    #     AmiRange_max, ami_range_max
+    #     True if GenericQualified='ACTIVE' else False, is_income_verified
+    
+
+    cursorOld.execute("""SELECT "id", "created", "modified", "feedbackComments", "starRating" FROM public.dashboard_feedback""")
+    feedbackList = cursorOld.fetchall()
+    
+    if len(feedbackList) > 0:
+        cursorNew.execute("""insert into public.app_feedback ("id", "created", "modified", "feedback_comments", "star_rating")
+                          VALUES {}""".format(
+                ', '.join(['%s']*len(feedbackList))
+                ),
+            feedbackList,
+            )
+        
+        global_objects['conn_new'].commit()
+        
+    # Set autoincrement sequence to continue after the last record
+    tableName = 'app_feedback'
+    sequenceColumn = 'id'
+    cursorNew.execute(
+        """select max({col}) from public.{tbl}""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            )
+        )
+    maxVal = cursorNew.fetchone()[0]
+    
+    # Set the last value of the sequence to maxVal and advance for the next
+    # insert
+    cursorNew.execute(
+        """SELECT setval('{tbl}_{col}_seq', {mxv})""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            mxv=maxVal,
+            )
+        )
+    global_objects['conn_new'].commit()
+        
+    cursorNew.close()
+    cursorOld.close()   
+    
+    print("User feedback port complete")
+    
     
 def verify_transfer(global_objects: dict) -> None:
     """
@@ -920,11 +1073,22 @@ def verify_transfer(global_objects: dict) -> None:
                     prg=program_name,
                     )
                 )
+            
+    # Verify proper user feedback migration. This isn't connected to users, so
+    # it's done in its own section
+    cursorOld.execute("""SELECT "id", "created", "modified", "feedbackComments", "starRating" FROM public.dashboard_feedback order by "id" asc""")
+    oldFeedbackList = cursorOld.fetchall()
+    
+    cursorNew.execute("""SELECT "id", "created", "modified", "feedback_comments", "star_rating" from public.app_feedback order by "id" asc""")
+    newFeedbackList = cursorNew.fetchall()
+    
+    # Verify the lists are equal
+    assert oldFeedbackList==newFeedbackList
 
     cursorNew.close()
     cursorOld.close() 
     
-    print('ALL {} USERS VERIFIED'.format(maxIdx-1))
+    print('ALL FEEDBACK AND {} USERS VERIFIED'.format(maxIdx-1))
     
     
 def add_missing_records(global_objects: dict) -> None:
@@ -992,10 +1156,247 @@ def add_missing_records(global_objects: dict) -> None:
     assert len(blankUserCount) == sum(blankUserCount)
 
     print('Missing identification records successfully added')
+    
+    # Set autoincrement sequence to continue after the last record
+    tableName = 'app_eligibilityprogram'
+    sequenceColumn = 'id'
+    cursorNew.execute(
+        """select max({col}) from public.{tbl}""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            )
+        )
+    maxVal = cursorNew.fetchone()[0]
+    
+    # Set the last value of the sequence to maxVal and advance for the next
+    # insert
+    cursorNew.execute(
+        """SELECT setval('{tbl}_{col}_seq', {mxv})""".format(
+            tbl=tableName,
+            col=sequenceColumn,
+            mxv=maxVal,
+            )
+        )
+    global_objects['conn_new'].commit()
 
     cursorNew.close()
     cursorOld.close() 
 
+
+def update_income_values(global_objects: dict) -> None:
+    """
+    For non-income-verified applicants using the v1 app (i.e. before this ETL
+    is run), income_as_fraction_of_ami was self-selected, which means it may
+    not match the Eligibility Program selection. The v2 extract won't include
+    income at all, so these values need to be updated to match the selected
+    Eligibility Programs.
+    
+    ALSO, v2 doesn't store income values until all necessary files are
+    uploaded, so remove the value if there are blank "document_path" for any
+    user.
+
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
+
+    Returns
+    -------
+    None.
+    
+    """
+    
+    print("Beginning update of income values...")
+    warnings.warn("WARNING: there is no verification for this section")
+    
+    cursorNew = global_objects['conn_new'].cursor()
+    
+    # Collect all users who haven't been income-verified
+    cursorNew.execute(
+        """select user_id from public.app_household
+        where is_income_verified=false order by user_id""")
+    nonVerifiedUsers = [x[0] for x in cursorNew.fetchall()]
+    
+    # Collect all programs with auto-apply enabled
+    cursorNew.execute(
+        """select id, ami_threshold from public.app_iqprogramrd where enable_autoapply=true"""
+        )
+    autoApplyIdThreshold = cursorNew.fetchall()
+    
+    # Loop through each user and 
+    # a) remove the income_as_fraction value if they have un-uploaded files or
+    # b) use the app logic to find the minimum AMI and update their income value
+    
+    with Progress() as progress:
+    
+        updateTask = progress.add_task(
+            "[bright_cyan]Updating...",
+            total=len(nonVerifiedUsers),
+            )
+        
+        for usrid in nonVerifiedUsers:
+            # Check for user not in table or missing files (blank document_path)
+            cursorNew.execute(
+                """select distinct p.user_id, m.missing_count from public.app_eligibilityprogram p 
+                    left join public.app_eligibilityprogramrd r on r.id=p.program_id
+                    left join (select ip.user_id, count(*) as missing_count from public.app_eligibilityprogram ip 
+                        left join public.app_eligibilityprogramrd ir on ir.id=ip.program_id 
+                        where ir.is_active=true and ip.document_path='' 
+                        group by ip.user_id) m on m.user_id=p.user_id 
+                    where r.is_active=true and p.user_id={}""".format(
+                usrid,
+                )
+            )
+            # Output will be None if no user; (user_id, not None) if missing files;
+            # (user_id, None) if no missing files
+            userMissingFilesCount = cursorNew.fetchone()
+            
+            if userMissingFilesCount is None or userMissingFilesCount[1] is not None:
+                # If the user doesn't exist in eligibilityprograms or there are
+                # missing files, remove the income value
+                cursorNew.execute(
+                    """update public.app_household set income_as_fraction_of_ami=null where user_id={}""".format(
+                        usrid,
+                        )
+                    )
+                
+            else:
+                # If there are no missing files (and therefore the user exists),
+                # find the minimum AMI of the selected programs
+                cursorNew.execute(
+                    """select min(ami_threshold) from public.app_eligibilityprogram p 
+                    left join public.app_eligibilityprogramrd r on r.id=p.program_id 
+                    where r.is_active=true and user_id={}""".format(
+                    usrid,
+                    )
+                )
+                minAmi = cursorNew.fetchone()[0]
+            
+                if minAmi == Decimal('1'):
+                    # The two "programs" with ami_threshold==1 are Identification
+                    # (id==1) and 1040 (id==2). If there is no program_id==2,
+                    # update the income value, else leave it alone
+                    cursorNew.execute(
+                        """select count(*) from public.app_eligibilityprogram 
+                        where user_id={} and program_id=2""".format(
+                        usrid,
+                        )
+                    )
+                    has1040 = cursorNew.fetchone()[0]
+                    
+                    if has1040 == 0:
+                        cursorNew.execute(
+                            """update public.app_household set income_as_fraction_of_ami=%s where user_id={}""".format(
+                                usrid,
+                                ),
+                            (minAmi,),
+                            )
+                        
+                else:
+                    # If minAmi < 1, update the income value with minAmi
+                    cursorNew.execute(
+                        """update public.app_household set income_as_fraction_of_ami=%s where user_id={}""".format(
+                            usrid,
+                            ),
+                        (minAmi,),
+                        )
+                    
+                    # Go through all auto-apply and auto-apply each user for any
+                    # programs they qualify for and aren't already applied/enrolled
+                    for prgmid, prgmthreshold in autoApplyIdThreshold:
+                        cursorNew.execute(
+                            """select count(*) from public.app_iqprogram where user_id={uid} and program_id={pid}""".format(
+                                uid=usrid,
+                                pid=prgmid,
+                                )
+                            )
+                        recCount = cursorNew.fetchone()[0]
+                        
+                        # Compare minAmi and the program threshold if there isn't a
+                        # record for this user+program
+                        if recCount == 0:
+                            if minAmi <= prgmthreshold:
+                                cursorNew.execute(
+                                    """insert into public.app_iqprogram ("applied_at", "is_enrolled", "program_id", "user_id") 
+                                    VALUES ({})""".format(
+                                        ', '.join(['%s']*4)
+                                        ),
+                                    (pendulum.now(), False, prgmid, usrid),
+                                    )
+    
+            progress.update(updateTask, advance=1)
+        
+    global_objects['conn_new'].commit()
+    
+    ## Verify that all auto-apply programs have only one record per user
+    for prgmid, prgmthreshold in autoApplyIdThreshold:
+        cursorNew.execute(
+            """select count(*) from public.app_iqprogram where program_id={} group by user_id""".format(
+                prgmid,
+                )
+            )
+        userCounts = [x[0] for x in cursorNew.fetchall()]
+        
+        # Since this is only users in the iqprogram table, each count should
+        # be one
+        assert len(userCounts) == sum(userCounts)    
+        
+    print("Income values updated")
+
+    cursorNew.close()
+    
+def update_program_records(global_objects: dict) -> None:
+    """
+    The function modifies some records to account for missing logic in the v1
+    app that had to be included in the extracts. The v2 app includes all logic
+    related to program eligibility, so the extract will no longer account for
+    these cases; this function modifies applicable records (created with the
+    v1 app) so that the v2 extract doesn't have to account for them.
+    
+    For example, the v1 extract included logic to ensure an applicant's address
+    was in the GMA; since v2 handles this in the app, the extract no longer
+    needs that logic (and records prior to v2 need to be updated to match v2
+    logic).
+    
+    Remove these iqprogram records here.
+
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
+
+    Returns
+    -------
+    None.
+    
+    """
+    
+    print("Beginning update IQ program application records...")
+    warnings.warn("WARNING: there is no verification for this section")
+    
+    cursorNew = global_objects['conn_new'].cursor()
+    
+    # Find the app_iqprogram record IDs to delete
+    cursorNew.execute(
+        """select i.id from public.app_address a
+        inner join public.app_addressrd r on a.eligibility_address_id=r.id
+        right join (select ii.user_id, ii.id, ir.req_is_in_gma, ir.req_is_city_covered from public.app_iqprogram ii 
+                    inner join public.app_iqprogramrd ir on ir.id=ii.program_id) i on i.user_id=a.user_id
+        where (i.req_is_in_gma=true and r.is_in_gma=false) or (i.req_is_city_covered=true and r.is_city_covered=false)"""
+        )
+    deleteIqProgramIds = [x[0] for x in cursorNew.fetchall()]
+    
+    # Delete the found records
+    cursorNew.execute(
+        """delete from public.app_iqprogram where id in ({})""".format(
+            ', '.join([str(x) for x in deleteIqProgramIds]),
+            )
+        )
+    global_objects['conn_new'].commit()
+    
+    cursorNew.close()
+    
+    print("Program records updated")
         
 if __name__=='__main__':
     
