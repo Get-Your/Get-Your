@@ -667,6 +667,7 @@ def what_page_renewal(last_renewal_action):
         str: The what page for the renewal flow
     """
     pages = {
+        'get_ready': 'app:get_ready',
         'account': 'app:account',
         'address': 'app:address',
         'household': 'app:household',

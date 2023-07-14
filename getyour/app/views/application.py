@@ -60,8 +60,16 @@ def household_definition(request):
 
 
 def get_ready(request):
+    renewal_mode = request.session.get(
+        'renewal_mode') if request.session.get('renewal_mode') else False
     eligiblity_programs = EligibilityProgramRD.objects.filter(
         is_active=True).order_by('friendly_name')
+    
+    # Check if the next query param is set
+    # If so, save the renewal action and redirect to the account page
+    if request.GET.get('next', False):    
+        save_renewal_action(request, 'get_ready')
+        return redirect('app:account')
     return render(
         request,
         'application/get_ready.html',
@@ -70,6 +78,7 @@ def get_ready(request):
             'form_page_number': form_page_number,
             'title': "Ready some Necessary Documents",
             'eligiblity_programs': eligiblity_programs,
+            'renewal_mode': renewal_mode,
         },
     )
 

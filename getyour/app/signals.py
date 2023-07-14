@@ -133,7 +133,6 @@ def user_pre_save(sender, instance, **kwargs):
                 # Set is_updated if any values have changed
                 instance.is_updated = True
             else:
-                user_history.save()
                 # If renewal_mode, set is_updated regardless of values have changed
                 instance.is_updated = instance.renewal_mode
 
@@ -212,7 +211,6 @@ def iqprogram_pre_delete(sender, instance, **kwargs):
                 # Set is_updated if any values have changed
                 instance.is_updated = True
             else:
-                iqprogram_history.save()
                 # If renewal_mode, set is_updated regardless of values have changed
                 instance.is_updated = instance.renewal_mode
 
@@ -251,6 +249,5 @@ def eligiblity_program_pre_save_and_delete(sender, instance, **kwargs):
                 # Set is_updated if any values have changed
                 instance.is_updated = True
             else:
-                eligiblity_program_history.save()
                 # If renewal_mode, set is_updated regardless of values have changed
                 instance.is_updated = instance.renewal_mode

@@ -315,7 +315,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 confirmButtonColor: "orange",
                 showCancelButton: true,
                 preConfirm: () => {
-                    window.location.href = "{% url 'app:account' %}?renewal_mode=1";
+                    window.location.href = "{% url 'app:get_ready' %}?renewal_mode=1";
                 },
             });
         });
