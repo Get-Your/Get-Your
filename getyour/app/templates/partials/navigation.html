@@ -17,6 +17,13 @@
         <p>Save & Logout</p>
     </a>
     {% endif %}
+
+    {% if display_exit_link %}
+    <p></p>
+    <a id="exit-btn" class="p2 mr-5" href="{% url 'app:dashboard' %}">
+        <p>Exit</p>
+    </a>
+    {% endif %}
 </div>
 
 <style>
@@ -28,13 +35,13 @@
         width:max(4.5vw, 16px);
     }
 
-    #save-btn {
+    #save-btn, #exit-btn {
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
-    #back-btn, #save-btn {
+    #back-btn, #save-btn, #exit-btn  {
         text-decoration: none;
     }
 </style>

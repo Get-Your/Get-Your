@@ -18,16 +18,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import os
 import json
-from pathlib import Path
-from datetime import datetime
 from django.core.exceptions import ImproperlyConfigured
-
 from getyour.settings.common_settings import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # JSON-based secrets module
 with open('secrets_prod.json') as f:
     secrets = json.loads(f.read())
+
 
 def get_secret(setting, secrets=secrets):
     '''Get the secret variable or return explicit exception.'''
@@ -36,6 +34,7 @@ def get_secret(setting, secrets=secrets):
     except KeyError:
         error_msg = 'Set the {0} environment variable'.format(setting)
         raise ImproperlyConfigured(error_msg)
+
 
 SECRET_KEY = get_secret('SECRET_KEY')
 TWILIO_ACCOUNT_SID = get_secret('TWILIO_ACCOUNT_SID')
@@ -86,6 +85,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # add whitenoise
+    'getyour.middleware.RenewalModeMiddleware',
 ]
 
 ROOT_URLCONF = 'getyour.urls'

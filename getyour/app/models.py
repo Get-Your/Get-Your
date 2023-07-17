@@ -24,6 +24,14 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext_lazy as _
 
 
+def userfiles_path(instance, filename):
+    # file will be uploaded to user_<id>/<filename>
+    try:
+        return 'user_{0}/{1}'.format(instance.user_id, filename)
+    except AttributeError:
+        return 'user_{0}/{1}'.format(instance.id, filename)
+
+
 # Create custom user manager class (because django only likes to use usernames as usernames not email)
 class CustomUserManager(BaseUserManager):
     """
@@ -133,6 +141,8 @@ class User(AbstractUser):
     has_viewed_dashboard = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False)
     is_updated = models.BooleanField(default=False)
+    last_renewed_at = models.DateTimeField(null=True, blank=True)
+    last_renewal_action = models.JSONField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -141,28 +151,29 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
-    
+
     # Define non-database attributes
     @property
     def update_mode(self):
         # Return update_mode for use in saving historical values
         return getattr(self, '_update_mode', False)
-    
+
     @update_mode.setter
     def update_mode(self, val):
         # Setter for update_mode
-        self._update_mode = val    
+        self._update_mode = val
 
     @property
     def renewal_mode(self):
         # Return renewal_mode for use in saving historical values
         return getattr(self, '_renewal_mode', False)
-    
+
     @renewal_mode.setter
     def renewal_mode(self, val):
         # Setter for renewal_mode
-        self._renewal_mode = val   
-    
+        self._renewal_mode = val
+
+
 class UserHist(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(
@@ -251,21 +262,21 @@ class Address(GenericTimeStampedModel):
     def update_mode(self):
         # Return update_mode for use in saving historical values
         return getattr(self, '_update_mode', False)
-    
+
     @update_mode.setter
     def update_mode(self, val):
         # Setter for update_mode
-        self._update_mode = val    
+        self._update_mode = val
 
     @property
     def renewal_mode(self):
         # Return renewal_mode for use in saving historical values
         return getattr(self, '_renewal_mode', False)
-    
+
     @renewal_mode.setter
     def renewal_mode(self, val):
         # Setter for renewal_mode
-        self._renewal_mode = val    
+        self._renewal_mode = val
 
 
 class AddressHist(models.Model):
@@ -303,21 +314,21 @@ class Household(GenericTimeStampedModel):
     def update_mode(self):
         # Return update_mode for use in saving historical values
         return getattr(self, '_update_mode', False)
-    
+
     @update_mode.setter
     def update_mode(self, val):
         # Setter for update_mode
-        self._update_mode = val    
+        self._update_mode = val
 
     @property
     def renewal_mode(self):
         # Return renewal_mode for use in saving historical values
         return getattr(self, '_renewal_mode', False)
-    
+
     @renewal_mode.setter
     def renewal_mode(self, val):
         # Setter for renewal_mode
-        self._renewal_mode = val      
+        self._renewal_mode = val
 
 
 class HouseholdHist(models.Model):
@@ -339,7 +350,7 @@ class HouseholdMembers(GenericTimeStampedModel):
         primary_key=True,   # set this to the primary key of this model
     )
 
-    # Store the household info (individuals' names and birthdates) as JSON for
+    # Store the household info (individuals' names, birthdates, and path to an uploaded ID) as JSON for
     # quick storage and reference
     household_info = models.JSONField(null=True, blank=True)
     is_updated = models.BooleanField(default=False)
@@ -349,21 +360,21 @@ class HouseholdMembers(GenericTimeStampedModel):
     def update_mode(self):
         # Return update_mode for use in saving historical values
         return getattr(self, '_update_mode', False)
-    
+
     @update_mode.setter
     def update_mode(self, val):
         # Setter for update_mode
-        self._update_mode = val    
+        self._update_mode = val
 
     @property
     def renewal_mode(self):
         # Return renewal_mode for use in saving historical values
         return getattr(self, '_renewal_mode', False)
-    
+
     @renewal_mode.setter
     def renewal_mode(self, val):
         # Setter for renewal_mode
-        self._renewal_mode = val          
+        self._renewal_mode = val
 
 
 class HouseholdMembersHist(models.Model):
@@ -450,6 +461,40 @@ class IQProgram(IQProgramTimeStampedModel):
     )
 
     is_enrolled = models.BooleanField(default=False)
+    has_renewed = models.BooleanField(default=False)
+
+    # Define non-database attributes
+    @property
+    def update_mode(self):
+        # Return update_mode for use in saving historical values
+        return getattr(self, '_update_mode', False)
+
+    @update_mode.setter
+    def update_mode(self, val):
+        # Setter for update_mode
+        self._update_mode = val
+
+    @property
+    def renewal_mode(self):
+        # Return renewal_mode for use in saving historical values
+        return getattr(self, '_renewal_mode', False)
+
+    @renewal_mode.setter
+    def renewal_mode(self, val):
+        # Setter for renewal_mode
+        self._renewal_mode = val
+
+
+class IQProgramHist(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(
+        User,
+        related_name='iqprogram_history',
+        # don't remove the iq program history if a user account is deleted
+        on_delete=models.DO_NOTHING,
+    )
+    created = models.DateTimeField(auto_now_add=True)
+    historical_values = models.JSONField(null=True, blank=True)
 
 
 class EligibilityProgramRD(GenericTimeStampedModel):
@@ -476,11 +521,6 @@ class EligibilityProgramRD(GenericTimeStampedModel):
     is_active = models.BooleanField(default=True)
 
 
-def userfiles_path(instance, filename):
-    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    return 'user_{0}/{1}'.format(instance.user_id, filename)
-
-
 class EligibilityProgram(GenericTimeStampedModel):
     """
     Model class to store the eligibility programs.
@@ -501,6 +541,39 @@ class EligibilityProgram(GenericTimeStampedModel):
     # the path
     document_path = models.FileField(
         max_length=5000, upload_to=userfiles_path, null=True, default=None)
+
+    # Define non-database attributes
+    @property
+    def update_mode(self):
+        # Return update_mode for use in saving historical values
+        return getattr(self, '_update_mode', False)
+
+    @update_mode.setter
+    def update_mode(self, val):
+        # Setter for update_mode
+        self._update_mode = val
+
+    @property
+    def renewal_mode(self):
+        # Return renewal_mode for use in saving historical values
+        return getattr(self, '_renewal_mode', False)
+
+    @renewal_mode.setter
+    def renewal_mode(self, val):
+        # Setter for renewal_mode
+        self._renewal_mode = val
+
+
+class EligibilityProgramHist(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(
+        User,
+        related_name='eligibility_program_history',
+        # don't remove the eligibility program history if a user account is deleted
+        on_delete=models.DO_NOTHING,
+    )
+    created = models.DateTimeField(auto_now_add=True)
+    historical_values = models.JSONField(null=True, blank=True)
 
 
 def user_directory_path(instance, filename):
