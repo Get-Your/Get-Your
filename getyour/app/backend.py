@@ -551,7 +551,7 @@ def map_iq_enrollment_status(program):
     try:
         if program.is_enrolled and program.has_renewed:
             return "ACTIVE"
-        elif not program.is_enrolled and not program.has_renewed:
+        elif not program.is_enrolled:
             return "PENDING"
         elif program.is_enrolled and not program.has_renewed:
             return "RENEWAL"

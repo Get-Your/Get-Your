@@ -461,7 +461,7 @@ class IQProgram(IQProgramTimeStampedModel):
     )
 
     is_enrolled = models.BooleanField(default=False)
-    has_renewed = models.BooleanField(default=False)
+    has_renewed = models.BooleanField(default=True)
 
     # Define non-database attributes
     @property
