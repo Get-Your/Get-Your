@@ -26,6 +26,7 @@ The universal income-qualified application for the City of Fort Collins, Colorad
         1. [Creating a Database](#creating-a-database)
         1. [Transferring Between Databases](#transferring-between-databases)
         1. [Set Up Database Users](#set-up-database-users)
+1. 
 1. [Request a Consultation](#request-a-consultation)
 1. [Appendix](#appendix)
     1. [Database Administration Tools](#database-administration-tools)
@@ -287,6 +288,14 @@ The admin user shouldn't be used for development or live database connections; a
 
         -- This is so all tables GRANTs apply to new tables as well
         ALTER DEFAULT PRIVILEGES FOR USER <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;    
+
+# User Administration
+
+The following Postgres functions have been created for user administration through the IQ verification process:
+
+...
+
+> Note that a function cannot have more that 100 arguments, so income verification is limited to 100 users at a time and program enrollment is limited to 99 users.
 
 # Request a Consultation
 
