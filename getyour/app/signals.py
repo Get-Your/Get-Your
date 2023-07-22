@@ -173,8 +173,10 @@ def address_pre_save(sender, instance, **kwargs):
             # has changed
             if address_history.historical_values != {}:
                 address_history.save()
-                # Set is_updated if any values have changed
-                instance.is_updated = True
+                # Set is_updated *only if mailing address is included* in the
+                # updated values
+                if 'mailing_address_id' in address_history.historical_values.keys():
+                    instance.is_updated = True
 
 
 # Since this table is only affected by new or renewal applications, use
