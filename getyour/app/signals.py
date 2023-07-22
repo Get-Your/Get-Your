@@ -56,9 +56,6 @@ def household_pre_save(sender, instance, **kwargs):
                 household_history.save()
                 # Set is_updated if any values have changed
                 instance.is_updated = True
-            else:
-                # If renewal_mode, set is_updated regardless of values have changed
-                instance.is_updated = instance.renewal_mode
 
 
 @receiver(pre_save, sender=HouseholdMembers)
@@ -94,9 +91,6 @@ def householdmembers_pre_save(sender, instance, **kwargs):
                 householdmembers_history.save()
                 # Set is_updated if any values have changed
                 instance.is_updated = True
-            else:
-                # If renewal_mode, set is_updated regardless of values have changed
-                instance.is_updated = instance.renewal_mode
 
 
 @receiver(pre_save, sender=User)
@@ -132,9 +126,6 @@ def user_pre_save(sender, instance, **kwargs):
                 user_history.save()
                 # Set is_updated if any values have changed
                 instance.is_updated = True
-            else:
-                # If renewal_mode, set is_updated regardless of values have changed
-                instance.is_updated = instance.renewal_mode
 
 
 @receiver(pre_save, sender=Address)
@@ -171,9 +162,6 @@ def address_pre_save(sender, instance, **kwargs):
                 address_history.save()
                 # Set is_updated if any values have changed
                 instance.is_updated = True
-            else:
-                # If renewal_mode, set is_updated regardless of values have changed
-                instance.is_updated = instance.renewal_mode
 
 
 @receiver(pre_delete, sender=IQProgram)
@@ -210,10 +198,6 @@ def iqprogram_pre_delete(sender, instance, **kwargs):
                 iqprogram_history.save()
                 # Set is_updated if any values have changed
                 instance.is_updated = True
-            else:
-                # If renewal_mode, set is_updated regardless of values have changed
-                instance.is_updated = instance.renewal_mode
-
 
 @receiver([pre_save, pre_delete], sender=EligibilityProgram)
 def eligiblity_program_pre_save_and_delete(sender, instance, **kwargs):
@@ -248,6 +232,3 @@ def eligiblity_program_pre_save_and_delete(sender, instance, **kwargs):
                 eligiblity_program_history.save()
                 # Set is_updated if any values have changed
                 instance.is_updated = True
-            else:
-                # If renewal_mode, set is_updated regardless of values have changed
-                instance.is_updated = instance.renewal_mode
