@@ -114,6 +114,8 @@ def account(request):
             instance.save()
 
             if renewal_mode:
+                # Call save_renewal_action after .save() so as not to save
+                # renewal metadata as data updates
                 save_renewal_action(request, 'account')
                 return JsonResponse({"redirect": f"{reverse('app:address')}"})
             elif (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard):
@@ -612,6 +614,8 @@ def take_usps_address(request):
                 address.save()
 
             if renewal_mode:
+                # Call save_renewal_action after .save() so as not to save
+                # renewal metadata as data updates
                 save_renewal_action(request, 'address')
 
             return redirect(reverse('app:household'))
@@ -669,6 +673,8 @@ def household(request):
         instance.save()
 
         if renewal_mode:
+            # Call save_renewal_action after .save() so as not to save
+            # renewal metadata as data updates
             save_renewal_action(request, 'household')
 
         if update_mode:
@@ -814,6 +820,8 @@ def household_members(request):
         instance.save()
 
         if renewal_mode:
+            # Call save_renewal_action after .save() so as not to save
+            # renewal metadata as data updates
             save_renewal_action(request, 'household_members')
 
         if update_mode:

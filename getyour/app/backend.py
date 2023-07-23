@@ -391,8 +391,8 @@ def changed_modelfields_to_dict(
     model_dict = {}
 
     if pre_delete:
+        # Save all fields as dictionary before deleting the record
         for field in previous_instance._meta.fields:
-            # Determine if the field has been modified
             field_name = field.name
             try:
                 value = getattr(previous_instance, field_name)
@@ -414,7 +414,6 @@ def changed_modelfields_to_dict(
     else:
         # Compare the current instance with the previous instance
         for field in current_instance._meta.fields:
-            # Determine if the field has been modified
             field_name = field.name
             if getattr(current_instance, field_name) != getattr(previous_instance, field_name):
                 try:
@@ -551,7 +550,7 @@ def map_iq_enrollment_status(program):
     try:
         if program.is_enrolled and program.has_renewed:
             return "ACTIVE"
-        elif not program.is_enrolled and not program.has_renewed:
+        elif not program.is_enrolled:
             return "PENDING"
         elif program.is_enrolled and not program.has_renewed:
             return "RENEWAL"

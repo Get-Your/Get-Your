@@ -255,6 +255,8 @@ class Address(GenericTimeStampedModel):
         on_delete=models.DO_NOTHING,    # don't remove this value if address is deleted
         related_name='+',   # don't relate AddressesNew_rearch id with this field
     )
+
+    # Important: for this model, ``is_updated`` applies *only to the mailing address*
     is_updated = models.BooleanField(default=False)
 
     # Define non-database attributes
@@ -461,7 +463,7 @@ class IQProgram(IQProgramTimeStampedModel):
     )
 
     is_enrolled = models.BooleanField(default=False)
-    has_renewed = models.BooleanField(default=False)
+    has_renewed = models.BooleanField(default=True)
 
     # Define non-database attributes
     @property
