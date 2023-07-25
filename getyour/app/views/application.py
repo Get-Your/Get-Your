@@ -21,18 +21,22 @@ import usaddress
 import magic
 import datetime
 import logging
-from decimal import Decimal
+import base64
+import io
+import re
 from urllib.parse import urlencode
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import QueryDict, HttpResponseRedirect, JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.query_utils import Q
 from django.db import IntegrityError
 from django.forms.utils import ErrorList
+from django.core.files.storage import default_storage
 from app.forms import HouseholdForm, UserForm, AddressForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm
-from app.backend import form_page_number, tag_mapping, address_check, serialize_household_members, validate_usps, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, broadcast_email, broadcast_sms
-from app.models import AddressRD, Address, EligibilityProgram, Household, IQProgram, User, EligibilityProgramRD
+from app.backend import form_page_number, tag_mapping, address_check, serialize_household_members, validate_usps, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, broadcast_email, broadcast_sms, save_renewal_action
+from app.models import userfiles_path, AddressRD, Address, EligibilityProgram, Household, IQProgram, User, EligibilityProgramRD
 from app.decorators import set_update_mode
 
 
@@ -56,8 +60,16 @@ def household_definition(request):
 
 
 def get_ready(request):
+    renewal_mode = request.session.get(
+        'renewal_mode') if request.session.get('renewal_mode') else False
     eligiblity_programs = EligibilityProgramRD.objects.filter(
         is_active=True).order_by('friendly_name')
+    
+    # Check if the next query param is set
+    # If so, save the renewal action and redirect to the account page
+    if request.GET.get('next', False):    
+        save_renewal_action(request, 'get_ready')
+        return redirect('app:account')
     return render(
         request,
         'application/get_ready.html',
@@ -66,6 +78,7 @@ def get_ready(request):
             'form_page_number': form_page_number,
             'title': "Ready some Necessary Documents",
             'eligiblity_programs': eligiblity_programs,
+            'renewal_mode': renewal_mode,
         },
     )
 
@@ -74,31 +87,41 @@ def get_ready(request):
 def account(request):
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
-    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False
-
-    # TODO: Update this renewal_mode placeholder to the same mechanics as
-    # update_mode
-    renewal_mode = False
+    update_mode = request.session.get(
+        'update_mode') if request.session.get('update_mode') else False
+    renewal_mode = request.session.get(
+        'renewal_mode') if request.session.get('renewal_mode') else False
 
     if request.method == "POST":
         try:
             existing = request.user
-            if update_mode:
+            if update_mode or renewal_mode or (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard):
                 form = UserUpdateForm(request.POST, instance=existing)
             else:
                 form = UserForm(request.POST, instance=existing)
         except AttributeError or ObjectDoesNotExist:
             form = UserForm(request.POST or None)
 
-        if form.is_valid() and update_mode:
+        # Checking the `has_viewed_dashboard` attribute of the user object
+        # allows us to determine if the user has already completed the application
+        # or if they're returning to update their information from the initial application
+        if form.is_valid() and (update_mode or renewal_mode or (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard)):
             instance = form.save(commit=False)
 
             # Set the attributes to let pre_save know to save history
             instance.update_mode = update_mode
             instance.renewal_mode = renewal_mode
-
             instance.save()
-            return JsonResponse({"redirect": f"{reverse('app:user_settings')}?page_updated=account"})
+
+            if renewal_mode:
+                # Call save_renewal_action after .save() so as not to save
+                # renewal metadata as data updates
+                save_renewal_action(request, 'account')
+                return JsonResponse({"redirect": f"{reverse('app:address')}"})
+            elif (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard):
+                return JsonResponse({"redirect": f"{reverse('app:address')}"})
+            else:
+                return JsonResponse({"redirect": f"{reverse('app:user_settings')}?page_updated=account"})
         elif form.is_valid():
             passwordCheck = form.passwordCheck()
             passwordCheckDuplicate = form.passwordCheckDuplicate()
@@ -118,6 +141,7 @@ def account(request):
                     'message': passwordCheckDuplicate
                 }
                 return JsonResponse(data)
+
             try:
                 user = form.save()
                 login(request, user)
@@ -135,7 +159,7 @@ def account(request):
             # AJAX data function below, sends data to AJAX function in account.html, if clients make a mistake via email or phone number, page lets them know and DOESN'T refresh web page
             # let's them know via AJAX
             error_messages = dict(form.errors.items())
-            
+
             # Create message_dict by parsing strings or all items of ErrorList,
             # where applicable. Use the prettified field name as each key
             message_dict = {}
@@ -143,28 +167,30 @@ def account(request):
                 val = error_messages[keyitm]
 
                 # Gather the list of error messages and flatten it
-                message_list = [[y for y in val] if isinstance(val, ErrorList) else val]
-                flattened_messages = [item for items in message_list for item in items]
+                message_list = [[y for y in val]
+                                if isinstance(val, ErrorList) else val]
+                flattened_messages = [
+                    item for items in message_list for item in items]
 
                 # Write the messages as a string
                 message_dict.update({
                     keyitm.replace('_', ' ').title(): '. '.join(flattened_messages)
-                    })
+                })
             # Create error message data by prepending the prettified field name
             # and joining as newlines
             data = {
                 'result': 'error',
                 'message': '\n'.join(
                     [f"{keyitm}: {message_dict[keyitm]}" for keyitm in message_dict.keys()]
-                    )
-                }
+                )
+            }
             return JsonResponse(data)
     else:
-        if update_mode:
-            # Query the users table for the user's data
+        try:
             user = User.objects.get(id=request.user.id)
             form = UserUpdateForm(instance=user)
-        else:
+            update_mode = True
+        except Exception:
             form = UserForm()
 
     return render(
@@ -176,6 +202,7 @@ def account(request):
             'form_page_number': form_page_number,
             'title': "Account",
             'update_mode': update_mode,
+            'renewal_mode': renewal_mode,
         },
     )
 
@@ -187,7 +214,10 @@ def address(request):
 
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
-    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False
+    update_mode = request.session.get(
+        'update_mode') if request.session.get('update_mode') else False
+    renewal_mode = request.session.get(
+        'renewal_mode') if request.session.get('renewal_mode') else False
 
     if request.method == "POST":
         addresses = []
@@ -206,7 +236,7 @@ def address(request):
                     'type': 'eligibility',
                     'processed': False
                 })
-            
+
         # 'no' means the user has a different mailing address
         # compared to their eligibility address
         if request.POST.get('mailing_address') == 'no' or update_mode:
@@ -262,6 +292,7 @@ def address(request):
                 'form_page_number': form_page_number,
                 'title': "Address",
                 'update_mode': update_mode,
+                'renewal_mode': renewal_mode,
             },
         )
 
@@ -272,7 +303,8 @@ def address_correction(request):
         in_progress_address = [
             address for address in addresses if not address['processed']][0]
         q = QueryDict(urlencode(in_progress_address['address']), mutable=True)
-        q_orig = QueryDict(urlencode(in_progress_address['address']), mutable=True)
+        q_orig = QueryDict(
+            urlencode(in_progress_address['address']), mutable=True)
 
         # Loop through maxLoopIdx+1 times to try different methods of
         # parsing the address
@@ -462,11 +494,10 @@ def address_correction(request):
 def take_usps_address(request):
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
-    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False
-
-    # TODO: Update this renewal_mode placeholder to the same mechanics as
-    # update_mode
-    renewal_mode = False
+    update_mode = request.session.get(
+        'update_mode') if request.session.get('update_mode') else False
+    renewal_mode = request.session.get(
+        'renewal_mode') if request.session.get('renewal_mode') else False
 
     try:
         # Use the session var created in addressCorrection(), then remove it
@@ -582,6 +613,11 @@ def take_usps_address(request):
 
                 address.save()
 
+            if renewal_mode:
+                # Call save_renewal_action after .save() so as not to save
+                # renewal metadata as data updates
+                save_renewal_action(request, 'address')
+
             return redirect(reverse('app:household'))
         else:
             # We're in update_mode here, so we're only updating the users
@@ -611,11 +647,10 @@ def household(request):
 
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
-    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False   
-
-    # TODO: Update this renewal_mode placeholder to the same mechanics as
-    # update_mode
-    renewal_mode = False 
+    update_mode = request.session.get(
+        'update_mode') if request.session.get('update_mode') else False
+    renewal_mode = request.session.get(
+        'renewal_mode') if request.session.get('renewal_mode') else False
 
     if request.method == "POST":
         try:
@@ -634,20 +669,26 @@ def household(request):
         # Set the attributes to let pre_save know to save history
         instance.update_mode = update_mode
         instance.renewal_mode = renewal_mode
-        
+
         instance.save()
+
+        if renewal_mode:
+            # Call save_renewal_action after .save() so as not to save
+            # renewal metadata as data updates
+            save_renewal_action(request, 'household')
+
         if update_mode:
             return redirect(f'{reverse("app:household_members")}?update_mode=1')
         else:
             return redirect(reverse("app:household_members"))
 
     else:
-        if update_mode:
+        try:
             # Query the users table for the user's data
             eligibility = Household.objects.get(
                 user_id=request.user.id)
             form = HouseholdForm(instance=eligibility)
-        else:
+        except Exception:
             form = HouseholdForm()
 
     return render(
@@ -659,6 +700,7 @@ def household(request):
             'form_page_number': form_page_number,
             'title': "Household",
             'update_mode': update_mode,
+            'renewal_mode': renewal_mode,
         },
     )
 
@@ -667,28 +709,121 @@ def household(request):
 def household_members(request):
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
-    update_mode = request.session.get('update_mode') if request.session.get('update_mode') else False
-
-    # TODO: Update this renewal_mode placeholder to the same mechanics as
-    # update_mode
-    renewal_mode = False
+    update_mode = request.session.get(
+        'update_mode') if request.session.get('update_mode') else False
+    renewal_mode = request.session.get(
+        'renewal_mode') if request.session.get('renewal_mode') else False
 
     if request.method == "POST":
         try:
             existing = request.user.householdmembers
-            form = HouseholdMembersForm(request.POST, instance=existing)
-        except AttributeError or ObjectDoesNotExist:
-            form = HouseholdMembersForm(request.POST or None)
 
-        instance = form.save(commit=False)
+            form = HouseholdMembersForm(
+                request.POST, instance=existing)
+        except AttributeError or ObjectDoesNotExist:
+            form = HouseholdMembersForm(
+                request.POST or None)
+
+        file_paths = []
+        if form.is_valid():
+            instance = form.save(commit=False)
+
+            # fileAmount = 0
+            # process is as follows:
+            # 1) file is physically saved from the buffer
+            # 2) file is then SCANNED using magic
+            # 3) file is then deleted or nothing happens if magic sees it's ok
+
+            # update, magic no longer needs to scan from saved file, can now scan from buffer! so with this in mind
+            '''
+            1) For loop #1 file(s) scanned first
+            2) For Loop #2 file saved if file(s) are valid
+            '''
+            identification_paths = request.POST.getlist('identification_path')
+            updated_identification_paths = []
+
+            for _, base64_content in enumerate(identification_paths):
+                # Decode the Base64 string
+                decoded_bytes = base64.b64decode(base64_content)
+                # Create a buffer from the decoded bytes
+                buffer = io.BytesIO(decoded_bytes).getvalue()
+                # fileValidation found below
+                filetype = magic.from_buffer(buffer)
+                logging.info(filetype)
+
+                # Check if any of the following strings ("PNG", "JPEG", "JPG", "PDF") are in the filetype
+                if any(x in filetype for x in ["PNG", "JPEG", "JPG", "PDF"]):
+                    pass
+                else:
+                    logging.error(
+                        "File is not a valid file type. file is: " + filetype)
+                    return render(
+                        request,
+                        "application/household_members.html",
+                        {
+                            'step': 3,
+                            "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
+                            'dependent': str(request.user.household.number_persons_in_household),
+                            'list': list(range(request.user.household.number_persons_in_household)),
+                            'form': form,
+                            'form_page_number': form_page_number,
+                            'title': "Household Members",
+                            'update_mode': update_mode,
+                            'form_data': json.dumps(household_info) if household_info else [],
+                        },
+                    )
+
+                # Regular expression pattern for matching PNG, JPEG, JPG, or PDF file extensions
+                pattern = r'(?i)\b(png|jpe?g|pdf)\b'
+                # Search for the pattern in the filetype string
+                match = re.search(pattern, filetype, re.IGNORECASE)
+                # Extract the matched file extension
+                file_extension = match.group(1).lower()
+                file_name = f"household_member_id.{file_extension}"
+                # Assuming file_name is already defined
+                updated_base64_content = base64_content + "," + file_name
+                updated_identification_paths.append(updated_base64_content)
+
+            fileAmount = 0
+            for f in updated_identification_paths:
+                file_name = f.split(",")[1]
+                file_contents = f.split(",")[0]
+                content_type = {
+                    "png": "image/png",
+                    "jpg": "image/jpeg",
+                    "jpeg": "image/jpeg",
+                    "pdf": "application/pdf"
+                }.get(file_name.split(".")[1], "text/plain")
+
+                # Decode the Base64 string
+                decoded_bytes = base64.b64decode(file_contents)
+
+                # Create a buffer from the decoded bytes
+                buffer = io.BytesIO(decoded_bytes)
+                fileAmount += 1
+                file_path = userfiles_path(request.user, datetime.datetime.now(
+                ).isoformat() + "_" + str(fileAmount) + "_" + file_name)
+
+                uploaded_file = SimpleUploadedFile(
+                    file_name, buffer.read(), content_type)
+                file_paths.append(file_path)
+                default_storage.save(file_path, uploaded_file)
+
         instance.user_id = request.user.id
-        instance.household_info = serialize_household_members(request)
+        instance.household_info = serialize_household_members(
+            request, file_paths)
 
         # Set the attribute to let pre_save know to save history
         instance.update_mode = update_mode
         instance.renewal_mode = renewal_mode
-        
+
         instance.save()
+
+        if renewal_mode:
+            # Call save_renewal_action after .save() so as not to save
+            # renewal metadata as data updates
+            save_renewal_action(request, 'household_members')
+
         if update_mode:
             return redirect(f"{reverse('app:user_settings')}?page_updated=household")
         return redirect(reverse("app:programs"))
@@ -711,15 +846,34 @@ def household_members(request):
             'title': "Household Members",
             'update_mode': update_mode,
             'form_data': json.dumps(household_info) if household_info else [],
+            'renewal_mode': renewal_mode,
         },
     )
 
 
 def programs(request):
+    # Check the boolean value of update_mode session var
+    # Set as false if session var DNE
+    renewal_mode = request.session.get(
+        'renewal_mode') if request.session.get('renewal_mode') else False
     if request.method == "POST":
-        # In case a user has migrated back to the programs page, clear out their existing
-        # eligibility programs and have them start fresh.
-        EligibilityProgram.objects.filter(user_id=request.user.id).delete()
+
+        # This if/else block essentially does the same thing, but the way we
+        # delete programs matters for saving data via our signals.py file.
+        # The if block actually triggers the signals.py file to save data
+        # while the else block does not.
+        if renewal_mode:
+            # get the user's eligibility programs
+            eligibility_programs = EligibilityProgram.objects.filter(
+                user_id=request.user.id)
+            # for every program loop through and delete the program
+            for program in eligibility_programs:
+                program.renewal_mode = True
+                program.delete()
+        else:
+            # In case a user has migrated back to the programs page, clear out their existing
+            # eligibility programs and have them start fresh.
+            EligibilityProgram.objects.filter(user_id=request.user.id).delete()
 
         # Serialize POST request
         eligibility_programs = {}
@@ -736,21 +890,19 @@ def programs(request):
             selected_eligibility_programs.append(EligibilityProgram(
                 user_id=request.user.id,
                 program_id=value,
+                renewal_mode=renewal_mode,
             ))
 
-        # Create a EligibilityProgram object for the program_rearch with the program_name = 'identification'
-        selected_eligibility_programs.append(EligibilityProgram(
-            user_id=request.user.id,
-            program_id=EligibilityProgramRD.objects.get(
-                program_name='identification').id,
-        ))
+        if renewal_mode:
+            save_renewal_action(request, 'eligibility_programs')
+
         EligibilityProgram.objects.bulk_create(
             selected_eligibility_programs)
         return redirect(reverse("app:files"))
     else:
         # Get all of the programs (except the one with identification and where is_active is False) from the application_EligibilityProgramRD table
         # ordered by the friendly_name field acending
-        programs = EligibilityProgramRD.objects.filter(~Q(program_name='identification')).filter(
+        programs = EligibilityProgramRD.objects.filter(
             is_active=True).order_by('friendly_name')
 
     return render(
@@ -761,8 +913,10 @@ def programs(request):
             'step': 4,
             'form_page_number': form_page_number,
             'title': "Programs",
+            'renewal_mode': renewal_mode,
         },
     )
+
 
 @set_update_mode
 def files(request):
@@ -771,6 +925,10 @@ def files(request):
     fileNames - used to name the files in the database and file upload
     fileAmount - number of file uploads per income verified documentation
     '''
+    # Check the boolean value of update_mode session var
+    # Set as false if session var DNE
+    renewal_mode = request.session.get(
+        'renewal_mode') if request.session.get('renewal_mode') else False
     users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
         request)
 
@@ -795,7 +953,6 @@ def files(request):
             '''
             for f in request.FILES.getlist('document_path'):
                 # fileValidation found below
-                # filetype = magic.from_file("mobileVers/" + instance.document.url)
                 filetype = magic.from_buffer(f.read())
                 logging.info(filetype)
 
@@ -818,11 +975,13 @@ def files(request):
                             'form_page_number': form_page_number,
                             'title': "Files",
                             'file_upload': json.dumps({'success_status': False}),
+                            'renewal_mode': renewal_mode,
                         },
                     )
 
             for f in request.FILES.getlist('document_path'):
                 fileAmount += 1
+                instance.renewal_mode = renewal_mode
                 # this line allows us to save multiple files: format = iso format (f,f) = (name of file, actual file)
                 instance.document_path.save(datetime.datetime.now(
                 ).isoformat() + "_" + str(fileAmount) + "_" + str(f), f)
@@ -845,6 +1004,7 @@ def files(request):
                         'form_page_number': form_page_number,
                         'title': "Files",
                         'file_upload': json.dumps({'success_status': True}),
+                        'renewal_mode': renewal_mode,
                     },
                 )
             else:
@@ -855,27 +1015,75 @@ def files(request):
                 ).select_related('program').values('program__ami_threshold').order_by('program__ami_threshold').first()
 
                 # Now save the value of the ami_threshold to the user's household
-                Household.objects.filter(
+                household = Household.objects.get(
                     Q(user_id=request.user.id)
-                ).update(income_as_fraction_of_ami=lowest_ami['program__ami_threshold'])
+                )
+                household.income_as_fraction_of_ami = lowest_ami['program__ami_threshold']
 
-                # Get the user's eligibility address
-                eligibility_address = AddressRD.objects.filter(
-                    id=request.user.address.eligibility_address_id).first()
+                if renewal_mode:
+                    household.is_income_verified = False
+                    household.save()
 
-                # Now get all of the IQ Programs
-                users_iq_programs = get_users_iq_programs(
-                    request.user.id, lowest_ami['program__ami_threshold'], eligibility_address)
-                # For every IQ program, check if the user should be automatically enrolled in it if the program
-                # has enable_autoapply set to True and the user's lowest_ami is <= the program's ami_threshold
-                for program in users_iq_programs:
-                    if program.enable_autoapply and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
-                        IQProgram.objects.create(
-                            user_id=request.user.id,
-                            program_id=program.id,
-                        )
+                    # Set the user's last_renewal_date to now, as well as set the user's last_renewal_action to Null
+                    # and set the is_renewed to true
+                    user = User.objects.get(id=request.user.id)
+                    user.renewal_mode = True
+                    user.last_renewed_at = datetime.datetime.now()
+                    user.last_renewal_action = None
+                    user.is_renewed = True
+                    user.save()
 
-                return redirect(reverse("app:broadcast"))
+                    # Get every IQ program for the user that needs to be renewed
+                    users_iq_programs = IQProgram.objects.filter(
+                        Q(user_id=request.user.id) & Q(has_renewed=False))
+
+                    for program in users_iq_programs:
+                        # Delete every program in the list
+                        program.renewal_mode = renewal_mode
+                        program.delete()
+
+                    # Get the user's eligibility address
+                    eligibility_address = AddressRD.objects.filter(
+                        id=request.user.address.eligibility_address_id).first()
+
+                    # Now get all of the IQ Programs
+                    users_iq_programs = get_users_iq_programs(
+                        request.user.id, lowest_ami['program__ami_threshold'], eligibility_address)
+                    # For every IQ program, check if the user should be automatically enrolled in it if the program
+                    # has enable_autoapply set to True and the user's lowest_ami is <= the program's ami_threshold
+                    for program in users_iq_programs:
+                        if program.enable_autoapply and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
+                            # check if the user already has the program in the IQProgram table
+                            if not IQProgram.objects.filter(
+                                Q(user_id=request.user.id) & Q(
+                                    program_id=program.id)
+                            ).exists():
+                                # If the user doesn't have the program in the IQProgram table, then create it
+                                IQProgram.objects.create(
+                                    user_id=request.user.id,
+                                    program_id=program.id,
+                                )
+
+                    request.session["app_renewed"] = True
+                    return redirect(f'{reverse("app:dashboard")}')
+                else:
+                    household.save()
+                    # Get the user's eligibility address
+                    eligibility_address = AddressRD.objects.filter(
+                        id=request.user.address.eligibility_address_id).first()
+
+                    # Now get all of the IQ Programs
+                    users_iq_programs = get_users_iq_programs(
+                        request.user.id, lowest_ami['program__ami_threshold'], eligibility_address)
+                    # For every IQ program, check if the user should be automatically enrolled in it if the program
+                    # has enable_autoapply set to True and the user's lowest_ami is <= the program's ami_threshold
+                    for program in users_iq_programs:
+                        if program.enable_autoapply and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
+                            IQProgram.objects.create(
+                                user_id=request.user.id,
+                                program_id=program.id,
+                            )
+                    return redirect(reverse("app:broadcast"))
     else:
         form = FileUploadForm()
         return render(
@@ -888,6 +1096,7 @@ def files(request):
                 'form_page_number': form_page_number,
                 'title': "Files",
                 'file_upload': json.dumps({'success_status': None}),
+                'renewal_mode': renewal_mode,
             },
         )
 

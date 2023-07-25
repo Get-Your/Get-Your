@@ -45,6 +45,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # add whitenoise
+    'getyour.middleware.RenewalModeMiddleware',
 ]
 
 ROOT_URLCONF = 'getyour.urls'
@@ -111,7 +112,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
 
 # Media storage and common Azure setting
 # Ref https://stackoverflow.com/a/54767932/5438550 for details
-AZURE_LOCATION = "" # Subdirectory-like prefix to the blob name
+AZURE_LOCATION = ""  # Subdirectory-like prefix to the blob name
 DEFAULT_FILE_STORAGE = 'getyour.settings.custom_azure.AzureMediaStorage'
 
 # Logging

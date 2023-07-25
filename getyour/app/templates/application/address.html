@@ -20,7 +20,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% load static %}
 
 {% block navigation %}
-{% if update_mode %}
+{% if renewal_mode %}
+{% url 'app:account' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True back_link=back_link %}
+{% elif update_mode %}
 {% url 'app:user_settings' as back_link %}
 {% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
 {% else %}
@@ -129,9 +132,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     <div class="footer">
-        {% if update_mode %}
-        <input type="hidden" name="update_mode" value="true">
-        <button type="submit"> CONTINUE </button>
+        {% if update_mode or renewal_mode %}
+        <button type="submit"> CONFIRM </button>
         {% else %}
         <button type="submit"> CONTINUE </button>
         {% endif %}
@@ -156,9 +158,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     }
 </style>
 
+{% if not update_mode %}
 <script>
     $(document).ready(function () {
-        {% if not update_mode %}
         var sameAddress = "{{ same_address }}" === "True";
         var mailingAddressHtml = $("#mailing_address_wrapper").html();
         $("#mailing_address_wrapper").empty();
@@ -174,10 +176,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         $('input[type=radio][name=mailing_address]').change(function () {
             updateMailingAddressVisibility(mailingAddressHtml);
         });
-        {% endif %}
     });
 
-    {% if not update_mode %}
     function updateMailingAddressVisibility(mailingAddressHtml) {
         var mailingAddressBtn = $('input[type=radio][name=mailing_address]:checked').val();
         toggleMailingAddressVisibility(mailingAddressBtn, mailingAddressHtml);
@@ -190,12 +190,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             $("#mailing_address_wrapper").html(mailingAddressHtml);
         }
     }
-    {% endif %}
-
-    function zipCheck(zipCode) {
-        if (zipCode.value.length != 5) {
-            alert("Please enter a 5 digit Zip Code ")
-        }
-    }
 </script>
+{% endif %}
 {% endblock %}
