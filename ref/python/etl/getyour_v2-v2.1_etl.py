@@ -139,14 +139,19 @@ def port_identification_path(global_objects: dict) -> None:
         # set the identification_path to the delistified pathitm
         isUpdated = False   # initialize whether to run update
         for jsonidx,jsonitm in enumerate(memberDict['persons_in_household']):
-            # Compare each jsonitm name with app_user name (case-insensitive)
+            # Find a case-insensitive match between the jsonitm name
+            # and app_user name
             if jsonitm['name'].lower() == ' '.join(nameList):
+                
+                # Ensure there isn't already a file here
+                if 'identification_path' in jsonitm.keys() and jsonitm['identification_path'] != '':
+                    continue
                 
                 # Convert the path(s) to a Python list
                 pathitm = ast.literal_eval(pathitm)
                 
                 # Insert the first value of pathitm into a new
-                # 'identification_path' key
+                # 'identification_path' key (only a single file is accepted)
                 if len(pathitm) > 1:
                     print(f"WARNING: document_path for user {userid} is more than 1 file; truncated")
                 
