@@ -47,6 +47,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             names and birthdates?</label>
     </div>
 
+    {% if message %}
+    <div style="color:red; margin-bottom: 5%;">{{ message }} </div>
+    {% endif %}
+
     {% for number in list %}
     <div id="household_member_{{ number }}" class="household_member">
         {{ form }}
