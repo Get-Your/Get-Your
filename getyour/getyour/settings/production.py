@@ -16,30 +16,42 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import os
-from environ import Env
+
+from tomlkit import loads
+from tomlkit import exceptions as tomlexceptions
+from django.core.exceptions import ImproperlyConfigured
+
 from getyour.settings.common_settings import *
 
-env = Env()
-env.read_env(env_file='.prod.env')
+# SECURITY WARNING: keep the secret key used in production secret!
+# TOML-based secrets module
+with open('.prod.deploy', 'r', encoding='utf-8') as f:
+    secrets_dict = loads(f.read())
 
-# Below is loading via .env (for Docker purposes)
-SECRET_KEY = env("SECRET_KEY")
-TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN")
-TWILIO_NUMBER = env("TWILIO_NUMBER")
-USPS_SID = env("USPS_SID")
-DB_USER = env("DB_USER")
-DB_PASS = env("DB_PASS")
-SENDGRID_API_KEY = env('SENDGRID_API_KEY')
-TEMPLATE_ID = env("TEMPLATE_ID")
-TEMPLATE_ID_PW_RESET = env("TEMPLATE_ID_PW_RESET")
-TEMPLATE_ID_DYNAMIC_EMAIL = env("TEMPLATE_ID_DYNAMIC_EMAIL")
-AZURE_ACCOUNT_NAME = env("AZURE_ACCOUNT_NAME")
-AZURE_ACCOUNT_KEY = env("AZURE_ACCOUNT_KEY")
+def get_secret(var_name, read_dict=secrets_dict):
+    '''Get the secret variable or return explicit exception.'''
+    try:
+        return read_dict[var_name]
+    except tomlexceptions.NonExistentKey:
+        error_msg = f"Set the '{var_name}' secrets variable"
+        raise ImproperlyConfigured(error_msg)
+
+SECRET_KEY = get_secret('SECRET_KEY')
+TWILIO_ACCOUNT_SID = get_secret('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = get_secret('TWILIO_AUTH_TOKEN')
+TWILIO_NUMBER = get_secret('TWILIO_NUMBER')
+USPS_SID = get_secret('USPS_SID')
+DB_USER = get_secret('DB_USER')
+DB_PASS = get_secret('DB_PASS')
+SENDGRID_API_KEY = get_secret('SENDGRID_API_KEY')
+TEMPLATE_ID = get_secret("TEMPLATE_ID")
+TEMPLATE_ID_PW_RESET = get_secret("TEMPLATE_ID_PW_RESET")
+TEMPLATE_ID_DYNAMIC_EMAIL = get_secret("TEMPLATE_ID_DYNAMIC_EMAIL")
+AZURE_ACCOUNT_NAME = get_secret("AZURE_ACCOUNT_NAME")
+AZURE_ACCOUNT_KEY = get_secret("AZURE_ACCOUNT_KEY")
 AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.usgovcloudapi.net"
-AZURE_CONTAINER = env("AZURE_CONTAINER")
-SITE_HOSTNAME = env("HOST")
+AZURE_CONTAINER = get_secret("AZURE_CONTAINER")
+SITE_HOSTNAME = get_secret("HOST")
 IS_PROD = True
 
 # DEBUG moved to Azure App Service environment var

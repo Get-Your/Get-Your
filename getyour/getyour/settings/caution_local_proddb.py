@@ -16,25 +16,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import os
-import json
+
+from tomlkit import loads
+from tomlkit import exceptions as tomlexceptions
 from django.core.exceptions import ImproperlyConfigured
+
 from getyour.settings.common_settings import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# JSON-based secrets module
-with open('secrets_prod.json') as f:
-    secrets = json.loads(f.read())
+# TOML-based secrets module
+with open('secrets_prod.toml', 'r', encoding='utf-8') as f:
+    secrets_dict = loads(f.read())
 
-
-def get_secret(setting, secrets=secrets):
+def get_secret(var_name, read_dict=secrets_dict):
     '''Get the secret variable or return explicit exception.'''
     try:
-        return secrets[setting]
-    except KeyError:
-        error_msg = 'Set the {0} environment variable'.format(setting)
+        return read_dict[var_name]
+    except tomlexceptions.NonExistentKey:
+        error_msg = f"Set the '{var_name}' secrets variable"
         raise ImproperlyConfigured(error_msg)
-
 
 SECRET_KEY = get_secret('SECRET_KEY')
 TWILIO_ACCOUNT_SID = get_secret('TWILIO_ACCOUNT_SID')
@@ -64,7 +64,6 @@ ALLOWED_HOSTS = []
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
