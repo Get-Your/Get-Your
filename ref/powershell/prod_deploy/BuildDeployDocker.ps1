@@ -16,8 +16,8 @@ if ( $proc.ExitCode -eq 0 ) {
     Write-Host "Docker service ready"
 
     ## Initialize vars
-    # Get the installation path from the current path (2x parent, then 'getyour' directory)
-    $DockerDir = $(Join-Path $(Split-Path $(Split-Path $pwd)) "getyour")
+    # Get the installation path from the current path (3x parent, then 'getyour' directory)
+    $DockerDir = $(Join-Path $(Split-Path $(Split-Path $(Split-Path $pwd))) "getyour")
 
     ## Set environment variables from the .env file
     Get-Content $(Join-Path $pwd ".env") | ForEach-Object {
@@ -25,12 +25,16 @@ if ( $proc.ExitCode -eq 0 ) {
         Set-Content env:\$name $value
     }
 
+    $VersionStr = Read-Host -Prompt "Enter the PRODUCTION version to deploy (in the format '2.0.1', sans quotes)"
+
+    $BuildStr = "$($env:DOCKER_ACCOUNT)/$($env:DOCKER_REPO):$($env:BUILD_TAG_PREFIX)-$VersionStr"
+
     ## Run the Docker build and push
-    Write-Host "`nBuilding..."
-    docker build -t "$($env:DOCKER_ACCOUNT)/$($env:DOCKER_REPO):$($env:BUILD_TAG)" $DockerDir
+    Write-Host "`nBuilding into $BuildStr..."
+    docker build -t $BuildStr $DockerDir
 
     Write-Host "`nPushing to Docker hub..."
-    docker push "$($env:DOCKER_ACCOUNT)/$($env:DOCKER_REPO):$($env:BUILD_TAG)"
+    docker push $BuildStr
 
     Read-Host -Prompt "Script complete. Press any key to exit"
 
