@@ -51,13 +51,12 @@ AZURE_ACCOUNT_NAME = get_secret("AZURE_ACCOUNT_NAME")
 AZURE_ACCOUNT_KEY = get_secret("AZURE_ACCOUNT_KEY")
 AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.usgovcloudapi.net"
 AZURE_CONTAINER = get_secret("AZURE_CONTAINER")
-SITE_HOSTNAME = get_secret("HOST")
 IS_PROD = True
 
 # DEBUG moved to Azure App Service environment var
 
-CSRF_TRUSTED_ORIGINS = [f"https://{SITE_HOSTNAME}"]
-ALLOWED_HOSTS = [SITE_HOSTNAME]
+CSRF_TRUSTED_ORIGINS = [f"https://{x}" for x in get_secret("HOSTS")]
+ALLOWED_HOSTS = get_secret("HOSTS")
 
 # Application definitions (outside of common_settings)
 
