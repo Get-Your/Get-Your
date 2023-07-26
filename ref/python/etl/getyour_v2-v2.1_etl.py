@@ -15,9 +15,6 @@ app_householdmembers.
 
 from rich import print
 import psycopg2
-import json
-import warnings
-import ast
 
 import coftc_cred_man as crd
 
@@ -39,7 +36,6 @@ def run_full_porting(profile):
 
     global_objects = initialize_vars(profile)
 
-    port_identification_path(global_objects)
     deactivate_identification_program(global_objects)
     
     verify_transfer(global_objects)
@@ -82,106 +78,6 @@ def initialize_vars(profile: str) -> dict:
             'cred': cred,
             }
         )
-    
-def port_identification_path(global_objects: dict) -> None:
-    """
-    1) Copy 'identification' from the app_eligibilityprogram table to the
-    relevant section in the JSON object in app_householdmembers.
-
-    Parameters
-    ----------
-    global_objects : dict
-        Dictionary of objects used across all functions.
-
-    Returns
-    -------
-    None.
-    
-    """
-    
-    cursor = global_objects['conn'].cursor()
-    
-    # Gather program_id for the 'identification' "program"
-    cursor.execute("""select "id" from public.app_eligibilityprogramrd where "program_name"='identification'""")
-    programId = cursor.fetchone()[0]
-    
-    # Gather all users and filepaths in the eligibilityprogram table with a
-    # non-null identification document_path
-    cursor.execute(
-        """select "user_id", "document_path" from public.app_eligibilityprogram where "program_id"={} and "document_path"!=''""".format(
-            programId,
-            )
-        )
-    userPaths = cursor.fetchall()
-    
-    # Loop through each user
-    warnings.warn('WARNING: literal_eval() is potentially dangerous. Best to find a different solution to storing multiple files.')
-    for userid, pathitm in userPaths:
-
-        # Gather the lowercase first and last name for the user to combine and
-        # compare to each element of the JSON object
-        cursor.execute(
-            """select "first_name", "last_name" from public.app_user where id={}""".format(
-                userid,
-                )
-            )
-        nameList = [x.lower() for x in cursor.fetchone()]
-        
-        # Gather the householdmembers JSON object
-        cursor.execute(
-            """select "household_info" from public.app_householdmembers where user_id={}""".format(
-                userid,
-                )
-            )
-        dbOut = cursor.fetchone()
-        
-        if dbOut is not None:
-            memberDict = dbOut[0]
-        
-            # If the user's first/last name matches any element in the JSON object,
-            # set the identification_path to the delistified pathitm
-            isUpdated = False   # initialize whether to run update
-            for jsonidx,jsonitm in enumerate(memberDict['persons_in_household']):
-                # Find a case-insensitive match between the jsonitm name
-                # and app_user name
-                if jsonitm['name'].lower() == ' '.join(nameList):
-                    
-                    # Ensure there isn't already a file here
-                    if 'identification_path' in jsonitm.keys() and jsonitm['identification_path'] != '':
-                        continue
-                    
-                    # Convert the path(s) to a Python list
-                    try:
-                        pathitm = ast.literal_eval(pathitm)
-                        
-                    except:
-                        pass
-                    
-                    else:
-                        # Insert the first value of pathitm into a new
-                        # 'identification_path' key (only a single file is accepted)
-                        if len(pathitm) > 1:
-                            print(f"WARNING: document_path for user {userid} is more than 1 file; truncated")
-                        
-                        memberDict['persons_in_household'][jsonidx]['identification_path'] = pathitm[0]
-                        
-                        # Stop after the first match
-                        isUpdated = True
-                        break
-                
-            # Update the record with the new JSON object, if applicable
-            if isUpdated:
-                cursor.execute(
-                    """update public.app_householdmembers set "household_info"=%s where "user_id"={}""".format(
-                        userid,
-                        ),
-                    (json.dumps(memberDict), )
-                    )
-        
-    # Commit any changes
-    global_objects['conn'].commit()
-    
-    cursor.close()
     
 def deactivate_identification_program(global_objects: dict) -> None:
     """
