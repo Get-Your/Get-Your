@@ -671,7 +671,7 @@ def what_page_renewal(last_renewal_action):
         'address': 'app:address',
         'household': 'app:household',
         'household_members': 'app:household_members',
-        'eligibility_programs': 'app:programs',
+        'eligibility_programs': 'app:eligibility_programs',
         'files': 'app:files'
     }
 
