@@ -757,6 +757,13 @@ def household_members(request):
                 else:
                     logging.error(
                         "File is not a valid file type. file is: " + filetype)
+                    
+                    # Attempt to define household_info to load
+                    try:
+                        household_info = request.user.householdmembers.household_info
+                    except AttributeError:
+                        household_info = None
+
                     return render(
                         request,
                         "application/household_members.html",
