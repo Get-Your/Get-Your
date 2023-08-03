@@ -115,6 +115,12 @@ def port_identification_path_reference(global_objects: dict) -> None:
         )
     userPaths = cursor.fetchall()
     
+    # Get latest modified timestamp from the target table
+    cursor.execute(
+        """select max("modified_at") from public.app_householdmembers"""
+        )
+    initTimestamp = cursor.fetchone()[0]
+    
     with Progress() as progress:
 
         updateTask = progress.add_task(
@@ -159,6 +165,17 @@ def port_identification_path_reference(global_objects: dict) -> None:
                         )
                     
             progress.update(updateTask, advance=1)
+            
+    # Only commit if the latest modified timestamp from the target table isn't
+    # greater than initTimestamp
+    cursor.execute(
+        """select max("modified_at") from public.app_householdmembers"""
+        )
+    finalTimestamp = cursor.fetchone()[0]
+        
+    if finalTimestamp > initTimestamp:
+        global_objects['conn'].rollback()
+        raise AssertionError("The target table has been modified; the transaction has been rolled back and must be restarted.")
         
     # Commit any changes
     global_objects['conn'].commit()
