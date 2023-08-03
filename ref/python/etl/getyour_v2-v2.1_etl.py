@@ -122,6 +122,5 @@ def verify_transfer(global_objects: dict) -> None:
         
 if __name__=='__main__':
     
-    # Define the generic profile ('_old' will be appended to this for the v1
-    # connection)
-    profile = input('Enter a generic database profile to use for porting: ')        
+    # Define the database profile
+    profile = input('Enter the database profile to use for porting: ')        
