@@ -242,41 +242,52 @@ def verify_transfer(global_objects: dict) -> None:
         )
     userList = [x[0] for x in cursor.fetchall()]
     
-    # Loop through each user
-    for userid in userList:
+    with Progress() as progress:
 
-        # Gather the householdmembers JSON object
-        cursor.execute(
-            """select "household_info" from public.app_householdmembers where user_id={}""".format(
-                userid,
-                )
+        verifyTask = progress.add_task(
+            "[bright_cyan]Updating identification_path values",
+            total=len(userList),
             )
-        dbOut = cursor.fetchone()
-        
-        if dbOut is not None:
-            memberDict = dbOut[0]
-        
-            for jsonidx,jsonitm in enumerate(memberDict['persons_in_household']):
-                # Check for null value for each 'identification_path'
-                if 'identification_path' in jsonitm.keys() and jsonitm['identification_path'] is None:
-                    
-                    # Verify there is at least one filled 'identification'
-                    # record in app_eligibilityprogram for this user
-                    cursor.execute(
-                        """select count(*) from public.app_eligibilityprogram where "user_id"={} and "program_id"={} and "document_path" is not null and "document_path"!=''""".format(
-                        userid,
-                        programId,
-                        )
+    
+        # Loop through each user
+        for userid in userList:
+    
+            # Gather the householdmembers JSON object
+            cursor.execute(
+                """select "household_info" from public.app_householdmembers where user_id={}""".format(
+                    userid,
                     )
-                    recordCount = cursor.fetchone()[0]
-                    
-                    if recordCount < 1:
-                        raise AssertionError(
-                            f"User {userid} does not have an 'identification' record"
+                )
+            dbOut = cursor.fetchone()
+            
+            if dbOut is not None:
+                memberDict = dbOut[0]
+            
+                for jsonidx,jsonitm in enumerate(memberDict['persons_in_household']):
+                    # Check for null value for each 'identification_path'
+                    if 'identification_path' in jsonitm.keys() and jsonitm['identification_path'] is None:
+                        
+                        # Verify there is at least one filled 'identification'
+                        # record in app_eligibilityprogram for this user
+                        cursor.execute(
+                            """select count(*) from public.app_eligibilityprogram where "user_id"={} and "program_id"={} and "document_path" is not null and "document_path"!=''""".format(
+                            userid,
+                            programId,
                             )
+                        )
+                        recordCount = cursor.fetchone()[0]
+                        
+                        if recordCount < 1:
+                            raise AssertionError(
+                                f"User {userid} does not have an 'identification' record"
+                                )
+                            
+            progress.update(verifyTask, advance=1)
+            
+    print('All porting verified!')
     
     cursor.close()    
-    
+
         
 if __name__=='__main__':
     
