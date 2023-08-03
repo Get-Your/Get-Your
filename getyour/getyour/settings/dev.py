@@ -49,8 +49,19 @@ IS_PROD = False
 CSRF_TRUSTED_ORIGINS = [f"https://{SITE_HOSTNAME}"]
 ALLOWED_HOSTS = [SITE_HOSTNAME]
 
-
 # Application definition
+
+# As of 2023-08-01
+    # the 99th percentile of file sizes was 8.33 MiB
+    # the 99th percentile for individuals in household was 7.00
+    # therefore the file payload for the 99th percentile of persons and file
+    # size: 58.28 MiB
+    # Use this value + (lots of) overhead
+
+    # the largest uploaded file was 43.4 MiB; one file at this size can be
+    # uploaded
+max_upload_size_mib = 100
+DATA_UPLOAD_MAX_MEMORY_SIZE = max_upload_size_mib*1048576
 
 INSTALLED_APPS = [
     'django.contrib.admin',
