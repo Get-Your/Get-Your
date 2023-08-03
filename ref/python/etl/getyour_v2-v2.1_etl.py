@@ -14,7 +14,9 @@ app_householdmembers.
 """
 
 from rich import print
+from rich.progress import Progress
 import psycopg2
+import json
 
 import coftc_cred_man as crd
 
@@ -36,6 +38,7 @@ def run_full_porting(profile):
 
     global_objects = initialize_vars(profile)
 
+    port_identification_path_reference(global_objects)
     deactivate_identification_program(global_objects)
     
     verify_transfer(global_objects)
@@ -78,6 +81,91 @@ def initialize_vars(profile: str) -> dict:
             'cred': cred,
             }
         )
+
+def port_identification_path_reference(global_objects: dict) -> None:
+    """
+    1) Add a ``null`` value to ``identification_path`` for the relevant section
+    in the JSON object in app_householdmembers if 'identification' in the
+    app_eligibilityprogram table exists for the user. See 
+    https://github.com/Get-Your/Get-Your/issues/249 for reference.
+
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
+
+    Returns
+    -------
+    None.
+    
+    """
+    
+    cursor = global_objects['conn'].cursor()
+    
+    # Gather program_id for the 'identification' "program"
+    cursor.execute("""select "id" from public.app_eligibilityprogramrd where "program_name"='identification'""")
+    programId = cursor.fetchone()[0]
+    
+    # Gather all users and filepaths in the eligibilityprogram table with a
+    # non-null and non-blank identification document_path
+    cursor.execute(
+        """select "user_id", "document_path" from public.app_eligibilityprogram where "program_id"={} and "document_path" is not null and "document_path"!=''""".format(
+            programId,
+            )
+        )
+    userPaths = cursor.fetchall()
+    
+    with Progress() as progress:
+
+        updateTask = progress.add_task(
+            "[bright_cyan]Updating identification_path values",
+            total=len(userPaths),
+            )
+
+        # Loop through each user
+        for userid, _ in userPaths:
+    
+            # Gather the householdmembers JSON object
+            cursor.execute(
+                """select "household_info" from public.app_householdmembers where user_id={}""".format(
+                    userid,
+                    )
+                )
+            dbOut = cursor.fetchone()
+            
+            if dbOut is not None:
+                memberDict = dbOut[0]
+            
+                # Add 'identification_path' key (with value ``null``) to each list
+                # item where it doesn't already exist
+                isUpdated = False   # initialize whether to run update
+                for jsonidx,jsonitm in enumerate(memberDict['persons_in_household']):
+                    # Only update if the key doesn't already exist
+                    if 'identification_path' not in jsonitm.keys():
+                        
+                        # Add the key with a null value
+                        memberDict['persons_in_household'][jsonidx]['identification_path'] = None
+                        
+                        # Ensure isUpdated is set (each loop is just redundant)
+                        isUpdated = True
+                    
+                # Update the record with the new JSON object, if applicable
+                if isUpdated:
+                    cursor.execute(
+                        """update public.app_householdmembers set "household_info"=%s where "user_id"={}""".format(
+                            userid,
+                            ),
+                        (json.dumps(memberDict), )
+                        )
+                    
+            progress.update(updateTask, advance=1)
+        
+    # Commit any changes
+    global_objects['conn'].commit()
+    
+    print('identification_path reference port complete!')
+    
+    cursor.close()
     
 def deactivate_identification_program(global_objects: dict) -> None:
     """
@@ -106,6 +194,9 @@ def deactivate_identification_program(global_objects: dict) -> None:
 def verify_transfer(global_objects: dict) -> None:
     """
     Verify the proper transfer of all data.
+    
+    Ensure all newly-written identification_path records (with null values)
+    have a matching 'identification' record.
 
     Parameters
     ----------
@@ -118,7 +209,57 @@ def verify_transfer(global_objects: dict) -> None:
     
     """
     
-    print("Since this is non-critical (more of a convenience), there is no verification for this ETL")
+    # Go through each user with a null identification_path and verify they
+    # have a matching 'identification' record in app_eligibilityprogram
+    
+    cursor = global_objects['conn'].cursor()
+    
+    # Gather program_id for the 'identification' "program"
+    cursor.execute("""select "id" from public.app_eligibilityprogramrd where "program_name"='identification'""")
+    programId = cursor.fetchone()[0]
+    
+    # Gather all users and filepaths in the eligibilityprogram table with a
+    # non-null and non-blank identification document_path
+    cursor.execute(
+        """select "user_id" from public.app_householdmembers where "household_info" is not null"""
+        )
+    userList = [x[0] for x in cursor.fetchall()]
+    
+    # Loop through each user
+    for userid in userList:
+
+        # Gather the householdmembers JSON object
+        cursor.execute(
+            """select "household_info" from public.app_householdmembers where user_id={}""".format(
+                userid,
+                )
+            )
+        dbOut = cursor.fetchone()
+        
+        if dbOut is not None:
+            memberDict = dbOut[0]
+        
+            for jsonidx,jsonitm in enumerate(memberDict['persons_in_household']):
+                # Check for null value for each 'identification_path'
+                if 'identification_path' in jsonitm.keys() and jsonitm['identification_path'] is None:
+                    
+                    # Verify there is at least one filled 'identification'
+                    # record in app_eligibilityprogram for this user
+                    cursor.execute(
+                        """select count(*) from public.app_eligibilityprogram where "user_id"={} and "program_id"={} and "document_path" is not null and "document_path"!=''""".format(
+                        userid,
+                        programId,
+                        )
+                    )
+                    recordCount = cursor.fetchone()[0]
+                    
+                    if recordCount < 1:
+                        raise AssertionError(
+                            f"User {userid} does not have an 'identification' record"
+                            )
+    
+    cursor.close()    
+    
         
 if __name__=='__main__':
     
