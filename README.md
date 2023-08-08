@@ -289,6 +289,13 @@ The admin user shouldn't be used for development or live database connections; a
         -- This is so all tables GRANTs apply to new tables as well
         ALTER DEFAULT PRIVILEGES FOR USER <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;    
 
+1. Grant the base user to the admin user
+
+    Since the `<admin_user>` here is not a superuser in Azure Postgres, performing administrator-like duties (killing user processes, etc) requires all users being granted to the admin user
+
+        -- Grant the base role to the admin user in order to perform admin duties
+        GRANT <base_user> TO <admin_user>;
+
 # User Administration
 
 The following Postgres functions have been created for user administration through the IQ verification process:
