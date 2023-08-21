@@ -96,13 +96,14 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'EST'
+# USE_TZ means that all timestamps are timezone-aware, and since the backend db
+# is also timezone-aware, TIME_ZONE doesn't really matter for current use cases
+USE_TZ = True
+TIME_ZONE = 'America/Denver'
 
 USE_I18N = True
 
 USE_L10N = True
-
-USE_TZ = True
 
 # For phone number default region setting:
 PHONENUMBER_DEFAULT_REGION = 'US'
