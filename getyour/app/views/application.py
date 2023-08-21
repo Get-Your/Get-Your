@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import usaddress
 import magic
-import datetime
+import pendulum
 import logging
 import base64
 import io
@@ -808,8 +808,15 @@ def household_members(request):
                 # Create a buffer from the decoded bytes
                 buffer = io.BytesIO(decoded_bytes)
                 fileAmount += 1
-                file_path = userfiles_path(request.user, datetime.datetime.now(
-                ).isoformat() + "_" + str(fileAmount) + "_" + file_name)
+
+                file_path = userfiles_path(
+                    request.user,
+                    pendulum.now(
+                    'utc'
+                    ).format(
+                    f"YYYY-MM-DD[T]HHmmss[Z_{fileAmount}_{file_name}]"
+                    ),
+                    )
 
                 uploaded_file = SimpleUploadedFile(
                     file_name, buffer.read(), content_type)
@@ -1010,12 +1017,22 @@ def files(request):
             for f in request.FILES.getlist('document_path'):
                 fileAmount += 1
                 instance.renewal_mode = renewal_mode
-                # this line allows us to save multiple files: format = iso format (f,f) = (name of file, actual file)
-                instance.document_path.save(datetime.datetime.now(
-                ).isoformat() + "_" + str(fileAmount) + "_" + str(f), f)
+
+                # This allows us to save multiple files under the same
+                # Eligibility Program record. Note that the database is updated
+                # each time this loop is run, plus again for the final save()
+                # afterward
+                instance.document_path.save(
+                    pendulum.now(
+                        'utc'
+                    ).format(
+                        f"YYYY-MM-DD[T]HHmmss[Z_{fileAmount}_{f}]"
+                    ),
+                    f,
+                    )
                 fileNames.append(str(instance.document_path))
 
-            # below the code to update the database to allow for MULTIPLE files AND change the name of the database upload!
+            # Save the fileNames list as a single document_path string
             instance.document_path = str(fileNames)
             instance.save()
 
@@ -1056,7 +1073,7 @@ def files(request):
                     # and set the is_renewed to true
                     user = User.objects.get(id=request.user.id)
                     user.renewal_mode = True
-                    user.last_renewed_at = datetime.datetime.now()
+                    user.last_renewed_at = pendulum.now()
                     user.last_renewal_action = None
                     user.is_renewed = True
                     user.save()

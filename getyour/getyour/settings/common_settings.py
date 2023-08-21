@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import os
 from pathlib import Path
-from datetime import datetime
+import pendulum
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -118,8 +118,7 @@ AZURE_LOCATION = ""  # Subdirectory-like prefix to the blob name
 DEFAULT_FILE_STORAGE = 'getyour.settings.custom_azure.AzureMediaStorage'
 
 # Logging
-str = str((datetime.now().time()))
-logFileName = str.replace(":", "_")
+logFileName = pendulum.now().format("HH_mm_ss.SSSSSS")
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
