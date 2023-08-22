@@ -20,6 +20,7 @@ import json
 import usaddress
 import magic
 import datetime
+import pendulum
 import logging
 import base64
 import io
@@ -1028,7 +1029,7 @@ def files(request):
                     # and set the is_renewed to true
                     user = User.objects.get(id=request.user.id)
                     user.renewal_mode = True
-                    user.last_renewed_at = datetime.datetime.now()
+                    user.last_renewed_at = pendulum.now()
                     user.last_renewal_action = None
                     user.is_renewed = True
                     user.save()
