@@ -26,7 +26,7 @@ from django.db.models.query_utils import Q
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
-from app.backend import authenticate, what_page, what_page_renewal, broadcast_email_pw_reset
+from app.backend import authenticate, what_page, broadcast_email_pw_reset
 
 
 def password_reset_request(request):
