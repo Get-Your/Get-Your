@@ -27,6 +27,7 @@ The universal income-qualified application for the City of Fort Collins, Colorad
         1. [Transferring Between Databases](#transferring-between-databases)
         1. [Set Up Database Users](#set-up-database-users)
 1. [User Administration](#user-administration)
+1. [Analytics Settings](#analytics-settings)
 1. [Request a Consultation](#request-a-consultation)
 1. [Appendix](#appendix)
     1. [Database Administration Tools](#database-administration-tools)
@@ -192,7 +193,7 @@ Database administration can be completed in any application, but `psql` is the b
 
 Use the following connection string to connect to the target database. The hostname and admin username can be found under the 'Essentials' section at the top of the Overview page on the Azure Portal as 'Server name' and 'Server admin login name', respectively.
 
-    `psql "host=<hostname> port=5432 dbname=<database_name> user=<username> sslmode=require"`
+    psql "host=<hostname> port=5432 dbname=<database_name> user=<username> sslmode=require"
     <Enter password>
 
 `pg_dump` and `pg_restore` are PostgreSQL utilities used from the local command line (e.g. not from within the `psql` connection).
@@ -270,9 +271,32 @@ The admin user shouldn't be used for development or live database connections; a
         GRANT CREATE ON SCHEMA public TO privileged_role;
         GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO privileged_role;
 
+1. Create analytics role
+
+    Create and permissions analytics user role (named `analytics_role`, for use with reporting and analytics) without login privileges.
+
+    > This role is slightly different in that it removes all access from tables with names (`app_user`, `app_householdmembers`, and their history tables) and gives read-only access to all other existing and new tables. *There is a planned update to move to schema-level permissions instead of table-level*.
+    
+    > This is set up so that `user_id` can be used to connect tables, but no specific names are available.
+
+        CREATE ROLE analytics_role INHERIT;
+        GRANT CONNECT ON DATABASE <database_name> TO analytics_role;
+        GRANT USAGE ON SCHEMA public TO analytics_role;
+        GRANT SELECT ON ALL TABLES IN SCHEMA public TO analytics_role;
+        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO analytics_role;
+        -- Revoke privileges for this role to the two tables with names (and their history tables)
+        REVOKE ALL PRIVILEGES ON app_user FROM analytics_role;
+        REVOKE ALL PRIVILEGES ON app_householdmembers FROM analytics_role;
+        REVOKE ALL PRIVILEGES ON app_userhist FROM analytics_role;
+        REVOKE ALL PRIVILEGES ON app_householdmembershist FROM analytics_role;
+        -- Grant this role to admin user (permanently, but to no material affect) to alter default privileges
+        GRANT analytics_role TO <admin_user>;
+        -- This is so all tables GRANTs apply to new tables as well
+        ALTER DEFAULT PRIVILEGES FOR ROLE analytics_role IN SCHEMA public GRANT SELECT ON TABLES TO analytics_role;        
+
 1. Create and assign users
 
-    Create users (with passwords and login privileges) and assign the proper role to each (`base_role` for Django users, `privileged_role` for local developers).
+    Create users (with passwords and login privileges) and assign the proper role to each (`base_role` for Django users, `privileged_role` for local developers, `analytics_role` for analysts).
 
         CREATE USER <username> WITH LOGIN PASSWORD '<password>' INHERIT;
         GRANT <role> TO <username>;
@@ -303,6 +327,21 @@ The following Postgres functions have been created for user administration throu
 ...
 
 > Note that a function cannot have more that 100 arguments, so income verification is limited to 100 users at a time and program enrollment is limited to 99 users.
+
+# Analytics Settings
+For the City of Fort Collins needs, Power BI was selected for analytics and reporting. The following tutorial details connecting to the Postgres database from Power BI.
+
+1. In Power BI, select 'Get Data' from the startup splash screen or on the ribbon toolbar
+
+1. In the dialog that opens, type 'postgres' in the top-left search box, then select 'Azure Database for PostgreSQL'
+
+    ![][1]
+
+1. In the next dialog, enter the Server and Database settings. 'DirectQuery' should be selected here for efficiency, as long as Power BI will have connectivity to the database at all times
+
+    ![][2]
+
+1. For the username and password on the next dialog, use the analyst user created under `analytics_role` in the [Set up Database Users](#set-up-database-users) section
 
 # Request a Consultation
 
@@ -336,3 +375,6 @@ This is in the event a user needs to be deleted (except the original admin user,
     --DROP OWNED BY <username>;
     
     DROP USER <username>;
+
+[1]: ./ref/media/powerbi_postgres_connection.png
+[2]: ./ref/media/powerbi_postgres_auth.png
