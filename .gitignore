@@ -66,9 +66,13 @@ db.sqlite3-journal
 # Ignore any variation of manage.py except the base (negated at the end of this file)
 **/*manage*.py
 
+# Credentials files
 *settings.json
 *secrets*.json
 *sshd_config
+
+*secrets*.toml
+*.*.deploy
 
 # Flask stuff:
 instance/

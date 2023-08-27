@@ -22,7 +22,20 @@ from datetime import datetime
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 # Application definition
+
+# As of 2023-08-01
+    # the 99th percentile of file sizes was 8.33 MiB
+    # the 99th percentile for individuals in household was 7.00
+    # therefore the file payload for the 99th percentile of persons and file
+    # size: 58.28 MiB
+    # Use this value + (lots of) overhead
+
+    # the largest uploaded file was 43.4 MiB; one file at this size can be
+    # uploaded
+max_upload_size_mib = 100
+DATA_UPLOAD_MAX_MEMORY_SIZE = max_upload_size_mib*1048576
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -44,7 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # add whitenoise
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'getyour.middleware.LoginRequiredMiddleware',
     'getyour.middleware.ValidRouteMiddleware',
     'getyour.middleware.RenewalModeMiddleware',
@@ -66,6 +79,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'app.context_processors.global_template_variables',
             ],
         },
     },
