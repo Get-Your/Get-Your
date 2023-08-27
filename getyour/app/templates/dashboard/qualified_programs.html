@@ -62,6 +62,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     {{ program.button.text }}
                 </div>
             </a>
+            {% elif program.status_for_user == 'RENEWAL' %}
+            <a href="#" onclick="return false;" class="renewalModal"
+                        style="text-decoration: none">
+                <div class="quickapply link"
+                    style="background-color: {{ program.button.color }}; color: {{ program.button.textColor }}">
+                    {{ program.button.text }}
+                </div>
+            </a>
             {% else %}
             <a style="text-decoration: none">
                 <div class="quickapply link"
@@ -106,6 +114,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         }
     }
 </style>
+
+<script>
+    $(document).ready(function () {
+        // Display a sweet alert for when a user clicks on an anchor tag
+        // that has the renewalModal class.
+        $(".renewalModal").click(function (event) {
+            event.preventDefault();
+            Swal.fire({
+                title: "Application Renewal",
+                text: "In order to continue providing benefits for this program, we need you to renew your information. Please click 'renew' to start the process.",
+                confirmButtonText: "Renew",
+                confirmButtonColor: "orange",
+                showCancelButton: true,
+                preConfirm: () => {
+                    window.location.href = "{% url 'app:get_ready' %}?renewal_mode=1";
+                },
+            });
+        });
+    });
+</script>
 
 {% include "partials/privacy_acknowledgement.html" %}
 {% endblock %}
