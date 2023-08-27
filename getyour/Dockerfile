@@ -21,6 +21,7 @@ RUN pip install django-environ==0.10.0
 RUN pip install django-storages[azure]==1.12.3
 RUN pip install django-phonenumber-field[phonenumbers]==7.1.0
 RUN pip install gunicorn==20.1.0
+RUN pip install pendulum==2.1.2
 RUN pip install psycopg2-binary==2.9.6
 RUN pip install python-magic==0.4.27
 RUN pip install sendgrid==6.6.0

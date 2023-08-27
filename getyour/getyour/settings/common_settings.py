@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import os
 from pathlib import Path
-from datetime import datetime
+import pendulum
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -110,13 +110,14 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'EST'
+# USE_TZ means that all timestamps are timezone-aware, and since the backend db
+# is also timezone-aware, TIME_ZONE doesn't really matter for current use cases
+USE_TZ = True
+TIME_ZONE = 'America/Denver'
 
 USE_I18N = True
 
 USE_L10N = True
-
-USE_TZ = True
 
 # For phone number default region setting:
 PHONENUMBER_DEFAULT_REGION = 'US'
@@ -132,8 +133,7 @@ AZURE_LOCATION = ""  # Subdirectory-like prefix to the blob name
 DEFAULT_FILE_STORAGE = 'getyour.settings.custom_azure.AzureMediaStorage'
 
 # Logging
-str = str((datetime.now().time()))
-logFileName = str.replace(":", "_")
+logFileName = pendulum.now().format("HH_mm_ss.SSSSSS")
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
