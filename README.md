@@ -282,8 +282,9 @@ The admin user shouldn't be used for development or live database connections; a
         CREATE ROLE analytics_role INHERIT;
         GRANT CONNECT ON DATABASE <database_name> TO analytics_role;
         GRANT USAGE ON SCHEMA public TO analytics_role;
-        GRANT SELECT ON ALL TABLES IN SCHEMA public TO analytics_role;
-        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO analytics_role;
+        -- Note that REFERENCES is necessary for table relations (and implicit in INSERT, UPDATE, and DELETE privileges)
+        GRANT SELECT, REFERENCES ON ALL TABLES IN SCHEMA public TO analytics_role;
+        GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO analytics_role;
         -- Revoke privileges for this role to specified tables
         REVOKE ALL PRIVILEGES ON app_householdmembers FROM analytics_role;
         REVOKE ALL PRIVILEGES ON app_householdmembershist FROM analytics_role;
@@ -358,11 +359,14 @@ Jade Cowan (software development): `jade.cowan [at] penoptech [dot] com`
 ### Delete User
 This is in the event a user needs to be deleted (except the original admin user, which can't be deleted). A role can be deleted using this same method, but permissions will need to be dispersed to a new user if proper access is to be maintained.
 
-    REVOKE privileged_role FROM <username> CASCADE;
-    REVOKE base_role FROM <username> CASCADE;
-    REVOKE ALL ON ALL TABLES IN SCHEMA public FROM <username> CASCADE;
-    REVOKE ALL ON SCHEMA public FROM <username> CASCADE;
-    REVOKE ALL ON DATABASE <database_name> FROM <username> CASCADE;
+> The suffix ' CASCADE;' may be needed for some/all of the `REVOKE` commands, but these are starting without for safety.
+
+    REVOKE privileged_role FROM <username>;
+    REVOKE base_role FROM <username>;
+    REVOKE ALL ON ALL TABLES IN SCHEMA public FROM <username>;
+    REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM <username>;
+    REVOKE ALL ON SCHEMA public FROM <username>;
+    REVOKE ALL ON DATABASE <database_name> FROM <username>;
 
     -- Run one of these lines if DROP USER returns an error
 
