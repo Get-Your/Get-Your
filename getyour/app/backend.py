@@ -305,7 +305,7 @@ def gma_lookup(coord_string):
             return True
         else:
             return False
-        
+
     except requests.exceptions.HTTPError as e:
         print(f"HTTPError: {e}")
         return False
