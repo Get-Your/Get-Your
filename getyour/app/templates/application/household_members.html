@@ -47,6 +47,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             names and birthdates?</label>
     </div>
 
+    {% if message %}
+    <div style="color:red; margin-bottom: 5%;">{{ message }} </div>
+    {% endif %}
+
     {% for number in list %}
     <div id="household_member_{{ number }}" class="household_member">
         {{ form }}
@@ -88,6 +92,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     // Hide the id_identification_path inputs and labels using jQuery
     $(document).ready(function () {
+        // When the document loads make sure all of the id_identification_path inputs values
+        // are empty. This is to prevent data getting "stuck" in the input and creating
+        // a weird state where there's data, but the screen doesn't show it.
+        $("input[id='id_identification_path']").val("");
+
         $("label[for='id_identification_path']").hide();
         $("input[id='id_identification_path']").hide();
         // hide all of the file-upload-btns
