@@ -64,10 +64,10 @@ def get_ready(request):
         'renewal_mode') if request.session.get('renewal_mode') else False
     eligiblity_programs = EligibilityProgramRD.objects.filter(
         is_active=True).order_by('friendly_name')
-
+    
     # Check if the next query param is set
     # If so, save the renewal action and redirect to the account page
-    if request.GET.get('next', False):
+    if request.GET.get('next', False):    
         save_renewal_action(request, 'get_ready')
         return redirect('app:account')
     return render(
@@ -467,9 +467,9 @@ def address_correction(request):
         if 'usps_address_validate' in request.session.keys() and \
             dict_address['AddressValidateResponse']['Address']['Address2'].lower() == q_orig['address1'].lower() and \
                 dict_address['AddressValidateResponse']['Address']['Address1'].lower() == q_orig['address2'].lower() and \
-        dict_address['AddressValidateResponse']['Address']['City'].lower() == q_orig['city'].lower() and \
-        dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
-            str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
+            dict_address['AddressValidateResponse']['Address']['City'].lower() == q_orig['city'].lower() and \
+            dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
+        str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
 
             print('Exact (case-insensitive) address match!')
             return redirect(reverse("app:take_usps_address"))
@@ -757,13 +757,6 @@ def household_members(request):
                 else:
                     logging.error(
                         "File is not a valid file type. file is: " + filetype)
-
-                    # Attempt to define household_info to load
-                    try:
-                        household_info = request.user.householdmembers.household_info
-                    except AttributeError:
-                        household_info = None
-
                     return render(
                         request,
                         "application/household_members.html",
@@ -822,27 +815,6 @@ def household_members(request):
                     file_name, buffer.read(), content_type)
                 file_paths.append(file_path)
                 default_storage.save(file_path, uploaded_file)
-        else:
-            errors = form.errors
-            error_message = "The following errors occurred: "
-            for field, error_messages in errors.items():
-                for error_message in error_messages:
-                    error_message += f"Field: {field} errored because of {error_message}\n"
-            return render(
-                request,
-                "application/household_members.html",
-                {
-                    'step': 3,
-                    "message": error_message,
-                    'dependent': str(request.user.household.number_persons_in_household),
-                    'list': list(range(request.user.household.number_persons_in_household)),
-                    'form': form,
-                    'form_page_number': form_page_number,
-                    'title': "Household Members",
-                    'update_mode': update_mode,
-                    'form_data': json.dumps(household_info) if household_info else [],
-                },
-            )
 
         instance.user_id = request.user.id
         instance.household_info = serialize_household_members(

@@ -81,7 +81,16 @@ def login_user(request):
             # update application_user "modified" per login
             obj = request.user
             obj.save()
+
             # Push user to correct page
+
+            # Workaround for https://github.com/Get-Your/Get-Your/issues/251:
+            # existing data in last_renewal_action implies the user logged out
+            # during a renewal and therefore should be taken directly to the
+            # dashboard
+            if request.user.last_renewal_action is not None:
+                return redirect(reverse("app:dashboard"))
+            
             page = what_page(request.user, request)
             print(page)
             if page == "app:dashboard":
