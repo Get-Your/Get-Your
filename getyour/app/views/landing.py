@@ -91,9 +91,16 @@ def index(request):
                         'address': address_dict['AddressValidateResponse']['Address']['Address2'],
                         'zipCode': address_dict['AddressValidateResponse']['Address']['Zip5'],
                     }
-                    return redirect(reverse("app:quick_coming_soon"))
+
+                    # TODO: This is a quick fix for Connexion availability not
+                    # working properly (so we removed Connexion from our
+                    # messaging completely). This should be cleaned up and the
+                    # templates renamed for clarity.
+                    return redirect(reverse("app:quick_available"))
+
                 else:
                     return redirect(reverse("app:quick_available"))
+
             except:
                 return redirect(reverse("app:quick_not_found"))
 
