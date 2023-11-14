@@ -1,12 +1,14 @@
 from django.shortcuts import redirect
 from django.urls import reverse, resolve
-from django.http import HttpResponseRedirect
 from app.backend import what_page_renewal
 
 
 class LoginRequiredMiddleware:
     """
-    Middleware that checks if the user is logged in and redirects them to the correct page.
+    Middleware that checks if the user is logged in and redirects them to the
+    dashboard. The dashboard is always the target because there's no way to
+    ensure all parameters for the various states are set properly.
+
     """
 
     def __init__(self, get_response):
@@ -25,27 +27,24 @@ class LoginRequiredMiddleware:
                 reverse('app:index'),
                 reverse('app:get_ready'),
                 reverse('app:account'),
-                reverse('app:privacy_policy'),
-                reverse('app:password_reset'),
                 reverse('app:quick_available'),
                 reverse('app:quick_not_available'),
                 reverse('app:quick_coming_soon'),
                 reverse('app:quick_not_found'),
                 reverse('app:programs_info'),
                 reverse('app:privacy_policy'),
+                reverse('app:password_reset'),
                 reverse('password_reset_done'),
                 reverse('password_reset_complete'),
             ]
 
-            current_path = request.path_info
             # Get the view instance that's handling the current request
-
-            if current_path in excluded_paths:
-                pass
-            elif 'reset' in current_path:
-                pass
-            else:
-                return HttpResponseRedirect(reverse("app:login"))
+            current_path = request.path_info
+            
+            # Redirect to login if the current path isn't excluded or includes
+            # 'reset'. The login workflow will take over after successful auth
+            if not (current_path in excluded_paths or 'reset' in current_path):
+                return redirect("app:login")
 
         # Default to calling the specified view
         response = self.get_response(request)
@@ -54,7 +53,7 @@ class LoginRequiredMiddleware:
         # the view is called.
 
         return response
-
+    
 
 class ValidRouteMiddleware:
     """
