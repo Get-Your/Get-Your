@@ -1,16 +1,23 @@
 from django.shortcuts import redirect
-from django.urls import reverse, resolve, Resolver404
-from django.utils.deprecation import MiddlewareMixin
+from django.urls import reverse, resolve
 from django.http import HttpResponseRedirect
 from app.backend import what_page_renewal
 
 
-class LoginRequiredMiddleware(MiddlewareMixin):
+class LoginRequiredMiddleware:
     """
     Middleware that checks if the user is logged in and redirects them to the correct page.
     """
 
-    def process_request(self, request):
+    def __init__(self, get_response):
+        # One-time configuration and initialization (upon web server start)
+        self.get_response = get_response
+
+    def __call__(self, request):
+
+        # Code to be executed for each request before
+        # the view (and later middleware) are called.
+
         if not request.user.is_authenticated:
             # If the route is in excluded_paths don't do anything
             excluded_paths = [
@@ -40,6 +47,14 @@ class LoginRequiredMiddleware(MiddlewareMixin):
             else:
                 return HttpResponseRedirect(reverse("app:login"))
 
+        # Default to calling the specified view
+        response = self.get_response(request)
+
+        # Code to be executed for each request/response after
+        # the view is called.
+
+        return response
+
 
 class ValidRouteMiddleware:
     """
@@ -53,6 +68,7 @@ class ValidRouteMiddleware:
     """
 
     def __init__(self, get_response):
+        # One-time configuration and initialization (upon web server start)
         self.get_response = get_response
 
     def __call__(self, request):
@@ -72,12 +88,25 @@ class ValidRouteMiddleware:
         return response
 
 
-class RenewalModeMiddleware(MiddlewareMixin):
+class RenewalModeMiddleware:
     """
     Middleware that checks if the user is in renewal mode and redirects them to the correct page.
     """
 
-    def process_request(self, request):
+    def __init__(self, get_response):
+        # One-time configuration and initialization (upon web server start)
+        self.get_response = get_response
+
+    def __call__(self, request):
+
+        # Code to be executed for each request before
+        # the view (and later middleware) are called.
+
+        response = self.get_response(request)
+
+        # Code to be executed for each request/response after
+        # the view is called.
+
         if request.GET.get('renewal_mode', False):
             # This session var will be the global bool for renewal_mode
             request.session['renewal_mode'] = True
@@ -85,3 +114,5 @@ class RenewalModeMiddleware(MiddlewareMixin):
             if request.user.last_renewal_action:
                 what_page = what_page_renewal(request.user.last_renewal_action)
                 return redirect(what_page)
+            
+        return response
