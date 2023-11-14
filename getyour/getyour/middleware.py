@@ -41,33 +41,35 @@ class LoginRequiredMiddleware(MiddlewareMixin):
                 return HttpResponseRedirect(reverse("app:login"))
 
 
-class ValidRouteMiddleware(MiddlewareMixin):
+class ValidRouteMiddleware:
     """
-    Middleware that checks if the user is in a valid route and redirects them to the correct page.
+    Middleware that checks if the user is in a valid route. If not, a 404 error
+    is raised.
+
+    This exists separately from the internal Django "valid route" so that it
+    can be called before LoginRequiredMiddleware and therefore doesn't make
+    the user login before discovering they have a bad URL.
+
     """
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        response = self.get_response(request)
-        return self.process_response(request, response)
 
-    def process_response(self, request, response):
-        if not self.is_valid_route(request):
-            # Redirect to the dashboard
-            return redirect(reverse("app:dashboard"))
+        # Code to be executed for each request before
+        # the view (and later middleware) are called.
+
+        # Try to resolve the path. This will return a 404 if invalid.
+        _ = resolve(request.path)
+
+        # Default to calling the specified view
+        response = self.get_response(request)
+
+        # Code to be executed for each request/response after
+        # the view is called.
 
         return response
-
-    def is_valid_route(self, request):
-        try:
-            resolve(request.path)
-            return True
-        except Resolver404:
-            pass
-
-        return False
 
 
 class RenewalModeMiddleware(MiddlewareMixin):
