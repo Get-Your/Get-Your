@@ -63,6 +63,12 @@ MIDDLEWARE = [
     'getyour.middleware.RenewalModeMiddleware',
 ]
 
+# Session management
+# Log out on browser close
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# Expire the session cookie (force re-login) at 6 hours (in seconds)
+SESSION_COOKIE_AGE = 6*60*60
+
 ROOT_URLCONF = 'getyour.urls'
 AUTH_USER_MODEL = "app.User"
 
