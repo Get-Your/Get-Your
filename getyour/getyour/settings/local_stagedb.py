@@ -25,7 +25,7 @@ from getyour.settings.common_settings import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # TOML-based secrets module
-with open('secrets_prod.toml', 'r', encoding='utf-8') as f:
+with open('secrets.prod.toml', 'r', encoding='utf-8') as f:
     secrets_dict = loads(f.read())
 
 def get_secret(var_name, read_dict=secrets_dict):

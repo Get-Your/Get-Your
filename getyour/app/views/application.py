@@ -812,11 +812,11 @@ def household_members(request):
                 file_path = userfiles_path(
                     request.user,
                     pendulum.now(
-                    'utc'
+                        'utc'
                     ).format(
-                    f"YYYY-MM-DD[T]HHmmss[Z_{fileAmount}_{file_name}]"
+                        f"YYYY-MM-DD[T]HHmmss[Z_{fileAmount}_{file_name}]"
                     ),
-                    )
+                )
 
                 uploaded_file = SimpleUploadedFile(
                     file_name, buffer.read(), content_type)
@@ -1029,7 +1029,7 @@ def files(request):
                         f"YYYY-MM-DD[T]HHmmss[Z_{fileAmount}_{f}]"
                     ),
                     f,
-                    )
+                )
                 fileNames.append(str(instance.document_path))
 
             # Save the fileNames list as a single document_path string

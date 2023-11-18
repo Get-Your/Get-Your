@@ -222,16 +222,20 @@ def connexion_lookup(coord_string):
         'geometry': coord_string,
     }
 
-    # Gather response
-    response = requests.post(url, params=payload)
-    if response.status_code != requests.codes.ok:
-        raise requests.exceptions.HTTPError(response.reason, response.content)
-
-    # Parse response
-    outVal = response.json()
-
     try:
+        # Gather response
+        response = requests.post(url, params=payload)
+        if response.status_code != requests.codes.ok:
+            raise requests.exceptions.HTTPError(response.reason, response.content)
+
+        # Parse response
+        outVal = response.json()
+
         statusInput = outVal['features'][0]['attributes']['INVENTORY_STATUS_CODE']
+
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTPError: {e}")
+        return None
 
     except (IndexError, KeyError):
         return None
@@ -288,17 +292,22 @@ def gma_lookup(coord_string):
         'f': 'pjson',
     }
 
-    # Gather response
-    response = requests.get(url, params=payload)
-    if response.status_code != requests.codes.ok:
-        raise requests.exceptions.HTTPError(response.reason, response.content)
+    try:
+        # Gather response
+        response = requests.get(url, params=payload)
+        if response.status_code != requests.codes.ok:
+            raise requests.exceptions.HTTPError(response.reason, response.content)
 
-    # Parse response
-    outVal = response.json()
+        # Parse response
+        outVal = response.json()
 
-    if len(outVal['features']) > 0:
-        return True
-    else:
+        if len(outVal['features']) > 0:
+            return True
+        else:
+            return False
+
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTPError: {e}")
         return False
 
 
