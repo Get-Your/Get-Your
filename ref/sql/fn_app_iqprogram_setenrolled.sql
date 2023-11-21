@@ -47,12 +47,15 @@ begin
     get diagnostics v_row_count = row_count;
    
     -- Output completion details
+
+    -- Remind user to commit transaction
+    out_msg = 'Once transaction is committed: ';
    
     -- Determine plural
     if v_row_count != 1 then
-    	out_msg = concat(v_row_count, ' users enrolled.');
+    	out_msg = concat(out_msg, v_row_count, ' users enrolled.');
     else
-    	out_msg = concat(v_row_count, ' user enrolled.');
+    	out_msg = concat(out_msg, v_row_count, ' user enrolled.');
     end if;
    
     if v_no_update != '' then

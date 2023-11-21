@@ -32,12 +32,15 @@ begin
   get diagnostics v_row_count = row_count;
  
   -- Output completion details
+
+  -- Remind user to commit transaction
+  out_msg = 'Once transaction is committed: ';
  
   -- Determine plural
   if v_row_count-v_no_update_count != 1 then
-  	out_msg = concat(v_row_count-v_no_update_count, ' users verified.');
+  	out_msg = concat(out_msg, v_row_count-v_no_update_count, ' users verified.');
   else
-  	out_msg = concat(v_row_count-v_no_update_count, ' user verified.');
+  	out_msg = concat(out_msg, v_row_count-v_no_update_count, ' user verified.');
   end if;
  
   if v_no_update != '' then

@@ -47,12 +47,15 @@ begin
     get diagnostics v_row_count = row_count;
    
     -- Output completion details
+
+    -- Remind user to commit transaction
+    out_msg = 'Once transaction is committed: ';
    
     -- Determine plural
     if v_row_count != 1 then
-    	out_msg = concat(v_row_count, ' users unenrolled.');
+    	out_msg = concat(out_msg, v_row_count, ' users unenrolled.');
     else
-    	out_msg = concat(v_row_count, ' user unenrolled.');
+    	out_msg = concat(out_msg, v_row_count, ' user unenrolled.');
     end if;
    
     if v_no_update != '' then
