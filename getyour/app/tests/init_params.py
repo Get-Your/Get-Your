@@ -328,6 +328,7 @@ class TestView:
             'quick_apply': {
                 'login_required': True,
                 'direct_access_allowed': False,
+                'kwargs': {'iq_program': 'grocery'},
             },
             'feedback': {
                 'login_required': True,

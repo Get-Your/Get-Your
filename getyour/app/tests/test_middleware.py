@@ -1,6 +1,5 @@
 from django.test import TestCase, Client
 from django.shortcuts import reverse
-from django.urls.exceptions import NoReverseMatch
 
 from app.tests.init_params import TestUser, TestView
 
@@ -39,42 +38,59 @@ class ValidRouteWhileLoggedIn(TestCase):
                 )
 
                 # Try to go to that page
-                try:
+
+                # Some pages require extra kwargs that must be included in 
+                # reverse(); these must be a part of TestViews
+                if 'kwargs' in viewdict:
+                    response = self.client.get(
+                        reverse(
+                            f"app:{viewname}",
+                            kwargs=viewdict['kwargs'],
+                        ),
+                        follow=True,
+                    )
+                else:
                     response = self.client.get(
                         reverse(f"app:{viewname}"),
                         follow=True,
                     )
 
-                # If the page can't be found with just the name, print and
-                # continue
-                except NoReverseMatch as e:
-                    print(f"Error: {e}")
-
+                # If users aren't allowed direct access, HTTP 405 is expected
+                if viewdict['direct_access_allowed']:
+                    expected_status = 200
                 else:
-                    # If users aren't allowed direct access, HTTP 405 is expected
-                    if viewdict['direct_access_allowed']:
-                        expected_status = 200
-                    else:
-                        expected_status = 405
+                    expected_status = 405
 
-                    self.assertEqual(
-                        response.status_code,
-                        expected_status,
+                self.assertEqual(
+                    response.status_code,
+                    expected_status,
+                )
+
+                # login is the only exception for target page being the
+                # same as source; it should send the user to /dashboard
+                if viewname == 'login':
+                    self.assertURLEqual(
+                        response.request['PATH_INFO'],
+                        reverse("app:dashboard"),
                     )
 
-                    # login is the only exception for target page being the
-                    # same as source; it should send the user to /dashboard
-                    if viewname == 'login':
+                else:
+                    # Some pages require extra kwargs that must be included in 
+                    # reverse(); these must be a part of TestViews
+                    if 'kwargs' in viewdict:
                         self.assertURLEqual(
                             response.request['PATH_INFO'],
-                            reverse("app:dashboard"),
+                            reverse(
+                                f"app:{viewname}",
+                                kwargs=viewdict['kwargs'],
+                            ),
                         )
-
                     else:
                         self.assertURLEqual(
                             response.request['PATH_INFO'],
                             reverse(f"app:{viewname}"),
                         )
+
 
     def tearDown(self):
         """ Remove the test user. """
