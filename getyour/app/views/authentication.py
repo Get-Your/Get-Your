@@ -26,10 +26,11 @@ from django.db.models.query_utils import Q
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
+
 from app.backend import authenticate, what_page, broadcast_email_pw_reset
 
 
-def password_reset_request(request):
+def password_reset_request(request, **kwargs):
     User = get_user_model()
     if request.method == "POST":
         password_reset_form = PasswordResetForm(request.POST)
@@ -68,7 +69,7 @@ def password_reset_request(request):
     )
 
 
-def login_user(request):
+def login_user(request, **kwargs):
     if request.method == "POST":
         # Try to log in user
         email = request.POST["email"]

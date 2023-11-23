@@ -24,7 +24,7 @@ from app.backend import address_check, get_users_iq_programs
 from app.models import AddressRD, IQProgram, IQProgramRD
 
 
-def dashboard(request):
+def dashboard(request, **kwargs):
     # Check if the users renewal_mode session variable is set to True
     app_renewed = False
     if request.session.get('renewal_mode', False) and request.session.get("app_renewed", False):
@@ -93,7 +93,7 @@ def dashboard(request):
     )
 
 
-def quick_apply(request, iq_program):
+def quick_apply(request, iq_program, **kwargs):
     in_gma_with_no_service = False
 
     # Get the IQProgramRD object for the iq_program
@@ -149,7 +149,7 @@ def quick_apply(request, iq_program):
     )
 
 
-def user_settings(request):
+def user_settings(request, **kwargs):
     request.session['update_mode'] = False
     # Get the success query string parameter
     page_updated = request.GET.get('page_updated')
@@ -184,7 +184,7 @@ def user_settings(request):
     )
 
 
-def privacy(request):
+def privacy(request, **kwargs):
     return render(
         request,
         'dashboard/privacy.html',
@@ -197,7 +197,7 @@ def privacy(request):
     )
 
 
-def qualified_programs(request):
+def qualified_programs(request, **kwargs):
     # Get the user's eligibility address
     eligibility_address = AddressRD.objects.filter(
         id=request.user.address.eligibility_address_id).first()
@@ -226,7 +226,7 @@ def qualified_programs(request):
     )
 
 
-def feedback(request):
+def feedback(request, **kwargs):
     if request.method == "POST":
         form = FeedbackForm(request.POST)
         if form.is_valid():
@@ -234,7 +234,7 @@ def feedback(request):
             return redirect(reverse("app:feedback_received"))
 
 
-def feedback_received(request):
+def feedback_received(request, **kwargs):
     return render(
         request,
         "dashboard/feedback_received.html",
@@ -244,7 +244,7 @@ def feedback_received(request):
     )
 
 
-def programs_list(request):
+def programs_list(request, **kwargs):
     # Get the user's eligibility address
     eligibility_address = AddressRD.objects.filter(
         id=request.user.address.eligibility_address_id).first()

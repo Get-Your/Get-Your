@@ -19,12 +19,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import usaddress
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import logout
+
 from app.forms import AddressLookupForm
 from app.backend import tag_mapping, address_check, validate_usps
 from app.models import IQProgramRD
 
 
-def index(request):
+def index(request, **kwargs):
     if request.method == "POST":
         form = AddressLookupForm(request.POST or None)
         if form.is_valid():
@@ -133,7 +134,7 @@ def index(request):
         )
 
 
-def privacy_policy(request):
+def privacy_policy(request, **kwargs):
     # check if user is logged in
     user_logged_in = False
     if request.user.is_authenticated:
@@ -148,7 +149,7 @@ def privacy_policy(request):
     )
 
 
-def programs_info(request):
+def programs_info(request, **kwargs):
     return render(
         request,
         'landing/programs_info.html',
@@ -159,7 +160,7 @@ def programs_info(request):
     )
 
 
-def quick_available(request):
+def quick_available(request, **kwargs):
     return render(
         request,
         'landing/quick_available.html',
@@ -169,7 +170,7 @@ def quick_available(request):
     )
 
 
-def quick_not_available(request):
+def quick_not_available(request, **kwargs):
     return render(
         request,
         'landing/quick_not_available.html',
@@ -179,7 +180,7 @@ def quick_not_available(request):
     )
 
 
-def quick_not_found(request):
+def quick_not_found(request, **kwargs):
     return render(
         request,
         'landing/quick_not_found.html',
@@ -189,7 +190,7 @@ def quick_not_found(request):
     )
 
 
-def quick_coming_soon(request):
+def quick_coming_soon(request, **kwargs):
     return render(
         request,
         'landing/quick_coming_soon.html',
