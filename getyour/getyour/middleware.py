@@ -1,4 +1,4 @@
-from django.shortcuts import redirect
+from django.shortcuts import render, redirect
 from django.urls import reverse, resolve
 from app.backend import what_page_renewal
 
@@ -12,10 +12,12 @@ class LoginRequiredMiddleware:
     """
 
     def __init__(self, get_response):
-        # One-time configuration and initialization (upon web server start)
+        """ One-time configuration/initialization (upon web server start). """
+
         self.get_response = get_response
 
     def __call__(self, request):
+        """ Primary call for the middleware. """
 
         # Code to be executed for each request before
         # the view (and later middleware) are called.
@@ -67,10 +69,12 @@ class ValidRouteMiddleware:
     """
 
     def __init__(self, get_response):
-        # One-time configuration and initialization (upon web server start)
+        """ One-time configuration/initialization (upon web server start). """
+
         self.get_response = get_response
 
     def __call__(self, request):
+        """ Primary call for the middleware. """
 
         # Code to be executed for each request before
         # the view (and later middleware) are called.
@@ -85,6 +89,22 @@ class ValidRouteMiddleware:
         # the view is called.
 
         return response
+    
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        """ Final step before processing the view. """
+
+        # When attempting to access a page ('GET'), check for whether 'direct
+        # access' is allowed
+        if request.method == "GET":
+            # If 'direct user access' is not allowed (not True) and the request
+            # wasn't referred from somewhere else, return a 404
+            # Default to allow_direct_user==True to allow the user through if 
+            # allow_direct_user was accidentally omitted from URLconf
+            if not view_kwargs.get('allow_direct_user', True) and request.META.get('HTTP_REFERER') is None:
+                return render(request, '405.html', status=405)
+            
+        # Continue through the middleware stack
+        return None
 
 
 class RenewalModeMiddleware:
@@ -93,10 +113,12 @@ class RenewalModeMiddleware:
     """
 
     def __init__(self, get_response):
-        # One-time configuration and initialization (upon web server start)
+        """ One-time configuration/initialization (upon web server start). """
+        
         self.get_response = get_response
 
     def __call__(self, request):
+        """ Primary call for the middleware. """
 
         # Code to be executed for each request before
         # the view (and later middleware) are called.
