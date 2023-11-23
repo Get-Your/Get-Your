@@ -2,11 +2,8 @@ from app import models
 
 import random
 
-from django.db.utils import IntegrityError
-
 
 class TestUser:
-
 
     def __init__(
             self,
@@ -234,3 +231,145 @@ class TestUser:
         """ Destroy the user (e.g. once the test is complete). """
 
         models.User.objects.filter(id=self.user.id).delete()
+
+
+class TestView:
+
+    def __init__(self):
+        """
+        Set parameters for views to be tested.
+         
+        The first 'views' test is to ensure all views are accounted for.
+        
+        """
+
+        self.required_keys = [
+            'login_required',
+            'direct_access_allowed',
+        ]
+
+        self.named_app_views = {
+            'index': {
+                'login_required': False,
+                'direct_access_allowed': True,
+            },
+            'quick_available': {
+                'login_required': False,
+                'direct_access_allowed': False,
+            },
+            'quick_not_available': {
+                'login_required': False,
+                'direct_access_allowed': False,
+            },
+            'quick_coming_soon': {
+                'login_required': False,
+                'direct_access_allowed': False,
+            },
+            'quick_not_found': {
+                'login_required': False,
+                'direct_access_allowed': False,
+            },
+            'programs_info': {
+                'login_required': False,
+                'direct_access_allowed': True,
+            },
+            'privacy_policy': {
+                'login_required': False,
+                'direct_access_allowed': True,
+            },
+            'address': {
+                'login_required': True,
+                'direct_access_allowed': False,
+            },
+            'account': {
+                'login_required': False,
+                'direct_access_allowed': True,
+            },
+            'household': {
+                'login_required': True,
+                'direct_access_allowed': False,
+            },
+            'household_members': {
+                'login_required': True,
+                'direct_access_allowed': False,
+            },
+            'programs': {
+                'login_required': True,
+                'direct_access_allowed': False,
+            },
+            'address_correction': {
+                'login_required': True,
+                'direct_access_allowed': False,
+            },
+            'take_usps_address': {
+                'login_required': True,
+                'direct_access_allowed': False,
+            },
+            'household_definition': {
+                'login_required': False,
+                'direct_access_allowed': True,
+            },
+            'get_ready': {
+                'login_required': False,
+                'direct_access_allowed': True,
+            },
+            'files': {
+                'login_required': True,
+                'direct_access_allowed': False,
+            },
+            'broadcast': {
+                'login_required': True,
+                'direct_access_allowed': False,
+            },
+            'notify_remaining': {
+                'login_required': True,
+                'direct_access_allowed': False,
+            },
+            'quick_apply': {
+                'login_required': True,
+                'direct_access_allowed': False,
+            },
+            'feedback': {
+                'login_required': True,
+                'direct_access_allowed': False,
+            },
+            'feedback_received': {
+                'login_required': True,
+                'direct_access_allowed': False,
+            },
+            'dashboard': {
+                'login_required': True,
+                'direct_access_allowed': True,
+            },
+            'qualified_programs': {
+                'login_required': True,
+                'direct_access_allowed': True,
+            },
+            'programs_list': {
+                'login_required': True,
+                'direct_access_allowed': True,
+            },
+            'user_settings': {
+                'login_required': True,
+                'direct_access_allowed': True,
+            },
+            'privacy': {
+                'login_required': True,
+                'direct_access_allowed': True,
+            },
+            'login': {
+                'login_required': False,
+                'direct_access_allowed': True,
+            },
+            'password_reset': {
+                'login_required': False,
+                'direct_access_allowed': False,
+            },
+        }
+
+        self.process_values()
+
+    def process_values(self):
+        """ Sort lists by name, where applicable. """
+
+        self.required_keys.sort()
