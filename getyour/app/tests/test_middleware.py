@@ -2,8 +2,7 @@ from django.test import TestCase, Client
 from django.shortcuts import reverse
 from django.urls.exceptions import NoReverseMatch
 
-from app import urls
-from app.tests.user_init import TestUser
+from app.tests.init_params import TestUser, TestView
 
 
 class ValidRouteWhileLoggedIn(TestCase):
@@ -21,17 +20,17 @@ class ValidRouteWhileLoggedIn(TestCase):
         # Every test needs access to a test user
         self.usermodel = TestUser()
 
+        # Every test needs access to the views to test
+        self.testviews = TestView()
+
     def test_logged_in_user(self):
         """
         Tests that logged-in users are passed directly to their target view.
         
         """
 
-        # Gather all views in the 'app' namespace
-        app_views = urls.urlpatterns
-
-        for viewitm in app_views:
-            with self.subTest(name=viewitm.name):
+        for viewname, viewdict in self.testviews.named_app_views.items():
+            with self.subTest(name=viewname):
 
                 # Login each time as self.usermodel user
                 _ = self.client.login(
@@ -42,7 +41,7 @@ class ValidRouteWhileLoggedIn(TestCase):
                 # Try to go to that page
                 try:
                     response = self.client.get(
-                        reverse(f"app:{viewitm.name}"),
+                        reverse(f"app:{viewname}"),
                         follow=True,
                     )
 
@@ -53,7 +52,7 @@ class ValidRouteWhileLoggedIn(TestCase):
 
                 else:
                     # If users aren't allowed direct access, HTTP 405 is expected
-                    if viewitm.default_args['allow_direct_user']:
+                    if viewdict['direct_access_allowed']:
                         expected_status = 200
                     else:
                         expected_status = 405
@@ -65,7 +64,7 @@ class ValidRouteWhileLoggedIn(TestCase):
 
                     # login is the only exception for target page being the
                     # same as source; it should send the user to /dashboard
-                    if viewitm.name == 'login':
+                    if viewname == 'login':
                         self.assertURLEqual(
                             response.request['PATH_INFO'],
                             reverse("app:dashboard"),
@@ -74,7 +73,7 @@ class ValidRouteWhileLoggedIn(TestCase):
                     else:
                         self.assertURLEqual(
                             response.request['PATH_INFO'],
-                            reverse(f"app:{viewitm.name}"),
+                            reverse(f"app:{viewname}"),
                         )
 
     def tearDown(self):
