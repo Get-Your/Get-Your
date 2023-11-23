@@ -19,11 +19,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render, redirect, reverse
+from django.contrib.auth.decorators import login_required
+
 from app.forms import FeedbackForm
 from app.backend import address_check, get_users_iq_programs
 from app.models import AddressRD, IQProgram, IQProgramRD
 
 
+@login_required(redirect_field_name='auth_next')
 def dashboard(request, **kwargs):
     # Check if the users renewal_mode session variable is set to True
     app_renewed = False
@@ -93,6 +96,7 @@ def dashboard(request, **kwargs):
     )
 
 
+@login_required(redirect_field_name='auth_next')
 def quick_apply(request, iq_program, **kwargs):
     in_gma_with_no_service = False
 
@@ -149,6 +153,7 @@ def quick_apply(request, iq_program, **kwargs):
     )
 
 
+@login_required(redirect_field_name='auth_next')
 def user_settings(request, **kwargs):
     request.session['update_mode'] = False
     # Get the success query string parameter
@@ -184,6 +189,10 @@ def user_settings(request, **kwargs):
     )
 
 
+# Note that auth is required for this only because the dashboard sidenav is
+# embedded in privacy.html
+# TODO: determine why this is different than landing.privacy_policy
+@login_required(redirect_field_name='auth_next')
 def privacy(request, **kwargs):
     return render(
         request,
@@ -197,6 +206,7 @@ def privacy(request, **kwargs):
     )
 
 
+@login_required(redirect_field_name='auth_next')
 def qualified_programs(request, **kwargs):
     # Get the user's eligibility address
     eligibility_address = AddressRD.objects.filter(
@@ -244,6 +254,7 @@ def feedback_received(request, **kwargs):
     )
 
 
+@login_required(redirect_field_name='auth_next')
 def programs_list(request, **kwargs):
     # Get the user's eligibility address
     eligibility_address = AddressRD.objects.filter(

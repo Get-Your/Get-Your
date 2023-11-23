@@ -34,12 +34,15 @@ from django.db.models.query_utils import Q
 from django.db import IntegrityError
 from django.forms.utils import ErrorList
 from django.core.files.storage import default_storage
+from django.contrib.auth.decorators import login_required
+
 from app.forms import HouseholdForm, UserForm, AddressForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm
 from app.backend import form_page_number, tag_mapping, address_check, serialize_household_members, validate_usps, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, broadcast_email, broadcast_sms, save_renewal_action
 from app.models import userfiles_path, AddressRD, Address, EligibilityProgram, Household, IQProgram, User, EligibilityProgramRD
 from app.decorators import set_update_mode
 
 
+@login_required(redirect_field_name='auth_next')
 def notify_remaining(request, **kwargs):
     page = what_page(request.user, request)
     return render(
@@ -207,6 +210,7 @@ def account(request, **kwargs):
     )
 
 
+@login_required(redirect_field_name='auth_next')
 @set_update_mode
 def address(request, **kwargs):
     if request.session.get('application_addresses'):
@@ -297,6 +301,7 @@ def address(request, **kwargs):
         )
 
 
+@login_required(redirect_field_name='auth_next')
 def address_correction(request, **kwargs):
     try:
         addresses = json.loads(request.session['application_addresses'])
@@ -491,6 +496,7 @@ def address_correction(request, **kwargs):
     )
 
 
+@login_required(redirect_field_name='auth_next')
 def take_usps_address(request, **kwargs):
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
@@ -640,6 +646,7 @@ def take_usps_address(request, **kwargs):
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
+@login_required(redirect_field_name='auth_next')
 @set_update_mode
 def household(request, **kwargs):
     if request.session.get('application_addresses'):
@@ -705,6 +712,7 @@ def household(request, **kwargs):
     )
 
 
+@login_required(redirect_field_name='auth_next')
 @set_update_mode
 def household_members(request, **kwargs):
     # Check the boolean value of update_mode session var
@@ -886,6 +894,7 @@ def household_members(request, **kwargs):
     )
 
 
+@login_required(redirect_field_name='auth_next')
 def programs(request, **kwargs):
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
@@ -953,6 +962,7 @@ def programs(request, **kwargs):
     )
 
 
+@login_required(redirect_field_name='auth_next')
 @set_update_mode
 def files(request, **kwargs):
     '''
@@ -1146,6 +1156,7 @@ def files(request, **kwargs):
         )
 
 
+@login_required(redirect_field_name='auth_next')
 def broadcast(request, **kwargs):
     current_user = request.user
     try:

@@ -82,7 +82,13 @@ def login_user(request, **kwargs):
             # update application_user "modified" per login
             obj = request.user
             obj.save()
+            
             # Push user to correct page
+
+            # If auth_next exists, use it for the redirection
+            if request.session.get('auth_next', None) is not None:
+                return redirect(request.session['auth_next'])
+            
             page = what_page(request.user, request)
             print(page)
             if page == "app:dashboard":

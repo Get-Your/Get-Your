@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse, resolve
+from django.core.exceptions import MiddlewareNotUsed
+
 from app.backend import what_page_renewal
 
 
@@ -15,6 +17,8 @@ class LoginRequiredMiddleware:
         """ One-time configuration/initialization (upon web server start). """
 
         self.get_response = get_response
+
+        raise MiddlewareNotUsed
 
     def __call__(self, request):
         """ Primary call for the middleware. """
@@ -78,6 +82,16 @@ class ValidRouteMiddleware:
 
         # Code to be executed for each request before
         # the view (and later middleware) are called.
+
+        # If the 'auth_next' URL param (from login_required) exists, use the
+        # specified path
+        if request.GET.get('auth_next', None) is not None:
+            # Add to the session var and remove from request
+            request.session['auth_next'] = request.GET['auth_next']
+        # Remove the redirect from session vars as we're going to that page
+        if request.session.get('auth_next', None) is not None:
+            if request.session['auth_next'] == request.path:
+                del request.session['auth_next']
 
         # Try to resolve the path. This will return a 404 if invalid.
         _ = resolve(request.path)
