@@ -1,7 +1,112 @@
 from django.test import TestCase, Client
 from django.shortcuts import reverse
+from django.http import HttpResponse
 
 from app.tests.init_params import TestUser, TestView
+
+
+def _get_target(
+        class_instance,
+        view_name: str,
+        view_dict: dict,
+        follow: bool = False,
+    ) -> None:
+    """
+    Verify that the target is as expected.
+    
+    Parameters
+    ----------
+    class_instance
+        ``self`` parameter from the calling class.
+    view_name : str
+        Name of the target view.
+    view_dict : dict
+        Dictionary of the target view, as defined by TestView.
+    follow : bool, optional
+        Specifies whether to follow the URL to the target or stop at first
+        redirect (additional information at
+        https://docs.djangoproject.com/en/4.1/topics/testing/tools/#django.test.Client
+        ). The default is False, matching the django.test.Client default.
+
+    Raises
+    ------
+    AssertionError
+        Raises AssertionError if the target and actual URLs aren't equivalent.
+
+    Returns
+    -------
+    HttpResponse
+        Returns the response of the target
+
+    """
+
+    # Some pages require extra kwargs that must be included in 
+    # reverse(); these must be a part of TestViews
+    if 'kwargs' in view_dict:
+        response = class_instance.client.get(
+            reverse(
+                f"app:{view_name}",
+                kwargs=view_dict['kwargs'],
+            ),
+            follow=follow,
+        )
+    else:
+        response = class_instance.client.get(
+            reverse(f"app:{view_name}"),
+            follow=follow,
+        )
+
+    return(response)
+
+
+def _verify_successful_target(
+        class_instance,
+        response: HttpResponse,
+        view_name: str,
+        view_dict: dict,
+    ) -> None:
+    """
+    Verify that the target is as expected.
+    
+    Parameters
+    ----------
+    class_instance
+        ``self`` parameter from the calling class.
+    response : HttpResponse
+        Response from the test suite client.
+    view_name : str
+        Name of the target view.
+    view_dict : dict
+        Dictionary of the target view, as defined by TestView.
+
+    Raises
+    ------
+    AssertionError
+        Raises AssertionError if the target and actual URLs aren't equivalent.
+
+    Returns
+    -------
+    None
+
+    """
+
+    # Some pages require extra kwargs that must be included in 
+    # reverse(); these must be a part of TestViews
+    if 'kwargs' in view_dict:
+        class_instance.assertURLEqual(
+            # Use .url if exists (for redirect)
+            getattr(response, 'url', response.request['PATH_INFO']),
+            reverse(
+                f"app:{view_name}",
+                kwargs=view_dict['kwargs'],
+            ),
+        )
+    else:
+        class_instance.assertURLEqual(
+            # Use .url if exists (for redirect)
+            getattr(response, 'url', response.request['PATH_INFO']),
+            reverse(f"app:{view_name}"),
+        )
 
 
 class ValidRouteWhileLoggedIn(TestCase):
@@ -38,22 +143,12 @@ class ValidRouteWhileLoggedIn(TestCase):
                 )
 
                 # Try to go to that page
-
-                # Some pages require extra kwargs that must be included in 
-                # reverse(); these must be a part of TestViews
-                if 'kwargs' in viewdict:
-                    response = self.client.get(
-                        reverse(
-                            f"app:{viewname}",
-                            kwargs=viewdict['kwargs'],
-                        ),
-                        follow=True,
-                    )
-                else:
-                    response = self.client.get(
-                        reverse(f"app:{viewname}"),
-                        follow=True,
-                    )
+                response = _get_target(
+                    self,
+                    viewname,
+                    viewdict,
+                    follow=True,
+                )
 
                 # If users aren't allowed direct access, HTTP 405 is expected
                 if viewdict['direct_access_allowed']:
@@ -75,21 +170,13 @@ class ValidRouteWhileLoggedIn(TestCase):
                     )
 
                 else:
-                    # Some pages require extra kwargs that must be included in 
-                    # reverse(); these must be a part of TestViews
-                    if 'kwargs' in viewdict:
-                        self.assertURLEqual(
-                            response.request['PATH_INFO'],
-                            reverse(
-                                f"app:{viewname}",
-                                kwargs=viewdict['kwargs'],
-                            ),
-                        )
-                    else:
-                        self.assertURLEqual(
-                            response.request['PATH_INFO'],
-                            reverse(f"app:{viewname}"),
-                        )
+                    # Check for successful target
+                    _verify_successful_target(
+                        self,
+                        response,
+                        viewname,
+                        viewdict,
+                    )
 
 
     def tearDown(self):
