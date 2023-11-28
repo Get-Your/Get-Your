@@ -109,9 +109,9 @@ def _verify_successful_target(
         )
 
 
-class ValidRouteWhileLoggedIn(TestCase):
+class ValidRouteTest(TestCase):
     """
-    Test the LoginRequiredMiddleware.
+    Test the ValidRouteMiddleware with both authenticated and anonymous user.
     
     """
 
@@ -127,9 +127,9 @@ class ValidRouteWhileLoggedIn(TestCase):
         # Every test needs access to the views to test
         self.testviews = TestView()
 
-    def test_logged_in_user(self):
+    def test_auth_user(self):
         """
-        Tests that logged-in users are passed directly to their target view.
+        Tests that authenticated users are passed directly to their target view.
         
         """
 
