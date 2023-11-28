@@ -178,6 +178,66 @@ class ValidRouteWhileLoggedIn(TestCase):
                         viewdict,
                     )
 
+    def test_anonymous_user(self):
+        """
+        Tests that anonymous users are passed to the target view or /login.
+        
+        """
+
+        for viewname, viewdict in self.testviews.named_app_views.items():
+            with self.subTest(name=viewname):
+                # Try to go to that page
+                response = _get_target(
+                    self,
+                    viewname,
+                    viewdict,
+                )
+
+                # If users aren't allowed direct access, HTTP 405 is expected
+                if viewdict['direct_access_allowed']:
+                    # If direct access is allowed but anonymous users aren't,
+                    # redirect to '/login' is expected
+                    if not viewdict['login_required']:
+                        # Check for successful status
+                        self.assertEqual(
+                            response.status_code,
+                            200,
+                        )
+
+                        # Check for successful target
+                        _verify_successful_target(
+                            self,
+                            response,
+                            viewname,
+                            viewdict,
+                        )
+
+                    else:
+                        # Check for redirect to /login
+                        self.assertRedirects(
+                            response,
+                            # Create the login URL with expected URL parameters
+                            "{loginurl}?auth_next={targeturl}".format(
+                                loginurl=reverse("app:login"),
+                                targeturl=reverse(f"app:{viewname}"),
+                            ),
+                            status_code=302,
+                            target_status_code=200,
+                        )
+                else:
+                    # Check for 'not allowed' status
+                    self.assertEqual(
+                        response.status_code,
+                        405,
+                    )
+
+                    # Check for successful target
+                    _verify_successful_target(
+                        self,
+                        response,
+                        viewname,
+                        viewdict,
+                    )
 
     def tearDown(self):
         """ Remove the test user. """
