@@ -147,7 +147,6 @@ class ValidRouteWhileLoggedIn(TestCase):
                     self,
                     viewname,
                     viewdict,
-                    follow=True,
                 )
 
                 # If users aren't allowed direct access, HTTP 405 is expected
@@ -155,6 +154,10 @@ class ValidRouteWhileLoggedIn(TestCase):
                     expected_status = 200
                 else:
                     expected_status = 405
+                # login is the only exception for status_code; it should be
+                # a redirect to /dashboard
+                if viewname == 'login':
+                    expected_status = 302
 
                 self.assertEqual(
                     response.status_code,
@@ -162,10 +165,10 @@ class ValidRouteWhileLoggedIn(TestCase):
                 )
 
                 # login is the only exception for target page being the
-                # same as source; it should send the user to /dashboard
+                # same as source; it should redirect the user to /dashboard
                 if viewname == 'login':
                     self.assertURLEqual(
-                        response.request['PATH_INFO'],
+                        response.url,
                         reverse("app:dashboard"),
                     )
 
