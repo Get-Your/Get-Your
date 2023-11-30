@@ -140,39 +140,35 @@ AZURE_LOCATION = ""  # Subdirectory-like prefix to the blob name
 DEFAULT_FILE_STORAGE = 'getyour.settings.custom_azure.AzureMediaStorage'
 
 # Logging
-logFileName = pendulum.now().format("HH_mm_ss.SSSSSS")
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt': "%d/%b/%Y %H:%M:%S"
-        },
         'simple': {
-            'format': '%(levelname)s %(message)s'
+            'format': "%(message)s",
+            # datefmt is autocreated by Django; it would be ignored here
         },
     },
     'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': 'logs/' + logFileName + '.log',
-            'when': 'midnight',  # this specifies the interval
-            'interval': 1,  # defaults to 1, only necessary for other values
-            'backupCount': 100,  # how many backup file to keep, 10 days
-            'formatter': 'verbose',
+        'db_log': {
+            'class': 'log.handler.DatabaseLogHandler',
+            'formatter': 'simple',
         },
-
     },
     'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-        },
         '': {
-            'handlers': ['file'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-        }
+            'handlers': ['db_log'],
+            'level': 'INFO',
+        },
+        'app': {
+            'handlers': ['db_log'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['db_log'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
     },
 }
