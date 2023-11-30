@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'app',
     'phonenumber_field',
+    'log',
 ]
 
 MIDDLEWARE = [
