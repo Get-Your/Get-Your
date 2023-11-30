@@ -17,14 +17,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import usaddress
+import logging 
+
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import logout
 from app.forms import AddressLookupForm
 from app.backend import tag_mapping, address_check, validate_usps
 from app.models import IQProgramRD
 
+logger = logging.getLogger(__name__)
 
 def index(request):
+    logger.info('Entering index()')
     if request.method == "POST":
         form = AddressLookupForm(request.POST or None)
         if form.is_valid():
