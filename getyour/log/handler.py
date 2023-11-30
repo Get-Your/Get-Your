@@ -9,20 +9,23 @@ class DatabaseLogHandler(logging.Handler):
     def emit(self, record):
 
         from log.models import Detail
-        
-        trace = None
 
+        # Format trace, if exception exists
+        trace = ''
         if record.exc_info:
             trace = db_default_formatter.formatException(record.exc_info)
-
-        if True:
-            msg = self.format(record)
-        else:
-            msg = record.getMessage()
+            
+        # Format the log message, based on the LOGGING 'formatters' in
+        # common_settings
+        msg = self.format(record)
 
         kwargs = {
+            'process_id': record.process,
+            'thread_id': record.thread,
+            'app_name': record.name.split('.', 1)[0],
             'logger_name': record.name,
             'log_level': record.levelno,
+            'lineno': record.lineno,
             'message': msg,
             'trace': trace
         }
@@ -38,9 +41,6 @@ class DatabaseLogHandler(logging.Handler):
 
         if isinstance(fmt, logging.Formatter):
             record.message = record.getMessage()
-
-            if fmt.usesTime():
-                record.asctime = fmt.formatTime(record, fmt.datefmt)
 
             # ignore exception traceback and stack info
 
