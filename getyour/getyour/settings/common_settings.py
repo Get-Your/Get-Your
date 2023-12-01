@@ -20,6 +20,8 @@ import os
 from pathlib import Path
 import pendulum
 
+from sentry_sdk.scrubber import DEFAULT_DENYLIST
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -175,3 +177,18 @@ LOGGING = {
         }
     },
 }
+
+# Expand the Sentry denylist to include additional PII vars
+SENTRY_ALL_DENYLIST = DEFAULT_DENYLIST + [
+    'first_name',
+    'last_name',
+    'email',
+    'phone_number',
+    'address1',
+    'address2',
+    'city',
+    'name',
+    'birthdate',
+    'identification_path',
+    'document_path',
+]

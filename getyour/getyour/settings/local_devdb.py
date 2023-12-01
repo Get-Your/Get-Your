@@ -21,6 +21,9 @@ from tomlkit import loads
 from tomlkit import exceptions as tomlexceptions
 from django.core.exceptions import ImproperlyConfigured
 
+import sentry_sdk
+from sentry_sdk.scrubber import EventScrubber
+
 from getyour.settings.common_settings import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -51,6 +54,7 @@ AZURE_ACCOUNT_NAME = get_secret("AZURE_ACCOUNT_NAME")
 AZURE_ACCOUNT_KEY = get_secret("AZURE_ACCOUNT_KEY")
 AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.usgovcloudapi.net"
 AZURE_CONTAINER = get_secret("AZURE_CONTAINER")
+SENTRY_DSN = get_secret("SENTRY_DSN")
 IS_PROD = False
 
 # SECURITY WARNING: don't run with debug turned on for any live site!
@@ -73,3 +77,17 @@ DATABASES = {
         'HOST': 'getfoco-postgres-dev.postgres.database.usgovcloudapi.net'
     }
 }
+
+# Sentry.io logging and performance monitoring
+sentry_sdk.init(
+    dsn=SENTRY_DSN,
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+    send_default_pii=False,
+    event_scrubber=EventScrubber(denylist=SENTRY_ALL_DENYLIST),
+)

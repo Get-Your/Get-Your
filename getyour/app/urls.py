@@ -68,5 +68,6 @@ urlpatterns = [
     # Authentication URLs
     path('login', authentication.login_user, name='login'),
     path("password_reset", authentication.password_reset_request,
-         name="password_reset")
+         name="password_reset"),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
