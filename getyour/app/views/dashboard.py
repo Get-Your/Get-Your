@@ -16,7 +16,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from sentry_sdk import set_user as set_sentry_user
 import json
+
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render, redirect, reverse
 from app.forms import FeedbackForm
@@ -31,6 +33,9 @@ def dashboard(request):
         app_renewed = True
         request.session['renewal_mode'] = False
         request.session['app_renewed'] = False
+
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
 
     request.session['update_mode'] = False
     qualified_programs = 0
@@ -94,6 +99,10 @@ def dashboard(request):
 
 
 def quick_apply(request, iq_program):
+
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
+
     in_gma_with_no_service = False
 
     # Get the IQProgramRD object for the iq_program
@@ -151,6 +160,10 @@ def quick_apply(request, iq_program):
 
 def user_settings(request):
     request.session['update_mode'] = False
+
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
+
     # Get the success query string parameter
     page_updated = request.GET.get('page_updated')
     if page_updated:
@@ -185,6 +198,10 @@ def user_settings(request):
 
 
 def privacy(request):
+
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
+
     return render(
         request,
         'dashboard/privacy.html',
@@ -198,6 +215,10 @@ def privacy(request):
 
 
 def qualified_programs(request):
+
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
+
     # Get the user's eligibility address
     eligibility_address = AddressRD.objects.filter(
         id=request.user.address.eligibility_address_id).first()
@@ -227,6 +248,10 @@ def qualified_programs(request):
 
 
 def feedback(request):
+
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
+
     if request.method == "POST":
         form = FeedbackForm(request.POST)
         if form.is_valid():
@@ -235,6 +260,10 @@ def feedback(request):
 
 
 def feedback_received(request):
+
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
+
     return render(
         request,
         "dashboard/feedback_received.html",
@@ -245,6 +274,10 @@ def feedback_received(request):
 
 
 def programs_list(request):
+
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
+
     # Get the user's eligibility address
     eligibility_address = AddressRD.objects.filter(
         id=request.user.address.eligibility_address_id).first()

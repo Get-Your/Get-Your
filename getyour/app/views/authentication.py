@@ -16,6 +16,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from sentry_sdk import set_user as set_sentry_user
+
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login, get_user_model, authenticate
 from django.http import HttpResponse
@@ -81,6 +83,10 @@ def login_user(request):
             # update application_user "modified" per login
             obj = request.user
             obj.save()
+
+            # Set Sentry user for traceability
+            set_sentry_user({"id": request.user.id})
+
             # Push user to correct page
             page = what_page(request.user, request)
             print(page)

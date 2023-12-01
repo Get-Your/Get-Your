@@ -16,12 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import usaddress
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import logout
 from app.forms import AddressLookupForm
 from app.backend import tag_mapping, address_check, validate_usps
 from app.models import IQProgramRD
+
+import usaddress
+from sentry_sdk import set_user as set_sentry_user
 
 
 def index(request):
@@ -121,7 +123,14 @@ def index(request):
             if request.session['app_status'] == 'in_progress':
                 in_progress_app_saved = True
 
+        # Set Sentry user for traceability
+        set_sentry_user({"id": request.user.id})
+
         logout(request)
+
+        # Unset Sentry user
+        set_sentry_user(None)
+
         return render(
             request,
             'landing/index.html',
@@ -138,6 +147,9 @@ def privacy_policy(request):
     user_logged_in = False
     if request.user.is_authenticated:
         user_logged_in = True
+
+        # Set Sentry user for traceability
+        set_sentry_user({"id": request.user.id})
 
     return render(
         request,

@@ -25,6 +25,8 @@ import base64
 import io
 import re
 from urllib.parse import urlencode
+from sentry_sdk import set_user as set_sentry_user
+
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -41,6 +43,10 @@ from app.decorators import set_update_mode
 
 
 def notify_remaining(request):
+
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
+
     page = what_page(request.user, request)
     return render(
         request,
@@ -145,6 +151,10 @@ def account(request):
             try:
                 user = form.save()
                 login(request, user)
+
+                # Set Sentry user for traceability
+                set_sentry_user({"id": request.user.id})
+
                 print("userloggedin")
                 data = {
                     'result': "success",
@@ -218,6 +228,9 @@ def address(request):
         'update_mode') if request.session.get('update_mode') else False
     renewal_mode = request.session.get(
         'renewal_mode') if request.session.get('renewal_mode') else False
+    
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
 
     if request.method == "POST":
         addresses = []
@@ -298,6 +311,10 @@ def address(request):
 
 
 def address_correction(request):
+
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
+
     try:
         addresses = json.loads(request.session['application_addresses'])
         in_progress_address = [
@@ -498,6 +515,9 @@ def take_usps_address(request):
         'update_mode') if request.session.get('update_mode') else False
     renewal_mode = request.session.get(
         'renewal_mode') if request.session.get('renewal_mode') else False
+    
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})    
 
     try:
         # Use the session var created in addressCorrection(), then remove it
@@ -645,6 +665,9 @@ def household(request):
     if request.session.get('application_addresses'):
         del request.session['application_addresses']
 
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
+
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
     update_mode = request.session.get(
@@ -713,6 +736,9 @@ def household_members(request):
         'update_mode') if request.session.get('update_mode') else False
     renewal_mode = request.session.get(
         'renewal_mode') if request.session.get('renewal_mode') else False
+    
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
 
     if request.method == "POST":
         try:
@@ -891,6 +917,10 @@ def programs(request):
     # Set as false if session var DNE
     renewal_mode = request.session.get(
         'renewal_mode') if request.session.get('renewal_mode') else False
+    
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
+
     if request.method == "POST":
 
         # This if/else block essentially does the same thing, but the way we
@@ -966,6 +996,9 @@ def files(request):
         'renewal_mode') if request.session.get('renewal_mode') else False
     users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
         request)
+    
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
 
     if request.method == "POST":
         user_file_upload = EligibilityProgram.objects.get(
@@ -1148,6 +1181,10 @@ def files(request):
 
 def broadcast(request):
     current_user = request.user
+
+    # Set Sentry user for traceability
+    set_sentry_user({"id": request.user.id})
+
     try:
         broadcast_email(current_user.email)
     except:
