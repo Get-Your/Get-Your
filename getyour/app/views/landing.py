@@ -23,10 +23,15 @@ from app.backend import tag_mapping, address_check, validate_usps
 from app.models import IQProgramRD
 
 import usaddress
+from sentry_sdk import capture_message as capture_sentry_message
 from sentry_sdk import set_user as set_sentry_user
 
 
 def index(request):
+
+    # Send sample message to Sentry
+    capture_sentry_message('Entering index()')
+    
     if request.method == "POST":
         form = AddressLookupForm(request.POST or None)
         if form.is_valid():
