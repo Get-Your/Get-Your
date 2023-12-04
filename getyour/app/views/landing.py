@@ -24,8 +24,12 @@ from django.contrib.auth import logout
 from app.forms import AddressLookupForm
 from app.backend import tag_mapping, address_check, validate_usps
 from app.models import IQProgramRD
+from log.wrappers import LoggerWrapper
 
-logger = logging.getLogger(__name__)
+
+# Initialize logger
+logger = LoggerWrapper(logging.getLogger(__name__))
+
 
 def index(request):
     logger.info('Entering index()')

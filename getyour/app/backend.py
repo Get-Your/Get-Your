@@ -38,10 +38,11 @@ from django.db.models.fields.files import FieldFile
 from django.core.serializers.json import DjangoJSONEncoder
 from phonenumber_field.phonenumber import PhoneNumber
 from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram
+from log.wrappers import LoggerWrapper
 
 
 # Initialize logger
-logger = logging.getLogger(__name__)
+logger = LoggerWrapper(logging.getLogger(__name__))
 
 
 form_page_number = 6

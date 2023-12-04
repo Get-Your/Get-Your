@@ -24,9 +24,11 @@ from django.shortcuts import render, redirect, reverse
 from app.forms import FeedbackForm
 from app.backend import address_check, get_users_iq_programs
 from app.models import AddressRD, IQProgram, IQProgramRD
+from log.wrappers import LoggerWrapper
 
 
-logger = logging.getLogger(__name__)
+# Initialize logger
+logger = LoggerWrapper(logging.getLogger(__name__))
 
 
 def dashboard(request):
