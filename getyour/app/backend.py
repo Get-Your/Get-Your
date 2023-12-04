@@ -20,11 +20,14 @@ import json
 import datetime
 import requests
 from enum import Enum
+from itertools import chain
+import logging
+
 from twilio.rest import Client
 from sendgrid.helpers.mail import Mail
 from sendgrid import SendGridAPIClient
 from usps import USPSApi, Address
-from itertools import chain
+
 from django import http
 from django.shortcuts import reverse
 from django.contrib.auth.backends import UserModel
@@ -37,7 +40,12 @@ from phonenumber_field.phonenumber import PhoneNumber
 from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram
 
 
+# Initialize logger
+logger = logging.getLogger(__name__)
+
+
 form_page_number = 6
+
 
 # Use the following tag mapping for USPS standards for all functions
 tag_mapping = {
@@ -121,11 +129,14 @@ def address_check(address_dict):
 
     else:
         has_connexion = connexion_lookup(coord_string)
-        print('No Connexion for you') if has_connexion is None else print(
-            'Connexion available') if has_connexion else print('Connexion coming soon')
+        msg = 'Connexion not available or API not found' if has_connexion is None \
+            else 'Connexion available' if has_connexion \
+            else 'Connexion coming soon'
+        logger.info(f"address_check(): {msg}")
 
         is_in_gma = gma_lookup(coord_string)
-        print('Is in GMA!') if is_in_gma else print('Outside of GMA')
+        msg = 'Address is in GMA' if is_in_gma else 'Address is outside of GMA'
+        logger.info(f"address_check(): {msg}")
 
         return (is_in_gma, has_connexion)
 
@@ -234,7 +245,7 @@ def connexion_lookup(coord_string):
         statusInput = outVal['features'][0]['attributes']['INVENTORY_STATUS_CODE']
 
     except requests.exceptions.HTTPError as e:
-        print(f"HTTPError: {e}")
+        logger.error(f"connexion_lookup() HTTPError: {e}")
         return None
 
     except (IndexError, KeyError):
@@ -307,7 +318,7 @@ def gma_lookup(coord_string):
             return False
 
     except requests.exceptions.HTTPError as e:
-        print(f"HTTPError: {e}")
+        logger.error(f"gma_lookup() HTTPError: {e}")
         return False
 
 
@@ -333,12 +344,11 @@ def validate_usps(inobj):
     validation = usps.validate_address(address)
     outDict = validation.result
     try:
-        print(outDict['AddressValidateResponse']['Address']['Address2'])
-        print(outDict)
+        logger.info(f"validate_usps(): Address dict found - {outDict}")
         return outDict
 
     except KeyError:
-        print("Address could not be found - no guesses")
+        logger.error("validate_usps(): Address could not be found - no guesses")
         raise
 
 
@@ -352,11 +362,9 @@ def broadcast_email(email):
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
-        print(response.status_code)
-        print(response.body)
-        print(response.headers)
+        logger.info(f"broadcast_email(): Sendgrid response - {response}")
     except Exception as e:
-        print(e.message)
+        logger.error(f"broadcast_email(): {e.message}")
 
 
 def broadcast_email_pw_reset(email, content):
@@ -374,11 +382,9 @@ def broadcast_email_pw_reset(email, content):
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
-        print(response.status_code)
-        print(response.body)
-        print(response.headers)
+        logger.info(f"broadcast_email_pw_reset() Sendgrid response: {response}")
     except Exception as e:
-        print(e.message)
+        logger.error(f"broadcast_email_pw_reset(): {e.message}")
 
 
 def changed_modelfields_to_dict(

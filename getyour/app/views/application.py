@@ -25,6 +25,8 @@ import base64
 import io
 import re
 from urllib.parse import urlencode
+import logging
+
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -38,6 +40,9 @@ from app.forms import HouseholdForm, UserForm, AddressForm, HouseholdMembersForm
 from app.backend import form_page_number, tag_mapping, address_check, serialize_household_members, validate_usps, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, broadcast_email, broadcast_sms, save_renewal_action
 from app.models import userfiles_path, AddressRD, Address, EligibilityProgram, Household, IQProgram, User, EligibilityProgramRD
 from app.decorators import set_update_mode
+
+
+logger = logging.getLogger(__name__)
 
 
 def notify_remaining(request):
@@ -145,13 +150,13 @@ def account(request):
             try:
                 user = form.save()
                 login(request, user)
-                print("userloggedin")
+                logger.info("account(): User login successful")
                 data = {
                     'result': "success",
                 }
                 return JsonResponse(data)
             except AttributeError:
-                print("user error, login not saved, user is: " + str(user))
+                logger.warning("account(): Login failed. User is: " + str(user))
 
             return redirect(reverse("app:address"))
 
@@ -256,6 +261,7 @@ def address(request):
 
         request.session['application_addresses'] = json.dumps(
             addresses)
+        logger.info(f"address(): Sending to address correction - {request.session['application_addresses']}")
         return redirect(reverse("app:address_correction"))
     else:
         same_address = True
@@ -316,7 +322,7 @@ def address_correction(request):
         idx = 0     # starting idx
         flag_needMoreInfo = False   # flag for previous iter needing more info
         while 1:
-            print("Start loop {}".format(idx))
+            logger.info("address_correction(): Start loop {}".format(idx))
 
             try:
                 if idx in (0, 1):
@@ -336,7 +342,7 @@ def address_correction(request):
                     # Go directly to the QueryDict version if there's a usaddress
                     # issue
                     except usaddress.RepeatedLabelError:
-                        print('Error in usaddress labels - continuing as loop 2')
+                        logger.warning('address_correction(): Loop index {idx}; Issue found in usaddress labels - continuing as loop 2')
                         idx = 2
                         raise AttributeError
 
@@ -356,13 +362,13 @@ def address_correction(request):
                 # with input QueryDict
                 try:
                     if idx == 2:
-                        print('Input QueryDict:', q)
+                        logger.info(f"address_correction(): Loop index {idx}; Attempting USPS validation with input QueryDict - {q}")
                         dict_address = validate_usps(q)
                     else:
-                        print('rawAddressDict:', rawAddressDict)
+                        logger.info(f"address_correction(): Loop index {idx}; Attempting USPS validation with rawAddressDict - {rawAddressDict}")
                         dict_address = validate_usps(rawAddressDict)
                     validationAddress = dict_address['AddressValidateResponse']['Address']
-                    print('USPS Validation return:', validationAddress)
+                    logger.info(f"address_correction(): USPS Validation returned {validationAddress}")
 
                 except KeyError:
                     if idx == maxLoopIdx:
@@ -379,7 +385,7 @@ def address_correction(request):
                 # Kick back to the user if the USPS API needs more information
                 if 'ReturnText' in validationAddress.keys():
                     if idx == maxLoopIdx:
-                        print('Address not found - end of loop')
+                        logger.info('address_correction(): Address not found - end of loop')
                         raise TypeError(validationAddress['ReturnText'])
 
                     # Continue checking, but flag that this was a result from
@@ -400,13 +406,13 @@ def address_correction(request):
             except AttributeError:
                 # Use AttributeError to skip to the end of the loop
                 # Note that idx has already been iterated before this point
-                print('AttributeError raised with idx', idx)
+                logger.info(f"address_correction(): Loop index {idx}; AttributeError raised to skip to end of loop")
                 if q['address2'] != '':
                     if idx == 1:
                         # For loop 1: if 'ReturnText' is not found and address2 is
                         # not None, remove possible keywords and try again
                         # Note that this will affect later loop iterations
-                        print('Address not found - try to remove/replace keywords')
+                        logger.info(f"address_correction(): Loop index {idx}; Address not found - try to remove/replace keywords")
                         removeList = ['apt', 'unit', '#']
                         for wrd in removeList:
                             q['address2'] = q['address2'].lower().replace(wrd, '')

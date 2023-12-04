@@ -17,11 +17,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import json
+import logging
+
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render, redirect, reverse
 from app.forms import FeedbackForm
 from app.backend import address_check, get_users_iq_programs
 from app.models import AddressRD, IQProgram, IQProgramRD
+
+
+logger = logging.getLogger(__name__)
 
 
 def dashboard(request):
