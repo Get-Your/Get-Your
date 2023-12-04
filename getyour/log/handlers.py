@@ -33,7 +33,6 @@ class DatabaseLogHandler(logging.Handler):
             'app_name': record.name.split('.', 1)[0],
             'logger_name': record.name,
             'log_level': record.levelno,
-            'lineno': record.lineno,
             'message': msg,
             'trace': trace
         }

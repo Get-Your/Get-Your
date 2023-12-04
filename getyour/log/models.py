@@ -26,7 +26,6 @@ class Detail(models.Model):
     function = models.CharField(max_length=50, null=True)
     user_id = models.PositiveBigIntegerField(null=True)
 
-    lineno = models.PositiveIntegerField()
     message = models.TextField()
     trace = models.TextField(blank=True)
 
