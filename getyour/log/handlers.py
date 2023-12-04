@@ -22,12 +22,12 @@ class DatabaseLogHandler(logging.Handler):
         # Add stock 'extra' parameters if they don't exist
         if not hasattr(record, 'user_id'):
             record.user_id = None
-        if not hasattr(record, 'module_name'):
-            record.module_name = None
+        if not hasattr(record, 'function'):
+            record.function = None
 
         kwargs = {
             'user_id': record.user_id,
-            'module_name': record.module_name,
+            'function': record.function,
             'process_id': record.process,
             'thread_id': record.thread,
             'app_name': record.name.split('.', 1)[0],

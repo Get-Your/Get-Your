@@ -133,11 +133,11 @@ def address_check(address_dict):
         msg = 'Connexion not available or API not found' if has_connexion is None \
             else 'Connexion available' if has_connexion \
             else 'Connexion coming soon'
-        logger.info(msg, module_name='address_check')
+        logger.info(msg, function='address_check')
 
         is_in_gma = gma_lookup(coord_string)
         msg = 'Address is in GMA' if is_in_gma else 'Address is outside of GMA'
-        logger.info(msg, module_name='address_check')
+        logger.info(msg, function='address_check')
 
         return (is_in_gma, has_connexion)
 
@@ -246,7 +246,7 @@ def connexion_lookup(coord_string):
         statusInput = outVal['features'][0]['attributes']['INVENTORY_STATUS_CODE']
 
     except requests.exceptions.HTTPError as e:
-        logger.error(f"HTTPError: {e}", module_name='connexion_lookup')
+        logger.error(f"HTTPError: {e}", function='connexion_lookup')
         return None
 
     except (IndexError, KeyError):
@@ -319,7 +319,7 @@ def gma_lookup(coord_string):
             return False
 
     except requests.exceptions.HTTPError as e:
-        logger.error(f"HTTPError: {e}", module_name='gma_lookup')
+        logger.error(f"HTTPError: {e}", function='gma_lookup')
         return False
 
 
@@ -347,14 +347,14 @@ def validate_usps(inobj):
     try:
         logger.info(
             f"Address dict found - {outDict}",
-            module_name='validate_usps',
+            function='validate_usps',
         )
         return outDict
 
     except KeyError:
         logger.error(
             "Address could not be found - no guesses",
-            module_name='validate_usps',
+            function='validate_usps',
         )
         raise
 
@@ -371,10 +371,10 @@ def broadcast_email(email):
         response = sg.send(message)
         logger.info(
             f"Sendgrid response: {response}",
-            module_name='broadcast_email',
+            function='broadcast_email',
         )
     except Exception as e:
-        logger.error(e.message, module_name='broadcast_email')
+        logger.error(e.message, function='broadcast_email')
 
 
 def broadcast_email_pw_reset(email, content):
@@ -394,12 +394,12 @@ def broadcast_email_pw_reset(email, content):
         response = sg.send(message)
         logger.info(
             f"Sendgrid response: {response}",
-            module_name='broadcast_email_pw_reset',
+            function='broadcast_email_pw_reset',
         )
     except Exception as e:
         logger.error(
             e.message,
-            module_name='broadcast_email_pw_reset',
+            function='broadcast_email_pw_reset',
         )
 
 
