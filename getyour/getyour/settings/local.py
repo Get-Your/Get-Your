@@ -58,7 +58,7 @@ DEBUG = True
 
 # Revert to default (permissive) values when running locally
 CSRF_TRUSTED_ORIGINS = []
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definitions (outside of common_settings)
 

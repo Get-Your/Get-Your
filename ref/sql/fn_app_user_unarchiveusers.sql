@@ -1,3 +1,19 @@
+-- Get-Your is a platform for application and administration of income-
+-- qualified programs, used primarily by the City of Fort Collins.
+-- Copyright (C) 2023
+
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 CREATE OR REPLACE FUNCTION public.app_user_unarchiveusers(VARIADIC p_id integer[])
  RETURNS character varying
  LANGUAGE plpgsql
@@ -32,12 +48,15 @@ begin
   get diagnostics v_row_count = row_count;
  
   -- Output completion details
+
+  -- Remind user to commit transaction
+  out_msg = 'Once transaction is committed: ';
  
   -- Determine plural
   if v_row_count-v_no_update_count != 1 then
-  	out_msg = concat(v_row_count-v_no_update_count, ' users unarchived.');
+  	out_msg = concat(out_msg, v_row_count-v_no_update_count, ' users unarchived.');
   else
-  	out_msg = concat(v_row_count-v_no_update_count, ' user unarchived.');
+  	out_msg = concat(out_msg, v_row_count-v_no_update_count, ' user unarchived.');
   end if;
  
   if v_no_update != '' then

@@ -36,6 +36,8 @@ from django.db.models.query_utils import Q
 from django.db import IntegrityError
 from django.forms.utils import ErrorList
 from django.core.files.storage import default_storage
+from django.contrib.auth.decorators import login_required
+
 from app.forms import HouseholdForm, UserForm, AddressForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm
 from app.backend import form_page_number, tag_mapping, address_check, serialize_household_members, validate_usps, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, broadcast_email, broadcast_sms, save_renewal_action
 from app.models import userfiles_path, AddressRD, Address, EligibilityProgram, Household, IQProgram, User, EligibilityProgramRD
@@ -47,7 +49,8 @@ from log.wrappers import LoggerWrapper
 logger = LoggerWrapper(logging.getLogger(__name__))
 
 
-def notify_remaining(request):
+@login_required(redirect_field_name='auth_next')
+def notify_remaining(request, **kwargs):
     page = what_page(request.user, request)
     return render(
         request,
@@ -59,14 +62,14 @@ def notify_remaining(request):
     )
 
 
-def household_definition(request):
+def household_definition(request, **kwargs):
     return render(
         request,
         "application/household_definition.html",
     )
 
 
-def get_ready(request):
+def get_ready(request, **kwargs):
     renewal_mode = request.session.get(
         'renewal_mode') if request.session.get('renewal_mode') else False
     eligiblity_programs = EligibilityProgramRD.objects.filter(
@@ -91,7 +94,7 @@ def get_ready(request):
 
 
 @set_update_mode
-def account(request):
+def account(request, **kwargs):
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
     update_mode = request.session.get(
@@ -214,8 +217,9 @@ def account(request):
     )
 
 
+@login_required(redirect_field_name='auth_next')
 @set_update_mode
-def address(request):
+def address(request, **kwargs):
     if request.session.get('application_addresses'):
         del request.session['application_addresses']
 
@@ -305,7 +309,8 @@ def address(request):
         )
 
 
-def address_correction(request):
+@login_required(redirect_field_name='auth_next')
+def address_correction(request, **kwargs):
     try:
         addresses = json.loads(request.session['application_addresses'])
         in_progress_address = [
@@ -499,7 +504,8 @@ def address_correction(request):
     )
 
 
-def take_usps_address(request):
+@login_required(redirect_field_name='auth_next')
+def take_usps_address(request, **kwargs):
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
     update_mode = request.session.get(
@@ -648,8 +654,9 @@ def take_usps_address(request):
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
+@login_required(redirect_field_name='auth_next')
 @set_update_mode
-def household(request):
+def household(request, **kwargs):
     if request.session.get('application_addresses'):
         del request.session['application_addresses']
 
@@ -713,8 +720,9 @@ def household(request):
     )
 
 
+@login_required(redirect_field_name='auth_next')
 @set_update_mode
-def household_members(request):
+def household_members(request, **kwargs):
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
     update_mode = request.session.get(
@@ -894,7 +902,8 @@ def household_members(request):
     )
 
 
-def programs(request):
+@login_required(redirect_field_name='auth_next')
+def programs(request, **kwargs):
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
     renewal_mode = request.session.get(
@@ -961,8 +970,9 @@ def programs(request):
     )
 
 
+@login_required(redirect_field_name='auth_next')
 @set_update_mode
-def files(request):
+def files(request, **kwargs):
     '''
     Variables:
     fileNames - used to name the files in the database and file upload
@@ -1154,7 +1164,8 @@ def files(request):
         )
 
 
-def broadcast(request):
+@login_required(redirect_field_name='auth_next')
+def broadcast(request, **kwargs):
     current_user = request.user
     try:
         broadcast_email(current_user.email)

@@ -21,6 +21,8 @@ import logging
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render, redirect, reverse
+from django.contrib.auth.decorators import login_required
+
 from app.forms import FeedbackForm
 from app.backend import address_check, get_users_iq_programs
 from app.models import AddressRD, IQProgram, IQProgramRD
@@ -31,7 +33,8 @@ from log.wrappers import LoggerWrapper
 logger = LoggerWrapper(logging.getLogger(__name__))
 
 
-def dashboard(request):
+@login_required(redirect_field_name='auth_next')
+def dashboard(request, **kwargs):
     # Check if the users renewal_mode session variable is set to True
     app_renewed = False
     if request.session.get('renewal_mode', False) and request.session.get("app_renewed", False):
@@ -100,7 +103,8 @@ def dashboard(request):
     )
 
 
-def quick_apply(request, iq_program):
+@login_required(redirect_field_name='auth_next')
+def quick_apply(request, iq_program, **kwargs):
     in_gma_with_no_service = False
 
     # Get the IQProgramRD object for the iq_program
@@ -156,7 +160,8 @@ def quick_apply(request, iq_program):
     )
 
 
-def user_settings(request):
+@login_required(redirect_field_name='auth_next')
+def user_settings(request, **kwargs):
     request.session['update_mode'] = False
     # Get the success query string parameter
     page_updated = request.GET.get('page_updated')
@@ -191,7 +196,11 @@ def user_settings(request):
     )
 
 
-def privacy(request):
+# Note that auth is required for this only because the dashboard sidenav is
+# embedded in privacy.html
+# TODO: determine why this is different than landing.privacy_policy
+@login_required(redirect_field_name='auth_next')
+def privacy(request, **kwargs):
     return render(
         request,
         'dashboard/privacy.html',
@@ -204,7 +213,8 @@ def privacy(request):
     )
 
 
-def qualified_programs(request):
+@login_required(redirect_field_name='auth_next')
+def qualified_programs(request, **kwargs):
     # Get the user's eligibility address
     eligibility_address = AddressRD.objects.filter(
         id=request.user.address.eligibility_address_id).first()
@@ -233,7 +243,7 @@ def qualified_programs(request):
     )
 
 
-def feedback(request):
+def feedback(request, **kwargs):
     if request.method == "POST":
         form = FeedbackForm(request.POST)
         if form.is_valid():
@@ -241,7 +251,7 @@ def feedback(request):
             return redirect(reverse("app:feedback_received"))
 
 
-def feedback_received(request):
+def feedback_received(request, **kwargs):
     return render(
         request,
         "dashboard/feedback_received.html",
@@ -251,7 +261,8 @@ def feedback_received(request):
     )
 
 
-def programs_list(request):
+@login_required(redirect_field_name='auth_next')
+def programs_list(request, **kwargs):
     # Get the user's eligibility address
     eligibility_address = AddressRD.objects.filter(
         id=request.user.address.eligibility_address_id).first()
