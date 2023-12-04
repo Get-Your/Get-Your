@@ -119,7 +119,13 @@ def quick_apply(request, iq_program, **kwargs):
     users_iq_programs = get_users_iq_programs(
         request.user.id, request.user.household.income_as_fraction_of_ami, eligibility_address)
     if iq_program not in users_iq_programs:
-        raise Exception(f"User is not eligible for {iq_program.program_name}.")
+        msg = f"User is not eligible for {iq_program.program_name}"
+        logger.error(
+            msg,
+            function='quick_apply',
+            user_id=request.user.id,
+        )
+        raise Exception(msg)
     
     # Check if the user and program already exist in the IQProgram table
     # If they do not, create a new IQProgram object

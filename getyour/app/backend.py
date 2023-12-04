@@ -177,6 +177,10 @@ def address_lookup(address_parts):
     # Gather response
     response = requests.get(url, params=payload)
     if response.status_code != requests.codes.ok:
+        logger.error(
+            f"API error {response.status_code}: {response.reason}; {response.context}",
+            function='address_lookup',
+        )
         raise requests.exceptions.HTTPError(response.reason, response.content)
 
     # Parse response
@@ -238,6 +242,10 @@ def connexion_lookup(coord_string):
         # Gather response
         response = requests.post(url, params=payload)
         if response.status_code != requests.codes.ok:
+            logger.error(
+                f"API error {response.status_code}: {response.reason}; {response.context}",
+                function='connexion_lookup',
+            )
             raise requests.exceptions.HTTPError(response.reason, response.content)
 
         # Parse response
@@ -245,8 +253,7 @@ def connexion_lookup(coord_string):
 
         statusInput = outVal['features'][0]['attributes']['INVENTORY_STATUS_CODE']
 
-    except requests.exceptions.HTTPError as e:
-        logger.error(f"HTTPError: {e}", function='connexion_lookup')
+    except requests.exceptions.HTTPError:
         return None
 
     except (IndexError, KeyError):
@@ -308,6 +315,10 @@ def gma_lookup(coord_string):
         # Gather response
         response = requests.get(url, params=payload)
         if response.status_code != requests.codes.ok:
+            logger.error(
+                f"API error {response.status_code}: {response.reason}; {response.context}",
+                function='gma_lookup',
+            )
             raise requests.exceptions.HTTPError(response.reason, response.content)
 
         # Parse response
@@ -318,8 +329,7 @@ def gma_lookup(coord_string):
         else:
             return False
 
-    except requests.exceptions.HTTPError as e:
-        logger.error(f"HTTPError: {e}", function='gma_lookup')
+    except requests.exceptions.HTTPError:
         return False
 
 

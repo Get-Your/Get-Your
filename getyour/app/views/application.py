@@ -745,7 +745,7 @@ def household(request, **kwargs):
         try:
             existing = request.user.household
             form = HouseholdForm(request.POST, instance=existing)
-        except AttributeError or ObjectDoesNotExist:
+        except (AttributeError, ObjectDoesNotExist):
             form = HouseholdForm(request.POST or None)
 
         instance = form.save(commit=False)
@@ -810,9 +810,8 @@ def household_members(request, **kwargs):
 
             form = HouseholdMembersForm(
                 request.POST, instance=existing)
-        except AttributeError or ObjectDoesNotExist:
-            form = HouseholdMembersForm(
-                request.POST or None)
+        except (AttributeError, ObjectDoesNotExist):
+            form = HouseholdMembersForm(request.POST or None)
 
         file_paths = []
         if form.is_valid():
@@ -1029,7 +1028,10 @@ def programs(request, **kwargs):
         # Get all of the programs (except the one with identification and where is_active is False) from the application_EligibilityProgramRD table
         # ordered by the friendly_name field acending
         programs = EligibilityProgramRD.objects.filter(
-            is_active=True).order_by('friendly_name')
+            is_active=True
+        ).order_by(
+            'friendly_name'
+        )
 
     return render(
         request,
