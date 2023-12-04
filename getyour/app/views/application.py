@@ -478,10 +478,18 @@ def address_correction(request, **kwargs):
         program_string_2 = [validationAddress['Address2'],
                             validationAddress['Address1'],
                             validationAddress['City'] + " " + validationAddress['State'] + " " + validationAddress['Zip5']]
-        print('program_string_2', program_string_2)
+        logger.info(
+            f"program_string_2 is: {program_string_2}",
+            function='address_correction',
+            user_id=request.user.id,
+        )
 
     except TypeError as msg:
-        print("More address information is needed from user")
+        logger.info(
+            "More address information is needed from user",
+            function='address_correction',
+            user_id=request.user_id,
+        )
         # Only pass to the user for the 'more information is needed' case
         # --This is all that has been tested--
         msg = str(msg)
@@ -492,7 +500,11 @@ def address_correction(request, **kwargs):
             ]
 
         else:
-            print("Some other issue than 'more information is needed'")
+            logger.info(
+                "Some other issue than 'more information is needed'",
+                function='address_correction',
+                user_id=request.user.id,
+            )
             program_string_2 = [
                 "Sorry, we couldn't verify this address through USPS.",
                 "Please press 'back' and re-enter.",
@@ -503,12 +515,19 @@ def address_correction(request, **kwargs):
             "Sorry, we couldn't verify this address through USPS.",
             "Please press 'back' and re-enter.",
         ]
-        print("USPS couldn't figure it out!")
+        logger.info(
+            "USPS couldn't figure it out!",
+            function='address_correction',
+            user_id=request.user.id,
+        )
 
     else:
         request.session['usps_address_validate'] = dict_address
-        print(q)
-        print(dict_address)
+        logger.info(
+            f"Address match found: {dict_address}",
+            function='address_correction',
+            user_id=request.user.id,
+        )
 
         # If validation was successful and all address parts are case-insensitive
         # exact matches between entered and validation, skip addressCorrection()
@@ -527,10 +546,18 @@ def address_correction(request, **kwargs):
         dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
             str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
 
-            print('Exact (case-insensitive) address match!')
+            logger.info(
+                "Exact (case-insensitive) address match!",
+                function='address_correction',
+                user_id=request.user.id,
+            )
             return redirect(reverse("app:take_usps_address"))
 
-    print('Address match not found - proceeding to addressCorrection')
+    logger.info(
+        "Address match not found - proceeding to addressCorrection",
+        function='address_correction',
+        user_id=request.user.id,
+    )
     program_string = [in_progress_address['address']['address1'], in_progress_address['address']['address2'],
                       in_progress_address['address']['city'] + " " + in_progress_address['address']['state'] + " " + in_progress_address['address']['zipcode']]
     return render(
@@ -690,8 +717,12 @@ def take_usps_address(request, **kwargs):
             address.save()
             return redirect(f"{reverse('app:user_settings')}?page_updated=address")
 
-    except KeyError or TypeError:
-        print("USPS couldn't figure it out!")
+    except (KeyError, TypeError):
+        logger.info(
+            f"USPS couldn't out the address: {dict_address}",
+            function='take_usps_address',
+            user_id=request.user.id,
+        )
         # HTTP_REFERER sends this button press back to the same page
         # (e.g. removes the button functionality)
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

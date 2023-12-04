@@ -33,7 +33,7 @@ logger = LoggerWrapper(logging.getLogger(__name__))
 
 
 def index(request, **kwargs):
-    logger.info('Entering index()')
+
     if request.method == "POST":
         form = AddressLookupForm(request.POST or None)
         if form.is_valid():
@@ -56,9 +56,9 @@ def index(request, **kwargs):
                 if address_type != 'Street Address':
                     raise NameError("The address cannot be parsed")
 
-                print(
-                    'Address parsing found',
-                    raw_address_dict,
+                logger.info(
+                    f"Address parsing found: {raw_address_dict}",
+                    function='index',
                 )
 
                 # Help out parsing with educated guesses
@@ -67,9 +67,9 @@ def index(request, **kwargs):
                 # if 'city' not in raw_address_dict.keys():
                 raw_address_dict['city'] = 'Fort Collins'
 
-                print(
-                    'Updated address parsing is',
-                    raw_address_dict,
+                logger.info(
+                    f"Updated address parsing is: {raw_address_dict}",
+                    function='index',
                 )
 
                 # Ensure the necessary keys for USPS validation are included

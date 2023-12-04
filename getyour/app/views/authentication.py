@@ -16,6 +16,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import logging
+
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import login, get_user_model, authenticate
 from django.http import HttpResponse
@@ -28,6 +30,11 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 
 from app.backend import authenticate, what_page, broadcast_email_pw_reset
+from log.wrappers import LoggerWrapper
+
+
+# Initialize logger
+logger = LoggerWrapper(logging.getLogger(__name__))
 
 
 def password_reset_request(request, **kwargs):
@@ -90,7 +97,11 @@ def login_user(request, **kwargs):
                 return redirect(request.session['auth_next'])
             
             page = what_page(request.user, request)
-            print(page)
+            logger.info(
+                f"what_page() returned {page}",
+                function='login_user',
+                user_id=request.user.id,
+            )
             if page == "app:dashboard":
                 return redirect(reverse("app:dashboard"))
             else:
@@ -110,7 +121,11 @@ def login_user(request, **kwargs):
     # run through what_page() to find the correct place
     if request.method == "GET" and request.user.is_authenticated:
         page = what_page(request.user, request)
-        print(page)
+        logger.info(
+            f"what_page() returned {page}",
+            function='login_user',
+            user_id=request.user.id,
+        )
         if page == "app:dashboard":
             return redirect(reverse("app:dashboard"))
         else:
