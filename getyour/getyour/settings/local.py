@@ -70,3 +70,7 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Logging modifications
+if not IS_PROD:
+    LOGGING['loggers']['app']['level'] = 'DEBUG'

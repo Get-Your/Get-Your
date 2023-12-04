@@ -161,9 +161,11 @@ LOGGING = {
             'handlers': ['db_log'],
             'level': 'INFO',
         },
+        # Keep this logger! Even though it's a duplicate of the root logger,
+        # the environment-specific settings may reference it
         'app': {
             'handlers': ['db_log'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
         'django.request': {

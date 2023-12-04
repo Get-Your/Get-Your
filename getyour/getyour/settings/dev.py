@@ -71,3 +71,7 @@ DATABASES = {
         'HOST': 'getfoco-postgres-dev.postgres.database.usgovcloudapi.net'
     }
 }
+
+# Logging modifications
+if not IS_PROD:
+    LOGGING['loggers']['app']['level'] = 'DEBUG'
