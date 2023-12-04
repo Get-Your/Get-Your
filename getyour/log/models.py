@@ -1,5 +1,7 @@
 from django.db import models
 
+from log.constants import LOG_LEVELS
+
 
 class LevelRD(models.Model):
     name = models.CharField(max_length=20)
@@ -18,11 +20,8 @@ class Detail(models.Model):
 
     app_name = models.CharField(max_length=20, db_index=True)
     logger_name = models.CharField(max_length=100)
-    log_level = models.ForeignKey(
-        LevelRD,
-        related_name='detail',
-        # Don't update these levels if the log_level is deleted
-        on_delete=models.DO_NOTHING,
+    log_level = models.PositiveSmallIntegerField(
+        choices=LOG_LEVELS,
     )
     function = models.CharField(max_length=50, null=True)
     user_id = models.PositiveBigIntegerField(null=True)
