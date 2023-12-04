@@ -23,6 +23,8 @@ class Detail(models.Model):
     log_level = models.PositiveSmallIntegerField(
         choices=LOG_LEVELS,
     )
+    module_name = models.CharField(max_length=50, null=True)
+    user_id = models.PositiveBigIntegerField(null=True)
 
     lineno = models.PositiveIntegerField()
     message = models.TextField()

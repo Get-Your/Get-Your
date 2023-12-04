@@ -14,12 +14,20 @@ class DatabaseLogHandler(logging.Handler):
         trace = ''
         if record.exc_info:
             trace = db_default_formatter.formatException(record.exc_info)
-            
+
         # Format the log message, based on the LOGGING 'formatters' in
         # common_settings
         msg = self.format(record)
 
+        # Add stock 'extra' parameters if they don't exist
+        if not hasattr(record, 'user_id'):
+            record.user_id = None
+        if not hasattr(record, 'module_name'):
+            record.module_name = None
+
         kwargs = {
+            'user_id': record.user_id,
+            'module_name': record.module_name,
             'process_id': record.process,
             'thread_id': record.thread,
             'app_name': record.name.split('.', 1)[0],
