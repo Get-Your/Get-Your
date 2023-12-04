@@ -155,13 +155,20 @@ def account(request, **kwargs):
             try:
                 user = form.save()
                 login(request, user)
-                logger.info("account(): User login successful")
+                logger.info(
+                    "User login successful",
+                    module_name='account',
+                    user_id=user.id,
+                )
                 data = {
                     'result': "success",
                 }
                 return JsonResponse(data)
             except AttributeError:
-                logger.warning("account(): Login failed. User is: " + str(user))
+                logger.warning(
+                    f"Login failed. User is: {user}",
+                    module_name='account',
+                )
 
             return redirect(reverse("app:address"))
 
@@ -267,7 +274,11 @@ def address(request, **kwargs):
 
         request.session['application_addresses'] = json.dumps(
             addresses)
-        logger.info(f"address(): Sending to address correction - {request.session['application_addresses']}")
+        logger.info(
+            f"Sending to address correction - {request.session['application_addresses']}",
+            module_name='address',
+            user_id=request.user.id,
+        )
         return redirect(reverse("app:address_correction"))
     else:
         same_address = True
@@ -329,7 +340,11 @@ def address_correction(request, **kwargs):
         idx = 0     # starting idx
         flag_needMoreInfo = False   # flag for previous iter needing more info
         while 1:
-            logger.info("address_correction(): Start loop {}".format(idx))
+            logger.info(
+                f"Start loop {idx}",
+                module_name='address_correction',
+                user_id=request.user.id,
+            )
 
             try:
                 if idx in (0, 1):
@@ -349,7 +364,11 @@ def address_correction(request, **kwargs):
                     # Go directly to the QueryDict version if there's a usaddress
                     # issue
                     except usaddress.RepeatedLabelError:
-                        logger.warning('address_correction(): Loop index {idx}; Issue found in usaddress labels - continuing as loop 2')
+                        logger.warning(
+                            f"Loop index {idx}; Issue found in usaddress labels - continuing as loop 2",
+                            module_name='address_correction',
+                            user_id=request.user.id,
+                        )
                         idx = 2
                         raise AttributeError
 
@@ -369,13 +388,25 @@ def address_correction(request, **kwargs):
                 # with input QueryDict
                 try:
                     if idx == 2:
-                        logger.info(f"address_correction(): Loop index {idx}; Attempting USPS validation with input QueryDict - {q}")
+                        logger.info(
+                            f"Loop index {idx}; Attempting USPS validation with input QueryDict: {q}",
+                            module_name='address_correction',
+                            user_id=request.user.id,
+                        )
                         dict_address = validate_usps(q)
                     else:
-                        logger.info(f"address_correction(): Loop index {idx}; Attempting USPS validation with rawAddressDict - {rawAddressDict}")
+                        logger.info(
+                            f"Loop index {idx}; Attempting USPS validation with rawAddressDict: {rawAddressDict}",
+                            module_name='address_correction',
+                            user_id=request.user.id,
+                        )
                         dict_address = validate_usps(rawAddressDict)
                     validationAddress = dict_address['AddressValidateResponse']['Address']
-                    logger.info(f"address_correction(): USPS Validation returned {validationAddress}")
+                    logger.info(
+                        f"USPS Validation returned {validationAddress}",
+                        module_name='address_correction',
+                        user_id=request.user.id,
+                    )
 
                 except KeyError:
                     if idx == maxLoopIdx:
@@ -392,7 +423,11 @@ def address_correction(request, **kwargs):
                 # Kick back to the user if the USPS API needs more information
                 if 'ReturnText' in validationAddress.keys():
                     if idx == maxLoopIdx:
-                        logger.info('address_correction(): Address not found - end of loop')
+                        logger.info(
+                            "Address not found - end of loop",
+                            module_name='address_correction',
+                            user_id=request.user.id,
+                        )
                         raise TypeError(validationAddress['ReturnText'])
 
                     # Continue checking, but flag that this was a result from
@@ -413,13 +448,21 @@ def address_correction(request, **kwargs):
             except AttributeError:
                 # Use AttributeError to skip to the end of the loop
                 # Note that idx has already been iterated before this point
-                logger.info(f"address_correction(): Loop index {idx}; AttributeError raised to skip to end of loop")
+                logger.info(
+                    f"Loop index {idx}; AttributeError raised to skip to end of loop",
+                    module_name='address_correction',
+                    user_id=request.user.id,
+                )
                 if q['address2'] != '':
                     if idx == 1:
                         # For loop 1: if 'ReturnText' is not found and address2 is
                         # not None, remove possible keywords and try again
                         # Note that this will affect later loop iterations
-                        logger.info(f"address_correction(): Loop index {idx}; Address not found - try to remove/replace keywords")
+                        logger.info(
+                            f"Loop index {idx}; Address not found - try to remove/replace keywords",
+                            module_name='address_correction',
+                            user_id=request.user.id,
+                        )
                         removeList = ['apt', 'unit', '#']
                         for wrd in removeList:
                             q['address2'] = q['address2'].lower().replace(wrd, '')
