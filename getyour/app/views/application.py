@@ -226,7 +226,7 @@ def account(request, **kwargs):
                     user = form.save()
                     login(request, user)
                     logger.info(
-                        "User account created successful",
+                        "User account creation successful",
                         function='account',
                         user_id=user.id,
                     )
@@ -668,14 +668,14 @@ def address_correction(request, **kwargs):
                 str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
 
                 logger.info(
-                    "Exact (case-insensitive) address match!",
+                    "Exact (case-insensitive) address match found",
                     function='address_correction',
                     user_id=request.user.id,
                 )
                 return redirect(reverse("app:take_usps_address"))
 
         logger.info(
-            "Address match not found - proceeding to addressCorrection",
+            "Proceeding to user verification of the matched address",
             function='address_correction',
             user_id=request.user.id,
         )
