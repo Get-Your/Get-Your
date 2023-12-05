@@ -178,13 +178,23 @@ def address_lookup(address_parts):
     response = requests.get(url, params=payload)
     if response.status_code != requests.codes.ok:
         logger.error(
-            f"API error {response.status_code}: {response.reason}; {response.context}",
+            f"API error {response.status_code}: {response.reason}; {response.content}",
             function='address_lookup',
         )
         raise requests.exceptions.HTTPError(response.reason, response.content)
 
     # Parse response
     outVal = response.json()
+
+    # Since the gisweb endpoint seems to always return an HTTP 200, also check
+    # the JSON for an 'error' key
+    if 'error' in outVal:
+        errDict = outVal['error']
+        logger.error(
+            f"API error {errDict['code']}: {errDict['message']}",
+            function='address_lookup',
+        )
+        raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
 
     # Ensure candidate(s) exist and they have a decent match score
     # Because this is how the Sales Tax lookup is architected, it should be
@@ -243,13 +253,23 @@ def connexion_lookup(coord_string):
         response = requests.post(url, params=payload)
         if response.status_code != requests.codes.ok:
             logger.error(
-                f"API error {response.status_code}: {response.reason}; {response.context}",
+                f"API error {response.status_code}: {response.reason}; {response.content}",
                 function='connexion_lookup',
             )
             raise requests.exceptions.HTTPError(response.reason, response.content)
 
         # Parse response
         outVal = response.json()
+
+        # Since the gisweb endpoint seems to always return an HTTP 200, also check
+        # the JSON for an 'error' key
+        if 'error' in outVal:
+            errDict = outVal['error']
+            logger.error(
+                f"API error {errDict['code']}: {errDict['message']}",
+                function='connexion_lookup',
+            )
+            raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
 
         statusInput = outVal['features'][0]['attributes']['INVENTORY_STATUS_CODE']
 
@@ -316,13 +336,23 @@ def gma_lookup(coord_string):
         response = requests.get(url, params=payload)
         if response.status_code != requests.codes.ok:
             logger.error(
-                f"API error {response.status_code}: {response.reason}; {response.context}",
+                f"API error {response.status_code}: {response.reason}; {response.content}",
                 function='gma_lookup',
             )
             raise requests.exceptions.HTTPError(response.reason, response.content)
 
         # Parse response
         outVal = response.json()
+
+        # Since the gisweb endpoint seems to always return an HTTP 200, also check
+        # the JSON for an 'error' key
+        if 'error' in outVal:
+            errDict = outVal['error']
+            logger.error(
+                f"API error {errDict['code']}: {errDict['message']}",
+                function='gma_lookup',
+            )
+            raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
 
         if len(outVal['features']) > 0:
             return True
