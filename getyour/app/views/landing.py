@@ -34,6 +34,12 @@ logger = LoggerWrapper(logging.getLogger(__name__))
 
 def index(request, **kwargs):
 
+    logger.debug(
+        "Entering function",
+        function='index',
+        user_id=request.user.id,
+    )
+
     if request.method == "POST":
         form = AddressLookupForm(request.POST or None)
         if form.is_valid():
@@ -54,12 +60,13 @@ def index(request, **kwargs):
                 # Only continue to validation, etc if a 'Street Address' is
                 # found by usaddress
                 if address_type != 'Street Address':
-                    raise NameError("The address cannot be parsed")
-
-                logger.info(
-                    f"Address parsing found: {raw_address_dict}",
-                    function='index',
-                )
+                    msg = "The address cannot be parsed"
+                    logger.error(
+                        f"{msg}: {raw_address_dict}",
+                        function='index',
+                        user_id=request.user.id,
+                    )
+                    raise NameError(msg)
 
                 # Help out parsing with educated guesses
                 # if 'state' not in raw_address_dict.keys():
@@ -68,8 +75,9 @@ def index(request, **kwargs):
                 raw_address_dict['city'] = 'Fort Collins'
 
                 logger.info(
-                    f"Updated address parsing is: {raw_address_dict}",
+                    f"Address form submitted: {raw_address_dict}",
                     function='index',
+                    user_id=request.user.id,
                 )
 
                 # Ensure the necessary keys for USPS validation are included
@@ -130,7 +138,16 @@ def index(request, **kwargs):
             if request.session['app_status'] == 'in_progress':
                 in_progress_app_saved = True
 
+        user_id = request.user.id
         logout(request)
+        # Log only if user was previously logged in
+        if user_id is not None:
+            logger.info(
+                "User logged out",
+                function='index',
+                user_id=user_id,
+            )
+
         return render(
             request,
             'landing/index.html',
@@ -143,6 +160,13 @@ def index(request, **kwargs):
 
 
 def privacy_policy(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='privacy_policy',
+        user_id=request.user.id,
+    )
+
     # check if user is logged in
     user_logged_in = False
     if request.user.is_authenticated:
@@ -158,6 +182,13 @@ def privacy_policy(request, **kwargs):
 
 
 def programs_info(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='programs_info',
+        user_id=request.user.id,
+    )
+
     return render(
         request,
         'landing/programs_info.html',
@@ -169,6 +200,13 @@ def programs_info(request, **kwargs):
 
 
 def quick_available(request, **kwargs):
+    
+    logger.debug(
+        "Entering function",
+        function='quick_available',
+        user_id=request.user.id,
+    )
+
     return render(
         request,
         'landing/quick_available.html',
@@ -179,6 +217,13 @@ def quick_available(request, **kwargs):
 
 
 def quick_not_available(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='quick_not_available',
+        user_id=request.user.id,
+    )
+
     return render(
         request,
         'landing/quick_not_available.html',
@@ -189,6 +234,13 @@ def quick_not_available(request, **kwargs):
 
 
 def quick_not_found(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='quick_not_found',
+        user_id=request.user.id,
+    )
+
     return render(
         request,
         'landing/quick_not_found.html',
@@ -199,6 +251,13 @@ def quick_not_found(request, **kwargs):
 
 
 def quick_coming_soon(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='quick_coming_soon',
+        user_id=request.user.id,
+    )
+
     return render(
         request,
         'landing/quick_coming_soon.html',

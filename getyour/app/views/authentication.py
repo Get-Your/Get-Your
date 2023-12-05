@@ -38,6 +38,13 @@ logger = LoggerWrapper(logging.getLogger(__name__))
 
 
 def password_reset_request(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='password_reset_request',
+        user_id=request.user.id,
+    )
+
     User = get_user_model()
     if request.method == "POST":
         password_reset_form = PasswordResetForm(request.POST)
@@ -60,7 +67,13 @@ def password_reset_request(request, **kwargs):
                     try:
                         broadcast_email_pw_reset(user.email, email)
                     except BadHeaderError:
-                        return HttpResponse('Invalid header found.')
+                        msg = 'Invalid header found'
+                        logger.exception(
+                            msg,
+                            function='password_reset_request',
+                            user_id=request.user.id,
+                        )
+                        return HttpResponse(msg)
                     return redirect("/password_reset/done/")
             else:
                 return redirect("/password_reset/done/")
@@ -77,6 +90,13 @@ def password_reset_request(request, **kwargs):
 
 
 def login_user(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='login_user',
+        user_id=request.user.id,
+    )
+
     if request.method == "POST":
         # Try to log in user
         email = request.POST["email"]

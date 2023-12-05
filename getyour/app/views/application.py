@@ -51,6 +51,13 @@ logger = LoggerWrapper(logging.getLogger(__name__))
 
 @login_required(redirect_field_name='auth_next')
 def notify_remaining(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='notify_remaining',
+        user_id=request.user.id,
+    )
+
     page = what_page(request.user, request)
     return render(
         request,
@@ -63,6 +70,13 @@ def notify_remaining(request, **kwargs):
 
 
 def household_definition(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='household_definition',
+        user_id=request.user.id,
+    )
+
     return render(
         request,
         "application/household_definition.html",
@@ -70,6 +84,13 @@ def household_definition(request, **kwargs):
 
 
 def get_ready(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='get_ready',
+        user_id=request.user.id,
+    )
+
     renewal_mode = request.session.get(
         'renewal_mode') if request.session.get('renewal_mode') else False
     eligiblity_programs = EligibilityProgramRD.objects.filter(
@@ -95,6 +116,13 @@ def get_ready(request, **kwargs):
 
 @set_update_mode
 def account(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='account',
+        user_id=request.user.id,
+    )
+
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
     update_mode = request.session.get(
@@ -156,7 +184,7 @@ def account(request, **kwargs):
                 user = form.save()
                 login(request, user)
                 logger.info(
-                    "User login successful",
+                    "User account created successful",
                     function='account',
                     user_id=user.id,
                 )
@@ -168,6 +196,7 @@ def account(request, **kwargs):
                 logger.warning(
                     f"Login failed. User is: {user}",
                     function='account',
+                    user_id=request.user.id,
                 )
 
             return redirect(reverse("app:address"))
@@ -227,6 +256,13 @@ def account(request, **kwargs):
 @login_required(redirect_field_name='auth_next')
 @set_update_mode
 def address(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='address',
+        user_id=request.user.id,
+    )
+
     if request.session.get('application_addresses'):
         del request.session['application_addresses']
 
@@ -258,6 +294,14 @@ def address(request, **kwargs):
         # 'no' means the user has a different mailing address
         # compared to their eligibility address
         if request.POST.get('mailing_address') == 'no' or update_mode:
+
+            if request.POST.get('mailing_address') == 'no':
+                logger.info(
+                    "Mailing and eligibility addresses are different",
+                    function='address',
+                    user_id=request.user.id,
+                )
+
             mailing_address = {
                 'address1': request.POST['mailing_address1'],
                 'address2': request.POST['mailing_address2'],
@@ -275,7 +319,7 @@ def address(request, **kwargs):
         request.session['application_addresses'] = json.dumps(
             addresses)
         logger.info(
-            f"Sending to address correction - {request.session['application_addresses']}",
+            f"Sending to address correction: {request.session['application_addresses']}",
             function='address',
             user_id=request.user.id,
         )
@@ -322,6 +366,13 @@ def address(request, **kwargs):
 
 @login_required(redirect_field_name='auth_next')
 def address_correction(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='address_correction',
+        user_id=request.user.id,
+    )
+
     try:
         addresses = json.loads(request.session['application_addresses'])
         in_progress_address = [
@@ -515,7 +566,7 @@ def address_correction(request, **kwargs):
             "Sorry, we couldn't verify this address through USPS.",
             "Please press 'back' and re-enter.",
         ]
-        logger.info(
+        logger.warning(
             "USPS couldn't figure it out!",
             function='address_correction',
             user_id=request.user.id,
@@ -576,6 +627,13 @@ def address_correction(request, **kwargs):
 
 @login_required(redirect_field_name='auth_next')
 def take_usps_address(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='take_usps_address',
+        user_id=request.user.id,
+    )
+
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
     update_mode = request.session.get(
@@ -718,7 +776,7 @@ def take_usps_address(request, **kwargs):
             return redirect(f"{reverse('app:user_settings')}?page_updated=address")
 
     except (KeyError, TypeError):
-        logger.info(
+        logger.warning(
             f"USPS couldn't out the address: {dict_address}",
             function='take_usps_address',
             user_id=request.user.id,
@@ -731,6 +789,13 @@ def take_usps_address(request, **kwargs):
 @login_required(redirect_field_name='auth_next')
 @set_update_mode
 def household(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='household',
+        user_id=request.user.id,
+    )
+
     if request.session.get('application_addresses'):
         del request.session['application_addresses']
 
@@ -797,6 +862,13 @@ def household(request, **kwargs):
 @login_required(redirect_field_name='auth_next')
 @set_update_mode
 def household_members(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='household_members',
+        user_id=request.user.id,
+    )
+
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
     update_mode = request.session.get(
@@ -977,6 +1049,13 @@ def household_members(request, **kwargs):
 
 @login_required(redirect_field_name='auth_next')
 def programs(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='programs',
+        user_id=request.user.id,
+    )
+
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
     renewal_mode = request.session.get(
@@ -1054,6 +1133,13 @@ def files(request, **kwargs):
     fileNames - used to name the files in the database and file upload
     fileAmount - number of file uploads per income verified documentation
     '''
+
+    logger.debug(
+        "Entering function",
+        function='files',
+        user_id=request.user.id,
+    )
+
     # Check the boolean value of update_mode session var
     # Set as false if session var DNE
     renewal_mode = request.session.get(
@@ -1242,6 +1328,13 @@ def files(request, **kwargs):
 
 @login_required(redirect_field_name='auth_next')
 def broadcast(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='broadcast',
+        user_id=request.user.id,
+    )
+
     current_user = request.user
     try:
         broadcast_email(current_user.email)

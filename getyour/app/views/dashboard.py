@@ -35,6 +35,13 @@ logger = LoggerWrapper(logging.getLogger(__name__))
 
 @login_required(redirect_field_name='auth_next')
 def dashboard(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='dashboard',
+        user_id=request.user.id,
+    )
+
     # Check if the users renewal_mode session variable is set to True
     app_renewed = False
     if request.session.get('renewal_mode', False) and request.session.get("app_renewed", False):
@@ -105,6 +112,13 @@ def dashboard(request, **kwargs):
 
 @login_required(redirect_field_name='auth_next')
 def quick_apply(request, iq_program, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='quick_apply',
+        user_id=request.user.id,
+    )
+
     in_gma_with_no_service = False
 
     # Get the IQProgramRD object for the iq_program
@@ -168,6 +182,13 @@ def quick_apply(request, iq_program, **kwargs):
 
 @login_required(redirect_field_name='auth_next')
 def user_settings(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='user_settings',
+        user_id=request.user.id,
+    )
+
     request.session['update_mode'] = False
     # Get the success query string parameter
     page_updated = request.GET.get('page_updated')
@@ -207,6 +228,13 @@ def user_settings(request, **kwargs):
 # TODO: determine why this is different than landing.privacy_policy
 @login_required(redirect_field_name='auth_next')
 def privacy(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='privacy',
+        user_id=request.user.id,
+    )
+
     return render(
         request,
         'dashboard/privacy.html',
@@ -221,6 +249,13 @@ def privacy(request, **kwargs):
 
 @login_required(redirect_field_name='auth_next')
 def qualified_programs(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='qualified_programs',
+        user_id=request.user.id,
+    )
+
     # Get the user's eligibility address
     eligibility_address = AddressRD.objects.filter(
         id=request.user.address.eligibility_address_id).first()
@@ -250,6 +285,13 @@ def qualified_programs(request, **kwargs):
 
 
 def feedback(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='feedback',
+        user_id=request.user.id,
+    )
+
     if request.method == "POST":
         form = FeedbackForm(request.POST)
         if form.is_valid():
@@ -258,6 +300,13 @@ def feedback(request, **kwargs):
 
 
 def feedback_received(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='feedback_received',
+        user_id=request.user.id,
+    )
+
     return render(
         request,
         "dashboard/feedback_received.html",
@@ -269,6 +318,13 @@ def feedback_received(request, **kwargs):
 
 @login_required(redirect_field_name='auth_next')
 def programs_list(request, **kwargs):
+
+    logger.debug(
+        "Entering function",
+        function='programs_list',
+        user_id=request.user.id,
+    )
+
     # Get the user's eligibility address
     eligibility_address = AddressRD.objects.filter(
         id=request.user.address.eligibility_address_id).first()
