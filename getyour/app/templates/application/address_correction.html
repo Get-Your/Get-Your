@@ -29,26 +29,28 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% endblock %}
 
 {% block body %}
-<!--NOTE: For the future have numbers change based on database-->
+
+<!-- Update text based on address type -->
 {% if address_type == "mailing" %}
 <h2 style="margin-bottom: 0;">We found this mailing address for you, please click it to confirm.</h2>
 {% else %}
 <h2 style="margin-bottom: 0;">We found this home address for you, please click it to confirm.</h2>
 {% endif %}
 <br>
-<!-- NOTE GRACE START HERE-->
+
 <div class="fadeSmall">
-    <button class="buttonAddress" style="color:#13467D; font-weight: 400; margin-bottom: 0;"
-        onclick="location.href='{% url 'app:take_usps_address' %}'">
-        {% for i in program_string_2 %}
+    <!-- Determine link based on output from view -->
+    <button class="buttonAddress" style="color:#13467D; font-weight: 400; margin-bottom: 0;{% if not link_next_page %} cursor: default;{% endif %}"
+        onclick="{% if link_next_page %}location.href='{% url 'app:take_usps_address' %}'{% endif %}">
+        {% for i in address_feedback %}
         {{ i }} <br>
         {% endfor %}
     </button>
 </div>
 <div class="fadeLarge">
-    <button class="buttonAddress" style="color:#white; font-weight: 400; margin-bottom: 0;"
-        onclick="location.href='{% url 'app:take_usps_address' %}'">
-        {% for i in program_string_2 %}
+    <button class="buttonAddress" style="color:#white; font-weight: 400; margin-bottom: 0;{% if not link_next_page %} cursor: default;{% endif %}"
+        onclick="{% if link_next_page %}location.href='{% url 'app:take_usps_address' %}'{% endif %}">
+        {% for i in address_feedback %}
         {{ i }} <br>
         {% endfor %}
     </button>
