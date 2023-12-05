@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'getyour.middleware.FirstViewMiddleware',
     'getyour.middleware.ValidRouteMiddleware',
     'getyour.middleware.LoginRequiredMiddleware',
     'getyour.middleware.RenewalModeMiddleware',

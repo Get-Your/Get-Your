@@ -40,6 +40,8 @@ WORKDIR /code
 ADD . /code/
 RUN pip install -r requirements.txt
 
+# Add the Git commit tag or hash to the /code directory
+git describe --tags > .gitversion
 
 RUN python manage.py collectstatic --noinput --settings=getyour.settings.dev
 #--settings=getyour.settings.production
