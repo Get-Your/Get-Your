@@ -16,11 +16,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import logging
+from pathlib import Path
+import subprocess
+
 from django.shortcuts import render, redirect
 from django.urls import reverse, resolve
 from django.core.exceptions import MiddlewareNotUsed
 
 from app.backend import what_page_renewal
+from log.wrappers import LoggerWrapper
 
 
 class LoginRequiredMiddleware:
@@ -167,5 +172,62 @@ class RenewalModeMiddleware:
             if request.user.last_renewal_action:
                 what_page = what_page_renewal(request.user.last_renewal_action)
                 return redirect(what_page)
+            
+        return response
+
+
+class FirstViewMiddleware:
+    """
+    Middleware that determines if this is the first view by a user and logs
+    an 'app started' message.
+    
+    """
+
+    def __init__(self, get_response):
+        """ One-time configuration/initialization (upon web server start). """
+        
+        self.get_response = get_response
+
+    def __call__(self, request):
+        """ Primary call for the middleware. """
+
+        if 'first_view_recorded' not in request.session:
+
+            # Try to find the version file saved by the Docker build. Note that the
+            # file should not exist outside of a Docker build
+            version_path = Path(__file__).parents[1].joinpath('.gitversion')
+            if version_path.exists():
+                with open(version_path, 'r', encoding='utf-8') as f:
+                    app_version = f.read().strip()
+
+            # Otherwise, try to find the current Git version directly from the repo.
+            # The assumption is that this is part of a Git repo if not built by
+            # Docker
+            else:
+                try:
+                    # Run `git describe --tags`
+                    app_version = subprocess.check_output(
+                        ['git', 'describe', '--tags']
+                    ).decode('ascii').strip()
+                except:
+                    # Cannot be found for some reason; use blank
+                    app_version = ''
+
+            logger = LoggerWrapper(logging.getLogger(__name__))
+            logger.info(
+                f"Starting instance: app version {app_version}",
+                function='FirstViewMiddleware',
+            )
+
+            # Set the session var so this isn't called again for the user
+            request.session['first_view_recorded'] = True
+
+        # Code to be executed for each request before
+        # the view (and later middleware) are called.
+
+        response = self.get_response(request)
+
+        # Code to be executed for each request/response after
+        # the view is called.
             
         return response
