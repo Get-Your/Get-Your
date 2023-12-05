@@ -596,11 +596,13 @@ def address_correction(request, **kwargs):
                         # iterate through idx prematurely
                         idx = 2
 
-            program_string_2 = [validationAddress['Address2'],
+            # Link to the next page from address_correction.html
+            link_next_page = True
+            address_feedback = [validationAddress['Address2'],
                                 validationAddress['Address1'],
                                 validationAddress['City'] + " " + validationAddress['State'] + " " + validationAddress['Zip5']]
             logger.info(
-                f"program_string_2 is: {program_string_2}",
+                f"address_feedback is: {address_feedback}",
                 function='address_correction',
                 user_id=request.user.id,
             )
@@ -611,11 +613,13 @@ def address_correction(request, **kwargs):
                 function='address_correction',
                 user_id=request.user_id,
             )
+            # Don't link to the next page from address_correction.html
+            link_next_page = False
             # Only pass to the user for the 'more information is needed' case
             # --This is all that has been tested--
             msg = str(msg)
             if 'more information is needed' in msg:
-                program_string_2 = [
+                address_feedback = [
                     msg.replace('Default address: ', ''),
                     "Please press 'back' and re-enter.",
                 ]
@@ -626,13 +630,15 @@ def address_correction(request, **kwargs):
                     function='address_correction',
                     user_id=request.user.id,
                 )
-                program_string_2 = [
+                address_feedback = [
                     "Sorry, we couldn't verify this address through USPS.",
                     "Please press 'back' and re-enter.",
                 ]
 
         except KeyError:
-            program_string_2 = [
+            # Don't link to the next page from address_correction.html
+            link_next_page = False
+            address_feedback = [
                 "Sorry, we couldn't verify this address through USPS.",
                 "Please press 'back' and re-enter.",
             ]
@@ -679,8 +685,6 @@ def address_correction(request, **kwargs):
             function='address_correction',
             user_id=request.user.id,
         )
-    program_string = [in_progress_address['address']['address1'], in_progress_address['address']['address2'],
-                      in_progress_address['address']['city'] + " " + in_progress_address['address']['state'] + " " + in_progress_address['address']['zipcode']]
 
         return render(
             request,
@@ -688,8 +692,8 @@ def address_correction(request, **kwargs):
             {
                 'step': 2,
                 'form_page_number': form_page_number,
-                'program_string': program_string,
-                'program_string_2': program_string_2,
+                'link_next_page': link_next_page,
+                'address_feedback': address_feedback,
                 'address_type': in_progress_address['type'],
                 'title': "Address Correction",
             },
