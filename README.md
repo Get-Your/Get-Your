@@ -255,10 +255,6 @@ The admin user shouldn't be used for development or live database connections; a
         GRANT USAGE ON SCHEMA public TO base_role;
         GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO base_role;
         GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO base_role;
-        -- Grant this role to admin user (permanently, but to no material affect) to alter default privileges
-        GRANT base_role TO <admin_user>;
-        -- This is so all tables GRANTs apply to new tables as well
-        ALTER DEFAULT PRIVILEGES FOR ROLE base_role IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
 
 1. Create privileged role
 
@@ -267,7 +263,6 @@ The admin user shouldn't be used for development or live database connections; a
         CREATE ROLE privileged_role INHERIT;
         GRANT base_role TO privileged_role;
         GRANT CREATE ON SCHEMA public TO privileged_role;
-        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO privileged_role;
 
 1. Create and assign users
 
@@ -278,15 +273,17 @@ The admin user shouldn't be used for development or live database connections; a
 
 1. Alter default privileges
 
-    Once the privileged user *(not role)* is created, GRANT that user to the admin user so that the admin user can alter default privileges on behalf of the privileged user. Altering the default privileges as below will ensure `base_role` (and users within that role) has the proper privileges on any new tables within the `public` schema that are created by the privileged user.
+    Once the privileged user *(not role)* is created, GRANT that user to the admin user so that the admin user can alter default privileges on behalf of the privileged user. Altering the default privileges as below will ensure `base_role` (and users within that role) has the proper privileges on any new tables and sequences within any schema created by the privileged user.
 
-    > Note that the ALTER DEFAULT PRIVILEGES command is run *for* the table-creation user (privileged user), *on* `base_role`. Because it's specific to the privileged user and not the privileged *role*, the ALTER DEFAULT PRIVILEGES command will need to be repeated for each privileged user that will be creating tables.
+    > Note that the ALTER DEFAULT PRIVILEGES command is run *for* the table-creation user (privileged user) *to* `base_role`, meaning that the default privileges are being changed for `base_role` on anything created by the privileged user. Because it's specific to the privileged user and not the privileged *role*, the ALTER DEFAULT PRIVILEGES command will need to be repeated for each privileged user that will be creating objects (e.g. tables, schemas, etc).
 
         -- Grant this role to admin user to alter default privileges
         GRANT <privileged_user> TO <admin_user>;
 
         -- This is so all tables GRANTs apply to new tables as well
-        ALTER DEFAULT PRIVILEGES FOR USER <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;    
+        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT USAGE ON SCHEMAS TO base_role;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
 
 # Request a Consultation
 
