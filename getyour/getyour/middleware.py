@@ -193,25 +193,28 @@ class FirstViewMiddleware:
 
         if 'first_view_recorded' not in request.session:
 
-            # Try to find the version file saved by the Docker build. Note that the
-            # file should not exist outside of a Docker build
-            version_path = Path(__file__).parents[1].joinpath('.gitversion')
-            if version_path.exists():
-                with open(version_path, 'r', encoding='utf-8') as f:
-                    app_version = f.read().strip()
+            try:
+                # Try to find the version file saved by the Docker build. Note that the
+                # file should not exist outside of a Docker build
+                version_path = Path(__file__).parents[1].joinpath('.gitversion')
+                if version_path.exists():
+                    # The file was written explicitly with UTF-8 encoding
+                    # (via `BuildDeployDocker.ps1` in the `Get-Your-utils` repo)
+                    with open(version_path, 'r', encoding='utf-8') as f:
+                        app_version = f.read().strip()
 
-            # Otherwise, try to find the current Git version directly from the repo.
-            # The assumption is that this is part of a Git repo if not built by
-            # Docker
-            else:
-                try:
+                # Otherwise, try to find the current Git version directly from the repo.
+                # The assumption is that this is part of a Git repo if not built by
+                # Docker
+                else:
                     # Run `git describe --tags`
                     app_version = subprocess.check_output(
                         ['git', 'describe', '--tags']
                     ).decode('ascii').strip()
-                except:
-                    # Cannot be found for some reason; use blank
-                    app_version = ''
+
+            except:
+                # Cannot be found for some reason; use blank
+                app_version = ''
 
             logger = LoggerWrapper(logging.getLogger(__name__))
             logger.info(
