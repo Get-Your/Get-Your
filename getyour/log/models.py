@@ -15,8 +15,8 @@ class Detail(models.Model):
         verbose_name='Created at',
     )
 
-    process_id = models.CharField(max_length=100)
-    thread_id = models.CharField(max_length=100)
+    process_id = models.CharField(max_length=100, db_index=True)
+    thread_id = models.CharField(max_length=100, db_index=True)
 
     app_name = models.CharField(max_length=20, db_index=True)
     logger_name = models.CharField(max_length=100)
