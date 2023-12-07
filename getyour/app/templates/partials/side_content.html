@@ -1,7 +1,10 @@
 {% load static %}
 <div class="sideNav">
     <div class="fadeSmall">
-        <img class="side-content-logo" src="{% static 'img/CityLogoWhite-01.png' %}">
+        <!-- <div class="side-content-logo"> -->
+            <img class="side-content-logo" src="{% static 'img/CityLogoWhite-01.png' %}">
+            <span class="version-info">Get FoCo {{ code_version }}</span>
+        <!-- </div> -->
         <h1>
             <b>{{ header|default:"" }}</b>
         </h1>
@@ -23,5 +26,14 @@
     .supplimental-description {
         font-size: 1.5em;
         font-weight: 700;
+    }
+
+    .version-info {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        font-size: 0.7em;
+        text-align: center;
+        color: #bdccdb;
     }
 </style>
