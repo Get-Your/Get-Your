@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import os
 from pathlib import Path
-import pendulum
+import subprocess
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -176,3 +176,27 @@ LOGGING = {
         },
     },
 }
+
+# Add code version to the Django settings vars
+try:
+    # Try to find the version file saved by the Docker build. Note that the
+    # file should not exist outside of a Docker build
+    version_path = Path(__file__).parents[2].joinpath('.gitversion')
+    if version_path.exists():
+        # The file was written explicitly with UTF-8 encoding
+        # (via `BuildDeployDocker.ps1` in the `Get-Your-utils` repo)
+        with open(version_path, 'r', encoding='utf-8') as f:
+            CODE_VERSION = f.read().strip()
+
+    # Otherwise, try to find the current Git version directly from the repo.
+    # The assumption is that this is part of a Git repo if not built by
+    # Docker
+    else:
+        # Run `git describe --tags`
+        CODE_VERSION = subprocess.check_output(
+            ['git', 'describe', '--tags']
+        ).decode('ascii').strip()
+
+except:
+    # Cannot be found for some reason; use blank
+    CODE_VERSION = ''
