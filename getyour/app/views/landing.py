@@ -145,10 +145,12 @@ def index(request, **kwargs):
                 if request.session['app_status'] == 'in_progress':
                     in_progress_app_saved = True
 
+            # Logout only if user was previously logged in. logout() apparently
+            # resets session vars, so it messes with FirstViewMiddleware if it's
+            # run indescriminately
             user_id = request.user.id
-            logout(request)
-            # Log only if user was previously logged in
             if user_id is not None:
+                logout(request)
                 logger.info(
                     "User logged out",
                     function='index',
