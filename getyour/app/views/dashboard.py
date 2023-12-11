@@ -49,6 +49,11 @@ def dashboard(request, **kwargs):
             app_renewed = True
             request.session['renewal_mode'] = False
             request.session['app_renewed'] = False
+            logger.info(
+                "Renewal (for GTR) completed successfully",
+                function='dashboard',
+                user_id=request.user.id,
+            )
 
         # Reset update and renewal mode session vars; dashboard() is the
         # starting point for each of these modes, so this provides a blank slate

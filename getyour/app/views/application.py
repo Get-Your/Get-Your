@@ -179,7 +179,7 @@ def account(request, **kwargs):
                     form = UserUpdateForm(request.POST, instance=existing)
                 else:
                     form = UserForm(request.POST, instance=existing)
-            except AttributeError or ObjectDoesNotExist:
+            except (AttributeError, ObjectDoesNotExist):
                 form = UserForm(request.POST or None)
 
             # Checking the `has_viewed_dashboard` attribute of the user object
@@ -1027,14 +1027,16 @@ def household_members(request, **kwargs):
                     buffer = io.BytesIO(decoded_bytes).getvalue()
                     # fileValidation found below
                     filetype = magic.from_buffer(buffer)
-                    logging.info(filetype)
 
                     # Check if any of the following strings ("PNG", "JPEG", "JPG", "PDF") are in the filetype
                     if any(x in filetype for x in ["PNG", "JPEG", "JPG", "PDF"]):
                         pass
                     else:
-                        logging.error(
-                            "File is not a valid file type. file is: " + filetype)
+                        logger.error(
+                            f"File is not a valid file type ({filetype})",
+                            function='household_members',
+                            user_id=request.user.id,
+                        )
 
                         # Attempt to define household_info to load
                         try:
@@ -1100,6 +1102,19 @@ def household_members(request, **kwargs):
                         file_name, buffer.read(), content_type)
                     file_paths.append(file_path)
                     default_storage.save(file_path, uploaded_file)
+
+                if fileAmount > 0:
+                    logger.info(
+                        'Identification files saved successfully',
+                        function='household_members',
+                        user_id=request.user.id,
+                    )
+                else:
+                    logger.info(
+                        'No identification files to upload were found',
+                        function=household_members,
+                        user_id=request.user.id,
+                    )
             else:
                 errors = form.errors
                 error_message = "The following errors occurred: "
@@ -1313,14 +1328,16 @@ def files(request, **kwargs):
                 for f in request.FILES.getlist('document_path'):
                     # fileValidation found below
                     filetype = magic.from_buffer(f.read())
-                    logging.info(filetype)
 
                     # Check if any of the following strings ("PNG", "JPEG", "JPG", "PDF") are in the filetype
                     if any(x in filetype for x in ["PNG", "JPEG", "JPG", "PDF"]):
                         pass
                     else:
-                        logging.error(
-                            "File is not a valid file type. file is: " + filetype)
+                        logger.error(
+                            f"File is not a valid file type ({filetype})",
+                            function='files',
+                            user_id=request.user.id,
+                        )
                         users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
                             request)
                         return render(
@@ -1355,10 +1372,28 @@ def files(request, **kwargs):
                         f,
                     )
                     fileNames.append(str(instance.document_path))
+                    logger.debug(
+                        f"File {instance.document_path} saved successfully",
+                        function='files',
+                        user_id=request.user.id,
+                    )
 
                 # Save the fileNames list as a single document_path string
                 instance.document_path = str(fileNames)
                 instance.save()
+
+                if fileAmount > 0:
+                    logger.info(
+                        'Eligibility Program files saved successfully',
+                        function='household_members',
+                        user_id=request.user.id,
+                    )
+                else:
+                    logger.info(
+                        'No Eligibility Program files to upload were found',
+                        function=household_members,
+                        user_id=request.user.id,
+                    )
 
                 users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
                     request)
@@ -1497,14 +1532,29 @@ def broadcast(request, **kwargs):
         try:
             broadcast_email(current_user.email)
         except:
-            logging.error("there was a problem with sending the email / sendgrid")
+            logger.error(
+                "There was a problem with sending the email (Sendgrid)",
+                function='broadcast',
+                user_id=request.user.id,
+            )
             # TODO store / save for later: client getting feedback that SendGrid may be down
         phone = str(current_user.phone_number)
         try:
             broadcast_sms(phone)
         except:
-            logging.error("Twilio servers may be down")
+            logger.error(
+                "Twilio servers may be down",
+                function='broadcast',
+                user_id=request.user.id,
+            )
             # TODO store / save for later: client getting feedback that twilio may be down
+
+        logger.info(
+            "Application completed successfully",
+            function='broadcast',
+            user_id=request.user.id,
+        )
+
         return render(
             request,
             'application/broadcast.html',
