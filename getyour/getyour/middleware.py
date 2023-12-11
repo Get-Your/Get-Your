@@ -170,7 +170,10 @@ class RenewalModeMiddleware:
 
             if request.user.last_renewal_action:
                 what_page = what_page_renewal(request.user.last_renewal_action)
-                return redirect(what_page)
+                # Redirect to the what_page designation, if exists (None is when
+                # all pages have been completed)
+                if what_page is not None:
+                    return redirect(what_page)
             
         return response
 
