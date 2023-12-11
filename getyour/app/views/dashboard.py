@@ -50,7 +50,12 @@ def dashboard(request, **kwargs):
             request.session['renewal_mode'] = False
             request.session['app_renewed'] = False
 
+        # Reset update and renewal mode session vars; dashboard() is the
+        # starting point for each of these modes, so this provides a blank slate
+        # Note that this is done *after* the check to set `app_renewed`
         request.session['update_mode'] = False
+        request.session['renewal_mode'] = False
+
         qualified_programs = 0
         active_programs = 0
         pending_programs = 0
