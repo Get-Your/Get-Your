@@ -138,17 +138,17 @@ def dashboard(request, **kwargs):
 def quick_apply(request, iq_program, **kwargs):
 
     try:
-        logger.debug(
-            "Entering function",
-            function='quick_apply',
-            user_id=request.user.id,
-        )
-
         in_gma_with_no_service = False
 
         # Get the IQProgramRD object for the iq_program
         iq_program = IQProgramRD.objects.get(
             program_name=iq_program)
+        
+        logger.debug(
+            f"Entering function for {iq_program.program_name}",
+            function='quick_apply',
+            user_id=request.user.id,
+        )
         
         # Get the user's get_users_iq_programs and check if 
         # the IQProgramRD object is in the list. If it is not,

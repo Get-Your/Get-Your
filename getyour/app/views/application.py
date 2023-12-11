@@ -159,12 +159,6 @@ def get_ready(request, **kwargs):
 def account(request, **kwargs):
 
     try:
-        logger.debug(
-            "Entering function",
-            function='account',
-            user_id=request.user.id,
-        )
-
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
         update_mode = request.session.get(
@@ -173,6 +167,12 @@ def account(request, **kwargs):
             'renewal_mode') if request.session.get('renewal_mode') else False
 
         if request.method == "POST":
+            logger.debug(
+                "Leaving function (POST)",
+                function='account',
+                user_id=request.user.id,
+            )
+            
             try:
                 existing = request.user
                 if update_mode or renewal_mode or (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard):
@@ -274,6 +274,12 @@ def account(request, **kwargs):
                 }
                 return JsonResponse(data)
         else:
+            logger.debug(
+                "Entering function (GET)",
+                function='account',
+                user_id=request.user.id,
+            )
+            
             try:
                 user = User.objects.get(id=request.user.id)
                 form = UserUpdateForm(instance=user)
@@ -313,12 +319,6 @@ def account(request, **kwargs):
 def address(request, **kwargs):
 
     try:
-        logger.debug(
-            "Entering function",
-            function='address',
-            user_id=request.user.id,
-        )
-
         if request.session.get('application_addresses'):
             del request.session['application_addresses']
 
@@ -330,6 +330,12 @@ def address(request, **kwargs):
             'renewal_mode') if request.session.get('renewal_mode') else False
 
         if request.method == "POST":
+            logger.debug(
+                "Leaving function (POST)",
+                function='address',
+                user_id=request.user.id,
+            )
+            
             addresses = []
 
             if not update_mode:
@@ -381,6 +387,12 @@ def address(request, **kwargs):
             )
             return redirect(reverse("app:address_correction"))
         else:
+            logger.debug(
+                "Entering function (GET)",
+                function='address',
+                user_id=request.user.id,
+            )
+
             same_address = True
             if update_mode:
                 existing = Address.objects.get(user=request.user)
@@ -893,12 +905,6 @@ def take_usps_address(request, **kwargs):
 def household(request, **kwargs):
 
     try:
-        logger.debug(
-            "Entering function",
-            function='household',
-            user_id=request.user.id,
-        )
-
         if request.session.get('application_addresses'):
             del request.session['application_addresses']
 
@@ -910,6 +916,12 @@ def household(request, **kwargs):
             'renewal_mode') if request.session.get('renewal_mode') else False
 
         if request.method == "POST":
+            logger.debug(
+                "Leaving function (POST)",
+                function='household',
+                user_id=request.user.id,
+            )
+
             try:
                 existing = request.user.household
                 form = HouseholdForm(request.POST, instance=existing)
@@ -940,6 +952,12 @@ def household(request, **kwargs):
                 return redirect(reverse("app:household_members"))
 
         else:
+            logger.debug(
+                "Entering function (GET)",
+                function='household',
+                user_id=request.user.id,
+            )
+
             try:
                 # Query the users table for the user's data
                 eligibility = Household.objects.get(
@@ -980,12 +998,6 @@ def household(request, **kwargs):
 def household_members(request, **kwargs):
 
     try:
-        logger.debug(
-            "Entering function",
-            function='household_members',
-            user_id=request.user.id,
-        )
-
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
         update_mode = request.session.get(
@@ -994,6 +1006,12 @@ def household_members(request, **kwargs):
             'renewal_mode') if request.session.get('renewal_mode') else False
 
         if request.method == "POST":
+            logger.debug(
+                "Leaving function (POST)",
+                function='household_members',
+                user_id=request.user.id,
+            )
+
             try:
                 existing = request.user.householdmembers
 
@@ -1155,7 +1173,14 @@ def household_members(request, **kwargs):
             if update_mode:
                 return redirect(f"{reverse('app:user_settings')}?page_updated=household")
             return redirect(reverse("app:programs"))
+        
         else:
+            logger.debug(
+                "Entering function (GET)",
+                function='household_members',
+                user_id=request.user.id,
+            )
+
             form = HouseholdMembersForm(request.POST or None)
             try:
                 household_info = request.user.householdmembers.household_info
@@ -1196,17 +1221,16 @@ def household_members(request, **kwargs):
 def programs(request, **kwargs):
 
     try:
-        logger.debug(
-            "Entering function",
-            function='programs',
-            user_id=request.user.id,
-        )
-
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
         renewal_mode = request.session.get(
             'renewal_mode') if request.session.get('renewal_mode') else False
         if request.method == "POST":
+            logger.debug(
+                "Leaving function (POST)",
+                function='programs',
+                user_id=request.user.id,
+            )
 
             # This if/else block essentially does the same thing, but the way we
             # delete programs matters for saving data via our signals.py file.
@@ -1250,6 +1274,12 @@ def programs(request, **kwargs):
                 selected_eligibility_programs)
             return redirect(reverse("app:files"))
         else:
+            logger.debug(
+                "Entering function (GET)",
+                function='programs',
+                user_id=request.user.id,
+            )
+
             # Get all of the programs (except the one with identification and where is_active is False) from the application_EligibilityProgramRD table
             # ordered by the friendly_name field acending
             programs = EligibilityProgramRD.objects.filter(
@@ -1293,12 +1323,6 @@ def files(request, **kwargs):
     '''
 
     try:
-        logger.debug(
-            "Entering function",
-            function='files',
-            user_id=request.user.id,
-        )
-
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
         renewal_mode = request.session.get(
@@ -1307,6 +1331,12 @@ def files(request, **kwargs):
             request)
 
         if request.method == "POST":
+            logger.debug(
+                "Leaving function (POST)",
+                function='files',
+                user_id=request.user.id,
+            )
+
             user_file_upload = EligibilityProgram.objects.get(
                 pk=request.POST['id'])
             form = FileUploadForm(request.POST, request.FILES,
@@ -1489,6 +1519,12 @@ def files(request, **kwargs):
                                 )
                         return redirect(reverse("app:broadcast"))
         else:
+            logger.debug(
+                "Entering function (GET)",
+                function='files',
+                user_id=request.user.id,
+            )
+
             form = FileUploadForm()
             return render(
                 request,
