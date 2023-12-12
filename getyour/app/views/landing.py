@@ -35,13 +35,13 @@ logger = LoggerWrapper(logging.getLogger(__name__))
 def index(request, **kwargs):
 
     try:
-        logger.debug(
-            "Entering function",
-            function='index',
-            user_id=request.user.id,
-        )
-
         if request.method == "POST":
+            logger.debug(
+                "Leaving function (POST)",
+                function='index',
+                user_id=request.user.id,
+            )
+            
             form = AddressLookupForm(request.POST or None)
             if form.is_valid():
                 try:
@@ -123,6 +123,12 @@ def index(request, **kwargs):
                     return redirect(reverse("app:quick_not_found"))
 
         else:
+            logger.debug(
+                "Entering function (GET)",
+                function='index',
+                user_id=request.user.id,
+            )
+
             # Check if the app_status query parameter is present
             # If so, check if it is 'in_progress'
             # If it's in progress, redirect to the app:index page
@@ -139,10 +145,12 @@ def index(request, **kwargs):
                 if request.session['app_status'] == 'in_progress':
                     in_progress_app_saved = True
 
+            # Logout only if user was previously logged in. logout() apparently
+            # resets session vars, so it messes with FirstViewMiddleware if it's
+            # run indescriminately
             user_id = request.user.id
-            logout(request)
-            # Log only if user was previously logged in
             if user_id is not None:
+                logout(request)
                 logger.info(
                     "User logged out",
                     function='index',

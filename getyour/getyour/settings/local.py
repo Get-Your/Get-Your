@@ -72,5 +72,4 @@ DATABASES = {
 }
 
 # Logging modifications
-if not IS_PROD:
-    LOGGING['loggers']['app']['level'] = 'DEBUG'
+LOGGING['loggers']['app']['level'] = 'DEBUG'

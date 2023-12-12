@@ -73,5 +73,6 @@ DATABASES = {
 }
 
 # Logging modifications
-if not IS_PROD:
+# This uses an Azure App Service environment var
+if DEBUG_LOGGING:
     LOGGING['loggers']['app']['level'] = 'DEBUG'

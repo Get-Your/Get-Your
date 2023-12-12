@@ -73,7 +73,7 @@ SESSION_COOKIE_AGE = 6*60*60
 
 ROOT_URLCONF = 'getyour.urls'
 AUTH_USER_MODEL = "app.User"
-LOGIN_URL = 'app:login' 
+LOGIN_URL = 'app:login'
 
 TEMPLATES = [
     {

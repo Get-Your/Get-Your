@@ -127,6 +127,11 @@ def get_ready(request, **kwargs):
         # Check if the next query param is set
         # If so, save the renewal action and redirect to the account page
         if request.GET.get('next', False):
+            logger.info(
+                "Starting renewal process",
+                function='get_ready',
+                user_id=request.user.id,
+            )
             save_renewal_action(request, 'get_ready')
             return redirect('app:account')
         return render(
@@ -159,12 +164,6 @@ def get_ready(request, **kwargs):
 def account(request, **kwargs):
 
     try:
-        logger.debug(
-            "Entering function",
-            function='account',
-            user_id=request.user.id,
-        )
-
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
         update_mode = request.session.get(
@@ -173,13 +172,19 @@ def account(request, **kwargs):
             'renewal_mode') if request.session.get('renewal_mode') else False
 
         if request.method == "POST":
+            logger.debug(
+                "Leaving function (POST)",
+                function='account',
+                user_id=request.user.id,
+            )
+            
             try:
                 existing = request.user
                 if update_mode or renewal_mode or (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard):
                     form = UserUpdateForm(request.POST, instance=existing)
                 else:
                     form = UserForm(request.POST, instance=existing)
-            except AttributeError or ObjectDoesNotExist:
+            except (AttributeError, ObjectDoesNotExist):
                 form = UserForm(request.POST or None)
 
             # Checking the `has_viewed_dashboard` attribute of the user object
@@ -274,6 +279,12 @@ def account(request, **kwargs):
                 }
                 return JsonResponse(data)
         else:
+            logger.debug(
+                "Entering function (GET)",
+                function='account',
+                user_id=request.user.id,
+            )
+            
             try:
                 user = User.objects.get(id=request.user.id)
                 form = UserUpdateForm(instance=user)
@@ -313,12 +324,6 @@ def account(request, **kwargs):
 def address(request, **kwargs):
 
     try:
-        logger.debug(
-            "Entering function",
-            function='address',
-            user_id=request.user.id,
-        )
-
         if request.session.get('application_addresses'):
             del request.session['application_addresses']
 
@@ -330,6 +335,12 @@ def address(request, **kwargs):
             'renewal_mode') if request.session.get('renewal_mode') else False
 
         if request.method == "POST":
+            logger.debug(
+                "Leaving function (POST)",
+                function='address',
+                user_id=request.user.id,
+            )
+            
             addresses = []
 
             if not update_mode:
@@ -381,6 +392,12 @@ def address(request, **kwargs):
             )
             return redirect(reverse("app:address_correction"))
         else:
+            logger.debug(
+                "Entering function (GET)",
+                function='address',
+                user_id=request.user.id,
+            )
+
             same_address = True
             if update_mode:
                 existing = Address.objects.get(user=request.user)
@@ -893,12 +910,6 @@ def take_usps_address(request, **kwargs):
 def household(request, **kwargs):
 
     try:
-        logger.debug(
-            "Entering function",
-            function='household',
-            user_id=request.user.id,
-        )
-
         if request.session.get('application_addresses'):
             del request.session['application_addresses']
 
@@ -910,6 +921,12 @@ def household(request, **kwargs):
             'renewal_mode') if request.session.get('renewal_mode') else False
 
         if request.method == "POST":
+            logger.debug(
+                "Leaving function (POST)",
+                function='household',
+                user_id=request.user.id,
+            )
+
             try:
                 existing = request.user.household
                 form = HouseholdForm(request.POST, instance=existing)
@@ -940,6 +957,12 @@ def household(request, **kwargs):
                 return redirect(reverse("app:household_members"))
 
         else:
+            logger.debug(
+                "Entering function (GET)",
+                function='household',
+                user_id=request.user.id,
+            )
+
             try:
                 # Query the users table for the user's data
                 eligibility = Household.objects.get(
@@ -980,12 +1003,6 @@ def household(request, **kwargs):
 def household_members(request, **kwargs):
 
     try:
-        logger.debug(
-            "Entering function",
-            function='household_members',
-            user_id=request.user.id,
-        )
-
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
         update_mode = request.session.get(
@@ -994,6 +1011,12 @@ def household_members(request, **kwargs):
             'renewal_mode') if request.session.get('renewal_mode') else False
 
         if request.method == "POST":
+            logger.debug(
+                "Leaving function (POST)",
+                function='household_members',
+                user_id=request.user.id,
+            )
+
             try:
                 existing = request.user.householdmembers
 
@@ -1027,14 +1050,16 @@ def household_members(request, **kwargs):
                     buffer = io.BytesIO(decoded_bytes).getvalue()
                     # fileValidation found below
                     filetype = magic.from_buffer(buffer)
-                    logging.info(filetype)
 
                     # Check if any of the following strings ("PNG", "JPEG", "JPG", "PDF") are in the filetype
                     if any(x in filetype for x in ["PNG", "JPEG", "JPG", "PDF"]):
                         pass
                     else:
-                        logging.error(
-                            "File is not a valid file type. file is: " + filetype)
+                        logger.error(
+                            f"File is not a valid file type ({filetype})",
+                            function='household_members',
+                            user_id=request.user.id,
+                        )
 
                         # Attempt to define household_info to load
                         try:
@@ -1100,6 +1125,19 @@ def household_members(request, **kwargs):
                         file_name, buffer.read(), content_type)
                     file_paths.append(file_path)
                     default_storage.save(file_path, uploaded_file)
+
+                if fileAmount > 0:
+                    logger.info(
+                        'Identification file(s) saved successfully',
+                        function='household_members',
+                        user_id=request.user.id,
+                    )
+                else:
+                    logger.info(
+                        'No identification files to upload were found',
+                        function=household_members,
+                        user_id=request.user.id,
+                    )
             else:
                 errors = form.errors
                 error_message = "The following errors occurred: "
@@ -1140,7 +1178,14 @@ def household_members(request, **kwargs):
             if update_mode:
                 return redirect(f"{reverse('app:user_settings')}?page_updated=household")
             return redirect(reverse("app:programs"))
+        
         else:
+            logger.debug(
+                "Entering function (GET)",
+                function='household_members',
+                user_id=request.user.id,
+            )
+
             form = HouseholdMembersForm(request.POST or None)
             try:
                 household_info = request.user.householdmembers.household_info
@@ -1181,17 +1226,16 @@ def household_members(request, **kwargs):
 def programs(request, **kwargs):
 
     try:
-        logger.debug(
-            "Entering function",
-            function='programs',
-            user_id=request.user.id,
-        )
-
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
         renewal_mode = request.session.get(
             'renewal_mode') if request.session.get('renewal_mode') else False
         if request.method == "POST":
+            logger.debug(
+                "Leaving function (POST)",
+                function='programs',
+                user_id=request.user.id,
+            )
 
             # This if/else block essentially does the same thing, but the way we
             # delete programs matters for saving data via our signals.py file.
@@ -1235,6 +1279,12 @@ def programs(request, **kwargs):
                 selected_eligibility_programs)
             return redirect(reverse("app:files"))
         else:
+            logger.debug(
+                "Entering function (GET)",
+                function='programs',
+                user_id=request.user.id,
+            )
+
             # Get all of the programs (except the one with identification and where is_active is False) from the application_EligibilityProgramRD table
             # ordered by the friendly_name field acending
             programs = EligibilityProgramRD.objects.filter(
@@ -1278,12 +1328,6 @@ def files(request, **kwargs):
     '''
 
     try:
-        logger.debug(
-            "Entering function",
-            function='files',
-            user_id=request.user.id,
-        )
-
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
         renewal_mode = request.session.get(
@@ -1292,6 +1336,12 @@ def files(request, **kwargs):
             request)
 
         if request.method == "POST":
+            logger.debug(
+                "Leaving function (POST)",
+                function='files',
+                user_id=request.user.id,
+            )
+
             user_file_upload = EligibilityProgram.objects.get(
                 pk=request.POST['id'])
             form = FileUploadForm(request.POST, request.FILES,
@@ -1313,14 +1363,16 @@ def files(request, **kwargs):
                 for f in request.FILES.getlist('document_path'):
                     # fileValidation found below
                     filetype = magic.from_buffer(f.read())
-                    logging.info(filetype)
 
                     # Check if any of the following strings ("PNG", "JPEG", "JPG", "PDF") are in the filetype
                     if any(x in filetype for x in ["PNG", "JPEG", "JPG", "PDF"]):
                         pass
                     else:
-                        logging.error(
-                            "File is not a valid file type. file is: " + filetype)
+                        logger.error(
+                            f"File is not a valid file type ({filetype})",
+                            function='files',
+                            user_id=request.user.id,
+                        )
                         users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
                             request)
                         return render(
@@ -1355,10 +1407,28 @@ def files(request, **kwargs):
                         f,
                     )
                     fileNames.append(str(instance.document_path))
+                    logger.debug(
+                        f"File {instance.document_path} saved successfully",
+                        function='files',
+                        user_id=request.user.id,
+                    )
 
                 # Save the fileNames list as a single document_path string
                 instance.document_path = str(fileNames)
                 instance.save()
+
+                if fileAmount > 0:
+                    logger.info(
+                        'Eligibility Program file(s) saved successfully',
+                        function='household_members',
+                        user_id=request.user.id,
+                    )
+                else:
+                    logger.info(
+                        'No Eligibility Program files to upload were found',
+                        function=household_members,
+                        user_id=request.user.id,
+                    )
 
                 users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
                     request)
@@ -1454,6 +1524,12 @@ def files(request, **kwargs):
                                 )
                         return redirect(reverse("app:broadcast"))
         else:
+            logger.debug(
+                "Entering function (GET)",
+                function='files',
+                user_id=request.user.id,
+            )
+
             form = FileUploadForm()
             return render(
                 request,
@@ -1497,14 +1573,29 @@ def broadcast(request, **kwargs):
         try:
             broadcast_email(current_user.email)
         except:
-            logging.error("there was a problem with sending the email / sendgrid")
+            logger.error(
+                "There was a problem with sending the email (Sendgrid)",
+                function='broadcast',
+                user_id=request.user.id,
+            )
             # TODO store / save for later: client getting feedback that SendGrid may be down
         phone = str(current_user.phone_number)
         try:
             broadcast_sms(phone)
         except:
-            logging.error("Twilio servers may be down")
+            logger.error(
+                "Twilio servers may be down",
+                function='broadcast',
+                user_id=request.user.id,
+            )
             # TODO store / save for later: client getting feedback that twilio may be down
+
+        logger.info(
+            "Application completed successfully",
+            function='broadcast',
+            user_id=request.user.id,
+        )
+
         return render(
             request,
             'application/broadcast.html',
