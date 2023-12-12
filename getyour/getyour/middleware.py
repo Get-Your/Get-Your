@@ -27,6 +27,9 @@ from app.backend import what_page_renewal
 from log.wrappers import LoggerWrapper
 
 
+logger = LoggerWrapper(logging.getLogger(__name__))
+
+
 class LoginRequiredMiddleware:
     """
     Middleware that checks if the user is logged in and redirects them to the
@@ -168,6 +171,9 @@ class RenewalModeMiddleware:
 
             if request.user.last_renewal_action:
                 what_page = what_page_renewal(request.user.last_renewal_action)
+                logger.info(
+                    f"Continuing renewal: what_page_renewal() returned {what_page}"
+                )
 
                 # Redirect to the what_page designation, if exists (None is when
                 # all pages have been completed)
@@ -198,7 +204,6 @@ class FirstViewMiddleware:
         """ Primary call for the middleware. """
 
         if 'first_view_recorded' not in request.session:
-            logger = LoggerWrapper(logging.getLogger(__name__))
             logger.info(
                 f"Starting instance: app version {settings.CODE_VERSION}",
                 function='FirstViewMiddleware',

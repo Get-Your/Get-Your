@@ -127,6 +127,11 @@ def get_ready(request, **kwargs):
         # Check if the next query param is set
         # If so, save the renewal action and redirect to the account page
         if request.GET.get('next', False):
+            logger.info(
+                "Starting renewal process",
+                function='get_ready',
+                user_id=request.user.id,
+            )
             save_renewal_action(request, 'get_ready')
             return redirect('app:account')
         return render(
@@ -1123,7 +1128,7 @@ def household_members(request, **kwargs):
 
                 if fileAmount > 0:
                     logger.info(
-                        'Identification files saved successfully',
+                        'Identification file(s) saved successfully',
                         function='household_members',
                         user_id=request.user.id,
                     )
@@ -1414,7 +1419,7 @@ def files(request, **kwargs):
 
                 if fileAmount > 0:
                     logger.info(
-                        'Eligibility Program files saved successfully',
+                        'Eligibility Program file(s) saved successfully',
                         function='household_members',
                         user_id=request.user.id,
                     )

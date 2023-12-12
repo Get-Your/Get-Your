@@ -133,7 +133,7 @@ def login_user(request, **kwargs):
                 
                 page = what_page(request.user, request)
                 logger.info(
-                    f"what_page() returned {page}",
+                    f"Continuing application: what_page() returned {page}",
                     function='login_user',
                     user_id=request.user.id,
                 )
