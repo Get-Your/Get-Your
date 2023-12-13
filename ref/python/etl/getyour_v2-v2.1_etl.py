@@ -14,10 +14,9 @@ app_householdmembers.
 """
 
 from rich import print
+from rich.progress import Progress
 import psycopg2
 import json
-import warnings
-import ast
 
 import coftc_cred_man as crd
 
@@ -39,7 +38,7 @@ def run_full_porting(profile):
 
     global_objects = initialize_vars(profile)
 
-    port_identification_path(global_objects)
+    port_identification_path_reference(global_objects)
     deactivate_identification_program(global_objects)
     
     verify_transfer(global_objects)
@@ -82,11 +81,13 @@ def initialize_vars(profile: str) -> dict:
             'cred': cred,
             }
         )
-    
-def port_identification_path(global_objects: dict) -> None:
+
+def port_identification_path_reference(global_objects: dict) -> None:
     """
-    1) Copy 'identification' from the app_eligibilityprogram table to the
-    relevant section in the JSON object in app_householdmembers.
+    1) Add a ``null`` value to ``identification_path`` for the relevant section
+    in the JSON object in app_householdmembers if 'identification' in the
+    app_eligibilityprogram table exists for the user. See 
+    https://github.com/Get-Your/Get-Your/issues/249 for reference.
 
     Parameters
     ----------
@@ -106,67 +107,80 @@ def port_identification_path(global_objects: dict) -> None:
     programId = cursor.fetchone()[0]
     
     # Gather all users and filepaths in the eligibilityprogram table with a
-    # non-null identification document_path
+    # non-null and non-blank identification document_path
     cursor.execute(
-        """select "user_id", "document_path" from public.app_eligibilityprogram where "program_id"={} and "document_path" is not null""".format(
+        """select "user_id", "document_path" from public.app_eligibilityprogram where "program_id"={} and "document_path" is not null and "document_path"!=''""".format(
             programId,
             )
         )
     userPaths = cursor.fetchall()
     
-    # Loop through each user
-    warnings.warn('WARNING: literal_eval() is potentially dangerous. Best to find a different solution to storing multiple files.')
-    for userid, pathitm in userPaths:
+    # Get latest modified timestamp from the target table
+    cursor.execute(
+        """select max("modified_at") from public.app_householdmembers"""
+        )
+    initTimestamp = cursor.fetchone()[0]
+    
+    with Progress() as progress:
 
-        # Gather the lowercase first and last name for the user to combine and
-        # compare to each element of the JSON object
-        cursor.execute(
-            """select "first_name", "last_name" from public.app_user where id={}""".format(
-                userid,
-                )
+        updateTask = progress.add_task(
+            "[bright_cyan]Updating identification_path values",
+            total=len(userPaths),
             )
-        nameList = [x.lower() for x in cursor.fetchone()]
-        
-        # Gather the householdmembers JSON object
-        cursor.execute(
-            """select "household_info" from public.app_householdmembers where user_id={}""".format(
-                userid,
-                )
-            )
-        memberDict = cursor.fetchone()[0]
-        
-        # If the user's first/last name matches any element in the JSON object,
-        # set the identification_path to the delistified pathitm
-        isUpdated = False   # initialize whether to run update
-        for jsonidx,jsonitm in enumerate(memberDict['persons_in_household']):
-            # Compare each jsonitm name with app_user name (case-insensitive)
-            if jsonitm['name'].lower() == ' '.join(nameList):
-                
-                # Convert the path(s) to a Python list
-                pathitm = ast.literal_eval(pathitm)
-                
-                # Insert the first value of pathitm into a new
-                # 'identification_path' key
-                if len(pathitm) > 1:
-                    print(f"WARNING: document_path for user {userid} is more than 1 file; truncated")
-                
-                memberDict['persons_in_household'][jsonidx]['identification_path'] = pathitm[0]
-                
-                # Stop after the first match
-                isUpdated = True
-                break
-            
-        # Update the record with the new JSON object, if applicable
-        if isUpdated:
+
+        # Loop through each user
+        for userid, _ in userPaths:
+    
+            # Gather the householdmembers JSON object
             cursor.execute(
-                """update public.app_householdmembers set "household_info"=%s where "user_id"={}""".format(
+                """select "household_info" from public.app_householdmembers where user_id={}""".format(
                     userid,
-                    ),
-                (json.dumps(memberDict), )
+                    )
                 )
+            dbOut = cursor.fetchone()
+            
+            if dbOut is not None:
+                memberDict = dbOut[0]
+            
+                # Add 'identification_path' key (with value ``null``) to each list
+                # item where it doesn't already exist
+                isUpdated = False   # initialize whether to run update
+                for jsonidx,jsonitm in enumerate(memberDict['persons_in_household']):
+                    # Only update if the key doesn't already exist
+                    if 'identification_path' not in jsonitm.keys():
+                        
+                        # Add the key with a null value
+                        memberDict['persons_in_household'][jsonidx]['identification_path'] = None
+                        
+                        # Ensure isUpdated is set (each loop is just redundant)
+                        isUpdated = True
+                    
+                # Update the record with the new JSON object, if applicable
+                if isUpdated:
+                    cursor.execute(
+                        """update public.app_householdmembers set "household_info"=%s where "user_id"={}""".format(
+                            userid,
+                            ),
+                        (json.dumps(memberDict), )
+                        )
+                    
+            progress.update(updateTask, advance=1)
+            
+    # Only commit if the latest modified timestamp from the target table isn't
+    # greater than initTimestamp
+    cursor.execute(
+        """select max("modified_at") from public.app_householdmembers"""
+        )
+    finalTimestamp = cursor.fetchone()[0]
+        
+    if finalTimestamp > initTimestamp:
+        global_objects['conn'].rollback()
+        raise AssertionError("The target table has been modified; the transaction has been rolled back and must be restarted.")
         
     # Commit any changes
     global_objects['conn'].commit()
+    
+    print('identification_path reference port complete!')
     
     cursor.close()
     
@@ -197,6 +211,9 @@ def deactivate_identification_program(global_objects: dict) -> None:
 def verify_transfer(global_objects: dict) -> None:
     """
     Verify the proper transfer of all data.
+    
+    Ensure all newly-written identification_path records (with null values)
+    have a matching 'identification' record.
 
     Parameters
     ----------
@@ -209,10 +226,70 @@ def verify_transfer(global_objects: dict) -> None:
     
     """
     
-    print("Since this is non-critical (more of a convenience), there is no verification for this ETL")
+    # Go through each user with a null identification_path and verify they
+    # have a matching 'identification' record in app_eligibilityprogram
+    
+    cursor = global_objects['conn'].cursor()
+    
+    # Gather program_id for the 'identification' "program"
+    cursor.execute("""select "id" from public.app_eligibilityprogramrd where "program_name"='identification'""")
+    programId = cursor.fetchone()[0]
+    
+    # Gather all users and filepaths in the eligibilityprogram table with a
+    # non-null and non-blank identification document_path
+    cursor.execute(
+        """select "user_id" from public.app_householdmembers where "household_info" is not null"""
+        )
+    userList = [x[0] for x in cursor.fetchall()]
+    
+    with Progress() as progress:
+
+        verifyTask = progress.add_task(
+            "[bright_cyan]Updating identification_path values",
+            total=len(userList),
+            )
+    
+        # Loop through each user
+        for userid in userList:
+    
+            # Gather the householdmembers JSON object
+            cursor.execute(
+                """select "household_info" from public.app_householdmembers where user_id={}""".format(
+                    userid,
+                    )
+                )
+            dbOut = cursor.fetchone()
+            
+            if dbOut is not None:
+                memberDict = dbOut[0]
+            
+                for jsonidx,jsonitm in enumerate(memberDict['persons_in_household']):
+                    # Check for null value for each 'identification_path'
+                    if 'identification_path' in jsonitm.keys() and jsonitm['identification_path'] is None:
+                        
+                        # Verify there is at least one filled 'identification'
+                        # record in app_eligibilityprogram for this user
+                        cursor.execute(
+                            """select count(*) from public.app_eligibilityprogram where "user_id"={} and "program_id"={} and "document_path" is not null and "document_path"!=''""".format(
+                            userid,
+                            programId,
+                            )
+                        )
+                        recordCount = cursor.fetchone()[0]
+                        
+                        if recordCount < 1:
+                            raise AssertionError(
+                                f"User {userid} does not have an 'identification' record"
+                                )
+                            
+            progress.update(verifyTask, advance=1)
+            
+    print('All porting verified!')
+    
+    cursor.close()    
+
         
 if __name__=='__main__':
     
-    # Define the generic profile ('_old' will be appended to this for the v1
-    # connection)
-    profile = input('Enter a generic database profile to use for porting: ')        
+    # Define the database profile
+    profile = input('Enter the database profile to use for porting: ')        

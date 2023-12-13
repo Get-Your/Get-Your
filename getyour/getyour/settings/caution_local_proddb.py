@@ -16,25 +16,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import os
-import json
+
+from tomlkit import loads
+from tomlkit import exceptions as tomlexceptions
 from django.core.exceptions import ImproperlyConfigured
+
 from getyour.settings.common_settings import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# JSON-based secrets module
-with open('secrets_prod.json') as f:
-    secrets = json.loads(f.read())
+# TOML-based secrets module
+with open('secrets.prod.toml', 'r', encoding='utf-8') as f:
+    secrets_dict = loads(f.read())
 
-
-def get_secret(setting, secrets=secrets):
+def get_secret(var_name, read_dict=secrets_dict):
     '''Get the secret variable or return explicit exception.'''
     try:
-        return secrets[setting]
-    except KeyError:
-        error_msg = 'Set the {0} environment variable'.format(setting)
+        return read_dict[var_name]
+    except tomlexceptions.NonExistentKey:
+        error_msg = f"Set the '{var_name}' secrets variable"
         raise ImproperlyConfigured(error_msg)
-
 
 SECRET_KEY = get_secret('SECRET_KEY')
 TWILIO_ACCOUNT_SID = get_secret('TWILIO_ACCOUNT_SID')
@@ -56,80 +56,14 @@ IS_PROD = True
 # SECURITY WARNING: don't run with debug turned on for any live site!
 DEBUG = True
 
-# ANDREW: Make sure to change this later!
-ALLOWED_HOSTS = ["*", "192.168.0.15"]
 # Revert to default (permissive) values when running locally
 CSRF_TRUSTED_ORIGINS = []
+ALLOWED_HOSTS = []
 
-# Application definition
-
-# As of 2023-08-01
-    # the 99th percentile of file sizes was 8.33 MiB
-    # the 99th percentile for individuals in household was 7.00
-    # therefore the file payload for the 99th percentile of persons and file
-    # size: 58.28 MiB
-    # Use this value + (lots of) overhead
-
-    # the largest uploaded file was 43.4 MiB; one file at this size can be
-    # uploaded
-max_upload_size_mib = 100
-DATA_UPLOAD_MAX_MEMORY_SIZE = max_upload_size_mib*1048576
-
-INSTALLED_APPS = [
-    'django.contrib.admin',  # NOTE: may just be able to stop admin stuff in settings.py
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.postgres',
-    'app',
-    'phonenumber_field',
-]
-
-
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # add whitenoise
-    'getyour.middleware.RenewalModeMiddleware',
-]
-
-ROOT_URLCONF = 'getyour.urls'
-AUTH_USER_MODEL = "app.User"
-
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            os.path.join(BASE_DIR, '..', 'templates')
-        ],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'app.context_processors.global_template_variables',
-            ],
-        },
-    },
-]
-
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-WSGI_APPLICATION = 'getyour.wsgi.application'
-
+# Application definitions (outside of common_settings)
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -139,3 +73,8 @@ DATABASES = {
         'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'
     }
 }
+
+# Logging modifications - set logging level to DEBUG and overwrite DEBUG_LOGGER
+# env var for clarity
+LOGGING['loggers']['app']['level'] = 'DEBUG'
+DEBUG_LOGGING = True

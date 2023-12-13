@@ -1,4 +1,5 @@
 FROM ubuntu:20.04
+
 #Layer for python and gdal support
 RUN apt-get update && apt-get install -y software-properties-common curl \
     && add-apt-repository ppa:ubuntugis/ubuntugis-unstable && apt-get update \
@@ -29,6 +30,7 @@ RUN pip install twilio==8.1.0
 RUN pip install usaddress==0.5.10
 RUN pip install usps-api==0.5
 RUN pip install whitenoise==6.4.0
+RUN pip install tomlkit==0.11.8
 
 
 # Then ADD code and 
@@ -39,6 +41,10 @@ WORKDIR /code
 ADD . /code/
 RUN pip install -r requirements.txt
 
+# Gather the code version from build var. Set to '' if DNE.
+ARG CODE_VERSION=''
+# Save the code version to a runtime env var
+ENV CODE_VERSION=$CODE_VERSION
 
 RUN python manage.py collectstatic --noinput --settings=getyour.settings.dev
 #--settings=getyour.settings.production
