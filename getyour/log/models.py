@@ -30,7 +30,7 @@ class Detail(models.Model):
     trace = models.TextField(blank=True)
 
     # Create field that can be used to filter for not-yet-addressed records
-    has_been_addressed = models.BooleanField(default=False)
+    has_been_addressed = models.BooleanField(default=False, null=True)
 
     def __str__(self):
         return str(self.message)
