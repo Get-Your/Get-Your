@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import os
 from pathlib import Path
-import pendulum
+import subprocess
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'app',
     'phonenumber_field',
+    'log',
 ]
 
 MIDDLEWARE = [
@@ -58,13 +59,21 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'getyour.middleware.LoginRequiredMiddleware',
+    'getyour.middleware.FirstViewMiddleware',
     'getyour.middleware.ValidRouteMiddleware',
+    'getyour.middleware.LoginRequiredMiddleware',
     'getyour.middleware.RenewalModeMiddleware',
 ]
 
+# Session management
+# Log out on browser close
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# Expire the session cookie (force re-login) at 6 hours (in seconds)
+SESSION_COOKIE_AGE = 6*60*60
+
 ROOT_URLCONF = 'getyour.urls'
 AUTH_USER_MODEL = "app.User"
+LOGIN_URL = 'app:login'
 
 TEMPLATES = [
     {
@@ -133,39 +142,60 @@ AZURE_LOCATION = ""  # Subdirectory-like prefix to the blob name
 DEFAULT_FILE_STORAGE = 'getyour.settings.custom_azure.AzureMediaStorage'
 
 # Logging
-logFileName = pendulum.now().format("HH_mm_ss.SSSSSS")
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt': "%d/%b/%Y %H:%M:%S"
-        },
         'simple': {
-            'format': '%(levelname)s %(message)s'
+            'format': "%(message)s",
+            # datefmt is autocreated by Django; it would be ignored here
         },
     },
     'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': 'logs/' + logFileName + '.log',
-            'when': 'midnight',  # this specifies the interval
-            'interval': 1,  # defaults to 1, only necessary for other values
-            'backupCount': 100,  # how many backup file to keep, 10 days
-            'formatter': 'verbose',
+        'db_log': {
+            'class': 'log.handlers.DatabaseLogHandler',
+            'formatter': 'simple',
         },
-
     },
     'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-        },
         '': {
-            'handlers': ['file'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-        }
+            'handlers': ['db_log'],
+            'level': 'INFO',
+        },
+        # Keep this logger! Even though it's a duplicate of the root logger,
+        # the environment-specific settings may reference it
+        'app': {
+            'handlers': ['db_log'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['db_log'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
     },
 }
+
+# Import environment vars (via Azure or injected into `docker run`). Note that
+# the env vars are brought in as strings and must be converted (safely) to bool.
+DEBUG = str(os.environ.get('DEBUG', 'false')).lower() == 'true'
+DEBUG_LOGGING = str(os.environ.get('DEBUG_LOGGING', 'false')).lower() == 'true'
+# Add code version to the Django settings vars
+try:
+    # Try to load from environment vars. Note that the Dockerfile defaults to
+    # '', so False is only returned if CODE_VERSION env var DNE.
+    CODE_VERSION = os.environ.get('CODE_VERSION', False)
+    if CODE_VERSION is False:
+        # Otherwise, try to find the current Git version directly from the repo.
+        # The assumption is that this is part of a Git repo if not built by
+        # Docker
+
+        # Run `git describe --tags`
+        CODE_VERSION = subprocess.check_output(
+            ['git', 'describe', '--tags']
+        ).decode('ascii').strip()
+
+except:
+    # Cannot be found; use blank
+    CODE_VERSION = ''

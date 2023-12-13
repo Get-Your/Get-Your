@@ -20,11 +20,14 @@ import json
 import datetime
 import requests
 from enum import Enum
+from itertools import chain
+import logging
+
 from twilio.rest import Client
 from sendgrid.helpers.mail import Mail
 from sendgrid import SendGridAPIClient
 from usps import USPSApi, Address
-from itertools import chain
+
 from django import http
 from django.shortcuts import reverse
 from django.contrib.auth.backends import UserModel
@@ -35,9 +38,15 @@ from django.db.models.fields.files import FieldFile
 from django.core.serializers.json import DjangoJSONEncoder
 from phonenumber_field.phonenumber import PhoneNumber
 from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram
+from log.wrappers import LoggerWrapper
+
+
+# Initialize logger
+logger = LoggerWrapper(logging.getLogger(__name__))
 
 
 form_page_number = 6
+
 
 # Use the following tag mapping for USPS standards for all functions
 tag_mapping = {
@@ -115,17 +124,30 @@ def address_check(address_dict):
 
     except NameError:
         # NameError specifies that the address is not found
-        # in City lookups and is therefore not in the IQ
+        # in City lookups and is therefore *probably* not in the IQ
         # service area
+
+        # Log a potential error if the city is 'Fort Collins'
+        if address_dict['AddressValidateResponse']['Address']['City'].lower() == 'fort collins':    
+            logger.error(
+                "Potential issue: Fort Collins address marked 'not in GMA': {}".format(
+                    address_dict['AddressValidateResponse']['Address'],
+                ),
+                function='address_check',
+            )
+
         return (False, False)
 
     else:
         has_connexion = connexion_lookup(coord_string)
-        print('No Connexion for you') if has_connexion is None else print(
-            'Connexion available') if has_connexion else print('Connexion coming soon')
+        msg = 'Connexion not available or API not found' if has_connexion is None \
+            else 'Connexion available' if has_connexion \
+            else 'Connexion coming soon'
+        logger.info(msg, function='address_check')
 
         is_in_gma = gma_lookup(coord_string)
-        print('Is in GMA!') if is_in_gma else print('Outside of GMA')
+        msg = 'Address is in GMA' if is_in_gma else 'Address is outside of GMA'
+        logger.info(msg, function='address_check')
 
         return (is_in_gma, has_connexion)
 
@@ -165,10 +187,24 @@ def address_lookup(address_parts):
     # Gather response
     response = requests.get(url, params=payload)
     if response.status_code != requests.codes.ok:
+        logger.error(
+            f"API error {response.status_code}: {response.reason}; {response.content}",
+            function='address_lookup',
+        )
         raise requests.exceptions.HTTPError(response.reason, response.content)
 
     # Parse response
     outVal = response.json()
+
+    # Since the gisweb endpoint seems to always return an HTTP 200, also check
+    # the JSON for an 'error' key
+    if 'error' in outVal:
+        errDict = outVal['error']
+        logger.error(
+            f"API error {errDict['code']}: {errDict['message']}",
+            function='address_lookup',
+        )
+        raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
 
     # Ensure candidate(s) exist and they have a decent match score
     # Because this is how the Sales Tax lookup is architected, it should be
@@ -226,15 +262,28 @@ def connexion_lookup(coord_string):
         # Gather response
         response = requests.post(url, params=payload)
         if response.status_code != requests.codes.ok:
+            logger.error(
+                f"API error {response.status_code}: {response.reason}; {response.content}",
+                function='connexion_lookup',
+            )
             raise requests.exceptions.HTTPError(response.reason, response.content)
 
         # Parse response
         outVal = response.json()
 
+        # Since the gisweb endpoint seems to always return an HTTP 200, also check
+        # the JSON for an 'error' key
+        if 'error' in outVal:
+            errDict = outVal['error']
+            logger.error(
+                f"API error {errDict['code']}: {errDict['message']}",
+                function='connexion_lookup',
+            )
+            raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
+
         statusInput = outVal['features'][0]['attributes']['INVENTORY_STATUS_CODE']
 
-    except requests.exceptions.HTTPError as e:
-        print(f"HTTPError: {e}")
+    except requests.exceptions.HTTPError:
         return None
 
     except (IndexError, KeyError):
@@ -296,18 +345,31 @@ def gma_lookup(coord_string):
         # Gather response
         response = requests.get(url, params=payload)
         if response.status_code != requests.codes.ok:
+            logger.error(
+                f"API error {response.status_code}: {response.reason}; {response.content}",
+                function='gma_lookup',
+            )
             raise requests.exceptions.HTTPError(response.reason, response.content)
 
         # Parse response
         outVal = response.json()
+
+        # Since the gisweb endpoint seems to always return an HTTP 200, also check
+        # the JSON for an 'error' key
+        if 'error' in outVal:
+            errDict = outVal['error']
+            logger.error(
+                f"API error {errDict['code']}: {errDict['message']}",
+                function='gma_lookup',
+            )
+            raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
 
         if len(outVal['features']) > 0:
             return True
         else:
             return False
 
-    except requests.exceptions.HTTPError as e:
-        print(f"HTTPError: {e}")
+    except requests.exceptions.HTTPError:
         return False
 
 
@@ -333,12 +395,17 @@ def validate_usps(inobj):
     validation = usps.validate_address(address)
     outDict = validation.result
     try:
-        print(outDict['AddressValidateResponse']['Address']['Address2'])
-        print(outDict)
+        logger.info(
+            f"Address dict found: {outDict}",
+            function='validate_usps',
+        )
         return outDict
 
     except KeyError:
-        print("Address could not be found - no guesses")
+        logger.exception(
+            "Address could not be found - no guesses",
+            function='validate_usps',
+        )
         raise
 
 
@@ -352,11 +419,12 @@ def broadcast_email(email):
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
-        print(response.status_code)
-        print(response.body)
-        print(response.headers)
+        logger.info(
+            f"Sendgrid returned HTTP {response.status_code}",
+            function='broadcast_email',
+        )
     except Exception as e:
-        print(e.message)
+        logger.exception(e, function='broadcast_email')
 
 
 def broadcast_email_pw_reset(email, content):
@@ -374,11 +442,15 @@ def broadcast_email_pw_reset(email, content):
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
-        print(response.status_code)
-        print(response.body)
-        print(response.headers)
+        logger.info(
+            f"Sendgrid returned HTTP {response.status_code}",
+            function='broadcast_email_pw_reset',
+        )
     except Exception as e:
-        print(e.message)
+        logger.exception(
+            e,
+            function='broadcast_email_pw_reset',
+        )
 
 
 def changed_modelfields_to_dict(

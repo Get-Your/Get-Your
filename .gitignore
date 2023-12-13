@@ -60,7 +60,7 @@ coverage.xml
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-# Ignore any variation of manage.py except the base (negated at the end of this file)
+# Ignore any variation of manage.py except the base and for tests (negated at the end of this file)
 **/*manage*.py
 
 # Credentials files
@@ -144,8 +144,9 @@ dmypy.json
 # Mac OS File System
 .DS_Store
 
-# Add back in the base manage.py
+# Add back in the base manage.py and manage_tests.py
 !**/manage.py
+!**/manage_tests.py
 
 # Keep the media folder, but ignore all of
 # junk that gets added to it

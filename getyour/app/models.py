@@ -27,9 +27,9 @@ from django.utils.translation import gettext_lazy as _
 def userfiles_path(instance, filename):
     # file will be uploaded to user_<id>/<filename>
     try:
-        return 'user_{0}/{1}'.format(instance.user_id, filename)
+        return f"user_{instance.user_id}/{filename}"
     except AttributeError:
-        return 'user_{0}/{1}'.format(instance.id, filename)
+        return f"user_{instance.id}/{filename}"
 
 
 # Create custom user manager class (because django only likes to use usernames as usernames not email)

@@ -58,7 +58,7 @@ DEBUG = True
 
 # Revert to default (permissive) values when running locally
 CSRF_TRUSTED_ORIGINS = []
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definitions (outside of common_settings)
 
@@ -70,3 +70,8 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Logging modifications - set logging level to DEBUG and overwrite DEBUG_LOGGER
+# env var for clarity
+LOGGING['loggers']['app']['level'] = 'DEBUG'
+DEBUG_LOGGING = True
