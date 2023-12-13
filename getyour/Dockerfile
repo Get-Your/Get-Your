@@ -1,4 +1,5 @@
 FROM ubuntu:20.04
+
 #Layer for python and gdal support
 RUN apt-get update && apt-get install -y software-properties-common curl \
     && add-apt-repository ppa:ubuntugis/ubuntugis-unstable && apt-get update \
@@ -39,6 +40,11 @@ RUN mkdir /code
 WORKDIR /code
 ADD . /code/
 RUN pip install -r requirements.txt
+
+# Gather the code version from build var. Set to '' if DNE.
+ARG CODE_VERSION=''
+# Save the code version to a runtime env var
+ENV CODE_VERSION=$CODE_VERSION
 
 RUN python manage.py collectstatic --noinput --settings=getyour.settings.dev
 #--settings=getyour.settings.production

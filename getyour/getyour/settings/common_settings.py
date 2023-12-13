@@ -177,26 +177,25 @@ LOGGING = {
     },
 }
 
+# Import environment vars (via Azure or injected into `docker run`). Note that
+# the env vars are brought in as strings and must be converted (safely) to bool.
+DEBUG = str(os.environ.get('DEBUG', 'false')).lower() == 'true'
+DEBUG_LOGGING = str(os.environ.get('DEBUG_LOGGING', 'false')).lower() == 'true'
 # Add code version to the Django settings vars
 try:
-    # Try to find the version file saved by the Docker build. Note that the
-    # file should not exist outside of a Docker build
-    version_path = Path(__file__).parents[2].joinpath('.gitversion')
-    if version_path.exists():
-        # The file was written explicitly with UTF-8 encoding
-        # (via `BuildDeployDocker.ps1` in the `Get-Your-utils` repo)
-        with open(version_path, 'r', encoding='utf-8') as f:
-            CODE_VERSION = f.read().strip()
+    # Try to load from environment vars. Note that the Dockerfile defaults to
+    # '', so False is only returned if CODE_VERSION env var DNE.
+    CODE_VERSION = os.environ.get('CODE_VERSION', False)
+    if CODE_VERSION is False:
+        # Otherwise, try to find the current Git version directly from the repo.
+        # The assumption is that this is part of a Git repo if not built by
+        # Docker
 
-    # Otherwise, try to find the current Git version directly from the repo.
-    # The assumption is that this is part of a Git repo if not built by
-    # Docker
-    else:
         # Run `git describe --tags`
         CODE_VERSION = subprocess.check_output(
             ['git', 'describe', '--tags']
         ).decode('ascii').strip()
 
 except:
-    # Cannot be found for some reason; use blank
+    # Cannot be found; use blank
     CODE_VERSION = ''

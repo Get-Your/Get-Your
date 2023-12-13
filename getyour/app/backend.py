@@ -124,8 +124,18 @@ def address_check(address_dict):
 
     except NameError:
         # NameError specifies that the address is not found
-        # in City lookups and is therefore not in the IQ
+        # in City lookups and is therefore *probably* not in the IQ
         # service area
+
+        # Log a potential error if the city is 'Fort Collins'
+        if address_dict['AddressValidateResponse']['Address']['City'].lower() == 'fort collins':    
+            logger.error(
+                "Potential issue: Fort Collins address marked 'not in GMA': {}".format(
+                    address_dict['AddressValidateResponse']['Address'],
+                ),
+                function='address_check',
+            )
+
         return (False, False)
 
     else:

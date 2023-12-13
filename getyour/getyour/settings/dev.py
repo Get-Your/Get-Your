@@ -53,7 +53,7 @@ AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.usgovcloudapi.net"
 AZURE_CONTAINER = get_secret("AZURE_CONTAINER")
 IS_PROD = False
 
-# DEBUG moved to Azure App Service environment var
+# DEBUG moved to Azure App Service environment var (or False, via common_settings)
 
 CSRF_TRUSTED_ORIGINS = [f"https://{x}" for x in get_secret("HOSTS")]
 ALLOWED_HOSTS = get_secret("HOSTS")
