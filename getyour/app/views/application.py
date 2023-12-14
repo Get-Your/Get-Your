@@ -628,7 +628,7 @@ def address_correction(request, **kwargs):
             logger.info(
                 "More address information is needed from user",
                 function='address_correction',
-                user_id=request.user_id,
+                user_id=request.user.id,
             )
             # Don't link to the next page from address_correction.html
             link_next_page = False
