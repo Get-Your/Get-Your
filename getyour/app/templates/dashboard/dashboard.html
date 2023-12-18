@@ -97,9 +97,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <!--CSV HERE-->
                     <hprogram style="color: #4CAD00;margin:0"> {{renewal_programs}} </hprogram>
                 </a>
-                <p style="font-weight: 400; padding-left: 15px;">Program(s) Up for Renewal</p>
+                <p style="font-weight: 400; padding-left: 15px;">
+                    Program(s) Up for Renewal   
+                </p>
+
+                {% if renewal_programs != 0 %}
+                <a href="#" onclick="return false;" class="renewalModal"
+                    style="text-decoration: none; text-align: center; margin-top: auto; margin-bottom: auto;">
+                    <div class="quickapply linkQA" style="border-color: orange; color: orange;">
+                        Renew</div>
+                </a>
+                {% endif %}
+
                 <button class="button button2" id="toggle-button3"><img src="{% static 'img/downArrow.svg' %}"
                         style="position: absolute; bottom: 10px;right: 10px;"> </button>
+                
             </div>
 
             <div class="item collapsible renewal">
@@ -110,11 +122,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <div style="margin:0">
                         <p style="font-weight: 400; margin: 0">{{ program.title }}</p>
                     </div>
-                    <a href="#" onclick="return false;" class="renewalModal"
-                        style="text-decoration: none; text-align: center;">
-                        <div class="quickapply linkQA" style="border-color: orange; color: orange;">
-                            {{ program.button.text }}</div>
-                    </a>
+                    
                 </div>
                 <div class="row" style="margin:0;width:100%">
                     <a class="row" href="{{ program.learn_more_link }}" target="_blank"
@@ -310,7 +318,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             event.preventDefault();
             Swal.fire({
                 title: "Application Renewal",
-                text: "In order to continue providing benefits for this program, we need you to renew your information. Please click 'renew' to start the process.",
+                text: "In order to continue providing benefits, we need you to renew your information. Please click 'renew' to start the process.",
                 confirmButtonText: "Renew",
                 confirmButtonColor: "orange",
                 showCancelButton: true,
@@ -324,7 +332,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         if (app_renewed) {
             Swal.fire({
                 title: "Application Renewed",
-                text: "Your application has been successfully renewed! Please be sure the click the 'Apply Now' button to reapply for any of your expired programs.",
+                text: "Your application has been successfully renewed!",
                 icon: "success",
                 confirmButtonText: "OK",
                 confirmButtonColor: "orange",

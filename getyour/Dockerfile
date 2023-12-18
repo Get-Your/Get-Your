@@ -31,6 +31,7 @@ RUN pip install usaddress==0.5.10
 RUN pip install usps-api==0.5
 RUN pip install whitenoise==6.4.0
 RUN pip install tomlkit==0.11.8
+RUN pip install django-q2==1.6.1
 
 
 # Then ADD code and 

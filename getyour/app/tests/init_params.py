@@ -240,7 +240,6 @@ class TestUser:
                     user=self.user,
                     program=models.IQProgramRD.objects.get(program_name=prgname),
                     is_enrolled=False,
-                    has_renewed=True,
                 )
             )
 

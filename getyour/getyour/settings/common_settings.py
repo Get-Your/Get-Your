@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'app',
     'phonenumber_field',
     'log',
+    'django_q',
 ]
 
 MIDDLEWARE = [

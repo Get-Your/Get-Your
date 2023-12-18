@@ -1463,23 +1463,24 @@ def files(request, **kwargs):
                         household.is_income_verified = False
                         household.save()
 
-                        # Set the user's last_renewal_date to now, as well as set the user's last_renewal_action to Null
-                        # and set the is_renewed to true
+                        # Set the user's last_completed_date to now, as well as set the user's last_renewal_action to null
                         user = User.objects.get(id=request.user.id)
                         user.renewal_mode = True
-                        user.last_renewed_at = pendulum.now()
+                        user.last_completed_at = pendulum.now()
                         user.last_renewal_action = None
-                        user.is_renewed = True
                         user.save()
 
-                        # Get every IQ program for the user that needs to be renewed
-                        users_iq_programs = IQProgram.objects.filter(
-                            Q(user_id=request.user.id) & Q(has_renewed=False))
+                        # Get every IQ program for the user that have a renewal_interval
+                        # in the IQProgramRD table that is not null
+                        users_current_iq_programs = IQProgram.objects.filter(
+                            Q(user_id=request.user.id)
+                        ).select_related('program').order_by('program__renewal_interval').exclude(program__renewal_interval__isnull=True)
 
-                        for program in users_iq_programs:
-                            # Delete every program in the list
-                            program.renewal_mode = renewal_mode
-                            program.delete()
+                        # For every program delete the program if it has a renewal_interval
+                        # in the IQProgramRD table that is not null
+                        for program in users_current_iq_programs:
+                            if program.program.renewal_interval is not None:
+                                program.delete()
 
                         # Get the user's eligibility address
                         eligibility_address = AddressRD.objects.filter(
@@ -1502,11 +1503,28 @@ def files(request, **kwargs):
                                         user_id=request.user.id,
                                         program_id=program.id,
                                     )
+                            # Check if the current program is in the users_current_iq_programs list
+                            if program.id in [program.id for program in users_current_iq_programs] and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
+                                # check if the user already has the program in the IQProgram table
+                                if not IQProgram.objects.filter(
+                                    Q(user_id=request.user.id) & Q(
+                                        program_id=program.id)
+                                ).exists():
+                                    # If the user doesn't have the program in the IQProgram table, then create it
+                                    IQProgram.objects.create(
+                                        user_id=request.user.id,
+                                        program_id=program.id,
+                                    )
 
                         request.session["app_renewed"] = True
                         return redirect(f'{reverse("app:dashboard")}')
                     else:
                         household.save()
+
+                        user = User.objects.get(id=request.user.id)
+                        user.last_completed_at = pendulum.now()
+                        user.save()
+
                         # Get the user's eligibility address
                         eligibility_address = AddressRD.objects.filter(
                             id=request.user.address.eligibility_address_id).first()

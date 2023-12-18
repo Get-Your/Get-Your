@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import datetime
 import requests
+import pendulum
 from enum import Enum
 from itertools import chain
 import logging
@@ -37,7 +38,7 @@ from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.core.serializers.json import DjangoJSONEncoder
 from phonenumber_field.phonenumber import PhoneNumber
-from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram
+from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram, User
 from log.wrappers import LoggerWrapper
 
 
@@ -453,6 +454,24 @@ def broadcast_email_pw_reset(email, content):
         )
 
 
+def broadcast_renewal_email(email):
+    TEMPLATE_ID = settings.TEMPLATE_ID
+    message = Mail(
+        from_email='getfoco@fcgov.com',
+        to_emails=email)
+
+    message.template_id = TEMPLATE_ID
+    try:
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        response = sg.send(message)
+        logger.info(
+            f"Sendgrid returned HTTP {response.status_code}",
+            function='broadcast_renewal_email',
+        )
+    except Exception as e:
+        logger.exception(e, function='broadcast_renewal_email')
+
+
 def changed_modelfields_to_dict(
         previous_instance,
         current_instance,
@@ -627,14 +646,19 @@ def build_qualification_button(users_enrollment_status):
     }.get(users_enrollment_status, "")
 
 
-def map_iq_enrollment_status(program):
+def map_iq_enrollment_status(program, needs_renewal=False):
     try:
-        if program.is_enrolled and program.has_renewed:
-            return "ACTIVE"
-        elif not program.is_enrolled:
+        # Check pending programs first. Reason being we don't want in progress
+        # programs to be marked as renewal
+        if not program.is_enrolled:
             return "PENDING"
-        elif program.is_enrolled and not program.has_renewed:
+        # If the user is enrolled in a "lifetime" program (i.e. a program that 
+        # does not have a renewal_interval), don't set the status to renewal
+        elif program.is_enrolled and needs_renewal and program.renewal_interval is not None:
             return "RENEWAL"
+        elif program.is_enrolled:
+            return "ACTIVE"
+        
     except Exception:
         return ''
 
@@ -680,7 +704,9 @@ def get_users_iq_programs(
 
     programs = list(chain(users_iq_programs, active_iq_programs))
     for program in programs:
-        status_for_user = map_iq_enrollment_status(program)
+        program.renewal_interval = program.program.renewal_interval if hasattr(
+            program, 'program') else program.renewal_interval
+        status_for_user = map_iq_enrollment_status(program, check_if_user_needs_to_renew(user_id))
         program.button = build_qualification_button(
             status_for_user)
         program.status_for_user = status_for_user
@@ -762,3 +788,27 @@ def what_page_renewal(last_renewal_action):
 
     # Default return if all pages are present
     return None
+
+
+def check_if_user_needs_to_renew(user_id):
+    """Checks if the user needs to renew their application
+    Args:
+        user (User): The user object
+    Returns:
+        bool: True if the user needs to renew their application, False otherwise
+    """
+    user_profile = User.objects.get(id=user_id)
+
+    # Get the highest frequency renewal_interval from the IQProgramRD table
+    # and filter out any null renewal_intervals
+    highest_freq_renewal_interval = IQProgramRD.objects.filter(
+        renewal_interval__isnull=False).order_by('renewal_interval').first().renewal_interval
+
+    # The highest_freq_renewal_interval is measured in months. We need to check
+    # if the user's last_completed_at is greater than or equal to the current
+    # date minus the highest_freq_renewal_interval minus 1 month.
+    one_month_notification_buffer = 1
+    needs_renewal = pendulum.now().subtract(
+        months=highest_freq_renewal_interval - one_month_notification_buffer) >= user_profile.last_completed_at
+
+    return needs_renewal
