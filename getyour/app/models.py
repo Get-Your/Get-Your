@@ -141,8 +141,9 @@ class User(AbstractUser):
     has_viewed_dashboard = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False)
     is_updated = models.BooleanField(default=False)
-    last_renewed_at = models.DateTimeField(null=True, blank=True)
+    last_completed_at = models.DateTimeField(null=True, blank=True)
     last_renewal_action = models.JSONField(null=True, blank=True)
+    renewal_email_sent_at = models.DateTimeField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -435,6 +436,9 @@ class IQProgramRD(GenericTimeStampedModel):
     # ignore `app_addressrd.is_in_gma`)
     req_is_in_gma = models.BooleanField(default=False)
     req_is_city_covered = models.BooleanField(default=False)
+    # The frequency at which an IQ program needs to be renewed. If null, the
+    # IQ program is considered to be a lifetime enrollment. Measured in months
+    renewal_interval = models.IntegerField(null=True)
 
     def __str__(self):
         return str(self.ami_threshold)
@@ -463,7 +467,6 @@ class IQProgram(IQProgramTimeStampedModel):
     )
 
     is_enrolled = models.BooleanField(default=False)
-    has_renewed = models.BooleanField(default=True)
 
     # Define non-database attributes
     @property
