@@ -801,8 +801,15 @@ def check_if_user_needs_to_renew(user_id):
 
     # Get the highest frequency renewal_interval from the IQProgramRD table
     # and filter out any null renewal_intervals
-    highest_freq_renewal_interval = IQProgramRD.objects.filter(
-        renewal_interval__isnull=False).order_by('renewal_interval').first().renewal_interval
+    highest_freq_program = IQProgramRD.objects.filter(
+        renewal_interval__isnull=False).order_by('renewal_interval').first()
+    
+    # If there are no programs without lifetime enrollment (e.g. without
+    # non-null renewal_interval), always return False for needs_renewal
+    if highest_freq_program is None:
+        return False
+    
+    highest_freq_renewal_interval = highest_freq_program.renewal_interval
 
     # The highest_freq_renewal_interval is measured in months. We need to check
     # if the user's last_completed_at is greater than or equal to the current
