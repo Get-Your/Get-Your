@@ -22,6 +22,103 @@ import random
 import pendulum
 
 
+class CreateEligibilityPrograms:
+
+    def __init__(self):
+        """
+        Define Eligibility Programs to use in testing.
+        
+        """
+
+        self.program_info = {
+            'snap': {
+                'ami_threshold': 0.3,
+                'friendly_name': 'Supplemental Nutrition Assistance Program (SNAP)',
+                'friendly_description': 'SNAP Card',
+                'is_active': True,
+            },
+            'chp': {
+                'ami_threshold': 0.6,
+                'friendly_name': 'Child Health Plan Plus (CHP+)',
+                'friendly_description': 'Colorado Child Health Plan Plus (CHP+) card',
+                'is_active': True,
+            },
+        }
+
+        self.create_programs()
+
+    def create_programs(self):
+        """
+        Create EligibilityProgramRD records, if they don't already exist.
+
+        """
+
+        for prgname, prgvals in self.program_info.items():
+            exist_count = models.EligibilityProgramRD.objects.filter(
+                program_name=prgname
+            ).count()
+
+            # If a record DNE, create one
+            if exist_count == 0:
+                models.EligibilityProgramRD.objects.create(
+                    program_name=prgname,
+                    **prgvals,
+                )
+
+
+class CreateIqPrograms:
+
+    def __init__(self):
+        """
+        Define IQ Programs for use in testing.
+        
+        """
+
+        self.program_info = {
+            'grocery': {
+                'ami_threshold': 0.6,
+                'friendly_name': 'Grocery Tax Rebate',
+                'friendly_category': 'Food Assistance',
+                'friendly_description': 'The Grocery Rebate Tax is an annual cash payment to low-income individuals and families living in the City of Fort Collins and its Growth Management Area. It provides your family with direct assistance in exchange for the taxes you spend on food.',
+                'friendly_supplemental_info': 'Applications accepted all year',
+                'learn_more_link': 'https://www.fcgov.com/rebate/',
+                'friendly_eligibility_review_period': 'Estimated Notification Time: Two Weeks',
+                'is_active': True,
+                'renewal_interval': 12,
+            },
+            'connexion': {
+                'ami_threshold': 0.6,
+                'friendly_name': 'Reduced-Rate Connexion',
+                'friendly_category': 'Connexion Assistance',
+                'friendly_description': 'As Connexion comes online in neighborhoods across our community, the City of Fort Collins is committed to fast, affordable internet. Digital Access & Equity is an income-qualified rate of $20 per month for 1 gig-speed of internet plus wireless.',
+                'friendly_supplemental_info': 'Applications accepted all year',
+                'learn_more_link': 'https://fcconnexion.com/digital-inclusion-program/',
+                'friendly_eligibility_review_period': 'Estimated Notification Time: Two Weeks',
+                'is_active': True,
+            },
+        }
+
+        self.create_programs()
+
+    def create_programs(self):
+        """
+        Create IQProgramRD records, if they don't already exist.
+
+        """
+
+        for prgname, prgvals in self.program_info.items():
+            exist_count = models.IQProgramRD.objects.filter(
+                program_name=prgname
+            ).count()
+
+            # If a record DNE, create it
+            if exist_count == 0:
+                models.IQProgramRD.objects.create(
+                    program_name=prgname,
+                    **prgvals,
+                )
+
+
 class TestUser:
 
     def __init__(
@@ -150,39 +247,10 @@ class TestUser:
     def create_eligibility(self):
         """ Create Eligibility Program record(s). """
 
-        program_info = {
-            'snap': {
-                'ami_threshold': 0.3,
-                'friendly_name': 'Supplemental Nutrition Assistance Program (SNAP)',
-                'friendly_description': 'SNAP Card',
-                'is_active': True,
-            },
-            'chp': {
-                'ami_threshold': 0.6,
-                'friendly_name': 'Child Health Plan Plus (CHP+)',
-                'friendly_description': 'Colorado Child Health Plan Plus (CHP+) card',
-                'is_active': True,
-            },
-        }
-
-        # Create EligibilityProgramRD records, if they don't already exist
-
-        for prgname, prgvals in program_info.items():
-            exist_count = models.EligibilityProgramRD.objects.filter(
-                program_name=prgname
-            ).count()
-
-            # If a record DNE, create one
-            if exist_count == 0:
-                models.EligibilityProgramRD.objects.create(
-                    program_name=prgname,
-                    **prgvals,
-                )
-
-        # Create EligibilityProgram records
+        program_rd = CreateEligibilityPrograms()
 
         self.eligibility = []
-        for prgname in program_info.keys():
+        for prgname in program_rd.program_info.keys():
             # Note that these will have blank document_path values
             self.eligibility.append(
                 models.EligibilityProgram.objects.create(
@@ -196,48 +264,10 @@ class TestUser:
     def create_iq(self):
         """ Create IQ Program record(s). """
 
-        program_info = {
-            'grocery': {
-                'ami_threshold': 0.6,
-                'friendly_name': 'Grocery Tax Rebate',
-                'friendly_category': 'Food Assistance',
-                'friendly_description': 'The Grocery Rebate Tax is an annual cash payment to low-income individuals and families living in the City of Fort Collins and its Growth Management Area. It provides your family with direct assistance in exchange for the taxes you spend on food.',
-                'friendly_supplemental_info': 'Applications accepted all year',
-                'learn_more_link': 'https://www.fcgov.com/rebate/',
-                'friendly_eligibility_review_period': 'Estimated Notification Time: Two Weeks',
-                'is_active': True,
-                'renewal_interval': 12,
-            },
-            'connexion': {
-                'ami_threshold': 0.6,
-                'friendly_name': 'Reduced-Rate Connexion',
-                'friendly_category': 'Connexion Assistance',
-                'friendly_description': 'As Connexion comes online in neighborhoods across our community, the City of Fort Collins is committed to fast, affordable internet. Digital Access & Equity is an income-qualified rate of $20 per month for 1 gig-speed of internet plus wireless.',
-                'friendly_supplemental_info': 'Applications accepted all year',
-                'learn_more_link': 'https://fcconnexion.com/digital-inclusion-program/',
-                'friendly_eligibility_review_period': 'Estimated Notification Time: Two Weeks',
-                'is_active': True,
-            },
-        }
-
-        # Create IQProgramRD records, if they don't already exist
-
-        for prgname, prgvals in program_info.items():
-            exist_count = models.IQProgramRD.objects.filter(
-                program_name=prgname
-            ).count()
-
-            # If a record DNE, create it
-            if exist_count == 0:
-                models.IQProgramRD.objects.create(
-                    program_name=prgname,
-                    **prgvals,
-                )
-
-        # Create IQProgram records
+        program_rd = CreateIqPrograms()
 
         self.iq = []
-        for prgname in program_info.keys():
+        for prgname in program_rd.program_info.keys():
             self.iq.append(
                 models.IQProgram.objects.create(
                     user=self.user,
