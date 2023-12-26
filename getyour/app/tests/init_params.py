@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from app import models
 
 import random
+import pendulum
 
 
 class TestUser:
@@ -60,6 +61,7 @@ class TestUser:
             # Mark is_archived as a fallback in case tearDown() fails
             is_archived=True,
             is_updated=False,
+            last_completed_at=pendulum.now(),
         )
 
         self.user.plaintext_password = pword
@@ -204,6 +206,7 @@ class TestUser:
                 'learn_more_link': 'https://www.fcgov.com/rebate/',
                 'friendly_eligibility_review_period': 'Estimated Notification Time: Two Weeks',
                 'is_active': True,
+                'renewal_interval': 12,
             },
             'connexion': {
                 'ami_threshold': 0.6,
