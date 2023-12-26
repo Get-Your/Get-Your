@@ -75,24 +75,24 @@ class CreateIqPrograms:
         """
 
         self.program_info = {
-            'grocery': {
+            'iqprogram_0': {
                 'ami_threshold': 0.6,
-                'friendly_name': 'Grocery Tax Rebate',
+                'friendly_name': 'IQ Program 0',
                 'friendly_category': 'Food Assistance',
-                'friendly_description': 'The Grocery Rebate Tax is an annual cash payment to low-income individuals and families living in the City of Fort Collins and its Growth Management Area. It provides your family with direct assistance in exchange for the taxes you spend on food.',
+                'friendly_description': 'This is the first IQ Program in the catalog.',
                 'friendly_supplemental_info': 'Applications accepted all year',
-                'learn_more_link': 'https://www.fcgov.com/rebate/',
+                'learn_more_link': 'https://github.com/Get-Your/Get-Your',
                 'friendly_eligibility_review_period': 'Estimated Notification Time: Two Weeks',
                 'is_active': True,
                 'renewal_interval': 12,
             },
-            'connexion': {
-                'ami_threshold': 0.6,
-                'friendly_name': 'Reduced-Rate Connexion',
-                'friendly_category': 'Connexion Assistance',
-                'friendly_description': 'As Connexion comes online in neighborhoods across our community, the City of Fort Collins is committed to fast, affordable internet. Digital Access & Equity is an income-qualified rate of $20 per month for 1 gig-speed of internet plus wireless.',
+            'iqprogram_1': {
+                'ami_threshold': 0.3,
+                'friendly_name': 'IQ Program 1',
+                'friendly_category': 'Utility Assistance',
+                'friendly_description': 'This is the second IQ Program in the catalog.',
                 'friendly_supplemental_info': 'Applications accepted all year',
-                'learn_more_link': 'https://fcconnexion.com/digital-inclusion-program/',
+                'learn_more_link': 'https://github.com/Get-Your/Get-Your',
                 'friendly_eligibility_review_period': 'Estimated Notification Time: Two Weeks',
                 'is_active': True,
             },
