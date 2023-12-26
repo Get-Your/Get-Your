@@ -10,12 +10,12 @@ def send_renewal_email():
         # 30 days. If they haven't been notified, send them a renewal email.
         if needs_renewal:
             # Check if the user has been notified in the last 30 days
-            days_since_last_notification = (datetime.now() - user.renewal_email_sent_at).days
+            days_since_last_notification = (datetime.now() - user.last_action_notification_at).days
             if days_since_last_notification > 30:
                 broadcast_renewal_email(user.email)
-                # Now update the user's renewal_email_sent_at
+                # Now update the user's last_action_notification_at
                 # field to the current time
-                user.renewal_email_sent_at = datetime.now()
+                user.last_action_notification_at = datetime.now()
                 user.save()
             else:
                 # TODO: Archive users that haven't renewed and have exceeded the 30 day

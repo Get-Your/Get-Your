@@ -1613,6 +1613,7 @@ def broadcast(request, **kwargs):
             function='broadcast',
             user_id=request.user.id,
         )
+        current_user.last_action_notification_at = pendulum.now()
 
         return render(
             request,

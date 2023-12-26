@@ -143,7 +143,7 @@ class User(AbstractUser):
     is_updated = models.BooleanField(default=False)
     last_completed_at = models.DateTimeField(null=True, blank=True)
     last_renewal_action = models.JSONField(null=True, blank=True)
-    renewal_email_sent_at = models.DateTimeField(null=True, blank=True)
+    last_action_notification_at = models.DateTimeField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
