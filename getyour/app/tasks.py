@@ -1,5 +1,6 @@
 from app.backend import broadcast_renewal_email, check_if_user_needs_to_renew
 from app.models import User
+from app.constants import notification_buffer_month
 
 import pendulum
 
@@ -17,7 +18,7 @@ def send_renewal_email():
             # where `in_months()` (used here) specifies overall number of months
             # (e.g. period.months + period.years*12 = period.in_months())
             months_since_last_notification = (pendulum.now() - user.last_action_notification_at).in_months()
-            if months_since_last_notification > 1:
+            if months_since_last_notification > notification_buffer_month:
                 broadcast_renewal_email(user.email)
                 # Now update the user's last_action_notification_at
                 # field to the current time

@@ -39,6 +39,7 @@ from django.db.models.fields.files import FieldFile
 from django.core.serializers.json import DjangoJSONEncoder
 from phonenumber_field.phonenumber import PhoneNumber
 from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram, User
+from app.constants import notification_buffer_month
 from log.wrappers import LoggerWrapper
 
 
@@ -815,9 +816,8 @@ def check_if_user_needs_to_renew(user_id):
 
     # The highest_freq_renewal_interval is measured in months. We need to check
     # if the user's last_completed_at is greater than or equal to the current
-    # date minus the highest_freq_renewal_interval minus 1 month.
-    one_month_notification_buffer = 1
+    # date minus the highest_freq_renewal_interval minus the notification buffer.
     needs_renewal = pendulum.now().subtract(
-        months=highest_freq_renewal_interval - one_month_notification_buffer) >= user_profile.last_completed_at
+        months=highest_freq_renewal_interval - notification_buffer_month) >= user_profile.last_completed_at
 
     return needs_renewal
