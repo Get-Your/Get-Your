@@ -1470,16 +1470,16 @@ def files(request, **kwargs):
                         user.last_renewal_action = None
                         user.save()
 
-                        # Get every IQ program for the user that have a renewal_interval
+                        # Get every IQ program for the user that have a renewal_interval_month
                         # in the IQProgramRD table that is not null
                         users_current_iq_programs = IQProgram.objects.filter(
                             Q(user_id=request.user.id)
-                        ).select_related('program').order_by('program__renewal_interval').exclude(program__renewal_interval__isnull=True)
+                        ).select_related('program').order_by('program__renewal_interval_month').exclude(program__renewal_interval_month__isnull=True)
 
-                        # For every program delete the program if it has a renewal_interval
+                        # For every program delete the program if it has a renewal_interval_month
                         # in the IQProgramRD table that is not null
                         for program in users_current_iq_programs:
-                            if program.program.renewal_interval is not None:
+                            if program.program.renewal_interval_month is not None:
                                 program.delete()
 
                         # Get the user's eligibility address

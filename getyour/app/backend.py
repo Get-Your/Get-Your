@@ -653,8 +653,9 @@ def map_iq_enrollment_status(program, needs_renewal=False):
         if not program.is_enrolled:
             return "PENDING"
         # If the user is enrolled in a "lifetime" program (i.e. a program that 
-        # does not have a renewal_interval), don't set the status to renewal
-        elif program.is_enrolled and needs_renewal and program.renewal_interval is not None:
+        # does not have a renewal_interval_month), don't set the status to
+        # renewal
+        elif program.is_enrolled and needs_renewal and program.renewal_interval_month is not None:
             return "RENEWAL"
         elif program.is_enrolled:
             return "ACTIVE"
@@ -704,8 +705,8 @@ def get_users_iq_programs(
 
     programs = list(chain(users_iq_programs, active_iq_programs))
     for program in programs:
-        program.renewal_interval = program.program.renewal_interval if hasattr(
-            program, 'program') else program.renewal_interval
+        program.renewal_interval_month = program.program.renewal_interval_month if hasattr(
+            program, 'program') else program.renewal_interval_month
         status_for_user = map_iq_enrollment_status(program, check_if_user_needs_to_renew(user_id))
         program.button = build_qualification_button(
             status_for_user)
@@ -799,17 +800,18 @@ def check_if_user_needs_to_renew(user_id):
     """
     user_profile = User.objects.get(id=user_id)
 
-    # Get the highest frequency renewal_interval from the IQProgramRD table
-    # and filter out any null renewal_intervals
+    # Get the highest frequency renewal_interval_month from the IQProgramRD
+    #table and filter out any null renewal_interval_month
     highest_freq_program = IQProgramRD.objects.filter(
-        renewal_interval__isnull=False).order_by('renewal_interval').first()
+        renewal_interval_month__isnull=False
+    ).order_by('renewal_interval_month').first()
     
     # If there are no programs without lifetime enrollment (e.g. without
-    # non-null renewal_interval), always return False for needs_renewal
+    # non-null renewal_interval_month), always return False for needs_renewal
     if highest_freq_program is None:
         return False
     
-    highest_freq_renewal_interval = highest_freq_program.renewal_interval
+    highest_freq_renewal_interval = highest_freq_program.renewal_interval_month
 
     # The highest_freq_renewal_interval is measured in months. We need to check
     # if the user's last_completed_at is greater than or equal to the current

@@ -438,7 +438,7 @@ class IQProgramRD(GenericTimeStampedModel):
     req_is_city_covered = models.BooleanField(default=False)
     # The frequency at which an IQ program needs to be renewed. If null, the
     # IQ program is considered to be a lifetime enrollment. Measured in months
-    renewal_interval = models.IntegerField(null=True)
+    renewal_interval_month = models.IntegerField(null=True)
 
     def __str__(self):
         return str(self.ami_threshold)

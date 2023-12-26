@@ -84,7 +84,7 @@ class CreateIqPrograms:
                 'learn_more_link': 'https://github.com/Get-Your/Get-Your',
                 'friendly_eligibility_review_period': 'Estimated Notification Time: Two Weeks',
                 'is_active': True,
-                'renewal_interval': 12,
+                'renewal_interval_month': 12,
             },
             'iqprogram_1': {
                 'ami_threshold': 0.3,
