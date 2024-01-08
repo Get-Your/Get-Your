@@ -38,7 +38,7 @@ from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.core.serializers.json import DjangoJSONEncoder
 from phonenumber_field.phonenumber import PhoneNumber
-from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram, User
+from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram, User, Household, AddressRD
 from app.constants import notification_buffer_month
 from log.wrappers import LoggerWrapper
 
@@ -826,3 +826,133 @@ def check_if_user_needs_to_renew(user_id):
         months=highest_freq_renewal_interval - notification_buffer_month) >= user_profile.last_completed_at
 
     return needs_renewal
+
+
+def finalize_application(request, renewal_mode=False):
+    """
+    Finalize the user's application. This is run after all Eligibility Program
+    files are uploaded.
+    
+    """
+
+    # Get all of the user's eligiblity programs and find the one with the lowest
+    # 'ami_threshold' value which can be found in the related
+    # eligiblityprogramrd table
+    lowest_ami = EligibilityProgram.objects.filter(
+        Q(user_id=request.user.id)
+    ).select_related(
+        'program'
+    ).values(
+        'program__ami_threshold'
+    ).order_by(
+        'program__ami_threshold'
+    ).first()
+
+    # Now save the value of the ami_threshold to the user's household
+    household = Household.objects.get(
+        Q(user_id=request.user.id)
+    )
+    household.income_as_fraction_of_ami = lowest_ami['program__ami_threshold']
+
+    if renewal_mode:
+        household.is_income_verified = False
+        household.save()
+
+        # Set the user's last_completed_date to now, as well as set the user's
+        # last_renewal_action to null
+        user = User.objects.get(id=request.user.id)
+        user.renewal_mode = True
+        user.last_completed_at = pendulum.now()
+        user.last_renewal_action = None
+        user.save()
+
+        # Get every IQ program for the user that have a renewal_interval_month
+        # in the IQProgramRD table that is not null
+        users_current_iq_programs = IQProgram.objects.filter(
+            Q(user_id=request.user.id)
+        ).select_related(
+            'program'
+        ).order_by(
+            'program__renewal_interval_month'
+        ).exclude(
+            program__renewal_interval_month__isnull=True
+        )
+
+        # For every program delete the program if it has a renewal_interval_month
+        # in the IQProgramRD table that is not null
+        for program in users_current_iq_programs:
+            if program.program.renewal_interval_month is not None:
+                program.renewal_mode = True
+                program.delete()
+
+        # Get the user's eligibility address
+        eligibility_address = AddressRD.objects.filter(
+            id=request.user.address.eligibility_address_id).first()
+
+        # Now get all of the IQ Programs
+        users_iq_programs = get_users_iq_programs(
+            request.user.id,
+            lowest_ami['program__ami_threshold'],
+            eligibility_address,
+            )
+        # For every IQ program, check if the user should be automatically
+        # enrolled in it if the program has enable_autoapply set to True and the
+        # user's lowest_ami is <= the program's ami_threshold
+        for program in users_iq_programs:
+            if program.enable_autoapply and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
+                # check if the user already has the program in the IQProgram table
+                if not IQProgram.objects.filter(
+                    Q(user_id=request.user.id) & Q(
+                        program_id=program.id)
+                ).exists():
+                    # If the user doesn't have the program in the IQProgram
+                    # table, then create it
+                    IQProgram.objects.create(
+                        user_id=request.user.id,
+                        program_id=program.id,
+                    )
+            # Check if the current program is in the users_current_iq_programs list
+            if program.id in [program.id for program in users_current_iq_programs] and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
+                # check if the user already has the program in the IQProgram table
+                if not IQProgram.objects.filter(
+                    Q(user_id=request.user.id) & Q(
+                        program_id=program.id)
+                ).exists():
+                    # If the user doesn't have the program in the IQProgram
+                    # table, then create it
+                    IQProgram.objects.create(
+                        user_id=request.user.id,
+                        program_id=program.id,
+                    )
+
+        request.session["app_renewed"] = True
+        return 'app:dashboard'
+    
+    else:
+        household.save()
+
+        user = User.objects.get(id=request.user.id)
+        user.last_completed_at = pendulum.now()
+        user.save()
+
+        # Get the user's eligibility address
+        eligibility_address = AddressRD.objects.filter(
+            id=request.user.address.eligibility_address_id).first()
+
+        # Now get all of the IQ Programs
+        users_iq_programs = get_users_iq_programs(
+            request.user.id,
+            lowest_ami['program__ami_threshold'],
+            eligibility_address,
+        )
+        # For every IQ program, check if the user should be automatically
+        # enrolled in it if the programhas enable_autoapply set to True and the
+        #user's lowest_ami is <= the program's ami_threshold
+        for program in users_iq_programs:
+            if program.enable_autoapply and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
+                IQProgram.objects.create(
+                    user_id=request.user.id,
+                    program_id=program.id,
+                )
+
+        return 'app:broadcast'
