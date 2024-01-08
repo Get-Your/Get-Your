@@ -16,9 +16,12 @@ def send_renewal_email():
         function='send_renewal_email',
     )
 
-    # For every user in the database that isn't archived, check if they
-    # need to renew their application
-    for user in User.objects.filter(is_archived=False):
+    # For every user in the database that isn't archived or has a NULL
+    # last_completed_at, check if they need to renew their application
+    for user in User.objects.filter(
+        is_archived=False,
+        last_completed_at__isnull=False,
+    ):
         needs_renewal = check_if_user_needs_to_renew(user.id)
 
         # Check if the user needs to renew and if they have been notified within
