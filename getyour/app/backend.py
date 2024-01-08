@@ -704,11 +704,16 @@ def get_users_iq_programs(
     active_iq_programs = [
         program for program in active_iq_programs if not (program.req_is_city_covered and not users_eligiblity_address.is_city_covered)]
 
+    # Gather list of active programs
     programs = list(chain(users_iq_programs, active_iq_programs))
+    # Determine if the user needs renewal for *any* program, and set as a user-
+    # level 'needs renewal'
+    needs_renewal = check_if_user_needs_to_renew(user_id)
+
     for program in programs:
         program.renewal_interval_month = program.program.renewal_interval_month if hasattr(
             program, 'program') else program.renewal_interval_month
-        status_for_user = map_iq_enrollment_status(program, check_if_user_needs_to_renew(user_id))
+        status_for_user = map_iq_enrollment_status(program, needs_renewal=needs_renewal)
         program.button = build_qualification_button(
             status_for_user)
         program.status_for_user = status_for_user
