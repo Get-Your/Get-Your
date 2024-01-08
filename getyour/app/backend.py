@@ -456,7 +456,7 @@ def broadcast_email_pw_reset(email, content):
 
 
 def broadcast_renewal_email(email):
-    TEMPLATE_ID = settings.TEMPLATE_ID
+    TEMPLATE_ID = settings.TEMPLATE_ID_RENEWAL
     message = Mail(
         from_email='getfoco@fcgov.com',
         to_emails=email)
