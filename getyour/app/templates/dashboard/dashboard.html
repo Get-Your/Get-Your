@@ -72,7 +72,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 href="{% url 'app:qualified_programs' %}?order_by=renewal">
                 <div class="module" style="margin-left: 1.5vw;margin-right:0;padding: 1vw;">
                     <hprogram style="color: orange"> {{renewal_programs}} </hprogram>
-                    <h3 style="font-weight: 400; margin: 0;">Program(s) up for Renewal</h3>
+                    <h3 style="font-weight: 400; margin: 0;">Program(s) Needing Renewal</h3>
                 </div>
             </a>
         </div>
@@ -98,7 +98,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <hprogram style="color: #4CAD00;margin:0"> {{renewal_programs}} </hprogram>
                 </a>
                 <p style="font-weight: 400; padding-left: 15px;">
-                    Program(s) Up for Renewal   
+                    Program(s) Needing Renewal   
                 </p>
 
                 {% if renewal_programs != 0 %}
