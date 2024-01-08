@@ -1480,6 +1480,7 @@ def files(request, **kwargs):
                         # in the IQProgramRD table that is not null
                         for program in users_current_iq_programs:
                             if program.program.renewal_interval_month is not None:
+                                program.renewal_mode = True
                                 program.delete()
 
                         # Get the user's eligibility address
