@@ -878,12 +878,11 @@ def finalize_application(request, renewal_mode=False):
             program__renewal_interval_month__isnull=True
         )
 
-        # For every program delete the program if it has a renewal_interval_month
-        # in the IQProgramRD table that is not null
+        # For each element in users_current_iq_programs, delete the program.
+        # Note that each element has a non-null renewal interval
         for program in users_current_iq_programs:
-            if program.program.renewal_interval_month is not None:
-                program.renewal_mode = True
-                program.delete()
+            program.renewal_mode = True
+            program.delete()
 
         # Get the user's eligibility address
         eligibility_address = AddressRD.objects.filter(
@@ -912,7 +911,7 @@ def finalize_application(request, renewal_mode=False):
         for program in users_iq_programs:
             # First, check if `program`` is in users_current_iq_programs; if so,
             # the user is both eligible and were previously applied/enrolled
-            if program.id in [program.program.id for program in users_current_iq_programs] and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
+            if program.id in [program.program.id for program in users_current_iq_programs]:
                 # Re-apply by creating the element
                 IQProgram.objects.create(
                     user_id=request.user.id,
@@ -920,7 +919,7 @@ def finalize_application(request, renewal_mode=False):
                 )
 
             # Otherwise, apply if the program has enable_autoapply set to True
-            elif program.enable_autoapply and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
+            elif program.enable_autoapply:
                 # Check if the user already has the program in the IQProgram table
                 if not IQProgram.objects.filter(
                     Q(user_id=request.user.id) & Q(
@@ -958,10 +957,9 @@ def finalize_application(request, renewal_mode=False):
             eligibility_address,
         )
         # For every IQ program, check if the user should be automatically
-        # enrolled in it if the programhas enable_autoapply set to True and the
-        #user's lowest_ami is <= the program's ami_threshold
+        # enrolled in it if the program has enable_autoapply set to True
         for program in users_iq_programs:
-            if program.enable_autoapply and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
+            if program.enable_autoapply:
                 IQProgram.objects.create(
                     user_id=request.user.id,
                     program_id=program.id,
