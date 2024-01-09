@@ -43,14 +43,20 @@ def dashboard(request, **kwargs):
             user_id=request.user.id,
         )
 
-        # Check if the users renewal_mode session variable is set to True
+        # Check if the users renewal_mode session variable is set to True and
+        # retrieve renewal_eligible and renewal_ineligible session vars
+        renewal_eligible = request.session.get('renewal_eligible', [])
+        renewal_ineligible = request.session.get('renewal_ineligible', [])
+
         app_renewed = False
         if request.session.get('renewal_mode', False) and request.session.get("app_renewed", False):
             app_renewed = True
             request.session['renewal_mode'] = False
             request.session['app_renewed'] = False
+            del request.session['renewal_eligible']
+            del request.session['renewal_ineligible']
             logger.info(
-                "Renewal (for GTR) completed successfully",
+                "Renewal completed successfully",
                 function='dashboard',
                 user_id=request.user.id,
             )
@@ -100,6 +106,39 @@ def dashboard(request, **kwargs):
             request.user.has_viewed_dashboard = True
             request.user.save()
 
+        # Parse and stringify renewal_eligible and renewal_ineligible
+        if len(renewal_eligible) == 1:
+            renewal_eligible_str = "{sing} was successfully renewed!".format(
+                sing=renewal_eligible[-1],
+            )
+        elif len(renewal_eligible) > 1:
+            renewal_eligible_str = "{plur}{oxcom} and {sing} were successfully renewed!".format(
+                plur=', '.join(renewal_eligible[:-1]),
+                oxcom=',' if len(renewal_eligible)>2 else '',
+                sing=renewal_eligible[-1],
+            )
+        else:
+            renewal_eligible_str = ""
+
+        ineligible_pre = "Unfortunately, you are no longer qualified for"
+        ineligible_post = "If you think this is in error, please email getfoco@fcgov.com"
+        if len(renewal_ineligible) == 1:
+            renewal_ineligible_str = "{pre} {sing}. {pst}".format(
+                sing=renewal_ineligible[-1],
+                pre=ineligible_pre,
+                pst=ineligible_post,
+            )
+        elif len(renewal_ineligible) > 1:
+            renewal_ineligible_str = "{pre} {plur}{oxcom} and {sing}. {pst}".format(
+                plur=', '.join(renewal_ineligible[:-1]),
+                oxcom=',' if len(renewal_ineligible)>2 else '',
+                sing=renewal_ineligible[-1],
+                pre=ineligible_pre,
+                pst=ineligible_post,
+            )
+        else:
+            renewal_ineligible_str = ""
+
         return render(
             request,
             'dashboard/dashboard.html',
@@ -117,6 +156,8 @@ def dashboard(request, **kwargs):
                 'proxy_viewed_dashboard': proxy_viewed_dashboard,
                 'badge_visible': request.user.household.is_income_verified,
                 'app_renewed': app_renewed,
+                'renewal_eligible': renewal_eligible_str,
+                'renewal_ineligible': renewal_ineligible_str,
             },
         )
     

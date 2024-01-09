@@ -331,8 +331,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         var app_renewed = "{{ app_renewed }}" === "True";
         if (app_renewed) {
             Swal.fire({
-                title: "Application Renewed",
-                text: "Your application has been successfully renewed!",
+                title: "Renewal Complete",
+                text: "{{ renewal_eligible }}" + "\n\n" + "{{ renewal_ineligible }}",
                 icon: "success",
                 confirmButtonText: "OK",
                 confirmButtonColor: "orange",

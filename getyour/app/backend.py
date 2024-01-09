@@ -889,31 +889,39 @@ def finalize_application(request, renewal_mode=False):
         eligibility_address = AddressRD.objects.filter(
             id=request.user.address.eligibility_address_id).first()
 
-        # Now get all of the IQ Programs
+        # Now get all of the IQ Programs for which the user is eligible
         users_iq_programs = get_users_iq_programs(
             request.user.id,
             lowest_ami['program__ami_threshold'],
             eligibility_address,
-            )
-        # For every IQ program, check if the user should be automatically
-        # enrolled in it if the program has enable_autoapply set to True and the
-        # user's lowest_ami is <= the program's ami_threshold
+        )
+
+        # For each IQ program the user was previously enrolled, sort
+        # eligibility status into renewal_eligible and renewal_ineligible
+        renewal_eligible = []
+        renewal_ineligible = []
+
+        for program in users_current_iq_programs:
+            if program.program.id in [x.id for x in users_iq_programs]:
+                renewal_eligible.append(program.program.friendly_name)
+            else:
+                renewal_ineligible.append(program.program.friendly_name)
+
+        # For every eligible IQ program, check if the user should be
+        # automatically applied
         for program in users_iq_programs:
-            if program.enable_autoapply and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
-                # check if the user already has the program in the IQProgram table
-                if not IQProgram.objects.filter(
-                    Q(user_id=request.user.id) & Q(
-                        program_id=program.id)
-                ).exists():
-                    # If the user doesn't have the program in the IQProgram
-                    # table, then create it
-                    IQProgram.objects.create(
-                        user_id=request.user.id,
-                        program_id=program.id,
-                    )
-            # Check if the current program is in the users_current_iq_programs list
-            if program.id in [program.id for program in users_current_iq_programs] and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
-                # check if the user already has the program in the IQProgram table
+            # First, check if `program`` is in users_current_iq_programs; if so,
+            # the user is both eligible and were previously applied/enrolled
+            if program.id in [program.program.id for program in users_current_iq_programs] and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
+                # Re-apply by creating the element
+                IQProgram.objects.create(
+                    user_id=request.user.id,
+                    program_id=program.id,
+                )
+
+            # Otherwise, apply if the program has enable_autoapply set to True
+            elif program.enable_autoapply and lowest_ami['program__ami_threshold'] <= program.ami_threshold:
+                # Check if the user already has the program in the IQProgram table
                 if not IQProgram.objects.filter(
                     Q(user_id=request.user.id) & Q(
                         program_id=program.id)
@@ -925,7 +933,11 @@ def finalize_application(request, renewal_mode=False):
                         program_id=program.id,
                     )
 
-        request.session["app_renewed"] = True
+        # Set renewal-specific session vars
+        request.session['app_renewed'] = True
+        request.session['renewal_eligible'] = sorted(renewal_eligible)
+        request.session['renewal_ineligible'] = sorted(renewal_ineligible)
+
         return 'app:dashboard'
     
     else:
@@ -939,7 +951,7 @@ def finalize_application(request, renewal_mode=False):
         eligibility_address = AddressRD.objects.filter(
             id=request.user.address.eligibility_address_id).first()
 
-        # Now get all of the IQ Programs
+        # Now get all of the IQ Programs for which the user is eligible
         users_iq_programs = get_users_iq_programs(
             request.user.id,
             lowest_ami['program__ami_threshold'],
