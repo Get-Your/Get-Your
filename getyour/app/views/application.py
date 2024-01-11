@@ -1529,6 +1529,7 @@ def broadcast(request, **kwargs):
 
         # Note in the database when notifications were sent
         current_user.last_action_notification_at = pendulum.now()
+        current_user.save()
 
         return render(
             request,
