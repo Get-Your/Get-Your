@@ -25,19 +25,19 @@ class LogRouter:
 
     def db_for_read(self, model, **hints):
         """
-        Attempts to read log models go to log_db.
+        Attempts to read log models go to analytics.
         
         """
         if model._meta.app_label in self.route_app_labels:
-            return 'log_db'
+            return 'analytics'
         return None
 
     def db_for_write(self, model, **hints):
         """
-        Attempts to write log models go to log_db.
+        Attempts to write log models go to analytics.
         """
         if model._meta.app_label in self.route_app_labels:
-            return 'log_db'
+            return 'analytics'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
@@ -53,11 +53,11 @@ class LogRouter:
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         """
-        Make sure the the 'log_db' database consists of the log app and nothing
+        Make sure the the 'analytics' database consists of the log app and nothing
         else.
 
         """
         if app_label in self.route_app_labels:
-            return db == 'log_db'
+            return db == 'analytics'
         # Redirect all other app labels to default database
         return db == 'default'

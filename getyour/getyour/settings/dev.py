@@ -70,7 +70,7 @@ DATABASES = {
         'PASSWORD': DB_PASS,
         'HOST': 'getfoco-postgres-dev.postgres.database.usgovcloudapi.net'
     },
-    'log_db': {
+    'analytics': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'getyour_dev_analytics',
         'USER': DB_USER,

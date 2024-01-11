@@ -71,7 +71,7 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     },
     # Note that a separate file is needed for proper concurrency
-    'log_db': {
+    'analytics': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db_analytics.sqlite3',
     }
