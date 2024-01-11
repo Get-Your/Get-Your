@@ -63,6 +63,8 @@ coverage.xml
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+db_logs.sqlite3
+db_logs.sqlite3-journal
 # Ignore any variation of manage.py except the base and for tests (negated at the end of this file)
 **/*manage*.py
 
