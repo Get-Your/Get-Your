@@ -40,7 +40,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from phonenumber_field.phonenumber import PhoneNumber
 from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram, User, Household, AddressRD
 from app.constants import notification_buffer_month
-from log.wrappers import LoggerWrapper
+from log_ext.wrappers import LoggerWrapper
 
 
 # Initialize logger

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'app',
     'phonenumber_field',
     'log',
+    'log_ext',
     'django_q',
 ]
 
@@ -141,6 +142,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
 # Ref https://stackoverflow.com/a/54767932/5438550 for details
 AZURE_LOCATION = ""  # Subdirectory-like prefix to the blob name
 DEFAULT_FILE_STORAGE = 'getyour.settings.custom_azure.AzureMediaStorage'
+
+# Define database routing other than the default
+DATABASE_ROUTERS = ['getyour.routers.LogRouter']
 
 # Logging
 LOGGING = {

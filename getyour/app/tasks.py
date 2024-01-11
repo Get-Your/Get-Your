@@ -1,7 +1,7 @@
 from app.backend import broadcast_renewal_email, check_if_user_needs_to_renew
 from app.models import User
 from app.constants import notification_buffer_month
-from log.wrappers import LoggerWrapper
+from log_ext.wrappers import LoggerWrapper
 
 import logging
 import pendulum

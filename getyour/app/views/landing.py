@@ -25,7 +25,7 @@ from django.contrib.auth import logout
 from app.forms import AddressLookupForm
 from app.backend import tag_mapping, address_check, validate_usps
 from app.models import IQProgramRD
-from log.wrappers import LoggerWrapper
+from log_ext.wrappers import LoggerWrapper
 
 
 # Initialize logger

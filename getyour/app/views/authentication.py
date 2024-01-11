@@ -30,7 +30,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 
 from app.backend import authenticate, what_page, broadcast_email_pw_reset
-from log.wrappers import LoggerWrapper
+from log_ext.wrappers import LoggerWrapper
 
 
 # Initialize logger

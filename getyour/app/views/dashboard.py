@@ -26,7 +26,7 @@ from django.contrib.auth.decorators import login_required
 from app.forms import FeedbackForm
 from app.backend import address_check, get_users_iq_programs
 from app.models import AddressRD, IQProgram, IQProgramRD
-from log.wrappers import LoggerWrapper
+from log_ext.wrappers import LoggerWrapper
 
 
 # Initialize logger

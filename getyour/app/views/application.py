@@ -42,7 +42,7 @@ from app.forms import HouseholdForm, UserForm, AddressForm, HouseholdMembersForm
 from app.backend import form_page_number, tag_mapping, address_check, serialize_household_members, validate_usps, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, broadcast_email, broadcast_sms, save_renewal_action, finalize_application
 from app.models import userfiles_path, AddressRD, Address, EligibilityProgram, Household, IQProgram, User, EligibilityProgramRD
 from app.decorators import set_update_mode
-from log.wrappers import LoggerWrapper
+from log_ext.wrappers import LoggerWrapper
 
 
 # Initialize logger

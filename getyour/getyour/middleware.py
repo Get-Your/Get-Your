@@ -24,7 +24,7 @@ from django.core.exceptions import MiddlewareNotUsed
 from django.conf import settings
 
 from app.backend import what_page_renewal
-from log.wrappers import LoggerWrapper
+from log_ext.wrappers import LoggerWrapper
 
 
 logger = LoggerWrapper(logging.getLogger(__name__))
