@@ -40,11 +40,11 @@ from django.core.serializers.json import DjangoJSONEncoder
 from phonenumber_field.phonenumber import PhoneNumber
 from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram, User, Household, AddressRD
 from app.constants import notification_buffer_month
-from log_ext.wrappers import LoggerWrapper
+from logger.wrappers import LoggerWrapper
 
 
 # Initialize logger
-logger = LoggerWrapper(logging.getLogger(__name__))
+log = LoggerWrapper(logging.getLogger(__name__))
 
 
 form_page_number = 6
@@ -131,7 +131,7 @@ def address_check(address_dict):
 
         # Log a potential error if the city is 'Fort Collins'
         if address_dict['AddressValidateResponse']['Address']['City'].lower() == 'fort collins':    
-            logger.error(
+            log.error(
                 "Potential issue: Fort Collins address marked 'not in GMA': {}".format(
                     address_dict['AddressValidateResponse']['Address'],
                 ),
@@ -145,11 +145,11 @@ def address_check(address_dict):
         msg = 'Connexion not available or API not found' if has_connexion is None \
             else 'Connexion available' if has_connexion \
             else 'Connexion coming soon'
-        logger.info(msg, function='address_check')
+        log.info(msg, function='address_check')
 
         is_in_gma = gma_lookup(coord_string)
         msg = 'Address is in GMA' if is_in_gma else 'Address is outside of GMA'
-        logger.info(msg, function='address_check')
+        log.info(msg, function='address_check')
 
         return (is_in_gma, has_connexion)
 
@@ -189,7 +189,7 @@ def address_lookup(address_parts):
     # Gather response
     response = requests.get(url, params=payload)
     if response.status_code != requests.codes.ok:
-        logger.error(
+        log.error(
             f"API error {response.status_code}: {response.reason}; {response.content}",
             function='address_lookup',
         )
@@ -202,7 +202,7 @@ def address_lookup(address_parts):
     # the JSON for an 'error' key
     if 'error' in outVal:
         errDict = outVal['error']
-        logger.error(
+        log.error(
             f"API error {errDict['code']}: {errDict['message']}",
             function='address_lookup',
         )
@@ -264,7 +264,7 @@ def connexion_lookup(coord_string):
         # Gather response
         response = requests.post(url, params=payload)
         if response.status_code != requests.codes.ok:
-            logger.error(
+            log.error(
                 f"API error {response.status_code}: {response.reason}; {response.content}",
                 function='connexion_lookup',
             )
@@ -277,7 +277,7 @@ def connexion_lookup(coord_string):
         # the JSON for an 'error' key
         if 'error' in outVal:
             errDict = outVal['error']
-            logger.error(
+            log.error(
                 f"API error {errDict['code']}: {errDict['message']}",
                 function='connexion_lookup',
             )
@@ -347,7 +347,7 @@ def gma_lookup(coord_string):
         # Gather response
         response = requests.get(url, params=payload)
         if response.status_code != requests.codes.ok:
-            logger.error(
+            log.error(
                 f"API error {response.status_code}: {response.reason}; {response.content}",
                 function='gma_lookup',
             )
@@ -360,7 +360,7 @@ def gma_lookup(coord_string):
         # the JSON for an 'error' key
         if 'error' in outVal:
             errDict = outVal['error']
-            logger.error(
+            log.error(
                 f"API error {errDict['code']}: {errDict['message']}",
                 function='gma_lookup',
             )
@@ -397,14 +397,14 @@ def validate_usps(inobj):
     validation = usps.validate_address(address)
     outDict = validation.result
     try:
-        logger.info(
+        log.info(
             f"Address dict found: {outDict}",
             function='validate_usps',
         )
         return outDict
 
     except KeyError:
-        logger.exception(
+        log.exception(
             "Address could not be found - no guesses",
             function='validate_usps',
         )
@@ -421,12 +421,12 @@ def broadcast_email(email):
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
-        logger.info(
+        log.info(
             f"Sendgrid returned HTTP {response.status_code}",
             function='broadcast_email',
         )
     except Exception as e:
-        logger.exception(e, function='broadcast_email')
+        log.exception(e, function='broadcast_email')
 
 
 def broadcast_email_pw_reset(email, content):
@@ -444,12 +444,12 @@ def broadcast_email_pw_reset(email, content):
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
-        logger.info(
+        log.info(
             f"Sendgrid returned HTTP {response.status_code}",
             function='broadcast_email_pw_reset',
         )
     except Exception as e:
-        logger.exception(
+        log.exception(
             e,
             function='broadcast_email_pw_reset',
         )
@@ -465,12 +465,12 @@ def broadcast_renewal_email(email):
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
-        logger.info(
+        log.info(
             f"Sendgrid returned HTTP {response.status_code}",
             function='broadcast_renewal_email',
         )
     except Exception as e:
-        logger.exception(e, function='broadcast_renewal_email')
+        log.exception(e, function='broadcast_renewal_email')
 
 
 def changed_modelfields_to_dict(

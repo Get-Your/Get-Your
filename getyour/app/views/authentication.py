@@ -30,17 +30,17 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 
 from app.backend import authenticate, what_page, broadcast_email_pw_reset
-from log_ext.wrappers import LoggerWrapper
+from logger.wrappers import LoggerWrapper
 
 
 # Initialize logger
-logger = LoggerWrapper(logging.getLogger(__name__))
+log = LoggerWrapper(logging.getLogger(__name__))
 
 
 def password_reset_request(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='password_reset_request',
             user_id=request.user.id,
@@ -69,7 +69,7 @@ def password_reset_request(request, **kwargs):
                             broadcast_email_pw_reset(user.email, email)
                         except BadHeaderError:
                             msg = 'Invalid header found'
-                            logger.exception(
+                            log.exception(
                                 msg,
                                 function='password_reset_request',
                                 user_id=request.user.id,
@@ -95,7 +95,7 @@ def password_reset_request(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='password_reset_request',
             user_id=user_id,
@@ -106,7 +106,7 @@ def password_reset_request(request, **kwargs):
 def login_user(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='login_user',
             user_id=request.user.id,
@@ -132,7 +132,7 @@ def login_user(request, **kwargs):
                     return redirect(request.session['auth_next'])
                 
                 page = what_page(request.user, request)
-                logger.info(
+                log.info(
                     f"Continuing application: what_page() returned {page}",
                     function='login_user',
                     user_id=request.user.id,
@@ -156,7 +156,7 @@ def login_user(request, **kwargs):
         # run through what_page() to find the correct place
         if request.method == "GET" and request.user.is_authenticated:
             page = what_page(request.user, request)
-            logger.info(
+            log.info(
                 f"what_page() returned {page}",
                 function='login_user',
                 user_id=request.user.id,
@@ -182,7 +182,7 @@ def login_user(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='login_user',
             user_id=user_id,

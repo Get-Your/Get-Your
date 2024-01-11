@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.utils import timezone
 from django.utils.html import format_html
 
-from log_ext.models import Detail
+from logger.models import Detail
 
 
 class DetailAdmin_ext(admin.ModelAdmin):

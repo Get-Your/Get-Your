@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'app',
     'phonenumber_field',
     'log',
-    'log_ext',
+    'logger',
     'django_q',
 ]
 

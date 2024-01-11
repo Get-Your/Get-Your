@@ -1,6 +1,6 @@
 from django.db import models
 
-from log_ext.constants import LOG_LEVELS
+from logger.constants import LOG_LEVELS
 
 
 class LevelRD(models.Model):

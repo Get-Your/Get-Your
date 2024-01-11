@@ -1,7 +1,7 @@
 from app.backend import broadcast_renewal_email, check_if_user_needs_to_renew
 from app.models import User
 from app.constants import notification_buffer_month
-from log_ext.wrappers import LoggerWrapper
+from logger.wrappers import LoggerWrapper
 
 import logging
 import pendulum
@@ -9,9 +9,9 @@ import pendulum
 
 def send_renewal_email():
     # Initialize logger
-    logger = LoggerWrapper(logging.getLogger(__name__))
+    log = LoggerWrapper(logging.getLogger(__name__))
 
-    logger.debug(
+    log.debug(
         "Entering function",
         function='send_renewal_email',
     )
@@ -34,7 +34,7 @@ def send_renewal_email():
             # (e.g. period.months + period.years*12 = period.in_months())
             months_since_last_notification = (pendulum.now() - user.last_action_notification_at).in_months()
             if months_since_last_notification > notification_buffer_month:
-                logger.info(
+                log.info(
                     "User needs renewal; sending notification",
                     function='send_renewal_email',
                     user_id=user.id,
@@ -47,7 +47,7 @@ def send_renewal_email():
                 user.last_action_notification_at = pendulum.now()
                 user.save()
             else:
-                logger.info(
+                log.info(
                     "User needs renewal but has recently been notified",
                     function='send_renewal_email',
                     user_id=user.id,

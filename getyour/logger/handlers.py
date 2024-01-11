@@ -8,7 +8,7 @@ class DatabaseLogHandler(logging.Handler):
 
     def emit(self, record):
 
-        from log_ext.models import Detail
+        from logger.models import Detail
 
         # Format trace, if exception exists
         trace = ''

@@ -21,7 +21,7 @@ class LogRouter:
     A router to control all database operations on models for the logger.
 
     """
-    route_app_labels = {'log_ext'}
+    route_app_labels = {'logger'}
 
     def db_for_read(self, model, **hints):
         """

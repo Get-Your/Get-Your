@@ -25,18 +25,18 @@ from django.contrib.auth import logout
 from app.forms import AddressLookupForm
 from app.backend import tag_mapping, address_check, validate_usps
 from app.models import IQProgramRD
-from log_ext.wrappers import LoggerWrapper
+from logger.wrappers import LoggerWrapper
 
 
 # Initialize logger
-logger = LoggerWrapper(logging.getLogger(__name__))
+log = LoggerWrapper(logging.getLogger(__name__))
 
 
 def index(request, **kwargs):
 
     try:
         if request.method == "POST":
-            logger.debug(
+            log.debug(
                 "Leaving function (POST)",
                 function='index',
                 user_id=request.user.id,
@@ -62,7 +62,7 @@ def index(request, **kwargs):
                     # found by usaddress
                     if address_type != 'Street Address':
                         msg = "The address cannot be parsed"
-                        logger.error(
+                        log.error(
                             f"{msg}: {raw_address_dict}",
                             function='index',
                             user_id=request.user.id,
@@ -75,7 +75,7 @@ def index(request, **kwargs):
                     # if 'city' not in raw_address_dict.keys():
                     raw_address_dict['city'] = 'Fort Collins'
 
-                    logger.info(
+                    log.info(
                         f"Address form submitted: {raw_address_dict}",
                         function='index',
                         user_id=request.user.id,
@@ -123,7 +123,7 @@ def index(request, **kwargs):
                     return redirect(reverse("app:quick_not_found"))
 
         else:
-            logger.debug(
+            log.debug(
                 "Entering function (GET)",
                 function='index',
                 user_id=request.user.id,
@@ -151,7 +151,7 @@ def index(request, **kwargs):
             user_id = request.user.id
             if user_id is not None:
                 logout(request)
-                logger.info(
+                log.info(
                     "User logged out",
                     function='index',
                     user_id=user_id,
@@ -173,7 +173,7 @@ def index(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='index',
             user_id=user_id,
@@ -184,7 +184,7 @@ def index(request, **kwargs):
 def privacy_policy(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='privacy_policy',
             user_id=request.user.id,
@@ -209,7 +209,7 @@ def privacy_policy(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='privacy_policy',
             user_id=user_id,
@@ -220,7 +220,7 @@ def privacy_policy(request, **kwargs):
 def programs_info(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='programs_info',
             user_id=request.user.id,
@@ -241,7 +241,7 @@ def programs_info(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='programs_info',
             user_id=user_id,
@@ -252,7 +252,7 @@ def programs_info(request, **kwargs):
 def quick_available(request, **kwargs):
     
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='quick_available',
             user_id=request.user.id,
@@ -272,7 +272,7 @@ def quick_available(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='quick_available',
             user_id=user_id,
@@ -283,7 +283,7 @@ def quick_available(request, **kwargs):
 def quick_not_available(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='quick_not_available',
             user_id=request.user.id,
@@ -303,7 +303,7 @@ def quick_not_available(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='quick_not_available',
             user_id=user_id,
@@ -314,7 +314,7 @@ def quick_not_available(request, **kwargs):
 def quick_not_found(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='quick_not_found',
             user_id=request.user.id,
@@ -334,7 +334,7 @@ def quick_not_found(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='quick_not_found',
             user_id=user_id,
@@ -345,7 +345,7 @@ def quick_not_found(request, **kwargs):
 def quick_coming_soon(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='quick_coming_soon',
             user_id=request.user.id,
@@ -365,7 +365,7 @@ def quick_coming_soon(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='quick_coming_soon',
             user_id=user_id,
