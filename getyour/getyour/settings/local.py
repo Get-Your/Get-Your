@@ -73,7 +73,7 @@ DATABASES = {
     # Note that a separate file is needed for proper concurrency
     'log_db': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db_logs.sqlite3',
+        'NAME': BASE_DIR / 'db_analytics.sqlite3',
     }
 }
 
