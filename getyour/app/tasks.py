@@ -47,7 +47,7 @@ def send_renewal_email():
                 user.last_action_notification_at = pendulum.now()
                 user.save()
             else:
-                logger.debug(
+                logger.info(
                     "User needs renewal but has recently been notified",
                     function='send_renewal_email',
                     user_id=user.id,
