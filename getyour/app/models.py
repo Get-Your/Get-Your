@@ -143,7 +143,7 @@ class User(AbstractUser):
     is_updated = models.BooleanField(default=False)
     last_completed_at = models.DateTimeField(null=True, blank=True)
     last_renewal_action = models.JSONField(null=True, blank=True)
-    renewal_email_sent_at = models.DateTimeField(null=True, blank=True)
+    last_action_notification_at = models.DateTimeField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -438,7 +438,7 @@ class IQProgramRD(GenericTimeStampedModel):
     req_is_city_covered = models.BooleanField(default=False)
     # The frequency at which an IQ program needs to be renewed. If null, the
     # IQ program is considered to be a lifetime enrollment. Measured in months
-    renewal_interval = models.IntegerField(null=True)
+    renewal_interval_month = models.IntegerField(null=True)
 
     def __str__(self):
         return str(self.ami_threshold)

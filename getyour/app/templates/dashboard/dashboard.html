@@ -43,6 +43,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <div class="content">
     <div class="fadeLarge">
         <!--Program number blocks - information section-->
+        {% if renewal_programs != 0 %}
+        <div class="row">
+            <a style="color:var(--white); font-weight: 800; text-decoration: none; width: 100%"
+                href="{% url 'app:qualified_programs' %}?order_by=renewal">
+                <div class="module" style="margin-left: 1.5vw; margin-right:0; padding: 1vw; text-align: center;">
+                    <hprogram style="color: orange; font-size: max(0.8vh, 40px)"> Renewal Required </hprogram>
+                </div>
+            </a>
+        </div>
+        {% endif %}
+
         <div class="row">
             <a style="color:var(--white); font-weight: 800; text-decoration: none;"
                 href="{% url 'app:qualified_programs' %}?order_by=active">
@@ -68,13 +79,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <h3 style="font-weight: 400; margin: 0; ">Active Program(s)</h3>
                 </div>
             </a>
-            <a style="color:var(--white); font-weight: 800; text-decoration: none;"
-                href="{% url 'app:qualified_programs' %}?order_by=renewal">
-                <div class="module" style="margin-left: 1.5vw;margin-right:0;padding: 1vw;">
-                    <hprogram style="color: orange"> {{renewal_programs}} </hprogram>
-                    <h3 style="font-weight: 400; margin: 0;">Program(s) up for Renewal</h3>
-                </div>
-            </a>
         </div>
 
         <!-- Mobile news section -->
@@ -91,23 +95,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <div class="fadeSmall">
         <div class="container">
             <!-- START: RENEWAL IQ PROGRAMS -->
+            {% if renewal_programs != 0 %}
             <div class="item thin">
                 <a style="color:var(--white); font-weight: 800; text-decoration: none;"
                     href="{% url 'app:qualified_programs' %}">
-                    <!--CSV HERE-->
-                    <hprogram style="color: #4CAD00;margin:0"> {{renewal_programs}} </hprogram>
                 </a>
                 <p style="font-weight: 400; padding-left: 15px;">
-                    Program(s) Up for Renewal   
+                    Renewal Required   
                 </p>
 
-                {% if renewal_programs != 0 %}
                 <a href="#" onclick="return false;" class="renewalModal"
-                    style="text-decoration: none; text-align: center; margin-top: auto; margin-bottom: auto;">
-                    <div class="quickapply linkQA" style="border-color: orange; color: orange;">
+                    style="text-decoration: none; text-align: center; margin-top: auto; margin-bottom: auto; padding: 2px">
+                    <div class="quickapply linkQA" style="border-color: orange; color: orange">
                         Renew</div>
                 </a>
-                {% endif %}
 
                 <button class="button button2" id="toggle-button3"><img src="{% static 'img/downArrow.svg' %}"
                         style="position: absolute; bottom: 10px;right: 10px;"> </button>
@@ -135,6 +136,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 {% endif %}
                 {% endfor %}
             </div>
+            {% endif %}
             <!-- END: RENEWAL IQ PROGRAMS -->
 
             <!-- START: QUALIFIED IQ PROGRAMS -->
@@ -331,8 +333,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         var app_renewed = "{{ app_renewed }}" === "True";
         if (app_renewed) {
             Swal.fire({
-                title: "Application Renewed",
-                text: "Your application has been successfully renewed!",
+                title: "Renewal Complete",
+                text: "{{ renewal_eligible }}" + "\n\n" + "{{ renewal_ineligible }}",
                 icon: "success",
                 confirmButtonText: "OK",
                 confirmButtonColor: "orange",

@@ -85,4 +85,6 @@ Q_CLUSTER = {
     'queue_limit': 50,
     'bulk': 10,
     'orm':  'default',
+    'catch_up': False,
+    'sync': True,   # this is required for Windows
 }
