@@ -158,7 +158,7 @@ LOGGING = {
     },
     'handlers': {
         'db_log': {
-            'class': 'log.handlers.DatabaseLogHandler',
+            'class': 'logger.handlers.DatabaseLogHandler',
             'formatter': 'simple',
         },
     },
