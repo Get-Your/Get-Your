@@ -1125,6 +1125,11 @@ def household_members(request, **kwargs):
                         file_name, buffer.read(), content_type)
                     file_paths.append(file_path)
                     default_storage.save(file_path, uploaded_file)
+                    log.debug(
+                        f"Identification file {instance.document_path} saved successfully",
+                        function='household_members',
+                        user_id=request.user.id,
+                    )
 
                 if fileAmount > 0:
                     logger.info(
@@ -1407,8 +1412,8 @@ def files(request, **kwargs):
                         f,
                     )
                     fileNames.append(str(instance.document_path))
-                    logger.debug(
-                        f"File {instance.document_path} saved successfully",
+                    log.debug(
+                        f"Eligibility file {instance.document_path} saved successfully",
                         function='files',
                         user_id=request.user.id,
                     )
@@ -1417,14 +1422,8 @@ def files(request, **kwargs):
                 instance.document_path = str(fileNames)
                 instance.save()
 
-                if fileAmount > 0:
-                    logger.info(
-                        'Eligibility Program file(s) saved successfully',
-                        function='household_members',
-                        user_id=request.user.id,
-                    )
-                else:
-                    logger.info(
+                if fileAmount == 0:
+                    log.info(
                         'No Eligibility Program files to upload were found',
                         function=household_members,
                         user_id=request.user.id,
