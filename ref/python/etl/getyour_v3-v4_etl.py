@@ -103,10 +103,10 @@ def run_full_porting(profile):
     global_objects = initialize_vars(profile)
 
     try:
-        filledIds = fill_last_completed_and_notification(global_objects)
+        fill_last_completed_and_notification(global_objects)
         add_renewal_interval_month(global_objects)
         
-        verify_transfer(global_objects, filledIds)
+        verify_transfer(global_objects)
         
     except:
         raise
@@ -165,8 +165,12 @@ def fill_last_completed_and_notification(global_objects: dict) -> None:
     user sees the dashboard.
     
     If ``last_completed_at`` is None and what_page() returns 'app:dashboard',
-    set last_completed_at = last_action_notification_at =
-    max(app_eligibilityprogram.modified_at).
+    set last_completed_at = max(app_eligibilityprogram.modified_at).
+    
+    Secondly:
+    ``last_action_notification_at`` (a new field) will henceforth be set as
+    "action notifications" are being sent to users. Set all values to 
+    last_action_notification_at = last_completed_at.
     
     Parameters
     ----------
@@ -186,21 +190,22 @@ def fill_last_completed_and_notification(global_objects: dict) -> None:
     userIds = [x[0] for x in cursor.fetchall()]
 
     # Loop through each user
-    idsToFill = []      # initialize for use in validation
     try:
         for usrid in userIds:
+            
+            # Check if the user is redirected to the dashboard. If False,
+            # last_completed_at and last_action_notification_at should stay NULL
+            # (and are thus ignored here)
+            if what_page_clone(cursor, usrid) == 'app:dashboard':
     
-            # Check for NULL last_completed_at value
-            cursor.execute(
-                """select count(*) from public.app_user where id=%s and last_completed_at is null""",
-                (usrid, ),
-            )
-            if cursor.fetchone()[0] != 0:
-                # last_completed_at is NULL; check if user is redirected to dashboard
-                if what_page_clone(cursor, usrid) == 'app:dashboard':
-                    # Fill last_completed_at and last_action_notification_at
-                    # with max(modified_at) from app_eligibilityprogram (as a
-                    # good approximation)
+                # Check for NULL last_completed_at value
+                cursor.execute(
+                    """select count(*) from public.app_user where id=%s and last_completed_at is null""",
+                    (usrid, ),
+                )
+                if cursor.fetchone()[0] != 0:
+                    # Fill last_completed_at with max(modified_at) from 
+                    # app_eligibilityprogram (as a good approximation)
                     cursor.execute(
                         """select max(modified_at) from public.app_eligibilityprogram where user_id=%s""",
                         (usrid, ),
@@ -208,11 +213,16 @@ def fill_last_completed_and_notification(global_objects: dict) -> None:
                     returnedTimestamp = cursor.fetchone()[0]     # there should always be a value
                     
                     cursor.execute(
-                        """update public.app_user set "last_completed_at"=%s, "last_action_notification_at"=%s where "id"=%s""",
-                        (returnedTimestamp, returnedTimestamp, usrid),
+                        """update public.app_user set "last_completed_at"=%s where "id"=%s""",
+                        (returnedTimestamp, usrid),
                     )
-                    
-                    idsToFill.append(usrid)
+
+                # Independently, set last_action_notification_at. This will
+                # always start as NULL since it's a new field
+                cursor.execute(
+                    """update public.app_user set "last_action_notification_at"="last_completed_at" where "id"=%s""",
+                    (usrid, ),
+                )
                     
     except:
         global_objects['conn'].rollback()
@@ -286,19 +296,20 @@ def add_renewal_interval_month(global_objects: dict) -> None:
         cursor.close()
 
 
-def verify_transfer(global_objects: dict, filled_ids: list) -> None:
+def verify_transfer(global_objects: dict) -> None:
     """
     Verify the proper transfer of all data.
     
-    Ensure all newly-written identification_path records (with null values)
-    have a matching 'identification' record.
+    Ensure
+    1) all non-NULL last_completed_at values represent users who have reached
+    the dashboard, and last_action_notification_at == last_completed_at
+    2) all NULL last_completed_at values represent users who have *not* reached
+    the dashboard, and last_action_notification_at == last_completed_at
 
     Parameters
     ----------
     global_objects : dict
         Dictionary of objects used across all functions.
-    filled_ids : list
-        List of User IDs that were marked to be filled in fill_last_completed_and_notification.
 
     Returns
     -------
@@ -309,49 +320,24 @@ def verify_transfer(global_objects: dict, filled_ids: list) -> None:
     cursor = global_objects['conn'].cursor()
     
     try:
-        # First: verify that all users with a non-null last_completed_at have
-        # the same value for last_action_notification_at
+        # First: verify all non-NULL last_completed_at values
         cursor.execute(
-            """select last_completed_at=last_action_notification_at from public.app_user where last_completed_at is not null"""
+            """select "id", "last_completed_at", "last_action_notification_at" from public.app_user where "last_completed_at" is not null"""
         )
-        assert all([x[0] for x in cursor.fetchall()])
+        nonNullUserTs = cursor.fetchall()
         
-        # Now we can assume last_action_notification_at is correct and only
-        # use last_completed_at
-        # Verify that all users in filled_ids have a last_completed_at value
+        for usrid, completeat, notifyat in nonNullUserTs:
+            assert what_page_clone(cursor, usrid) == 'app:dashboard' and completeat == notifyat
+            
+        # Second: verify all NULL last_completed_at values
         cursor.execute(
-            """select count(*) from public.app_user where last_completed_at is not null and id in ({})""".format(
-                ','.join(['%s']*len(filled_ids))
-            ),
-            filled_ids,
+            """select "id", "last_completed_at", "last_action_notification_at" from public.app_user where "last_completed_at" is null"""
         )
-        assert len(filled_ids) == cursor.fetchone()[0]
-    
-        # Verify all users that have non-null last_completed_at have reached
-        # the dashboard
-        cursor.execute("""select "id" from public.app_user where last_completed_at is not null order by "id" """)
-        nonNullIds = [x[0] for x in cursor.fetchall()]
-    
-        # Loop through each user
-        for usrid in nonNullIds:
-            if what_page_clone(cursor, usrid) != 'app:dashboard':
-                # Raise exception if this user hasn't reached the dashboard
-                raise TypeError(
-                    f"User {usrid} has a non-null `last_completed_at` but hasn't reached the dashboard"
-                )
-                
-        # Verify all users that have a *null* last_completed_at have *not*
-        # reached the dashboard
-        cursor.execute("""select "id" from public.app_user where last_completed_at is null order by "id" """)
-        nullIds = [x[0] for x in cursor.fetchall()]
-    
-        # Loop through each user
-        for usrid in nullIds:
-            if what_page_clone(cursor, usrid) == 'app:dashboard':
-                # Raise exception if this user has reached the dashboard
-                raise TypeError(
-                    f"User {usrid} has a null `last_completed_at` but has reached the dashboard (i.e. it should be filled)"
-                )
+        nullUserTs = cursor.fetchall()
+        
+        for usrid, completeat, notifyat in nullUserTs:
+            assert what_page_clone(cursor, usrid) != 'app:dashboard' and notifyat is None
+
                     
     except:
         global_objects['conn'].rollback()
