@@ -12,7 +12,6 @@ model.
 from rich import print
 from rich.progress import Progress
 import psycopg2
-import json
 
 import coftc_cred_man as crd
 
@@ -202,38 +201,47 @@ def fill_last_completed_and_notification(global_objects: dict) -> None:
 
     # Loop through each user
     try:
-        for usrid in userIds:
+        with Progress() as progress:
+
+            updateTask = progress.add_task(
+                "[bright_cyan]Filling last_completed_at and last_action_notification_at values",
+                total=len(userIds),
+            )
             
-            # Check if the user is redirected to the dashboard. If False,
-            # last_completed_at and last_action_notification_at should stay NULL
-            # (and are thus ignored here)
-            if what_page_clone(cursor, usrid) == 'app:dashboard':
-    
-                # Check for NULL last_completed_at value
-                cursor.execute(
-                    """select count(*) from public.app_user where id=%s and last_completed_at is null""",
-                    (usrid, ),
-                )
-                if cursor.fetchone()[0] != 0:
-                    # Fill last_completed_at with max(modified_at) from 
-                    # app_eligibilityprogram (as a good approximation)
+            for usrid in userIds:
+                
+                # Check if the user is redirected to the dashboard. If False,
+                # last_completed_at and last_action_notification_at should stay NULL
+                # (and are thus ignored here)
+                if what_page_clone(cursor, usrid) == 'app:dashboard':
+        
+                    # Check for NULL last_completed_at value
                     cursor.execute(
-                        """select max(modified_at) from public.app_eligibilityprogram where user_id=%s""",
+                        """select count(*) from public.app_user where id=%s and last_completed_at is null""",
                         (usrid, ),
                     )
-                    returnedTimestamp = cursor.fetchone()[0]     # there should always be a value
-                    
+                    if cursor.fetchone()[0] != 0:
+                        # Fill last_completed_at with max(modified_at) from 
+                        # app_eligibilityprogram (as a good approximation)
+                        cursor.execute(
+                            """select max(modified_at) from public.app_eligibilityprogram where user_id=%s""",
+                            (usrid, ),
+                        )
+                        returnedTimestamp = cursor.fetchone()[0]     # there should always be a value
+                        
+                        cursor.execute(
+                            """update public.app_user set "last_completed_at"=%s where "id"=%s""",
+                            (returnedTimestamp, usrid),
+                        )
+    
+                    # Independently, set last_action_notification_at. This will
+                    # always start as NULL since it's a new field
                     cursor.execute(
-                        """update public.app_user set "last_completed_at"=%s where "id"=%s""",
-                        (returnedTimestamp, usrid),
+                        """update public.app_user set "last_action_notification_at"="last_completed_at" where "id"=%s""",
+                        (usrid, ),
                     )
-
-                # Independently, set last_action_notification_at. This will
-                # always start as NULL since it's a new field
-                cursor.execute(
-                    """update public.app_user set "last_action_notification_at"="last_completed_at" where "id"=%s""",
-                    (usrid, ),
-                )
+                    
+                progress.update(updateTask, advance=1)
                     
     except:
         global_objects['conn'].rollback()
@@ -276,11 +284,20 @@ def add_renewal_interval_month(global_objects: dict) -> None:
 
     # Loop through each program and update renewal_interval_month
     try:
-        for prg in RENEWAL_UPDATE_DICT.keys():
-            cursor.execute(
-                """update public.app_iqprogramrd set "renewal_interval_month"=%s where "program_name"=%s""",
-                (RENEWAL_UPDATE_DICT[prg], prg),
+        with Progress() as progress:
+
+            updateTask = progress.add_task(
+                "[bright_cyan]Updating Renewal Interval value",
+                total=len(RENEWAL_UPDATE_DICT.keys()),
             )
+            
+            for prg in RENEWAL_UPDATE_DICT.keys():
+                cursor.execute(
+                    """update public.app_iqprogramrd set "renewal_interval_month"=%s where "program_name"=%s""",
+                    (RENEWAL_UPDATE_DICT[prg], prg),
+                )
+                
+            progress.update(updateTask, advance=1)
                     
     except:
         global_objects['conn'].rollback()
@@ -328,8 +345,16 @@ def verify_transfer(global_objects: dict) -> None:
         )
         nonNullUserTs = cursor.fetchall()
         
-        for usrid, completeat, notifyat in nonNullUserTs:
-            assert what_page_clone(cursor, usrid) == 'app:dashboard' and completeat == notifyat
+        with Progress() as progress:
+
+            verifyTask = progress.add_task(
+                "[bright_cyan]Verifying non-NULL last_completed_at",
+                total=len(nonNullUserTs),
+            )
+        
+            for usrid, completeat, notifyat in nonNullUserTs:
+                assert what_page_clone(cursor, usrid) == 'app:dashboard' and completeat == notifyat
+                progress.update(verifyTask, advance=1)
             
         # Second: verify all NULL last_completed_at values
         cursor.execute(
@@ -337,16 +362,32 @@ def verify_transfer(global_objects: dict) -> None:
         )
         nullUserTs = cursor.fetchall()
         
-        for usrid, completeat, notifyat in nullUserTs:
-            assert what_page_clone(cursor, usrid) != 'app:dashboard' and notifyat is None
+        with Progress() as progress:
+
+            verifyTask = progress.add_task(
+                "[bright_cyan]Verifying NULL last_completed_at",
+                total=len(nullUserTs),
+            )
+            
+            for usrid, completeat, notifyat in nullUserTs:
+                assert what_page_clone(cursor, usrid) != 'app:dashboard' and notifyat is None
+                progress.update(verifyTask, advance=1)
             
         # Third: verify correct update of IQ Program renewal intervals
-        for prg, mos in RENEWAL_UPDATE_DICT.items():
-            cursor.execute(
-                """select "renewal_interval_month" from public.app_iqprogramrd where "program_name"=%s""",
-                (prg, ),
+        with Progress() as progress:
+
+            verifyTask = progress.add_task(
+                "[bright_cyan]Verifying Renewal Interval values",
+                total=len(RENEWAL_UPDATE_DICT.keys()),
             )
-            assert cursor.fetchone()[0] == mos
+            
+            for prg, mos in RENEWAL_UPDATE_DICT.items():
+                cursor.execute(
+                    """select "renewal_interval_month" from public.app_iqprogramrd where "program_name"=%s""",
+                    (prg, ),
+                )
+                assert cursor.fetchone()[0] == mos
+                progress.update(verifyTask, advance=1)
 
     except:
         global_objects['conn'].rollback()
