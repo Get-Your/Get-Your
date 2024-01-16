@@ -16,6 +16,17 @@ import json
 
 import coftc_cred_man as crd
 
+# Define each renewal period. Per the specification, a NULL value for
+# renewal_interval_month denotes a non-expiring program (e.g. lifetime
+# enrollment)
+RENEWAL_UPDATE_DICT = {
+    'grocery': 12,
+    'recreation': 12,
+    'spin': None,
+    'spin_community_pass': None,
+    'connexion': None,
+}
+
 
 def what_page_clone(
         cursor: psycopg2.extensions.cursor,
@@ -256,30 +267,19 @@ def add_renewal_interval_month(global_objects: dict) -> None:
     
     cursor = global_objects['conn'].cursor()
     
-    # Define each renewal period. Per the specification, a NULL value for
-    # renewal_interval_month denotes a non-expiring program (e.g. lifetime
-    # enrollment)
-    updateDict = {
-        'grocery': 12,
-        'recreation': 12,
-        'spin': None,
-        'spin_community_pass': None,
-        'connexion': None,
-    }
-    
     # Since the update allows NULLs, validation will be done within this function
     
-    # Ensure all programs are accounted for in updateDict
+    # Ensure all programs are accounted for in RENEWAL_UPDATE_DICT
     cursor.execute("""select "program_name" from public.app_iqprogramrd order by "program_name" """)
     dbNames = [x[0] for x in cursor.fetchall()]
-    assert dbNames == sorted(updateDict.keys())
+    assert dbNames == sorted(RENEWAL_UPDATE_DICT.keys())
 
     # Loop through each program and update renewal_interval_month
     try:
-        for prg in updateDict.keys():
+        for prg in RENEWAL_UPDATE_DICT.keys():
             cursor.execute(
                 """update public.app_iqprogramrd set "renewal_interval_month"=%s where "program_name"=%s""",
-                (updateDict[prg], prg),
+                (RENEWAL_UPDATE_DICT[prg], prg),
             )
                     
     except:
@@ -305,6 +305,8 @@ def verify_transfer(global_objects: dict) -> None:
     the dashboard, and last_action_notification_at == last_completed_at
     2) all NULL last_completed_at values represent users who have *not* reached
     the dashboard, and last_action_notification_at == last_completed_at
+    3) all programs in RENEWAL_UPDATE_DICT have been
+    correctly added to app_iqprogramrd.
 
     Parameters
     ----------
@@ -337,8 +339,15 @@ def verify_transfer(global_objects: dict) -> None:
         
         for usrid, completeat, notifyat in nullUserTs:
             assert what_page_clone(cursor, usrid) != 'app:dashboard' and notifyat is None
+            
+        # Third: verify correct update of IQ Program renewal intervals
+        for prg, mos in RENEWAL_UPDATE_DICT.items():
+            cursor.execute(
+                """select "renewal_interval_month" from public.app_iqprogramrd where "program_name"=%s""",
+                (prg, ),
+            )
+            assert cursor.fetchone()[0] == mos
 
-                    
     except:
         global_objects['conn'].rollback()
         raise
