@@ -42,18 +42,18 @@ from app.forms import HouseholdForm, UserForm, AddressForm, HouseholdMembersForm
 from app.backend import form_page_number, tag_mapping, address_check, serialize_household_members, validate_usps, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, broadcast_email, broadcast_sms, save_renewal_action, finalize_application
 from app.models import userfiles_path, AddressRD, Address, EligibilityProgram, Household, IQProgram, User, EligibilityProgramRD
 from app.decorators import set_update_mode
-from log.wrappers import LoggerWrapper
+from logger.wrappers import LoggerWrapper
 
 
 # Initialize logger
-logger = LoggerWrapper(logging.getLogger(__name__))
+log = LoggerWrapper(logging.getLogger(__name__))
 
 
 @login_required(redirect_field_name='auth_next')
 def notify_remaining(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='notify_remaining',
             user_id=request.user.id,
@@ -75,7 +75,7 @@ def notify_remaining(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='notify_remaining',
             user_id=user_id,
@@ -86,7 +86,7 @@ def notify_remaining(request, **kwargs):
 def household_definition(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='household_definition',
             user_id=request.user.id,
@@ -103,7 +103,7 @@ def household_definition(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='household_definition',
             user_id=user_id,
@@ -113,7 +113,7 @@ def household_definition(request, **kwargs):
 def get_ready(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='get_ready',
             user_id=request.user.id,
@@ -127,7 +127,7 @@ def get_ready(request, **kwargs):
         # Check if the next query param is set
         # If so, save the renewal action and redirect to the account page
         if request.GET.get('next', False):
-            logger.info(
+            log.info(
                 "Starting renewal process",
                 function='get_ready',
                 user_id=request.user.id,
@@ -152,7 +152,7 @@ def get_ready(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='get_ready',
             user_id=user_id,
@@ -172,7 +172,7 @@ def account(request, **kwargs):
             'renewal_mode') if request.session.get('renewal_mode') else False
 
         if request.method == "POST":
-            logger.debug(
+            log.debug(
                 "Leaving function (POST)",
                 function='account',
                 user_id=request.user.id,
@@ -230,7 +230,7 @@ def account(request, **kwargs):
                 try:
                     user = form.save()
                     login(request, user)
-                    logger.info(
+                    log.info(
                         "User account creation successful",
                         function='account',
                         user_id=user.id,
@@ -240,7 +240,7 @@ def account(request, **kwargs):
                     }
                     return JsonResponse(data)
                 except AttributeError:
-                    logger.warning(
+                    log.warning(
                         f"Login failed. User is: {user}",
                         function='account',
                         user_id=request.user.id,
@@ -279,7 +279,7 @@ def account(request, **kwargs):
                 }
                 return JsonResponse(data)
         else:
-            logger.debug(
+            log.debug(
                 "Entering function (GET)",
                 function='account',
                 user_id=request.user.id,
@@ -311,7 +311,7 @@ def account(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='account',
             user_id=user_id,
@@ -335,7 +335,7 @@ def address(request, **kwargs):
             'renewal_mode') if request.session.get('renewal_mode') else False
 
         if request.method == "POST":
-            logger.debug(
+            log.debug(
                 "Leaving function (POST)",
                 function='address',
                 user_id=request.user.id,
@@ -363,7 +363,7 @@ def address(request, **kwargs):
             if request.POST.get('mailing_address') == 'no' or update_mode:
 
                 if request.POST.get('mailing_address') == 'no':
-                    logger.info(
+                    log.info(
                         "Mailing and eligibility addresses are different",
                         function='address',
                         user_id=request.user.id,
@@ -385,14 +385,14 @@ def address(request, **kwargs):
 
             request.session['application_addresses'] = json.dumps(
                 addresses)
-            logger.info(
+            log.info(
                 f"Sending to address correction: {request.session['application_addresses']}",
                 function='address',
                 user_id=request.user.id,
             )
             return redirect(reverse("app:address_correction"))
         else:
-            logger.debug(
+            log.debug(
                 "Entering function (GET)",
                 function='address',
                 user_id=request.user.id,
@@ -442,7 +442,7 @@ def address(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='address',
             user_id=user_id,
@@ -454,7 +454,7 @@ def address(request, **kwargs):
 def address_correction(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='address_correction',
             user_id=request.user.id,
@@ -478,7 +478,7 @@ def address_correction(request, **kwargs):
             idx = 0     # starting idx
             flag_needMoreInfo = False   # flag for previous iter needing more info
             while 1:
-                logger.info(
+                log.info(
                     f"Start loop {idx}",
                     function='address_correction',
                     user_id=request.user.id,
@@ -502,7 +502,7 @@ def address_correction(request, **kwargs):
                         # Go directly to the QueryDict version if there's a usaddress
                         # issue
                         except usaddress.RepeatedLabelError:
-                            logger.warning(
+                            log.warning(
                                 f"Loop index {idx}; Issue found in usaddress labels - continuing as loop 2",
                                 function='address_correction',
                                 user_id=request.user.id,
@@ -526,21 +526,21 @@ def address_correction(request, **kwargs):
                     # with input QueryDict
                     try:
                         if idx == 2:
-                            logger.info(
+                            log.info(
                                 f"Loop index {idx}; Attempting USPS validation with input QueryDict: {q}",
                                 function='address_correction',
                                 user_id=request.user.id,
                             )
                             dict_address = validate_usps(q)
                         else:
-                            logger.info(
+                            log.info(
                                 f"Loop index {idx}; Attempting USPS validation with rawAddressDict: {rawAddressDict}",
                                 function='address_correction',
                                 user_id=request.user.id,
                             )
                             dict_address = validate_usps(rawAddressDict)
                         validationAddress = dict_address['AddressValidateResponse']['Address']
-                        logger.info(
+                        log.info(
                             f"USPS Validation returned {validationAddress}",
                             function='address_correction',
                             user_id=request.user.id,
@@ -561,7 +561,7 @@ def address_correction(request, **kwargs):
                     # Kick back to the user if the USPS API needs more information
                     if 'ReturnText' in validationAddress.keys():
                         if idx == maxLoopIdx:
-                            logger.info(
+                            log.info(
                                 "Address not found - end of loop",
                                 function='address_correction',
                                 user_id=request.user.id,
@@ -586,7 +586,7 @@ def address_correction(request, **kwargs):
                 except AttributeError:
                     # Use AttributeError to skip to the end of the loop
                     # Note that idx has already been iterated before this point
-                    logger.info(
+                    log.info(
                         f"Loop index {idx}; AttributeError raised to skip to end of loop",
                         function='address_correction',
                         user_id=request.user.id,
@@ -596,7 +596,7 @@ def address_correction(request, **kwargs):
                             # For loop 1: if 'ReturnText' is not found and address2 is
                             # not None, remove possible keywords and try again
                             # Note that this will affect later loop iterations
-                            logger.info(
+                            log.info(
                                 f"Loop index {idx}; Address not found - try to remove/replace keywords",
                                 function='address_correction',
                                 user_id=request.user.id,
@@ -618,14 +618,14 @@ def address_correction(request, **kwargs):
             address_feedback = [validationAddress['Address2'],
                                 validationAddress['Address1'],
                                 validationAddress['City'] + " " + validationAddress['State'] + " " + validationAddress['Zip5']]
-            logger.info(
+            log.info(
                 f"address_feedback is: {address_feedback}",
                 function='address_correction',
                 user_id=request.user.id,
             )
 
         except TypeError as msg:
-            logger.info(
+            log.info(
                 "More address information is needed from user",
                 function='address_correction',
                 user_id=request.user.id,
@@ -642,7 +642,7 @@ def address_correction(request, **kwargs):
                 ]
 
             else:
-                logger.info(
+                log.info(
                     "Some other issue than 'more information is needed'",
                     function='address_correction',
                     user_id=request.user.id,
@@ -659,7 +659,7 @@ def address_correction(request, **kwargs):
                 "Sorry, we couldn't verify this address through USPS.",
                 "Please press 'back' and re-enter.",
             ]
-            logger.warning(
+            log.warning(
                 "USPS couldn't figure it out!",
                 function='address_correction',
                 user_id=request.user.id,
@@ -667,7 +667,7 @@ def address_correction(request, **kwargs):
 
         else:
             request.session['usps_address_validate'] = dict_address
-            logger.info(
+            log.info(
                 f"Address match found: {dict_address}",
                 function='address_correction',
                 user_id=request.user.id,
@@ -690,14 +690,14 @@ def address_correction(request, **kwargs):
             dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
                 str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
 
-                logger.info(
+                log.info(
                     "Exact (case-insensitive) address match found",
                     function='address_correction',
                     user_id=request.user.id,
                 )
                 return redirect(reverse("app:take_usps_address"))
 
-        logger.info(
+        log.info(
             "Proceeding to user verification of the matched address",
             function='address_correction',
             user_id=request.user.id,
@@ -722,7 +722,7 @@ def address_correction(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='address_correction',
             user_id=user_id,
@@ -734,7 +734,7 @@ def address_correction(request, **kwargs):
 def take_usps_address(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='take_usps_address',
             user_id=request.user.id,
@@ -882,7 +882,7 @@ def take_usps_address(request, **kwargs):
                 return redirect(f"{reverse('app:user_settings')}?page_updated=address")
 
         except (KeyError, TypeError):
-            logger.warning(
+            log.warning(
                 f"USPS couldn't out the address: {dict_address}",
                 function='take_usps_address',
                 user_id=request.user.id,
@@ -897,7 +897,7 @@ def take_usps_address(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='take_usps_address',
             user_id=user_id,
@@ -921,7 +921,7 @@ def household(request, **kwargs):
             'renewal_mode') if request.session.get('renewal_mode') else False
 
         if request.method == "POST":
-            logger.debug(
+            log.debug(
                 "Leaving function (POST)",
                 function='household',
                 user_id=request.user.id,
@@ -957,7 +957,7 @@ def household(request, **kwargs):
                 return redirect(reverse("app:household_members"))
 
         else:
-            logger.debug(
+            log.debug(
                 "Entering function (GET)",
                 function='household',
                 user_id=request.user.id,
@@ -990,7 +990,7 @@ def household(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='household',
             user_id=user_id,
@@ -1011,7 +1011,7 @@ def household_members(request, **kwargs):
             'renewal_mode') if request.session.get('renewal_mode') else False
 
         if request.method == "POST":
-            logger.debug(
+            log.debug(
                 "Leaving function (POST)",
                 function='household_members',
                 user_id=request.user.id,
@@ -1055,7 +1055,7 @@ def household_members(request, **kwargs):
                     if any(x in filetype for x in ["PNG", "JPEG", "JPG", "PDF"]):
                         pass
                     else:
-                        logger.error(
+                        log.error(
                             f"File is not a valid file type ({filetype})",
                             function='household_members',
                             user_id=request.user.id,
@@ -1132,13 +1132,13 @@ def household_members(request, **kwargs):
                     )
 
                 if fileAmount > 0:
-                    logger.info(
+                    log.info(
                         'Identification file(s) saved successfully',
                         function='household_members',
                         user_id=request.user.id,
                     )
                 else:
-                    logger.info(
+                    log.info(
                         'No identification files to upload were found',
                         function=household_members,
                         user_id=request.user.id,
@@ -1185,7 +1185,7 @@ def household_members(request, **kwargs):
             return redirect(reverse("app:programs"))
         
         else:
-            logger.debug(
+            log.debug(
                 "Entering function (GET)",
                 function='household_members',
                 user_id=request.user.id,
@@ -1219,7 +1219,7 @@ def household_members(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='household_members',
             user_id=user_id,
@@ -1236,7 +1236,7 @@ def programs(request, **kwargs):
         renewal_mode = request.session.get(
             'renewal_mode') if request.session.get('renewal_mode') else False
         if request.method == "POST":
-            logger.debug(
+            log.debug(
                 "Leaving function (POST)",
                 function='programs',
                 user_id=request.user.id,
@@ -1284,7 +1284,7 @@ def programs(request, **kwargs):
                 selected_eligibility_programs)
             return redirect(reverse("app:files"))
         else:
-            logger.debug(
+            log.debug(
                 "Entering function (GET)",
                 function='programs',
                 user_id=request.user.id,
@@ -1316,7 +1316,7 @@ def programs(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='programs',
             user_id=user_id,
@@ -1341,7 +1341,7 @@ def files(request, **kwargs):
             request)
 
         if request.method == "POST":
-            logger.debug(
+            log.debug(
                 "Leaving function (POST)",
                 function='files',
                 user_id=request.user.id,
@@ -1373,7 +1373,7 @@ def files(request, **kwargs):
                     if any(x in filetype for x in ["PNG", "JPEG", "JPG", "PDF"]):
                         pass
                     else:
-                        logger.error(
+                        log.error(
                             f"File is not a valid file type ({filetype})",
                             function='files',
                             user_id=request.user.id,
@@ -1454,7 +1454,7 @@ def files(request, **kwargs):
                     return redirect(target_page)
 
         else:
-            logger.debug(
+            log.debug(
                 "Entering function (GET)",
                 function='files',
                 user_id=request.user.id,
@@ -1481,7 +1481,7 @@ def files(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='files',
             user_id=user_id,
@@ -1493,7 +1493,7 @@ def files(request, **kwargs):
 def broadcast(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='broadcast',
             user_id=request.user.id,
@@ -1503,7 +1503,7 @@ def broadcast(request, **kwargs):
         try:
             broadcast_email(current_user.email)
         except:
-            logger.error(
+            log.error(
                 "There was a problem with sending the email (Sendgrid)",
                 function='broadcast',
                 user_id=request.user.id,
@@ -1513,14 +1513,14 @@ def broadcast(request, **kwargs):
         try:
             broadcast_sms(phone)
         except:
-            logger.error(
+            log.error(
                 "Twilio servers may be down",
                 function='broadcast',
                 user_id=request.user.id,
             )
             # TODO store / save for later: client getting feedback that twilio may be down
 
-        logger.info(
+        log.info(
             "Application completed successfully",
             function='broadcast',
             user_id=request.user.id,
@@ -1547,7 +1547,7 @@ def broadcast(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='broadcast',
             user_id=user_id,

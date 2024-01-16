@@ -24,10 +24,10 @@ from django.core.exceptions import MiddlewareNotUsed
 from django.conf import settings
 
 from app.backend import what_page_renewal
-from log.wrappers import LoggerWrapper
+from logger.wrappers import LoggerWrapper
 
 
-logger = LoggerWrapper(logging.getLogger(__name__))
+log = LoggerWrapper(logging.getLogger(__name__))
 
 
 class LoginRequiredMiddleware:
@@ -171,7 +171,7 @@ class RenewalModeMiddleware:
 
             if request.user.last_renewal_action:
                 what_page = what_page_renewal(request.user.last_renewal_action)
-                logger.info(
+                log.info(
                     f"Continuing renewal: what_page_renewal() returned {what_page}"
                 )
 
@@ -204,7 +204,7 @@ class FirstViewMiddleware:
         """ Primary call for the middleware. """
 
         if 'first_view_recorded' not in request.session:
-            logger.info(
+            log.info(
                 f"Starting instance: app version {settings.CODE_VERSION}",
                 function='FirstViewMiddleware',
             )
