@@ -16,12 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from app import constants
+
 class LogRouter:
     """
     A router to control all database operations on models for the logger.
 
     """
-    route_app_labels = {'logger'}
+    route_app_labels = constants.logger_app_labels
 
     def db_for_read(self, model, **hints):
         """
@@ -53,8 +55,8 @@ class LogRouter:
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         """
-        Make sure the the 'analytics' database consists of the log app and nothing
-        else.
+        Make sure the the 'analytics' database consists of the logger app and
+        nothing else.
 
         """
         if app_label in self.route_app_labels:

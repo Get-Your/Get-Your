@@ -4,6 +4,7 @@ from django.db import migrations
 
 from log.models import Detail as OldDetail
 from logger.models import Detail as NewDetail
+from app import constants
 
 
 def apply_migration(apps, schema_editor):
@@ -52,6 +53,14 @@ def revert_migration(apps, schema_editor):
         confirmRevert = input("\n\nData exist in logger.Detail; to prevent data loss, reverting the data transfer from 'log' will make no changes, but migrating again may add additional data from 'log'. Press 'y' to continue or anything else to abort: ")
         if confirmRevert.lower() != 'y':
             raise KeyboardInterrupt("User aborted the migration reversion.")
+        
+
+class DeferredForwardRunSQL(migrations.RunSQL):
+    def database_forwards(self, app_label, schema_editor, from_state, to_state):
+        # Before adding the SQL statement to the deferred-run list, ensure the
+        # target app_label is the logger database
+        if app_label in constants.logger_app_labels:
+            schema_editor.deferred_sql.append(self.sql[0])
 
 
 class Migration(migrations.Migration):
@@ -61,4 +70,11 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(apply_migration, revert_migration),
+        # Update the logger_detail `id` sequence to account for the new data,
+        # but defer it until after the data are inserted
+        DeferredForwardRunSQL(
+            ("SELECT setval('logger_detail_id_seq', (select max(id) from logger_detail))", ),
+            # Allow reversion, but specify no operation
+            migrations.RunSQL.noop,
+        ),
     ]
