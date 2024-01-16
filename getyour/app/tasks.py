@@ -29,7 +29,10 @@ def send_renewal_email():
         # them a renewal email.
         if needs_renewal:
             # Check if the user has been notified within the specified period
-            # Note that `.months` specifies number of months within a year,
+            # Note that the user will be notified each `notification_buffer_month`
+            # months
+            
+            # `.months` specifies number of months within a year,
             # where `in_months()` (used here) specifies overall number of months
             # (e.g. period.months + period.years*12 = period.in_months())
             months_since_last_notification = (pendulum.now() - user.last_action_notification_at).in_months()
@@ -54,4 +57,4 @@ def send_renewal_email():
                 )
 
                 # TODO: Discuss archiving users that haven't renewed and have
-                # exceeded the 30 day notification window
+                # exceeded the `notification_buffer_month` notification window

@@ -1125,6 +1125,11 @@ def household_members(request, **kwargs):
                         file_name, buffer.read(), content_type)
                     file_paths.append(file_path)
                     default_storage.save(file_path, uploaded_file)
+                    log.debug(
+                        f"Identification file {instance.document_path} saved successfully",
+                        function='household_members',
+                        user_id=request.user.id,
+                    )
 
                 if fileAmount > 0:
                     log.info(
@@ -1408,7 +1413,7 @@ def files(request, **kwargs):
                     )
                     fileNames.append(str(instance.document_path))
                     log.debug(
-                        f"File {instance.document_path} saved successfully",
+                        f"Eligibility file {instance.document_path} saved successfully",
                         function='files',
                         user_id=request.user.id,
                     )
@@ -1417,13 +1422,7 @@ def files(request, **kwargs):
                 instance.document_path = str(fileNames)
                 instance.save()
 
-                if fileAmount > 0:
-                    log.info(
-                        'Eligibility Program file(s) saved successfully',
-                        function='household_members',
-                        user_id=request.user.id,
-                    )
-                else:
+                if fileAmount == 0:
                     log.info(
                         'No Eligibility Program files to upload were found',
                         function=household_members,
@@ -1529,6 +1528,7 @@ def broadcast(request, **kwargs):
 
         # Note in the database when notifications were sent
         current_user.last_action_notification_at = pendulum.now()
+        current_user.save()
 
         return render(
             request,
