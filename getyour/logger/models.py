@@ -41,5 +41,6 @@ class Detail(models.Model):
         indexes = [
             models.Index(
                 fields=['process_id', 'thread_id'],
+                name='logger_det_process_712f94_idx',
             ),
         ]
