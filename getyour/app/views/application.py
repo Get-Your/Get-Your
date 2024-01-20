@@ -1126,7 +1126,7 @@ def household_members(request, **kwargs):
                     file_paths.append(file_path)
                     default_storage.save(file_path, uploaded_file)
                     log.debug(
-                        f"Identification file {instance.document_path} saved successfully",
+                        f"Identification file {file_path} saved successfully",
                         function='household_members',
                         user_id=request.user.id,
                     )
