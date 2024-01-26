@@ -820,10 +820,11 @@ def check_if_user_needs_to_renew(user_id):
     highest_freq_renewal_interval = highest_freq_program.renewal_interval_month
 
     # The highest_freq_renewal_interval is measured in months. We need to check
-    # if the user's last_completed_at is greater than or equal to the current
-    # date minus the highest_freq_renewal_interval minus the notification buffer.
-    needs_renewal = pendulum.now().subtract(
-        months=highest_freq_renewal_interval - notification_buffer_month) >= user_profile.last_completed_at
+    # if the user's next renewal date is greater than or equal to the current
+    # date.
+    needs_renewal = pendulum.parse(
+        user_profile.last_completed_at.isoformat()).add(
+        months=highest_freq_renewal_interval) <= pendulum.now()
 
     return needs_renewal
 

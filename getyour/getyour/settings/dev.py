@@ -47,6 +47,7 @@ SENDGRID_API_KEY = get_secret('SENDGRID_API_KEY')
 TEMPLATE_ID = get_secret("TEMPLATE_ID")
 TEMPLATE_ID_PW_RESET = get_secret("TEMPLATE_ID_PW_RESET")
 TEMPLATE_ID_DYNAMIC_EMAIL = get_secret("TEMPLATE_ID_DYNAMIC_EMAIL")
+TEMPLATE_ID_RENEWAL = get_secret("TEMPLATE_ID_RENEWAL")
 AZURE_ACCOUNT_NAME = get_secret("AZURE_ACCOUNT_NAME")
 AZURE_ACCOUNT_KEY = get_secret("AZURE_ACCOUNT_KEY")
 AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.usgovcloudapi.net"
@@ -83,3 +84,15 @@ DATABASES = {
 # This uses an Azure App Service environment var
 if DEBUG_LOGGING:
     LOGGING['loggers']['app']['level'] = 'DEBUG'
+
+
+Q_CLUSTER = {
+    'name': 'DjangORM',
+    'workers': 4,
+    'timeout': 90,
+    'retry': 120,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm':  'default',
+    'catch_up': False,
+}
