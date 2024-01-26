@@ -50,13 +50,14 @@ ENV CODE_VERSION=$CODE_VERSION
 RUN python manage.py collectstatic --noinput --settings=getyour.settings.dev
 #--settings=getyour.settings.production
 
-COPY init.sh /usr/local/bin/
+# Install supervisord
+RUN apt-get update && apt-get install -y supervisor
 
-RUN chmod u+x /usr/local/bin/init.sh
+# Copy supervisord.conf to the appropriate location
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 #Layer for exposing the app through
 EXPOSE 8000
 
-WORKDIR /code
-
-ENTRYPOINT [ "init.sh" ]
+# Run supervisord
+CMD ["/usr/bin/supervisord"]
