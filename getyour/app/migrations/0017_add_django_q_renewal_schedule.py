@@ -37,6 +37,10 @@ class Migration(migrations.Migration):
             "app",
             "0016_rename_renewal_interval_iqprogramrd_renewal_interval_month_and_more",
         ),
+        (
+            "django_q",
+            "0017_task_cluster_alter",
+        ),
     ]
 
     operations = [
