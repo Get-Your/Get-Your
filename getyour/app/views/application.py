@@ -685,9 +685,9 @@ def address_correction(request, **kwargs):
                 q_orig = {key: q_orig[key] for key in q_orig.keys()}
             if 'usps_address_validate' in request.session.keys() and \
                 dict_address['AddressValidateResponse']['Address']['Address2'].lower() == q_orig['address1'].lower() and \
-                    dict_address['AddressValidateResponse']['Address']['Address1'].lower() == q_orig['address2'].lower() and \
-            dict_address['AddressValidateResponse']['Address']['City'].lower() == q_orig['city'].lower() and \
-            dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
+                dict_address['AddressValidateResponse']['Address']['Address1'].lower() == q_orig['address2'].lower() and \
+                dict_address['AddressValidateResponse']['Address']['City'].lower() == q_orig['city'].lower() and \
+                dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
                 str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
 
                 log.info(

@@ -131,6 +131,13 @@ def login_user(request, **kwargs):
                 if request.session.get('auth_next', None) is not None:
                     return redirect(request.session['auth_next'])
                 
+                # Workaround for https://github.com/Get-Your/Get-Your/issues/251:
+                # existing data in last_renewal_action implies the user logged out
+                # during a renewal and therefore should be taken directly to the
+                # dashboard
+                if request.user.last_renewal_action is not None:
+                    return redirect(reverse("app:dashboard"))
+                
                 page = what_page(request.user, request)
                 log.info(
                     f"Continuing application: what_page() returned {page}",
