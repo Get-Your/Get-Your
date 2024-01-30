@@ -61,7 +61,15 @@ class DeferredForwardRunSQL(migrations.RunSQL):
         # Before adding the SQL statement to the deferred-run list, ensure the
         # target connection is the 'analytics' database
         if schema_editor.connection.alias == 'analytics':
-            schema_editor.deferred_sql.append(self.sql[0])
+            # Get the proper SQL statement, using 'default' database type
+            try:
+                sql_statement = self.sql[connections['default'].vendor]
+            except KeyError:
+                raise TypeError(
+                    f"The database type '{connections['default'].vendor}' is not supported in this migration (specifically, setting the autoincrement index after copying data)."
+                )
+        
+            schema_editor.deferred_sql.append(sql_statement)
 
 
 class Migration(migrations.Migration):
@@ -73,8 +81,14 @@ class Migration(migrations.Migration):
         migrations.RunPython(apply_migration, revert_migration),
         # Update the logger_detail `id` sequence to account for the new data,
         # but defer it until after the data are inserted
+        # The first arg dictionary is the statement to use for each database
+        # type, where the keys must match values of
+        # django.db.connections['default'].vendor for this project
         DeferredForwardRunSQL(
-            ("SELECT setval('logger_detail_id_seq', (select max(id) from logger_detail))", ),
+            {
+                'postgresql': "SELECT setval('logger_detail_id_seq', (select max(id) from logger_detail))",
+                'sqlite': "UPDATE SQLITE_SEQUENCE SET seq=(select max(id) from logger_detail) where name='logger_detail'",
+            },
             # Allow reversion, but specify no operation
             migrations.RunSQL.noop,
         ),
