@@ -132,6 +132,7 @@ class ValidRouteTest(TestCase):
     Test the ValidRouteMiddleware with both authenticated and anonymous user.
     
     """
+    databases = '__all__'
 
     def setUp(self):
         """ Set up the environment for testing. """
