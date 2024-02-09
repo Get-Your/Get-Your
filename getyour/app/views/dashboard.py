@@ -26,31 +26,37 @@ from django.contrib.auth.decorators import login_required
 from app.forms import FeedbackForm
 from app.backend import address_check, get_users_iq_programs
 from app.models import AddressRD, IQProgram, IQProgramRD
-from log.wrappers import LoggerWrapper
+from logger.wrappers import LoggerWrapper
 
 
 # Initialize logger
-logger = LoggerWrapper(logging.getLogger(__name__))
+log = LoggerWrapper(logging.getLogger(__name__))
 
 
 @login_required(redirect_field_name='auth_next')
 def dashboard(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='dashboard',
             user_id=request.user.id,
         )
 
-        # Check if the users renewal_mode session variable is set to True
+        # Check if the users renewal_mode session variable is set to True and
+        # retrieve renewal_eligible and renewal_ineligible session vars
+        renewal_eligible = request.session.get('renewal_eligible', [])
+        renewal_ineligible = request.session.get('renewal_ineligible', [])
+
         app_renewed = False
         if request.session.get('renewal_mode', False) and request.session.get("app_renewed", False):
             app_renewed = True
             request.session['renewal_mode'] = False
             request.session['app_renewed'] = False
-            logger.info(
-                "Renewal (for GTR) completed successfully",
+            del request.session['renewal_eligible']
+            del request.session['renewal_ineligible']
+            log.info(
+                "Renewal completed successfully",
                 function='dashboard',
                 user_id=request.user.id,
             )
@@ -100,6 +106,39 @@ def dashboard(request, **kwargs):
             request.user.has_viewed_dashboard = True
             request.user.save()
 
+        # Parse and stringify renewal_eligible and renewal_ineligible
+        if len(renewal_eligible) == 1:
+            renewal_eligible_str = "{sing} was successfully renewed!".format(
+                sing=renewal_eligible[-1],
+            )
+        elif len(renewal_eligible) > 1:
+            renewal_eligible_str = "{plur}{oxcom} and {sing} were successfully renewed!".format(
+                plur=', '.join(renewal_eligible[:-1]),
+                oxcom=',' if len(renewal_eligible)>2 else '',
+                sing=renewal_eligible[-1],
+            )
+        else:
+            renewal_eligible_str = ""
+
+        ineligible_pre = "Unfortunately, you are no longer qualified for"
+        ineligible_post = "If you think this is in error, please email getfoco@fcgov.com"
+        if len(renewal_ineligible) == 1:
+            renewal_ineligible_str = "{pre} {sing}. {pst}".format(
+                sing=renewal_ineligible[-1],
+                pre=ineligible_pre,
+                pst=ineligible_post,
+            )
+        elif len(renewal_ineligible) > 1:
+            renewal_ineligible_str = "{pre} {plur}{oxcom} and {sing}. {pst}".format(
+                plur=', '.join(renewal_ineligible[:-1]),
+                oxcom=',' if len(renewal_ineligible)>2 else '',
+                sing=renewal_ineligible[-1],
+                pre=ineligible_pre,
+                pst=ineligible_post,
+            )
+        else:
+            renewal_ineligible_str = ""
+
         return render(
             request,
             'dashboard/dashboard.html',
@@ -117,6 +156,8 @@ def dashboard(request, **kwargs):
                 'proxy_viewed_dashboard': proxy_viewed_dashboard,
                 'badge_visible': request.user.household.is_income_verified,
                 'app_renewed': app_renewed,
+                'renewal_eligible': renewal_eligible_str,
+                'renewal_ineligible': renewal_ineligible_str,
             },
         )
     
@@ -126,7 +167,7 @@ def dashboard(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='dashboard',
             user_id=user_id,
@@ -144,7 +185,7 @@ def quick_apply(request, iq_program, **kwargs):
         iq_program = IQProgramRD.objects.get(
             program_name=iq_program)
         
-        logger.debug(
+        log.debug(
             f"Entering function for {iq_program.program_name}",
             function='quick_apply',
             user_id=request.user.id,
@@ -159,7 +200,7 @@ def quick_apply(request, iq_program, **kwargs):
             request.user.id, request.user.household.income_as_fraction_of_ami, eligibility_address)
         if iq_program not in users_iq_programs:
             msg = f"User is not eligible for {iq_program.program_name}"
-            logger.error(
+            log.error(
                 msg,
                 function='quick_apply',
                 user_id=request.user.id,
@@ -210,7 +251,7 @@ def quick_apply(request, iq_program, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='quick_apply',
             user_id=user_id,
@@ -222,7 +263,7 @@ def quick_apply(request, iq_program, **kwargs):
 def user_settings(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='user_settings',
             user_id=request.user.id,
@@ -267,7 +308,7 @@ def user_settings(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='user_settings',
             user_id=user_id,
@@ -282,7 +323,7 @@ def user_settings(request, **kwargs):
 def privacy(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='privacy',
             user_id=request.user.id,
@@ -305,7 +346,7 @@ def privacy(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='privacy',
             user_id=user_id,
@@ -317,7 +358,7 @@ def privacy(request, **kwargs):
 def qualified_programs(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='qualified_programs',
             user_id=request.user.id,
@@ -356,7 +397,7 @@ def qualified_programs(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='qualified_programs',
             user_id=user_id,
@@ -367,7 +408,7 @@ def qualified_programs(request, **kwargs):
 def feedback(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='feedback',
             user_id=request.user.id,
@@ -385,7 +426,7 @@ def feedback(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='feedback',
             user_id=user_id,
@@ -396,7 +437,7 @@ def feedback(request, **kwargs):
 def feedback_received(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='feedback_received',
             user_id=request.user.id,
@@ -416,7 +457,7 @@ def feedback_received(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='feedback_received',
             user_id=user_id,
@@ -428,7 +469,7 @@ def feedback_received(request, **kwargs):
 def programs_list(request, **kwargs):
 
     try:
-        logger.debug(
+        log.debug(
             "Entering function",
             function='programs_list',
             user_id=request.user.id,
@@ -459,7 +500,7 @@ def programs_list(request, **kwargs):
             user_id = request.user.id
         except:
             user_id = None
-        logger.exception(
+        log.exception(
             'Uncaught view-level exception',
             function='programs_list',
             user_id=user_id,

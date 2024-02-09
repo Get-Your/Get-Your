@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import datetime
 import requests
+import pendulum
 from enum import Enum
 from itertools import chain
 import logging
@@ -37,12 +38,20 @@ from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.core.serializers.json import DjangoJSONEncoder
 from phonenumber_field.phonenumber import PhoneNumber
-from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram
-from log.wrappers import LoggerWrapper
+from app.models import (
+    HouseholdMembers,
+    EligibilityProgram,
+    IQProgramRD,
+    IQProgram,
+    User,
+    Household,
+    AddressRD,
+)
+from logger.wrappers import LoggerWrapper
 
 
 # Initialize logger
-logger = LoggerWrapper(logging.getLogger(__name__))
+log = LoggerWrapper(logging.getLogger(__name__))
 
 
 form_page_number = 6
@@ -129,7 +138,7 @@ def address_check(address_dict):
 
         # Log a potential error if the city is 'Fort Collins'
         if address_dict['AddressValidateResponse']['Address']['City'].lower() == 'fort collins':    
-            logger.error(
+            log.error(
                 "Potential issue: Fort Collins address marked 'not in GMA': {}".format(
                     address_dict['AddressValidateResponse']['Address'],
                 ),
@@ -143,11 +152,11 @@ def address_check(address_dict):
         msg = 'Connexion not available or API not found' if has_connexion is None \
             else 'Connexion available' if has_connexion \
             else 'Connexion coming soon'
-        logger.info(msg, function='address_check')
+        log.info(msg, function='address_check')
 
         is_in_gma = gma_lookup(coord_string)
         msg = 'Address is in GMA' if is_in_gma else 'Address is outside of GMA'
-        logger.info(msg, function='address_check')
+        log.info(msg, function='address_check')
 
         return (is_in_gma, has_connexion)
 
@@ -187,7 +196,7 @@ def address_lookup(address_parts):
     # Gather response
     response = requests.get(url, params=payload)
     if response.status_code != requests.codes.ok:
-        logger.error(
+        log.error(
             f"API error {response.status_code}: {response.reason}; {response.content}",
             function='address_lookup',
         )
@@ -200,7 +209,7 @@ def address_lookup(address_parts):
     # the JSON for an 'error' key
     if 'error' in outVal:
         errDict = outVal['error']
-        logger.error(
+        log.error(
             f"API error {errDict['code']}: {errDict['message']}",
             function='address_lookup',
         )
@@ -262,7 +271,7 @@ def connexion_lookup(coord_string):
         # Gather response
         response = requests.post(url, params=payload)
         if response.status_code != requests.codes.ok:
-            logger.error(
+            log.error(
                 f"API error {response.status_code}: {response.reason}; {response.content}",
                 function='connexion_lookup',
             )
@@ -275,7 +284,7 @@ def connexion_lookup(coord_string):
         # the JSON for an 'error' key
         if 'error' in outVal:
             errDict = outVal['error']
-            logger.error(
+            log.error(
                 f"API error {errDict['code']}: {errDict['message']}",
                 function='connexion_lookup',
             )
@@ -345,7 +354,7 @@ def gma_lookup(coord_string):
         # Gather response
         response = requests.get(url, params=payload)
         if response.status_code != requests.codes.ok:
-            logger.error(
+            log.error(
                 f"API error {response.status_code}: {response.reason}; {response.content}",
                 function='gma_lookup',
             )
@@ -358,7 +367,7 @@ def gma_lookup(coord_string):
         # the JSON for an 'error' key
         if 'error' in outVal:
             errDict = outVal['error']
-            logger.error(
+            log.error(
                 f"API error {errDict['code']}: {errDict['message']}",
                 function='gma_lookup',
             )
@@ -395,14 +404,14 @@ def validate_usps(inobj):
     validation = usps.validate_address(address)
     outDict = validation.result
     try:
-        logger.info(
+        log.info(
             f"Address dict found: {outDict}",
             function='validate_usps',
         )
         return outDict
 
     except KeyError:
-        logger.exception(
+        log.exception(
             "Address could not be found - no guesses",
             function='validate_usps',
         )
@@ -419,12 +428,12 @@ def broadcast_email(email):
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
-        logger.info(
+        log.info(
             f"Sendgrid returned HTTP {response.status_code}",
             function='broadcast_email',
         )
     except Exception as e:
-        logger.exception(e, function='broadcast_email')
+        log.exception(e, function='broadcast_email')
 
 
 def broadcast_email_pw_reset(email, content):
@@ -442,15 +451,33 @@ def broadcast_email_pw_reset(email, content):
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
-        logger.info(
+        log.info(
             f"Sendgrid returned HTTP {response.status_code}",
             function='broadcast_email_pw_reset',
         )
     except Exception as e:
-        logger.exception(
+        log.exception(
             e,
             function='broadcast_email_pw_reset',
         )
+
+
+def broadcast_renewal_email(email):
+    TEMPLATE_ID = settings.TEMPLATE_ID_RENEWAL
+    message = Mail(
+        from_email='getfoco@fcgov.com',
+        to_emails=email)
+
+    message.template_id = TEMPLATE_ID
+    try:
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        response = sg.send(message)
+        log.info(
+            f"Sendgrid returned HTTP {response.status_code}",
+            function='broadcast_renewal_email',
+        )
+    except Exception as e:
+        log.exception(e, function='broadcast_renewal_email')
 
 
 def changed_modelfields_to_dict(
@@ -627,14 +654,20 @@ def build_qualification_button(users_enrollment_status):
     }.get(users_enrollment_status, "")
 
 
-def map_iq_enrollment_status(program):
+def map_iq_enrollment_status(program, needs_renewal=False):
     try:
-        if program.is_enrolled and program.has_renewed:
-            return "ACTIVE"
-        elif not program.is_enrolled:
+        # Check pending programs first. Reason being we don't want in progress
+        # programs to be marked as renewal
+        if not program.is_enrolled:
             return "PENDING"
-        elif program.is_enrolled and not program.has_renewed:
+        # If the user is enrolled in a "lifetime" program (i.e. a program that 
+        # does not have a renewal_interval_month), don't set the status to
+        # renewal
+        elif program.is_enrolled and needs_renewal and program.renewal_interval_month is not None:
             return "RENEWAL"
+        elif program.is_enrolled:
+            return "ACTIVE"
+        
     except Exception:
         return ''
 
@@ -678,9 +711,16 @@ def get_users_iq_programs(
     active_iq_programs = [
         program for program in active_iq_programs if not (program.req_is_city_covered and not users_eligiblity_address.is_city_covered)]
 
+    # Gather list of active programs
     programs = list(chain(users_iq_programs, active_iq_programs))
+    # Determine if the user needs renewal for *any* program, and set as a user-
+    # level 'needs renewal'
+    needs_renewal = check_if_user_needs_to_renew(user_id)
+
     for program in programs:
-        status_for_user = map_iq_enrollment_status(program)
+        program.renewal_interval_month = program.program.renewal_interval_month if hasattr(
+            program, 'program') else program.renewal_interval_month
+        status_for_user = map_iq_enrollment_status(program, needs_renewal=needs_renewal)
         program.button = build_qualification_button(
             status_for_user)
         program.status_for_user = status_for_user
@@ -762,3 +802,175 @@ def what_page_renewal(last_renewal_action):
 
     # Default return if all pages are present
     return None
+
+
+def check_if_user_needs_to_renew(user_id):
+    """Checks if the user needs to renew their application
+    Args:
+        user_id (int): The ID (primary key) of the User object
+    Returns:
+        bool: True if the user needs to renew their application, False otherwise
+    """
+    user_profile = User.objects.get(id=user_id)
+
+    # Get the highest frequency renewal_interval_month from the IQProgramRD
+    #table and filter out any null renewal_interval_month
+    highest_freq_program = IQProgramRD.objects.filter(
+        renewal_interval_month__isnull=False
+    ).order_by('renewal_interval_month').first()
+    
+    # If there are no programs without lifetime enrollment (e.g. without
+    # non-null renewal_interval_month), always return False for needs_renewal
+    if highest_freq_program is None:
+        return False
+    
+    highest_freq_renewal_interval = highest_freq_program.renewal_interval_month
+
+    # The highest_freq_renewal_interval is measured in months. We need to check
+    # if the user's next renewal date is greater than or equal to the current
+    # date.
+    needs_renewal = pendulum.parse(
+        user_profile.last_completed_at.isoformat()).add(
+        months=highest_freq_renewal_interval) <= pendulum.now()
+
+    return needs_renewal
+
+
+def finalize_application(request, renewal_mode=False):
+    """
+    Finalize the user's application. This is run after all Eligibility Program
+    files are uploaded.
+    
+    """
+
+    # Get all of the user's eligiblity programs and find the one with the lowest
+    # 'ami_threshold' value which can be found in the related
+    # eligiblityprogramrd table
+    lowest_ami = EligibilityProgram.objects.filter(
+        Q(user_id=request.user.id)
+    ).select_related(
+        'program'
+    ).values(
+        'program__ami_threshold'
+    ).order_by(
+        'program__ami_threshold'
+    ).first()
+
+    # Now save the value of the ami_threshold to the user's household
+    household = Household.objects.get(
+        Q(user_id=request.user.id)
+    )
+    household.income_as_fraction_of_ami = lowest_ami['program__ami_threshold']
+
+    if renewal_mode:
+        household.is_income_verified = False
+        household.save()
+
+        # Set the user's last_completed_date to now, as well as set the user's
+        # last_renewal_action to null
+        user = User.objects.get(id=request.user.id)
+        user.renewal_mode = True
+        user.last_completed_at = pendulum.now()
+        user.last_renewal_action = None
+        user.save()
+
+        # Get every IQ program for the user that have a renewal_interval_month
+        # in the IQProgramRD table that is not null
+        users_current_iq_programs = IQProgram.objects.filter(
+            Q(user_id=request.user.id)
+        ).select_related(
+            'program'
+        ).order_by(
+            'program__renewal_interval_month'
+        ).exclude(
+            program__renewal_interval_month__isnull=True
+        )
+
+        # For each element in users_current_iq_programs, delete the program.
+        # Note that each element has a non-null renewal interval
+        for program in users_current_iq_programs:
+            program.renewal_mode = True
+            program.delete()
+
+        # Get the user's eligibility address
+        eligibility_address = AddressRD.objects.filter(
+            id=request.user.address.eligibility_address_id).first()
+
+        # Now get all of the IQ Programs for which the user is eligible
+        users_iq_programs = get_users_iq_programs(
+            request.user.id,
+            lowest_ami['program__ami_threshold'],
+            eligibility_address,
+        )
+
+        # For each IQ program the user was previously enrolled, sort
+        # eligibility status into renewal_eligible and renewal_ineligible
+        renewal_eligible = []
+        renewal_ineligible = []
+
+        for program in users_current_iq_programs:
+            if program.program.id in [x.id for x in users_iq_programs]:
+                renewal_eligible.append(program.program.friendly_name)
+            else:
+                renewal_ineligible.append(program.program.friendly_name)
+
+        # For every eligible IQ program, check if the user should be
+        # automatically applied
+        for program in users_iq_programs:
+            # First, check if `program`` is in users_current_iq_programs; if so,
+            # the user is both eligible and were previously applied/enrolled
+            if program.id in [program.program.id for program in users_current_iq_programs]:
+                # Re-apply by creating the element
+                IQProgram.objects.create(
+                    user_id=request.user.id,
+                    program_id=program.id,
+                )
+
+            # Otherwise, apply if the program has enable_autoapply set to True
+            elif program.enable_autoapply:
+                # Check if the user already has the program in the IQProgram table
+                if not IQProgram.objects.filter(
+                    Q(user_id=request.user.id) & Q(
+                        program_id=program.id)
+                ).exists():
+                    # If the user doesn't have the program in the IQProgram
+                    # table, then create it
+                    IQProgram.objects.create(
+                        user_id=request.user.id,
+                        program_id=program.id,
+                    )
+
+        # Set renewal-specific session vars
+        request.session['app_renewed'] = True
+        request.session['renewal_eligible'] = sorted(renewal_eligible)
+        request.session['renewal_ineligible'] = sorted(renewal_ineligible)
+
+        return 'app:dashboard'
+    
+    else:
+        household.save()
+
+        user = User.objects.get(id=request.user.id)
+        user.last_completed_at = pendulum.now()
+        user.save()
+
+        # Get the user's eligibility address
+        eligibility_address = AddressRD.objects.filter(
+            id=request.user.address.eligibility_address_id).first()
+
+        # Now get all of the IQ Programs for which the user is eligible
+        users_iq_programs = get_users_iq_programs(
+            request.user.id,
+            lowest_ami['program__ami_threshold'],
+            eligibility_address,
+        )
+        # For every IQ program, check if the user should be automatically
+        # enrolled in it if the program has enable_autoapply set to True
+        for program in users_iq_programs:
+            if program.enable_autoapply:
+                IQProgram.objects.create(
+                    user_id=request.user.id,
+                    program_id=program.id,
+                )
+
+        return 'app:broadcast'

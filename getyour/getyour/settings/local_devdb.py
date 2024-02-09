@@ -71,6 +71,13 @@ DATABASES = {
         'USER': DB_USER,
         'PASSWORD': DB_PASS,
         'HOST': 'getfoco-postgres-dev.postgres.database.usgovcloudapi.net'
+    },
+    'analytics': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'getyour_dev_analytics',
+        'USER': DB_USER,
+        'PASSWORD': DB_PASS,
+        'HOST': 'getfoco-postgres-dev.postgres.database.usgovcloudapi.net'
     }
 }
 

@@ -27,6 +27,7 @@ class URLconfViewsAccountedFor(TestCase):
     Test whether all URLconf views are accounted for in TestView.
     
     """
+    databases = '__all__'
 
     def setUp(self):
         """ Set up the environment for testing. """
@@ -58,6 +59,7 @@ class TestViewViewsAccountedFor(TestCase):
     Test whether all TestViews are also in URLconf.
     
     """
+    databases = '__all__'
 
     def setUp(self):
         """ Set up the environment for testing. """
@@ -89,6 +91,7 @@ class TestViewsHaveRequiredKeys(TestCase):
     Test whether all views in TestView have the required dict keys.
     
     """
+    databases = '__all__'
 
     def setUp(self):
         """ Set up the environment for testing. """
