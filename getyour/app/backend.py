@@ -38,8 +38,15 @@ from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.core.serializers.json import DjangoJSONEncoder
 from phonenumber_field.phonenumber import PhoneNumber
-from app.models import HouseholdMembers, EligibilityProgram, IQProgramRD, IQProgram, User, Household, AddressRD
-from app.constants import notification_buffer_month
+from app.models import (
+    HouseholdMembers,
+    EligibilityProgram,
+    IQProgramRD,
+    IQProgram,
+    User,
+    Household,
+    AddressRD,
+)
 from logger.wrappers import LoggerWrapper
 
 
@@ -800,7 +807,7 @@ def what_page_renewal(last_renewal_action):
 def check_if_user_needs_to_renew(user_id):
     """Checks if the user needs to renew their application
     Args:
-        user (User): The user object
+        user_id (int): The ID (primary key) of the User object
     Returns:
         bool: True if the user needs to renew their application, False otherwise
     """
