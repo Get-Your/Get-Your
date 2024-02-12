@@ -88,7 +88,7 @@ Local development is completely on the developer's computer. The Django app will
 
     launch.json
 
-and database operations/migrations will apply to a SQLite database file in the repo folder (which will be created if it doesn't exist). The SQLite database will be ignored by Git commits.
+and database operations/migrations will apply to SQLite database files in the repo folder (which will be created if they don't exist). The SQLite databases will be ignored by Git commits.
 
 Local development uses `secrets.dev.toml` for [app secrets](#app-secrets). The SQLite database configuration is hardcoded in `local.py`, so associated variables must exist but won't be used.
 
@@ -168,6 +168,7 @@ Summary of the database setup
 - Database names
   - `platform_dev` is the database name on the DEV server instance
   - `platform_stage` and `platform_prod` are separate databases on the PROD server instance
+  - The 'analytics' counterpart (used by Django for logging) is its own database in each environment
 - Database users (\<env\> is the database instance for each user ('dev', 'stage', or 'prod'))
   - developer_\<env\>_user: Privileged database user, used locally for Django development
   - django_\<env\>_user: Base database user, used by Django with the minimum necessary database privileges
@@ -197,7 +198,7 @@ Use the following connection string to connect to the target database. The hostn
 `pg_dump` and `pg_restore` are PostgreSQL utilities used from the local command line (e.g. not from within the `psql` connection).
 
 ### Creating a Database
-On a freshly-deployed Azure instance, only the admin user (assigned during server setup) and the `postgres` database exist. Use the following code to create the `platform` database.
+On a freshly-deployed Azure instance, only the admin user (assigned during server setup) and the `postgres` database exist. Use the following code to create the `platform` database and its 'analytics' counterpart.
 
     psql "host=<hostname> port=5432 dbname=postgres user=<admin_username> sslmode=require"
 
@@ -221,7 +222,12 @@ If there isn't yet existing data, just run Django migrations to the new \<target
 ### Set Up Database Users
 This section details the order of steps to set up users, roles, and proper permissions. Roles are used for generic permissions so that future users can be added without having to re-grant all permissions.
 
-The admin user shouldn't be used for development or live database connections; a privileged user should instead be created for local development access and a base user created with minimal privileges for the webapp. The privileged user will be stored in each environment's `secrets_*.json` file and the base user will be in the `*.env` file (see [App Secrets](#app-secrets)).
+The admin user shouldn't be used for development or live database connections; a privileged user should instead be created for local development access and a base user created with minimal privileges for the webapp. The privileged user will be stored in each environment's `secrets.*.toml` file and the base user will be in the `.*.deploy` file (see [App Secrets](#app-secrets)).
+
+#### Configure the Primary Database
+This section should be used for the `platform` database, for the initial configuration. It includes definitions that only need to be run once.
+
+Connect to the primary (`platform`) database and complete the following steps:
 
 1. Revoke initial access
 
@@ -236,7 +242,7 @@ The admin user shouldn't be used for development or live database connections; a
 
 1. Create admin role
 
-    Create and permissions an admin user role (named `admin_role`) without login privileges, then grant this role to the Postgres admin account.
+    Create and grant permissions to an admin user role (named `admin_role`) without login privileges, then grant this role to the Postgres admin account.
 
         CREATE ROLE admin_role INHERIT;
         GRANT ALL ON SCHEMA public TO admin_role;
@@ -248,7 +254,7 @@ The admin user shouldn't be used for development or live database connections; a
 
 1. Create basic role
 
-    Create and permissions base user role (named `base_role`, for use via Django) without login privileges.
+    Create and grant permissions to a base user role (named `base_role`, for use via Django) without login privileges.
 
         CREATE ROLE base_role INHERIT;
         GRANT CONNECT ON DATABASE <database_name> TO base_role;
@@ -279,6 +285,44 @@ The admin user shouldn't be used for development or live database connections; a
 
         -- Grant this role to admin user to alter default privileges
         GRANT <privileged_user> TO <admin_user>;
+
+        -- This is so all tables GRANTs apply to new tables as well
+        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT USAGE ON SCHEMAS TO base_role;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
+        
+#### Configure Other Databases
+This section should be used for all other databases on the same server (such as the 'analytics' database used for logging). It relies on the roles that were created in the [previous section](#configure-the-primary-database).
+
+Connect to the database to configure and complete the following steps:
+
+1. Revoke initial access
+
+        REVOKE ALL ON SCHEMA public FROM public;
+        REVOKE ALL ON ALL TABLES IN SCHEMA public FROM public;
+        REVOKE ALL ON DATABASE <database_name> FROM public;
+        REVOKE ALL ON DATABASE postgres FROM public;
+
+1. Grant permissions to the (existing) admin user role
+
+        GRANT ALL ON SCHEMA public TO admin_role;
+        GRANT ALL ON DATABASE <database_name> TO admin_role;
+        GRANT ALL ON ALL TABLES IN SCHEMA public TO admin_role;
+        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO admin_role;
+        GRANT ALL ON DATABASE postgres TO admin_role;        
+
+1. Grant permissions to the (existing) base user role
+
+        GRANT CONNECT ON DATABASE <database_name> TO base_role;
+        GRANT USAGE ON SCHEMA public TO base_role;
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO base_role;
+        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO base_role;
+
+1. Grant permissions to the (existing) privileged user role
+
+        GRANT CREATE ON SCHEMA public TO privileged_role;
+
+1. Alter default privileges
 
         -- This is so all tables GRANTs apply to new tables as well
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT USAGE ON SCHEMAS TO base_role;
