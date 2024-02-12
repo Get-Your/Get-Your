@@ -192,7 +192,7 @@ Database administration can be completed in any application, but `psql` is the b
 
 Use the following connection string to connect to the target database. The hostname and admin username can be found under the 'Essentials' section at the top of the Overview page on the Azure Portal as 'Server name' and 'Server admin login name', respectively.
 
-    `psql "host=<hostname> port=5432 dbname=<database_name> user=<username> sslmode=require"`
+    psql --host=<hostname> --port=5432 --username=<username> --dbname=<database_name>
     <Enter password>
 
 `pg_dump` and `pg_restore` are PostgreSQL utilities used from the local command line (e.g. not from within the `psql` connection).
@@ -200,24 +200,21 @@ Use the following connection string to connect to the target database. The hostn
 ### Creating a Database
 On a freshly-deployed Azure instance, only the admin user (assigned during server setup) and the `postgres` database exist. Use the following code to create the `platform` database and its 'analytics' counterpart.
 
-    psql "host=<hostname> port=5432 dbname=postgres user=<admin_username> sslmode=require"
-
-    -- These lines are within the database
-    CREATE DATABASE <target_database_name>; -- Create the target database
-    \q -- Quit out of the database connection
+    psql --host=<hostname> --port=5432 --username=<admin_username> --dbname=postgres --command="CREATE DATABASE <target_database_name>;"
 
 ### Transferring Between Databases
 During the setup phase, there was much experimentation of Azure instance types; Azure tenant selection; and database naming conventions before settling on the final version, so transferring structure and data was necessary. The following code can be used to transfer existing data to the new database.
 
 If there isn't yet existing data, just run Django migrations to the new \<target_database_name\>.
 
-    # Dumps the database structure and data in a custom format to a local file for pg_restore
+> If the same users aren't present in the target database as there are in the source, the `pg_restore` command will throw errors. To ignore object owners specified in the backup file and instead use the input username as the owner of all objects, add the flag `--no-owner` to the `pg_restore` command. This is not recommended because the permissions structure for Get-Your is strictly defined.
+
+    # Dump the database structure and data in a custom format to a local file for pg_restore
     # <target_local_backup_file> can have any extension
     pg_dump -Fc -v --host=<source_hostname> --username=<source_admin_username> --dbname=<source_database_name> -f <target_local_backup_file>
 
-    # Restore the structure and data *with no owner* to the target database
-    # --no-owner is necessary for proper setup
-    pg_restore -v --no-owner --host=<target_hostname> --port=5432 --username=<target_admin_username> --dbname=<target_database_name> <target_local_backup_file>
+    # Restore the structure and data to the target database
+    pg_restore -v --host=<target_hostname> --port=5432 --username=<target_admin_username> --dbname=<target_database_name> <target_local_backup_file>
 
 ### Set Up Database Users
 This section details the order of steps to set up users, roles, and proper permissions. Roles are used for generic permissions so that future users can be added without having to re-grant all permissions.
@@ -285,12 +282,15 @@ Connect to the primary (`platform`) database and complete the following steps:
 
         -- Grant this role to admin user to alter default privileges
         GRANT <privileged_user> TO <admin_user>;
+        
+        -- This is so all privileges for `base_role` apply to any new objects created by <admin_user>
+        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT USAGE ON SCHEMAS TO base_role;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT CREATE ON SCHEMAS TO privileged_role;
 
-        -- This is so all tables GRANTs apply to new tables as well
-        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT USAGE ON SCHEMAS TO base_role;
+        -- This is so all privileges for `base_role` apply to any new objects created by <privileged_user>
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
-        
+
 #### Configure Other Databases
 This section should be used for all other databases on the same server (such as the 'analytics' database used for logging). It relies on the roles that were created in the [previous section](#configure-the-primary-database).
 
@@ -323,9 +323,12 @@ Connect to the database to configure and complete the following steps:
         GRANT CREATE ON SCHEMA public TO privileged_role;
 
 1. Alter default privileges
+        
+        -- This is so all privileges for `base_role` apply to any new objects created by <admin_user>
+        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT USAGE ON SCHEMAS TO base_role;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT CREATE ON SCHEMAS TO privileged_role;
 
-        -- This is so all tables GRANTs apply to new tables as well
-        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT USAGE ON SCHEMAS TO base_role;
+        -- This is so all privileges for `base_role` apply to any new objects created by <privileged_user>
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
 
