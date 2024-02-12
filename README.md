@@ -57,8 +57,10 @@ On either platform, finish by installing all other dependencies
     python3 -m pip install -r requirements.txt
 
 Run the following to create the SQLite database and populate it with the database schema and sample data (coming soon - see https://github.com/Get-Your/Get-Your/issues/63).
+> Each database migration must be run separately.
 
     python3 manage_local.py migrate
+    python3 manage_local.py migrate --database=<analytics_database>
     python3 manage_local.py runserver
 
 # Development and Deployment
@@ -168,7 +170,7 @@ Summary of the database setup
 - Database names
   - `platform_dev` is the database name on the DEV server instance
   - `platform_stage` and `platform_prod` are separate databases on the PROD server instance
-  - The 'analytics' counterpart (used by Django for logging) is its own database in each environment
+  - The 'analytics' counterpart (used by Django for logging) is its own database in each environment (specified where necessary as \<analytics_database\>)
 - Database users (\<env\> is the database instance for each user ('dev', 'stage', or 'prod'))
   - developer_\<env\>_user: Privileged database user, used locally for Django development
   - django_\<env\>_user: Base database user, used by Django with the minimum necessary database privileges
