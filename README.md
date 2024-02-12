@@ -38,7 +38,7 @@ To run for the first time, a local instance is recommended. To get started, copy
 
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobileVers.settings.local')
 
-Next, copy/paste or rename `settings_dev.json.template` as `settings_dev.json`. There's no need to set variables for the initial run.
+Next, copy/paste or rename `secrets.xxx.toml.template` as `secrets.dev.toml`. There's no need to set variables for the initial run.
 
 Once the settings have been accounted for, finalize Python setup by [creating a virtual environment](https://docs.python.org/3.9/library/venv.html) (optional, but recommended) and installing dependencies.
 
@@ -72,7 +72,7 @@ Local development with remote database (see [Hybrid Development](#hybrid-develop
 
 Deployment (see [Deployment](#deployment)):
 - `dev.py`
-- `prod.py`
+- `production.py`
 
 ## manage.py
 The development and production Git branches are set up for deployment such that Django's automatically-created management utility (`manage.py`) points to `settings.dev` in the `dev` branch and `settings.production` in the `main` branch. The `manage.py` designation should not be changed; the Docker build process reads `manage.py`, which means the Git branch can be used as a proxy for the deployment environment.
@@ -90,7 +90,7 @@ Local development is completely on the developer's computer. The Django app will
 
 and database operations/migrations will apply to a SQLite database file in the repo folder (which will be created if it doesn't exist). The SQLite database will be ignored by Git commits.
 
-Local development uses `secrets_dev.json` for [app secrets](#app-secrets). The SQLite database configuration is hardcoded in `local.py`, so associated variables must exists but won't be used.
+Local development uses `secrets.dev.toml` for [app secrets](#app-secrets). The SQLite database configuration is hardcoded in `local.py`, so associated variables must exist but won't be used.
 
 ## Hybrid Development
 Hybrid development is for running the webapp locally on the developer's computer and connecting to a remote database for testing or migrating changes. The Django app will be run via
@@ -111,7 +111,7 @@ so that full error messages are displayed on the webpage, rather than the minima
 
 > Note that `DEBUG` must *always* be set to `False` when the site is viewable on the web.
 
-Hybrid development uses `secrets_dev.json` and `secrets_prod.json` for DEV and STAGE/PROD [app secrets](#app-secrets) (respectively).
+Hybrid development uses `secrets.dev.toml` and `secrets.prod.toml` for DEV and STAGE/PROD [app secrets](#app-secrets) (respectively).
 
 > Note that **all** migrations must be run via `local_devdb.py` or `caution_local_proddb.py` settings using the privileged database user (summarized in the [database setup](#database-setup-summary)).
 
@@ -120,19 +120,19 @@ Deployment consists of building and pushing the Docker container, then pulling i
 
 - DEV
   - The container is manually built and pushed to Docker Hub
-  - The DEV Web App has a webhook to pull the appropriate container tag whenever it's updated
+  - The DEV Web App has a webhook to pull the `dev` tag whenever it's updated
 - STAGE
-  - TODO: When the `main` branch is manually pulled into a repo in the private City of Fort Collins Github organization, a Github Action builds and pushes the container to Docker Hub using the latest Git tag and also the `latest` container tag
-  - The STAGE Web App has a webhook to pull the `latest` tag whenever it's updated
+  - TODO: When the `main` branch is manually pulled into a repo in the private City of Fort Collins Github organization, a Github Action builds and pushes the container to Docker Hub using the latest Git tag and also the `prod` container tag
+  - The STAGE Web App has a webhook to pull the `prod` tag whenever it's updated
 - PROD
   - PROD is manually swapped from STAGE only after STAGE has been verified
 
-Deployment uses `dev.env` and `prod.env` for DEV and STAGE/PROD [app secrets](#app-secrets) (respectively).
+Deployment uses `.dev.deploy` and `.prod.deploy` for DEV and STAGE/PROD [app secrets](#app-secrets) (respectively).
 
 # App Secrets
-App secrets are loaded into the Docker container as environment variables via the `.env` files (`dev.env` and `prod.env`, for each [database server instance](#database-setup)) and `secrets_*.json` files (`secrets_dev.json` and `secrets_prod.json`, for each [database server instance](#database-setup)). Each of the four files has a `*.template` template to fill with the relevant variables.
+App secrets are loaded into the Docker container as environment variables via the `.*.deploy` files (`.dev.deploy` and `.prod.deploy`, for each [database server instance](#database-setup-summary)) and `secrets.*.toml` files (`secrets.dev.toml` and `secrets.prod.toml`, for each [database server instance](#database-setup-summary)). Each of the four files has a `*.template` template to fill with the relevant variables, found in the `/ref/env_vars` directory.
 
-The difference between `secrets_*.json` and `*.env` file usage can be found in [Development and Deployment](#development-and-deployment).
+The difference between `secrets.*.toml` and `.*.deploy` file usage can be found in [Development and Deployment](#development-and-deployment).
 
 # Azure App Service Frontend
 
@@ -153,7 +153,7 @@ The Azure service for the Get FoCo app is a Linux-based Docker container Web App
 ## File Store Setup Description
 See [Azure file store selection docs](https://docs.microsoft.com/en-us/azure/storage/files/storage-how-to-create-file-share?tabs=azure-portal) for reference.
 
-Blob Storage is used for storage of user files from Django. The app uses `azure-blob-storage` for the connection; see `dev.env.template` and `secrets_dev.json.template` for the necessary variables to make the connection.
+Blob Storage is used for storage of user files from Django. The app uses `azure-blob-storage` for the connection; see `/ref/env_vars/.dev.deploy.template` and `/ref/env_vars/secrets.dev.toml.template` for the necessary variables to make the connection.
 
 # Azure Database Backend
 
