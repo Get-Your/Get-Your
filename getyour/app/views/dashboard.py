@@ -43,8 +43,9 @@ def dashboard(request, **kwargs):
             user_id=request.user.id,
         )
 
-        # Check if the users renewal_mode session variable is set to True and
-        # retrieve renewal_eligible and renewal_ineligible session vars
+        # Check if the users renewal_mode session variable is set to True,
+        # whether the app renewal is complete, and retrieve renewal_eligible and
+        # renewal_ineligible session vars
         renewal_eligible = request.session.get('renewal_eligible', [])
         renewal_ineligible = request.session.get('renewal_ineligible', [])
 

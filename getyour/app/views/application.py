@@ -41,7 +41,7 @@ from django.contrib.auth.decorators import login_required
 from app.forms import HouseholdForm, UserForm, AddressForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm
 from app.backend import form_page_number, tag_mapping, address_check, serialize_household_members, validate_usps, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, broadcast_email, broadcast_sms, save_renewal_action, finalize_application
 from app.models import userfiles_path, AddressRD, Address, EligibilityProgram, Household, IQProgram, User, EligibilityProgramRD
-from app.decorators import set_update_mode
+from app.decorators import set_user_mode
 from logger.wrappers import LoggerWrapper
 
 
@@ -110,6 +110,7 @@ def household_definition(request, **kwargs):
         )
         raise
 
+@set_user_mode
 def get_ready(request, **kwargs):
 
     try:
@@ -160,7 +161,7 @@ def get_ready(request, **kwargs):
         raise
 
 
-@set_update_mode
+@set_user_mode
 def account(request, **kwargs):
 
     try:
@@ -320,7 +321,7 @@ def account(request, **kwargs):
 
 
 @login_required(redirect_field_name='auth_next')
-@set_update_mode
+@set_user_mode
 def address(request, **kwargs):
 
     try:
@@ -906,7 +907,7 @@ def take_usps_address(request, **kwargs):
 
 
 @login_required(redirect_field_name='auth_next')
-@set_update_mode
+@set_user_mode
 def household(request, **kwargs):
 
     try:
@@ -999,7 +1000,7 @@ def household(request, **kwargs):
 
 
 @login_required(redirect_field_name='auth_next')
-@set_update_mode
+@set_user_mode
 def household_members(request, **kwargs):
 
     try:
@@ -1324,7 +1325,7 @@ def programs(request, **kwargs):
         raise
 
 @login_required(redirect_field_name='auth_next')
-@set_update_mode
+@set_user_mode
 def files(request, **kwargs):
     '''
     Variables:

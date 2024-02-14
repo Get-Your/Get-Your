@@ -20,20 +20,27 @@ from functools import wraps
 from django.shortcuts import redirect
 
 
-def set_update_mode(view_func):
+def set_user_mode(view_func):
     """
     Decorator to set the update mode in the session.
     """
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        # Get the update_mode query string parameter
-        update_mode = request.GET.get('update_mode')
+        # Get the update_mode and renewal_mode query string parameter
+        update_mode_set = request.GET.get('update_mode')
+        renewal_mode_set = request.GET.get('renewal_mode')
 
+        # For update_mode, redirect queries to the requested path
         # Check explicitly in case the query string is used another way later
-        if update_mode == '1':
+        if update_mode_set == '1':
             # This session var will be the global bool for update_mode
             request.session['update_mode'] = True
             return redirect(request.path)
+        
+        # For renewal_mode, just set the session var and continue on the
+        # prescribed path
+        if renewal_mode_set == '1':
+            request.session['renewal_mode'] = True
 
         # Call the original view function
         response = view_func(request, *args, **kwargs)
