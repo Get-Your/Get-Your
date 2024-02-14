@@ -84,3 +84,14 @@ DATABASES = {
 # This uses an Azure App Service environment var
 if DEBUG_LOGGING:
     LOGGING['loggers']['app']['level'] = 'DEBUG'
+
+Q_CLUSTER = {
+    'name': 'DjangORM',
+    'workers': 4,
+    'timeout': 90,
+    'retry': 120,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm':  'default',
+    'catch_up': False,
+}
