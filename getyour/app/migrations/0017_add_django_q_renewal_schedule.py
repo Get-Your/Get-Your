@@ -17,8 +17,9 @@ def apply_migration(apps, schema_editor):
         func='app.tasks.send_renewal_email',
         # Create a 'daily' schedule
         schedule_type=Schedule.DAILY,
-        # Repeat forever
-        repeats=-1,
+        # DOES NOT REPEAT. This needs to be 'enabled' once online (generally by
+        # setting repeats=-1 to repeat forever)
+        repeats=0,
         # Call the cluster specified by the Q_CLUSTER setting
         cluster='DjangORM',
         # Set the next run to be 1 minute after midnight in America/Denver
