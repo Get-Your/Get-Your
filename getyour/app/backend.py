@@ -585,40 +585,46 @@ def get_user(user_id):
 
 def what_page(user, request):
     """
+    Redirect user to whatever page they need to go to
+    """
+    if user.is_authenticated:
+        what_page_application(request)
+    
+
+def what_page_application(request):
+    """
     Redirect user to whatever page they need to go to every time by checking which steps they've
     completed in the application process
     """
-    if user.is_authenticated:
-        # for some reason, none of these login correctly... reviewing this now
-        try:  # check if the addresses.is_verified==True
-            request.user.address
-        except AttributeError:
-            return "app:address"
 
-        try:
-            request.user.household
-        except AttributeError:
-            return "app:household"
+    # for some reason, none of these login correctly... reviewing this now
+    try:  # check if the addresses.is_verified==True
+        request.user.address
+    except AttributeError:
+        return "app:address"
 
-        if (HouseholdMembers.objects.all().filter(user_id=request.user.id).exists()):
-            pass
-        else:
-            return "app:household_members"
+    try:
+        request.user.household
+    except AttributeError:
+        return "app:household"
 
-        # Check to see if the user has selected any eligibility programs
-        if (request.user.eligibility_files.count()):
-            pass
-        else:
-            return "app:programs"
-
-        users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
-            request)
-        if users_programs_without_uploads.count():
-            return "app:files"
-
-        return "app:dashboard"
+    if (HouseholdMembers.objects.all().filter(user_id=request.user.id).exists()):
+        pass
     else:
-        return "app:account"
+        return "app:household_members"
+
+    # Check to see if the user has selected any eligibility programs
+    if (request.user.eligibility_files.count()):
+        pass
+    else:
+        return "app:programs"
+
+    users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
+        request)
+    if users_programs_without_uploads.count():
+        return "app:files"
+
+    return "app:dashboard"
 
 
 def build_qualification_button(users_enrollment_status):
