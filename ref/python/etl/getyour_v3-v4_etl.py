@@ -83,7 +83,7 @@ def what_page_clone(
     
     # Check to see if the user has uploaded all files
     cursor.execute(
-        """select count(*) from public.app_eligibilityprogram where user_id=%s and document_path is not null""",
+        """select count(*) from public.app_eligibilityprogram where user_id=%s and document_path is not null and document_path != ''""",
         (user_id, ),
     )
     fileCount = cursor.fetchone()[0]
