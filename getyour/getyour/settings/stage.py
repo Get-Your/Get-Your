@@ -25,7 +25,7 @@ from getyour.settings.common_settings import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # TOML-based secrets module
-with open('secrets.prod.toml', 'r', encoding='utf-8') as f:
+with open('.prod.deploy', 'r', encoding='utf-8') as f:
     secrets_dict = loads(f.read())
 
 def get_secret(var_name, read_dict=secrets_dict):
@@ -54,12 +54,10 @@ AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.usgovcloudapi.net"
 AZURE_CONTAINER = get_secret("AZURE_CONTAINER")
 IS_PROD = None  # 'None' implies this is the stage database
 
-# SECURITY WARNING: don't run with debug turned on for any live site!
-DEBUG = True
+# DEBUG moved to Azure App Service environment var (or False, via common_settings)
 
-# Revert to default (permissive) values when running locally
-CSRF_TRUSTED_ORIGINS = []
-ALLOWED_HOSTS = []
+CSRF_TRUSTED_ORIGINS = [f"https://{x}" for x in get_secret("HOSTS")]
+ALLOWED_HOSTS = get_secret("HOSTS")
 
 # Application definitions (outside of common_settings)
 
@@ -82,7 +80,18 @@ DATABASES = {
     }
 }
 
-# Logging modifications - set logging level to DEBUG and overwrite DEBUG_LOGGER
-# env var for clarity
-LOGGING['loggers']['app']['level'] = 'DEBUG'
-DEBUG_LOGGING = True
+# Logging modifications
+# This uses an Azure App Service environment var
+if DEBUG_LOGGING:
+    LOGGING['loggers']['app']['level'] = 'DEBUG'
+
+Q_CLUSTER = {
+    'name': 'DjangORM',
+    'workers': 4,
+    'timeout': 90,
+    'retry': 120,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm':  'default',
+    'catch_up': False,
+}

@@ -12,6 +12,9 @@ The universal income-qualified application for the City of Fort Collins, Colorad
     1. [Local Development](#local-development)
     1. [Hybrid Development](#hybrid-development)
     1. [Deployment](#deployment)
+        1. [Major-Version Deployment](#major-version-deployment)
+        1. [Minor or Patch Deployment](#minor-or-patch-deployment)
+        1. [Deploy Django for Production](#deploy-django-for-production)
 1. [App Secrets](#app-secrets)
 1. [Azure App Service Frontend](#azure-app-service-frontend)
     1. [App Service Plan](#app-service-plan)
@@ -38,7 +41,7 @@ To run for the first time, a local instance is recommended. To get started, copy
 
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobileVers.settings.local')
 
-Next, copy/paste or rename `settings_dev.json.template` as `settings_dev.json`. There's no need to set variables for the initial run.
+Next, copy/paste or rename `secrets.xxx.toml.template` as `secrets.dev.toml`. There's no need to set variables for the initial run.
 
 Once the settings have been accounted for, finalize Python setup by [creating a virtual environment](https://docs.python.org/3.9/library/venv.html) (optional, but recommended) and installing dependencies.
 
@@ -57,8 +60,10 @@ On either platform, finish by installing all other dependencies
     python3 -m pip install -r requirements.txt
 
 Run the following to create the SQLite database and populate it with the database schema and sample data (coming soon - see https://github.com/Get-Your/Get-Your/issues/63).
+> Each database migration must be run separately.
 
     python3 manage_local.py migrate
+    python3 manage_local.py migrate --database=<analytics_database>
     python3 manage_local.py runserver
 
 # Development and Deployment
@@ -72,7 +77,7 @@ Local development with remote database (see [Hybrid Development](#hybrid-develop
 
 Deployment (see [Deployment](#deployment)):
 - `dev.py`
-- `prod.py`
+- `production.py`
 
 ## manage.py
 The development and production Git branches are set up for deployment such that Django's automatically-created management utility (`manage.py`) points to `settings.dev` in the `dev` branch and `settings.production` in the `main` branch. The `manage.py` designation should not be changed; the Docker build process reads `manage.py`, which means the Git branch can be used as a proxy for the deployment environment.
@@ -88,9 +93,9 @@ Local development is completely on the developer's computer. The Django app will
 
     launch.json
 
-and database operations/migrations will apply to a SQLite database file in the repo folder (which will be created if it doesn't exist). The SQLite database will be ignored by Git commits.
+and database operations/migrations will apply to SQLite database files in the repo folder (which will be created if they don't exist). The SQLite databases will be ignored by Git commits.
 
-Local development uses `secrets_dev.json` for [app secrets](#app-secrets). The SQLite database configuration is hardcoded in `local.py`, so associated variables must exists but won't be used.
+Local development uses `secrets.dev.toml` for [app secrets](#app-secrets). The SQLite database configuration is hardcoded in `local.py`, so associated variables must exist but won't be used.
 
 ## Hybrid Development
 Hybrid development is for running the webapp locally on the developer's computer and connecting to a remote database for testing or migrating changes. The Django app will be run via
@@ -111,7 +116,7 @@ so that full error messages are displayed on the webpage, rather than the minima
 
 > Note that `DEBUG` must *always* be set to `False` when the site is viewable on the web.
 
-Hybrid development uses `secrets_dev.json` and `secrets_prod.json` for DEV and STAGE/PROD [app secrets](#app-secrets) (respectively).
+Hybrid development uses `secrets.dev.toml` and `secrets.prod.toml` for DEV and STAGE/PROD [app secrets](#app-secrets) (respectively).
 
 > Note that **all** migrations must be run via `local_devdb.py` or `caution_local_proddb.py` settings using the privileged database user (summarized in the [database setup](#database-setup-summary)).
 
@@ -120,19 +125,144 @@ Deployment consists of building and pushing the Docker container, then pulling i
 
 - DEV
   - The container is manually built and pushed to Docker Hub
-  - The DEV Web App has a webhook to pull the appropriate container tag whenever it's updated
+  - The DEV Web App has a webhook to pull the `dev` tag whenever it's updated
 - STAGE
-  - TODO: When the `main` branch is manually pulled into a repo in the private City of Fort Collins Github organization, a Github Action builds and pushes the container to Docker Hub using the latest Git tag and also the `latest` container tag
-  - The STAGE Web App has a webhook to pull the `latest` tag whenever it's updated
+  - TODO: When the `main` branch is manually pulled into a repo in the private City of Fort Collins Github organization, a Github Action builds and pushes the container to Docker Hub using the latest Git tag and also the `prod` container tag
+  - The STAGE Web App has a webhook to pull the `prod` tag whenever it's updated
 - PROD
   - PROD is manually swapped from STAGE only after STAGE has been verified
 
-Deployment uses `dev.env` and `prod.env` for DEV and STAGE/PROD [app secrets](#app-secrets) (respectively).
+Deployment uses `.dev.deploy` and `.prod.deploy` for DEV and STAGE/PROD [app secrets](#app-secrets) (respectively). There are select environment variables using by Django outside of these files that are stored in Settings > Configuration of each App Service slot in the Azure Portal. These are stored as [deployment slot settings](https://learn.microsoft.com/en-us/azure/app-service/deploy-staging-slots?tabs=portal#which-settings-are-swapped), meaning they are specific to their deployment slot and don't get swapped with the rest of the app. These include:
+
+- `DEBUG_LOGGING`: specifies whether logging uses the 'DEBUG' level or not. If False, the 'INFO' log level will be used instead. This is generally False for PROD and True for STAGE and DEV.
+
+Use the following sections as guidance for deployment (additional steps may be required based on the updates). Generic commands are included for each step. 
+
+There are two options for deployment: [Major-Version Deployment](#major-version-deployment) and [Minor or Patch Deployment](#minor-or-patch-deployment). The difference is that the major-version release includes updates to the database structure and therefore requires additional steps.
+
+### Major-Version Deployment
+> The single database for each environment referenced here is assumed to refer to the primary database, but these steps should be used for each database undergoing structural updates.
+
+Major-version releases will likely involve updates to the database structure or data and may involve ETL, which increase the complexity and risk of a release to the production environment. If there are changes to the database structure, continue with the steps in this section. Otherwise, skip to the [Minor or Patch Deployment](#minor-or-patch-deployment) section.
+
+1. Back up the PROD database (solely to restore into STAGE - another backup with be taken just before going live).
+    
+    Use the `pg_dump` command in [Transferring Between Databases](#transferring-between-databases).
+
+2. Drop and recreate the `public` schema in the STAGE database. This ensures a clean slate for the data transfer.
+
+    **WARNING: MAKE SURE THE CORRENT (STAGE) DATABASE IS USED OR UNEXPECTED DATA LOSS WILL OCCUR**
+
+        psql --host=<hostname> --port=5432 --username=<username> --dbname=<STAGE_database_name> --command="DROP SCHEMA public CASCADE;" --command="CREATE SCHEMA public;"
+        <Enter password>
+
+    Troubleshooting - if this command hangs, try disabling long-running idle queries:
+
+        SELECT pg_terminate_backend(pid) from pg_stat_activity
+        WHERE state in ('<IDLE> in transaction', 'idle in transaction')
+        AND now()-xact_start>interval '1 minute';
+
+3. Restore the structure and data of the STAGE database from PROD.
+
+    Use the `pg_restore` command in [Transferring Between Databases](#transferring-between-databases), with the STAGE database name as \<target_database_name\>.
+
+4. Continue with Steps 5-7 using STAGE as the 'target' environment.
+
+5. Migrate Django changes to the target database. This uses the 'developer_\<env\>_user' specified in the [database setup summary](#database-setup-summary).
+
+6. Run any ETL script(s) against the target database. The ETL should include its own automated verification.
+
+7. Manually verify data integrity at the database level.
+
+1. Deploy the app, using `getyour.settings.stage` settings in `manage.py`. All deployments use the STAGE site, but this specifies the STAGE database for pre-PROD testing.
+
+    See [Deploy Django for Production](#deploy-django-for-production) for steps.
+
+1. Manually verify STAGE site and database functionality. Depending on the complexity of changes, this may include:
+
+    - Going through the application from the beginning to ensure functionality and that the data update properly (recommended)
+    - Logging in as an existing user to ensure functionality (recommended)
+    - Manually triggering a renewal and go through the process to ensure functionality and data integrity
+
+    Refer to `/ref/uat_plan.md` for detailed verification steps.
+
+1. Select a time when users aren't using the PROD site; stop the site service.
+
+1. Back up the PROD database in preparation for deployment to PROD.
+
+    Use the `pg_dump` command in [Transferring Between Databases](#transferring-between-databases).
+
+1. Follow Steps 5-7 using PROD as the 'target' environment.
+
+1. Deploy the app, using `getyour.settings.production` settings in `manage.py`. All PROD deployments use the STAGE site, but this specifies the PROD database so that the sites are swappable without further changes.
+
+    See [Deploy Django for Production](#deploy-django-for-production) for steps.
+
+1. Swap the STAGE and PROD deployment slots.
+    > This must be done while the site service is down because the prior-version PROD site is expecting a different database structure or data.
+
+    This is done with the 'Swap' option in the Deployment > Deployment Slots screen in the Azure Portal.
+
+1. Start the PROD site service.
+
+1. Manually verify functionality using the PROD site. Depending on the complexity of changes, this may include:
+
+    - Going through the application from the beginning to ensure functionality and that the data update properly (recommended)
+    - Logging in as an existing user to ensure functionality (recommended)
+    - Manually triggering a renewal and go through the process to ensure functionality and data integrity
+
+    Refer to `/ref/uat_plan.md` for detailed verification steps.
+
+    > This can be abbreviated since extended testing was completed earlier
+
+### Minor or Patch Deployment
+**These steps are for releases that do not include database structure or data updates.** If database structure or data updates are included, the release is not backward-compatible; it should be a major release and **must** use the steps in [Major-Version Deployment](#major-version-deployment) instead.
+
+1. Back up the PROD database.
+
+    Use the `pg_dump` command in [Transferring Between Databases](#transferring-between-databases).
+
+1. Deploy the app, using `getyour.settings.production` settings in `manage.py`. All PROD deployments use the STAGE site, but this specifies the PROD database so that the sites are swappable without further changes.
+
+    See [Deploy Django for Production](#deploy-django-for-production) for steps.
+
+1. Manually verify functionality using the STAGE site. Depending on the complexity of changes, this may include:
+
+    - Going through the application from the beginning to ensure functionality and that the data update properly (recommended)
+    - Logging in as an existing user to ensure functionality (recommended)
+    - Manually triggering a renewal and go through the process to ensure functionality and data integrity
+
+    Refer to `/ref/uat_plan.md` for detailed verification steps.
+
+1. Swap the STAGE and PROD deployment slots.
+
+    This is done with the 'Swap' option in the Deployment > Deployment Slots screen in the Azure Portal.
+
+1. Manually verify functionality using the PROD site. Depending on the complexity of changes, this may include:
+
+    - Going through the application from the beginning to ensure functionality and that the data update properly (recommended)
+    - Logging in as an existing user to ensure functionality (recommended)
+    - Manually triggering a renewal and go through the process to ensure functionality and data integrity
+
+    Refer to `/ref/uat_plan.md` for detailed verification steps.
+
+    > This can be abbreviated since extended testing was completed earlier
+
+### Deploy Django for Production
+These steps deploy the Django site for production. Note that the STAGE site is always used here; as noted earlier in this section, PROD is always hot-swapped from the STAGE deployment slot.
+
+1. In the `Get-Your/Get-Your` local Git repo, pull the latest changes to the `main` branch. These changes should include the release/tag for the specified release.
+
+1. In the `Get-Your/Get-Your-utils` repo, execute `/get_your_utils/powershell/docker_deploy/BuildDeployDocker.ps1`. This will prompt the user for the target environment, build the `Get-Your` Docker container, and deploy it to the environment-specific tag in Docker Hub.
+
+    The `.env.template` file must be copied to `.env` and the variables filled. The build/deploy script assumes that each repo shares a parent directory on the local device, such as a `git` parent directory like `git/Get-Your` and `git/Get-Your-utils`.
+
+1. Once the script has completed without errors, the STAGE site will automatically update with the latest code.
 
 # App Secrets
-App secrets are loaded into the Docker container as environment variables via the `.env` files (`dev.env` and `prod.env`, for each [database server instance](#database-setup)) and `secrets_*.json` files (`secrets_dev.json` and `secrets_prod.json`, for each [database server instance](#database-setup)). Each of the four files has a `*.template` template to fill with the relevant variables.
+App secrets are loaded into the Docker container as environment variables via the `.*.deploy` files (`.dev.deploy` and `.prod.deploy`, for each [database server instance](#database-setup-summary)) and `secrets.*.toml` files (`secrets.dev.toml` and `secrets.prod.toml`, for each [database server instance](#database-setup-summary)). Each of the four files has a `*.template` template to fill with the relevant variables, found in the `/ref/env_vars` directory.
 
-The difference between `secrets_*.json` and `*.env` file usage can be found in [Development and Deployment](#development-and-deployment).
+The difference between `secrets.*.toml` and `.*.deploy` file usage can be found in [Development and Deployment](#development-and-deployment).
 
 # Azure App Service Frontend
 
@@ -153,7 +283,7 @@ The Azure service for the Get FoCo app is a Linux-based Docker container Web App
 ## File Store Setup Description
 See [Azure file store selection docs](https://docs.microsoft.com/en-us/azure/storage/files/storage-how-to-create-file-share?tabs=azure-portal) for reference.
 
-Blob Storage is used for storage of user files from Django. The app uses `azure-blob-storage` for the connection; see `dev.env.template` and `secrets_dev.json.template` for the necessary variables to make the connection.
+Blob Storage is used for storage of user files from Django. The app uses `azure-blob-storage` for the connection; see `/ref/env_vars/.dev.deploy.template` and `/ref/env_vars/secrets.dev.toml.template` for the necessary variables to make the connection.
 
 # Azure Database Backend
 
@@ -168,6 +298,7 @@ Summary of the database setup
 - Database names
   - `platform_dev` is the database name on the DEV server instance
   - `platform_stage` and `platform_prod` are separate databases on the PROD server instance
+  - The 'analytics' counterpart (used by Django for logging) is its own database in each environment (specified where necessary as \<analytics_database\>)
 - Database users (\<env\> is the database instance for each user ('dev', 'stage', or 'prod'))
   - developer_\<env\>_user: Privileged database user, used locally for Django development
   - django_\<env\>_user: Base database user, used by Django with the minimum necessary database privileges
@@ -191,37 +322,39 @@ Database administration can be completed in any application, but `psql` is the b
 
 Use the following connection string to connect to the target database. The hostname and admin username can be found under the 'Essentials' section at the top of the Overview page on the Azure Portal as 'Server name' and 'Server admin login name', respectively.
 
-    `psql "host=<hostname> port=5432 dbname=<database_name> user=<username> sslmode=require"`
+    psql --host=<hostname> --port=5432 --username=<username> --dbname=<database_name>
     <Enter password>
 
 `pg_dump` and `pg_restore` are PostgreSQL utilities used from the local command line (e.g. not from within the `psql` connection).
 
 ### Creating a Database
-On a freshly-deployed Azure instance, only the admin user (assigned during server setup) and the `postgres` database exist. Use the following code to create the `platform` database.
+On a freshly-deployed Azure instance, only the admin user (assigned during server setup) and the `postgres` database exist. Use the following code to create the `platform` database and its 'analytics' counterpart.
 
-    psql "host=<hostname> port=5432 dbname=postgres user=<admin_username> sslmode=require"
-
-    -- These lines are within the database
-    CREATE DATABASE <target_database_name>; -- Create the target database
-    \q -- Quit out of the database connection
+    psql --host=<hostname> --port=5432 --username=<admin_username> --dbname=postgres --command="CREATE DATABASE <target_database_name>;"
 
 ### Transferring Between Databases
 During the setup phase, there was much experimentation of Azure instance types; Azure tenant selection; and database naming conventions before settling on the final version, so transferring structure and data was necessary. The following code can be used to transfer existing data to the new database.
 
 If there isn't yet existing data, just run Django migrations to the new \<target_database_name\>.
 
-    # Dumps the database structure and data in a custom format to a local file for pg_restore
+> If the same users aren't present in the target database as there are in the source, the `pg_restore` command will throw errors. To ignore object owners specified in the backup file and instead use the input username as the owner of all objects, add the flag `--no-owner` to the `pg_restore` command. This is not recommended because the permissions structure for Get-Your is strictly defined.
+
+    # Dump the database structure and data in a custom format to a local file for pg_restore
     # <target_local_backup_file> can have any extension
     pg_dump -Fc -v --host=<source_hostname> --username=<source_admin_username> --dbname=<source_database_name> -f <target_local_backup_file>
 
-    # Restore the structure and data *with no owner* to the target database
-    # --no-owner is necessary for proper setup
-    pg_restore -v --no-owner --host=<target_hostname> --port=5432 --username=<target_admin_username> --dbname=<target_database_name> <target_local_backup_file>
+    # Restore the structure and data to the target database
+    pg_restore -v --host=<target_hostname> --port=5432 --username=<target_admin_username> --dbname=<target_database_name> <target_local_backup_file>
 
 ### Set Up Database Users
 This section details the order of steps to set up users, roles, and proper permissions. Roles are used for generic permissions so that future users can be added without having to re-grant all permissions.
 
-The admin user shouldn't be used for development or live database connections; a privileged user should instead be created for local development access and a base user created with minimal privileges for the webapp. The privileged user will be stored in each environment's `secrets_*.json` file and the base user will be in the `*.env` file (see [App Secrets](#app-secrets)).
+The admin user shouldn't be used for development or live database connections; a privileged user should instead be created for local development access and a base user created with minimal privileges for the webapp. The privileged user will be stored in each environment's `secrets.*.toml` file and the base user will be in the `.*.deploy` file (see [App Secrets](#app-secrets)).
+
+#### Configure the Primary Database
+This section should be used for the `platform` database, for the initial configuration. It includes definitions that only need to be run once.
+
+Connect to the primary (`platform`) database and complete the following steps:
 
 1. Revoke initial access
 
@@ -236,7 +369,7 @@ The admin user shouldn't be used for development or live database connections; a
 
 1. Create admin role
 
-    Create and permissions an admin user role (named `admin_role`) without login privileges, then grant this role to the Postgres admin account.
+    Create and grant permissions to an admin user role (named `admin_role`) without login privileges, then grant this role to the Postgres admin account.
 
         CREATE ROLE admin_role INHERIT;
         GRANT ALL ON SCHEMA public TO admin_role;
@@ -248,7 +381,7 @@ The admin user shouldn't be used for development or live database connections; a
 
 1. Create basic role
 
-    Create and permissions base user role (named `base_role`, for use via Django) without login privileges.
+    Create and grant permissions to a base user role (named `base_role`, for use via Django) without login privileges.
 
         CREATE ROLE base_role INHERIT;
         GRANT CONNECT ON DATABASE <database_name> TO base_role;
@@ -279,9 +412,53 @@ The admin user shouldn't be used for development or live database connections; a
 
         -- Grant this role to admin user to alter default privileges
         GRANT <privileged_user> TO <admin_user>;
+        
+        -- This is so all privileges for `base_role` apply to any new objects created by <admin_user>
+        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT USAGE ON SCHEMAS TO base_role;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT CREATE ON SCHEMAS TO privileged_role;
 
-        -- This is so all tables GRANTs apply to new tables as well
-        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT USAGE ON SCHEMAS TO base_role;
+        -- This is so all privileges for `base_role` apply to any new objects created by <privileged_user>
+        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
+
+#### Configure Other Databases
+This section should be used for all other databases on the same server (such as the 'analytics' database used for logging). It relies on the roles that were created in the [previous section](#configure-the-primary-database).
+
+Connect to the database to configure and complete the following steps:
+
+1. Revoke initial access
+
+        REVOKE ALL ON SCHEMA public FROM public;
+        REVOKE ALL ON ALL TABLES IN SCHEMA public FROM public;
+        REVOKE ALL ON DATABASE <database_name> FROM public;
+        REVOKE ALL ON DATABASE postgres FROM public;
+
+1. Grant permissions to the (existing) admin user role
+
+        GRANT ALL ON SCHEMA public TO admin_role;
+        GRANT ALL ON DATABASE <database_name> TO admin_role;
+        GRANT ALL ON ALL TABLES IN SCHEMA public TO admin_role;
+        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO admin_role;
+        GRANT ALL ON DATABASE postgres TO admin_role;        
+
+1. Grant permissions to the (existing) base user role
+
+        GRANT CONNECT ON DATABASE <database_name> TO base_role;
+        GRANT USAGE ON SCHEMA public TO base_role;
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO base_role;
+        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO base_role;
+
+1. Grant permissions to the (existing) privileged user role
+
+        GRANT CREATE ON SCHEMA public TO privileged_role;
+
+1. Alter default privileges
+        
+        -- This is so all privileges for `base_role` apply to any new objects created by <admin_user>
+        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT USAGE ON SCHEMAS TO base_role;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT CREATE ON SCHEMAS TO privileged_role;
+
+        -- This is so all privileges for `base_role` apply to any new objects created by <privileged_user>
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
 

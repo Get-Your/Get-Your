@@ -82,8 +82,10 @@ def what_page_clone(
         return "app:programs"
     
     # Check to see if the user has uploaded all files
+    # Django convention is to use 'blank' rather than 'null' for varchar
+    # fields; check for both here, for completeness
     cursor.execute(
-        """select count(*) from public.app_eligibilityprogram where user_id=%s and document_path is not null""",
+        """select count(*) from public.app_eligibilityprogram where user_id=%s and document_path is not null and document_path != ''""",
         (user_id, ),
     )
     fileCount = cursor.fetchone()[0]
@@ -113,7 +115,8 @@ def run_full_porting(profile):
     global_objects = initialize_vars(profile)
 
     try:
-        fill_last_completed_and_notification(global_objects)
+        fill_last_completed(global_objects)
+        fill_last_notification(global_objects)
         add_renewal_interval_month(global_objects)
         
         verify_transfer(global_objects)
@@ -164,10 +167,9 @@ def initialize_vars(profile: str) -> dict:
         )
 
 
-def fill_last_completed_and_notification(global_objects: dict) -> None:
+def fill_last_completed(global_objects: dict) -> None:
     """
-    1) Fill all ``last_completed_at`` and ``last_action_notification_at``
-    values.
+    1) Fill all ``last_completed_at`` values.
     
     v4 is expanding the ``last_completed_at`` use case from the last renewal
     (this field was renamed from ``last_renewed_at``) to the last time the
@@ -176,8 +178,101 @@ def fill_last_completed_and_notification(global_objects: dict) -> None:
     
     If ``last_completed_at`` is None and what_page() returns 'app:dashboard',
     set last_completed_at = max(app_eligibilityprogram.modified_at).
+
+    Parameters
+    ----------
+    global_objects : dict
+        Dictionary of objects used across all functions.
+
+    Returns
+    -------
+    None.
     
-    Secondly:
+    """
+    
+    cursor = global_objects['conn'].cursor()
+    
+    # Gather each user ID
+    cursor.execute("""select "id" from public.app_user order by "id" """)
+    userIds = [x[0] for x in cursor.fetchall()]
+
+    # Loop through each user to get their current state
+    try:
+        with Progress() as progress:
+
+            updateTask = progress.add_task(
+                "[bright_cyan]Filling last_completed_at values",
+                total=len(userIds),
+            )
+            
+            for usrid in userIds:
+                
+                # Check if the user is redirected to the dashboard. If False,
+                # last_completed_at should stay NULL (and are thus ignored here)
+                if what_page_clone(cursor, usrid) == 'app:dashboard':
+        
+                    # Check for NULL last_completed_at value
+                    cursor.execute(
+                        """select count(*) from public.app_user where id=%s and last_completed_at is null""",
+                        (usrid, ),
+                    )
+                    if cursor.fetchone()[0] != 0:
+                        # Fill last_completed_at with max(modified_at) from 
+                        # app_eligibilityprogram (as a good approximation)
+                        cursor.execute(
+                            """select max(modified_at) from public.app_eligibilityprogram where user_id=%s""",
+                            (usrid, ),
+                        )
+                        returnedTimestamp = cursor.fetchone()[0]     # there should always be a value
+                        
+                        cursor.execute(
+                            """update public.app_user set "last_completed_at"=%s where "id"=%s""",
+                            (returnedTimestamp, usrid),
+                        )
+                    
+                progress.update(updateTask, advance=1)
+ 
+        # Users that are mid-renewal will not be recognized correctly by
+        # what_page[_clone](); override each last_completed at for
+        # these users. Use each user's program they first applied to as the
+        # date they last completed their application.
+        
+        # The override (instead of ignoring non-null) is because some of the
+        # older accounts don't have a filled last_completed_at, even though
+        # they obviously should
+        cursor.execute(
+            """update public.app_user u
+            	set last_completed_at=i.first_applied_at
+            	from (select user_id, min(applied_at) as first_applied_at from public.app_iqprogram group by user_id) as i
+            	where u.id=i.user_id and u.is_archived = false and u.last_renewal_action is not null"""
+        )
+    
+        # Once last_completed_at is filled and mid-renewals addressed, pause to
+        # manually correct some (older) last_renewal_action that are "stuck" at
+        # an incomplete state before continuing to the last_action_notification_at
+        # fill
+        input(
+            "\nPause here to manually revisit last_renewal_action values for users that are mid-renewal at this point. Follow instructions in the v4_cleanup_verification.sql script.\n\nPress Return to continue with the ETL script."
+        )
+                    
+    except:
+        global_objects['conn'].rollback()
+        raise
+        
+    else:
+        # Commit any changes after the loop runs
+        global_objects['conn'].commit()
+    
+        print('last_completed_at fill complete!')
+        
+    finally:
+        cursor.close()
+        
+        
+def fill_last_notification(global_objects: dict) -> None:
+    """
+    2) Fill all ``last_action_notification_at`` values.
+    
     ``last_action_notification_at`` (a new field) will henceforth be set as
     "action notifications" are being sent to users. Set all values to 
     last_action_notification_at = last_completed_at.
@@ -204,44 +299,16 @@ def fill_last_completed_and_notification(global_objects: dict) -> None:
         with Progress() as progress:
 
             updateTask = progress.add_task(
-                "[bright_cyan]Filling last_completed_at and last_action_notification_at values",
+                "[bright_cyan]Filling last_action_notification_at values",
                 total=len(userIds),
             )
             
-            for usrid in userIds:
-                
-                # Check if the user is redirected to the dashboard. If False,
-                # last_completed_at and last_action_notification_at should stay NULL
-                # (and are thus ignored here)
-                if what_page_clone(cursor, usrid) == 'app:dashboard':
-        
-                    # Check for NULL last_completed_at value
-                    cursor.execute(
-                        """select count(*) from public.app_user where id=%s and last_completed_at is null""",
-                        (usrid, ),
-                    )
-                    if cursor.fetchone()[0] != 0:
-                        # Fill last_completed_at with max(modified_at) from 
-                        # app_eligibilityprogram (as a good approximation)
-                        cursor.execute(
-                            """select max(modified_at) from public.app_eligibilityprogram where user_id=%s""",
-                            (usrid, ),
-                        )
-                        returnedTimestamp = cursor.fetchone()[0]     # there should always be a value
-                        
-                        cursor.execute(
-                            """update public.app_user set "last_completed_at"=%s where "id"=%s""",
-                            (returnedTimestamp, usrid),
-                        )
-    
-                    # Independently, set last_action_notification_at. This will
-                    # always start as NULL since it's a new field
-                    cursor.execute(
-                        """update public.app_user set "last_action_notification_at"="last_completed_at" where "id"=%s""",
-                        (usrid, ),
-                    )
+            # Set all last_action_notification_at to last_completed_at in SQL
+            cursor.execute(
+                """update public.app_user set last_action_notification_at=last_completed_at where last_completed_at is not null;"""
+            )
                     
-                progress.update(updateTask, advance=1)
+            progress.update(updateTask, advance=1)
                     
     except:
         global_objects['conn'].rollback()
@@ -251,7 +318,7 @@ def fill_last_completed_and_notification(global_objects: dict) -> None:
         # Commit any changes after the loop runs
         global_objects['conn'].commit()
     
-        print('last_completed_at fill complete!')
+        print('last_action_notification_at fill complete!')
         
     finally:
         cursor.close()
@@ -259,7 +326,7 @@ def fill_last_completed_and_notification(global_objects: dict) -> None:
 
 def add_renewal_interval_month(global_objects: dict) -> None:
     """
-    2) Fill ``renewal_interval_month`` for all IQ Programs. This is the number
+    3) Fill ``renewal_interval_month`` for all IQ Programs. This is the number
     of months between each necessary renewal.
     
     Parameters
@@ -319,7 +386,8 @@ def verify_transfer(global_objects: dict) -> None:
     
     Ensure
     1) all non-NULL last_completed_at values represent users who have reached
-    the dashboard, and last_action_notification_at == last_completed_at
+    the dashboard OR have a non-null last_renewal_action, and
+    last_action_notification_at == last_completed_at
     2) all NULL last_completed_at values represent users who have *not* reached
     the dashboard, and last_action_notification_at == last_completed_at
     3) all programs in RENEWAL_UPDATE_DICT have been
@@ -353,7 +421,17 @@ def verify_transfer(global_objects: dict) -> None:
             )
         
             for usrid, completeat, notifyat in nonNullUserTs:
-                assert what_page_clone(cursor, usrid) == 'app:dashboard' and completeat == notifyat
+                # Either what_page_clone() puts the user at the dashboard or
+                # last_renewal_action is non-null. completeat == notifyat for
+                # either case
+                try:
+                    assert what_page_clone(cursor, usrid) == 'app:dashboard' and completeat == notifyat
+                except AssertionError:
+                    cursor.execute(
+                        "select count(*) from public.app_user where id=%s and last_renewal_action is not null",
+                        (usrid, ),
+                    )
+                    assert cursor.fetchone()[0] > 0 and completeat == notifyat
                 progress.update(verifyTask, advance=1)
             
         # Second: verify all NULL last_completed_at values
@@ -403,4 +481,8 @@ def verify_transfer(global_objects: dict) -> None:
 if __name__=='__main__':
     
     # Define the database profile
-    profile = input('Enter the database profile to use for porting: ')        
+    profile = input('Enter the database profile to use for porting: ')
+    
+    print(
+        "\nETL script initialized. To continue, execute\n\nrun_full_porting(profile)\n"
+    )
