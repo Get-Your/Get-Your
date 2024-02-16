@@ -12,6 +12,9 @@ The universal income-qualified application for the City of Fort Collins, Colorad
     1. [Local Development](#local-development)
     1. [Hybrid Development](#hybrid-development)
     1. [Deployment](#deployment)
+        1. [Major-Version Deployment](#major-version-deployment)
+        1. [Minor or Patch Deployment](#minor-or-patch-deployment)
+        1. [Deploy Django for Production](#deploy-django-for-production)
 1. [App Secrets](#app-secrets)
 1. [Azure App Service Frontend](#azure-app-service-frontend)
     1. [App Service Plan](#app-service-plan)
@@ -129,7 +132,132 @@ Deployment consists of building and pushing the Docker container, then pulling i
 - PROD
   - PROD is manually swapped from STAGE only after STAGE has been verified
 
-Deployment uses `.dev.deploy` and `.prod.deploy` for DEV and STAGE/PROD [app secrets](#app-secrets) (respectively).
+Deployment uses `.dev.deploy` and `.prod.deploy` for DEV and STAGE/PROD [app secrets](#app-secrets) (respectively). There are select environment variables using by Django outside of these files that are stored in Settings > Configuration of each App Service slot in the Azure Portal. These are stored as [deployment slot settings](https://learn.microsoft.com/en-us/azure/app-service/deploy-staging-slots?tabs=portal#which-settings-are-swapped), meaning they are specific to their deployment slot and don't get swapped with the rest of the app. These include:
+
+- `DEBUG_LOGGING`: specifies whether logging uses the 'DEBUG' level or not. If False, the 'INFO' log level will be used instead. This is generally False for PROD and True for STAGE and DEV.
+
+Use the following sections as guidance for deployment (additional steps may be required based on the updates). Generic commands are included for each step. 
+
+There are two options for deployment: [Major-Version Deployment](#major-version-deployment) and [Minor or Patch Deployment](#minor-or-patch-deployment). The difference is that the major-version release includes updates to the database structure and therefore requires additional steps.
+
+### Major-Version Deployment
+> The single database for each environment referenced here is assumed to refer to the primary database, but these steps should be used for each database undergoing structural updates.
+
+Major-version releases will likely involve updates to the database structure or data and may involve ETL, which increase the complexity and risk of a release to the production environment. If there are changes to the database structure, continue with the steps in this section. Otherwise, skip to the [Minor or Patch Deployment](#minor-or-patch-deployment) section.
+
+1. Back up the PROD database (solely to restore into STAGE - another backup with be taken just before going live).
+    
+    Use the `pg_dump` command in [Transferring Between Databases](#transferring-between-databases).
+
+2. Drop and recreate the `public` schema in the STAGE database. This ensures a clean slate for the data transfer.
+
+    **WARNING: MAKE SURE THE CORRENT (STAGE) DATABASE IS USED OR UNEXPECTED DATA LOSS WILL OCCUR**
+
+        psql --host=<hostname> --port=5432 --username=<username> --dbname=<STAGE_database_name> --command="DROP SCHEMA public CASCADE;" --command="CREATE SCHEMA public;"
+        <Enter password>
+
+    Troubleshooting - if this command hangs, try disabling long-running idle queries:
+
+        SELECT pg_terminate_backend(pid) from pg_stat_activity
+        WHERE state in ('<IDLE> in transaction', 'idle in transaction')
+        AND now()-xact_start>interval '1 minute';
+
+3. Restore the structure and data of the STAGE database from PROD.
+
+    Use the `pg_restore` command in [Transferring Between Databases](#transferring-between-databases), with the STAGE database name as \<target_database_name\>.
+
+4. Continue with Steps 5-7 using STAGE as the 'target' environment.
+
+5. Migrate Django changes to the target database. This uses the 'developer_\<env\>_user' specified in the [database setup summary](#database-setup-summary).
+
+6. Run any ETL script(s) against the target database. The ETL should include its own automated verification.
+
+7. Manually verify data integrity at the database level.
+
+1. Deploy the app, using `getyour.settings.stage` settings in `manage.py`. All deployments use the STAGE site, but this specifies the STAGE database for pre-PROD testing.
+
+    See [Deploy Django for Production](#deploy-django-for-production) for steps.
+
+1. Manually verify STAGE site and database functionality. Depending on the complexity of changes, this may include:
+
+    - Going through the application from the beginning to ensure functionality and that the data update properly (recommended)
+    - Logging in as an existing user to ensure functionality (recommended)
+    - Manually triggering a renewal and go through the process to ensure functionality and data integrity
+
+    Refer to `/ref/uat_plan.md` for detailed verification steps.
+
+1. Select a time when users aren't using the PROD site; stop the site service.
+
+1. Back up the PROD database in preparation for deployment to PROD.
+
+    Use the `pg_dump` command in [Transferring Between Databases](#transferring-between-databases).
+
+1. Follow Steps 5-7 using PROD as the 'target' environment.
+
+1. Deploy the app, using `getyour.settings.production` settings in `manage.py`. All PROD deployments use the STAGE site, but this specifies the PROD database so that the sites are swappable without further changes.
+
+    See [Deploy Django for Production](#deploy-django-for-production) for steps.
+
+1. Swap the STAGE and PROD deployment slots.
+    > This must be done while the site service is down because the prior-version PROD site is expecting a different database structure or data.
+
+    This is done with the 'Swap' option in the Deployment > Deployment Slots screen in the Azure Portal.
+
+1. Start the PROD site service.
+
+1. Manually verify functionality using the PROD site. Depending on the complexity of changes, this may include:
+
+    - Going through the application from the beginning to ensure functionality and that the data update properly (recommended)
+    - Logging in as an existing user to ensure functionality (recommended)
+    - Manually triggering a renewal and go through the process to ensure functionality and data integrity
+
+    Refer to `/ref/uat_plan.md` for detailed verification steps.
+
+    > This can be abbreviated since extended testing was completed earlier
+
+### Minor or Patch Deployment
+**These steps are for releases that do not include database structure or data updates.** If database structure or data updates are included, the release is not backward-compatible; it should be a major release and **must** use the steps in [Major-Version Deployment](#major-version-deployment) instead.
+
+1. Back up the PROD database.
+
+    Use the `pg_dump` command in [Transferring Between Databases](#transferring-between-databases).
+
+1. Deploy the app, using `getyour.settings.production` settings in `manage.py`. All PROD deployments use the STAGE site, but this specifies the PROD database so that the sites are swappable without further changes.
+
+    See [Deploy Django for Production](#deploy-django-for-production) for steps.
+
+1. Manually verify functionality using the STAGE site. Depending on the complexity of changes, this may include:
+
+    - Going through the application from the beginning to ensure functionality and that the data update properly (recommended)
+    - Logging in as an existing user to ensure functionality (recommended)
+    - Manually triggering a renewal and go through the process to ensure functionality and data integrity
+
+    Refer to `/ref/uat_plan.md` for detailed verification steps.
+
+1. Swap the STAGE and PROD deployment slots.
+
+    This is done with the 'Swap' option in the Deployment > Deployment Slots screen in the Azure Portal.
+
+1. Manually verify functionality using the PROD site. Depending on the complexity of changes, this may include:
+
+    - Going through the application from the beginning to ensure functionality and that the data update properly (recommended)
+    - Logging in as an existing user to ensure functionality (recommended)
+    - Manually triggering a renewal and go through the process to ensure functionality and data integrity
+
+    Refer to `/ref/uat_plan.md` for detailed verification steps.
+
+    > This can be abbreviated since extended testing was completed earlier
+
+### Deploy Django for Production
+These steps deploy the Django site for production. Note that the STAGE site is always used here; as noted earlier in this section, PROD is always hot-swapped from the STAGE deployment slot.
+
+1. In the `Get-Your/Get-Your` local Git repo, pull the latest changes to the `main` branch. These changes should include the release/tag for the specified release.
+
+1. In the `Get-Your/Get-Your-utils` repo, execute `/get_your_utils/powershell/docker_deploy/BuildDeployDocker.ps1`. This will prompt the user for the target environment, build the `Get-Your` Docker container, and deploy it to the environment-specific tag in Docker Hub.
+
+    The `.env.template` file must be copied to `.env` and the variables filled. The build/deploy script assumes that each repo shares a parent directory on the local device, such as a `git` parent directory like `git/Get-Your` and `git/Get-Your-utils`.
+
+1. Once the script has completed without errors, the STAGE site will automatically update with the latest code.
 
 # App Secrets
 App secrets are loaded into the Docker container as environment variables via the `.*.deploy` files (`.dev.deploy` and `.prod.deploy`, for each [database server instance](#database-setup-summary)) and `secrets.*.toml` files (`secrets.dev.toml` and `secrets.prod.toml`, for each [database server instance](#database-setup-summary)). Each of the four files has a `*.template` template to fill with the relevant variables, found in the `/ref/env_vars` directory.
