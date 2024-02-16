@@ -82,6 +82,8 @@ def what_page_clone(
         return "app:programs"
     
     # Check to see if the user has uploaded all files
+    # Django convention is to use 'blank' rather than 'null' for varchar
+    # fields; check for both here, for completeness
     cursor.execute(
         """select count(*) from public.app_eligibilityprogram where user_id=%s and document_path is not null and document_path != ''""",
         (user_id, ),
@@ -229,6 +231,29 @@ def fill_last_completed(global_objects: dict) -> None:
                         )
                     
                 progress.update(updateTask, advance=1)
+ 
+        # Users that are mid-renewal will not be recognized correctly by
+        # what_page[_clone](); override each last_completed at for
+        # these users. Use each user's program they first applied to as the
+        # date they last completed their application.
+        
+        # The override (instead of ignoring non-null) is because some of the
+        # older accounts don't have a filled last_completed_at, even though
+        # they obviously should
+        cursor.execute(
+            """update public.app_user u
+            	set last_completed_at=i.first_applied_at
+            	from (select user_id, min(applied_at) as first_applied_at from public.app_iqprogram group by user_id) as i
+            	where u.id=i.user_id and u.is_archived = false and u.last_renewal_action is not null"""
+        )
+    
+        # Once last_completed_at is filled and mid-renewals addressed, pause to
+        # manually correct some (older) last_renewal_action that are "stuck" at
+        # an incomplete state before continuing to the last_action_notification_at
+        # fill
+        input(
+            "\nPause here to manually revisit last_renewal_action values for users that are mid-renewal at this point. Follow instructions in the v4_cleanup_verification.sql script.\n\nPress Return to continue with the ETL script."
+        )
                     
     except:
         global_objects['conn'].rollback()
@@ -280,7 +305,7 @@ def fill_last_notification(global_objects: dict) -> None:
             
             # Set all last_action_notification_at to last_completed_at in SQL
             cursor.execute(
-                """update public.app_user set last_action_notification_at=last_completed_at where last_completed_at is not null;""",
+                """update public.app_user set last_action_notification_at=last_completed_at where last_completed_at is not null;"""
             )
                     
             progress.update(updateTask, advance=1)
@@ -361,7 +386,8 @@ def verify_transfer(global_objects: dict) -> None:
     
     Ensure
     1) all non-NULL last_completed_at values represent users who have reached
-    the dashboard, and last_action_notification_at == last_completed_at
+    the dashboard OR have a non-null last_renewal_action, and
+    last_action_notification_at == last_completed_at
     2) all NULL last_completed_at values represent users who have *not* reached
     the dashboard, and last_action_notification_at == last_completed_at
     3) all programs in RENEWAL_UPDATE_DICT have been
@@ -395,7 +421,17 @@ def verify_transfer(global_objects: dict) -> None:
             )
         
             for usrid, completeat, notifyat in nonNullUserTs:
-                assert what_page_clone(cursor, usrid) == 'app:dashboard' and completeat == notifyat
+                # Either what_page_clone() puts the user at the dashboard or
+                # last_renewal_action is non-null. completeat == notifyat for
+                # either case
+                try:
+                    assert what_page_clone(cursor, usrid) == 'app:dashboard' and completeat == notifyat
+                except AssertionError:
+                    cursor.execute(
+                        "select count(*) from public.app_user where id=%s and last_renewal_action is not null",
+                        (usrid, ),
+                    )
+                    assert cursor.fetchone()[0] > 0 and completeat == notifyat
                 progress.update(verifyTask, advance=1)
             
         # Second: verify all NULL last_completed_at values
@@ -445,4 +481,8 @@ def verify_transfer(global_objects: dict) -> None:
 if __name__=='__main__':
     
     # Define the database profile
-    profile = input('Enter the database profile to use for porting: ')        
+    profile = input('Enter the database profile to use for porting: ')
+    
+    print(
+        "\nETL script initialized. To continue, execute\n\nrun_full_porting(profile)\n"
+    )
