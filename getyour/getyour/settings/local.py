@@ -85,11 +85,9 @@ DEBUG_LOGGING = True
 Q_CLUSTER = {
     'name': 'DjangORM',
     'workers': 4,
-    'timeout': 90,
-    'retry': 120,
-    'queue_limit': 50,
+    'timeout': 30,
     'bulk': 10,
-    'orm':  'default',
+    'orm': 'default',
     'catch_up': False,
     'sync': True,   # this is required for Windows
 }
