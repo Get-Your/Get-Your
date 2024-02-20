@@ -83,3 +83,10 @@ def send_renewal_email(user):
 
             # TODO: Discuss archiving users that haven't renewed and have
             # exceeded the `notification_buffer_month` notification window
+
+    else:
+        log.debug(
+            "User does not need renewal",
+            function='send_renewal_email',
+            user_id=user.id,
+        )
