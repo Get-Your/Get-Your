@@ -49,6 +49,8 @@ from app.models import (
 )
 from logger.wrappers import LoggerWrapper
 
+from python_http_client.exceptions import HTTPError as SendGridHTTPError
+
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -473,11 +475,17 @@ def broadcast_renewal_email(email):
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
         log.info(
-            f"Sendgrid returned HTTP {response.status_code}",
+            f"Sendgrid returned: HTTP {response.status_code}",
             function='broadcast_renewal_email',
         )
-    except Exception as e:
-        log.exception(e, function='broadcast_renewal_email')
+
+    except SendGridHTTPError as response:
+        log.exception(
+            f"Sendgrid returned: {response}",
+            function='broadcast_renewal_email',
+        )
+
+    return response.status_code
 
 
 def changed_modelfields_to_dict(

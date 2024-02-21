@@ -68,12 +68,17 @@ def send_renewal_email(user):
                 user_id=user.id,
             )
             
-            broadcast_renewal_email(user.email)
+            # Note that SendGrid doesn't have rate limits for 'send' operations
+            # in the v3 API (used here), so this needs no rate consideration
+            status_code = broadcast_renewal_email(user.email)
 
             # Now update the user's last_action_notification_at
-            # field to the current time
-            user.last_action_notification_at = pendulum.now()
-            user.save()
+            # field to the current time if status_code is '202 Accepted' (see
+            # https://docs.sendgrid.com/ui/account-and-settings/api-keys#testing-an-api-key
+            # for the closest documentation I could find)
+            if status_code == 202:
+                user.last_action_notification_at = pendulum.now()
+                user.save()
         else:
             log.info(
                 "User needs renewal but has recently been notified",
