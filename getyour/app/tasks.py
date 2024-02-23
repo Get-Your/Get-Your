@@ -29,7 +29,7 @@ def run_renewal_task():
         is_archived=False,
         last_completed_at__isnull=False,
     ):
-        async_task('app.tasks.send_renewal_email', user)
+        async_task(send_renewal_email, user)
 
 
 def send_renewal_email(user):
