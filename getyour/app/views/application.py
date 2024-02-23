@@ -1503,7 +1503,7 @@ def broadcast(request, **kwargs):
         try:
             broadcast_email(current_user.email)
         except:
-            log.error(
+            log.exception(
                 "There was a problem with sending the email (Sendgrid)",
                 function='broadcast',
                 user_id=request.user.id,
@@ -1513,7 +1513,7 @@ def broadcast(request, **kwargs):
         try:
             broadcast_sms(phone)
         except:
-            log.error(
+            log.exception(
                 "Twilio servers may be down",
                 function='broadcast',
                 user_id=request.user.id,

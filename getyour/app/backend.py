@@ -50,6 +50,7 @@ from app.models import (
 from logger.wrappers import LoggerWrapper
 
 from python_http_client.exceptions import HTTPError as SendGridHTTPError
+from twilio.base.exceptions import TwilioRestException
 
 
 # Initialize logger
@@ -100,9 +101,15 @@ def broadcast_sms(phone_Number):
     message_to_broadcast = (
         "Thank you for creating an account with Get FoCo! Be sure to review the programs you qualify for on your dashboard and click on Apply Now to finish the application process!")
     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-    client.messages.create(to=phone_Number,
-                           from_=settings.TWILIO_NUMBER,
-                           body=message_to_broadcast)
+
+    try:
+        message_instance = client.messages.create(
+            to=phone_Number,
+            from_=settings.TWILIO_NUMBER,
+            body=message_to_broadcast,
+        )
+    except TwilioRestException as e:
+        log.exception(e, function='broadcast_sms')
 
 
 def address_check(address_dict):

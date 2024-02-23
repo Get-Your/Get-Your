@@ -77,10 +77,15 @@ def send_renewal_email(user):
             # https://docs.sendgrid.com/ui/account-and-settings/api-keys#testing-an-api-key
             # for the closest documentation I could find)
             if status_code == 202:
+                log.debug(
+                    f"SendGrid call successful. last_action_notification_at updating from '{user.last_action_notification_at}'",
+                    function='send_renewal_email',
+                    user_id=user.id,
+                )
                 user.last_action_notification_at = pendulum.now()
                 user.save()
         else:
-            log.info(
+            log.debug(
                 "User needs renewal but has recently been notified",
                 function='send_renewal_email',
                 user_id=user.id,
