@@ -16,12 +16,45 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import environ
 import os
 from pathlib import Path
 import subprocess
 
+env = environ.Env()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Read and apply the environment-agnostic secrets
+env.read_env(BASE_DIR.joinpath('.env'))
+
+TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN")
+TWILIO_NUMBER = env("TWILIO_NUMBER")
+USPS_SID = env("USPS_SID")
+SENDGRID_API_KEY = env("SENDGRID_API_KEY")
+TEMPLATE_ID = env("TEMPLATE_ID")
+TEMPLATE_ID_PW_RESET = env("TEMPLATE_ID_PW_RESET")
+TEMPLATE_ID_DYNAMIC_EMAIL = env("TEMPLATE_ID_DYNAMIC_EMAIL")
+TEMPLATE_ID_RENEWAL = env("TEMPLATE_ID_RENEWAL")
+
+# Add environment variables optionally set by Azure or in the Docker build
+DEBUG = env.bool("DEBUG", False)
+DEBUG_LOGGING = env.bool("DEBUG_LOGGING", False)
+CODE_VERSION = env.str("CODE_VERSION", 'false')
+try:
+    # The Dockerfile defaults to '' for CODE_VERSION, so CODE_VERSION=='false'
+    # means the environment variable DNE; try to find it directly from the repo.
+    # The assumption is that this is part of a Git repo if not built by Docker
+    if CODE_VERSION == 'false':
+        # Run `git describe --tags`
+        CODE_VERSION = subprocess.check_output(
+            ['git', 'describe', '--tags']
+        ).decode('ascii').strip()
+except:
+    # Cannot be found; use blank
+    CODE_VERSION = ''
 
 # Application definition
 
@@ -81,7 +114,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, '..', 'templates')
+            BASE_DIR.joinpath('templates')
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -136,7 +169,7 @@ PHONENUMBER_DEFAULT_REGION = 'US'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
+STATIC_ROOT = BASE_DIR.joinpath('static')
 
 # Media storage and common Azure setting
 # Ref https://stackoverflow.com/a/54767932/5438550 for details
@@ -181,26 +214,3 @@ LOGGING = {
         },
     },
 }
-
-# Import environment vars (via Azure or injected into `docker run`). Note that
-# the env vars are brought in as strings and must be converted (safely) to bool.
-DEBUG = str(os.environ.get('DEBUG', 'false')).lower() == 'true'
-DEBUG_LOGGING = str(os.environ.get('DEBUG_LOGGING', 'false')).lower() == 'true'
-# Add code version to the Django settings vars
-try:
-    # Try to load from environment vars. Note that the Dockerfile defaults to
-    # '', so False is only returned if CODE_VERSION env var DNE.
-    CODE_VERSION = os.environ.get('CODE_VERSION', False)
-    if CODE_VERSION is False:
-        # Otherwise, try to find the current Git version directly from the repo.
-        # The assumption is that this is part of a Git repo if not built by
-        # Docker
-
-        # Run `git describe --tags`
-        CODE_VERSION = subprocess.check_output(
-            ['git', 'describe', '--tags']
-        ).decode('ascii').strip()
-
-except:
-    # Cannot be found; use blank
-    CODE_VERSION = ''
