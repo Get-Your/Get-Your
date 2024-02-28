@@ -671,15 +671,15 @@ def build_qualification_button(users_enrollment_status):
 
 def map_iq_enrollment_status(program, needs_renewal=False):
     try:
-        # Check pending programs first. Reason being we don't want in progress
-        # programs to be marked as renewal
-        if not program.is_enrolled:
-            return "PENDING"
         # If the user is enrolled in a "lifetime" program (i.e. a program that 
         # does not have a renewal_interval_month), don't set the status to
         # renewal
-        elif program.is_enrolled and needs_renewal and program.renewal_interval_month is not None:
+        if program.is_enrolled and needs_renewal and program.renewal_interval_month is not None:
             return "RENEWAL"
+        # Check pending programs second, so that in progress programs will be
+        # marked as renewal if the account needs renewal
+        elif not program.is_enrolled:
+            return "PENDING"
         elif program.is_enrolled:
             return "ACTIVE"
         
