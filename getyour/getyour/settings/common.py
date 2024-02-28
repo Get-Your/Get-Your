@@ -38,19 +38,34 @@ WELCOME_EMAIL_TEMPLATE = env("WELCOME_EMAIL_TEMPLATE")
 PW_RESET_EMAIL_TEMPLATE = env("PW_RESET_EMAIL_TEMPLATE")
 RENEWAL_EMAIL_TEMPLATE = env("RENEWAL_EMAIL_TEMPLATE")
 
-# Add environment variables optionally set by Azure or in the Docker build
-DEBUG = env.bool("DEBUG", False)
-DEBUG_LOGGING = env.bool("DEBUG_LOGGING", False)
-CODE_VERSION = env.str("CODE_VERSION", 'false')
+# Add environment variables optionally set by Azure or in the Docker build.
+# These will use the environment var if exists, else the .env file or fallback
+# to the defined default
+if os.environ.get("DEBUG") is None:
+    DEBUG = env.bool("DEBUG", False)
+else:
+    DEBUG = str(os.environ.get("DEBUG")).lower() == 'true'
+
+if os.environ.get("DEBUG_LOGGING") is None:
+    DEBUG_LOGGING = env.bool("DEBUG_LOGGING", False)
+else:
+    DEBUG_LOGGING = str(os.environ.get("DEBUG_LOGGING")).lower() == 'true'
+
 try:
-    # The Dockerfile defaults to '' for CODE_VERSION, so CODE_VERSION=='false'
-    # means the environment variable DNE; try to find it directly from the repo.
-    # The assumption is that this is part of a Git repo if not built by Docker
-    if CODE_VERSION == 'false':
+    # Try to load the code version from environment vars. Note that the
+    # Dockerfile defaults to '', so False is only returned if CODE_VERSION env
+    # var DNE
+    CODE_VERSION = os.environ.get("CODE_VERSION", False)
+    if CODE_VERSION is False:
+        # Otherwise, try to find the current Git version directly from the repo.
+        # The assumption is that this is part of a Git repo if not built by
+        # Docker
+
         # Run `git describe --tags`
         CODE_VERSION = subprocess.check_output(
             ['git', 'describe', '--tags']
         ).decode('ascii').strip()
+        
 except:
     # Cannot be found; use blank
     CODE_VERSION = ''
