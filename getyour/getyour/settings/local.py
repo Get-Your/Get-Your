@@ -21,7 +21,7 @@ from tomlkit import loads
 from tomlkit import exceptions as tomlexceptions
 from django.core.exceptions import ImproperlyConfigured
 
-from getyour.settings.common_settings import *
+from getyour.settings.common import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # TOML-based secrets module
