@@ -428,12 +428,11 @@ def validate_usps(inobj):
 
 
 def broadcast_email(email):
-    TEMPLATE_ID = settings.TEMPLATE_ID
     message = Mail(
         from_email='getfoco@fcgov.com',
         to_emails=email)
 
-    message.template_id = TEMPLATE_ID
+    message.template_id = settings.WELCOME_EMAIL_TEMPLATE
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
@@ -446,7 +445,6 @@ def broadcast_email(email):
 
 
 def broadcast_email_pw_reset(email, content):
-    TEMPLATE_ID_PW_RESET = settings.TEMPLATE_ID_PW_RESET
     message = Mail(
         subject='Password Reset Requested',
         from_email='getfoco@fcgov.com',
@@ -456,7 +454,7 @@ def broadcast_email_pw_reset(email, content):
         'subject': 'Password Reset Requested',
         'html_content': content,
     }
-    message.template_id = TEMPLATE_ID_PW_RESET
+    message.template_id = settings.PW_RESET_EMAIL_TEMPLATE
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
@@ -472,12 +470,11 @@ def broadcast_email_pw_reset(email, content):
 
 
 def broadcast_renewal_email(email):
-    TEMPLATE_ID = settings.TEMPLATE_ID_RENEWAL
     message = Mail(
         from_email='getfoco@fcgov.com',
         to_emails=email)
 
-    message.template_id = TEMPLATE_ID
+    message.template_id = settings.RENEWAL_EMAIL_TEMPLATE
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)

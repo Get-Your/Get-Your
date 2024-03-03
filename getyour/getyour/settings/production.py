@@ -17,49 +17,25 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from tomlkit import loads
-from tomlkit import exceptions as tomlexceptions
-from django.core.exceptions import ImproperlyConfigured
+from getyour.settings.common import *
+from getyour.settings.common import env
 
-from getyour.settings.common_settings import *
+# Read the environment-specific secrets
+env.read_env(BASE_DIR.joinpath('.prod.deploy'))
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# TOML-based secrets module
-with open('.prod.deploy', 'r', encoding='utf-8') as f:
-    secrets_dict = loads(f.read())
-
-def get_secret(var_name, read_dict=secrets_dict):
-    '''Get the secret variable or return explicit exception.'''
-    try:
-        return read_dict[var_name]
-    except tomlexceptions.NonExistentKey:
-        error_msg = f"Set the '{var_name}' secrets variable"
-        raise ImproperlyConfigured(error_msg)
-
-SECRET_KEY = get_secret('SECRET_KEY')
-TWILIO_ACCOUNT_SID = get_secret('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN = get_secret('TWILIO_AUTH_TOKEN')
-TWILIO_NUMBER = get_secret('TWILIO_NUMBER')
-USPS_SID = get_secret('USPS_SID')
-DB_USER = get_secret('DB_USER')
-DB_PASS = get_secret('DB_PASS')
-SENDGRID_API_KEY = get_secret('SENDGRID_API_KEY')
-TEMPLATE_ID = get_secret("TEMPLATE_ID")
-TEMPLATE_ID_PW_RESET = get_secret("TEMPLATE_ID_PW_RESET")
-TEMPLATE_ID_DYNAMIC_EMAIL = get_secret("TEMPLATE_ID_DYNAMIC_EMAIL")
-TEMPLATE_ID_RENEWAL = get_secret("TEMPLATE_ID_RENEWAL")
-AZURE_ACCOUNT_NAME = get_secret("AZURE_ACCOUNT_NAME")
-AZURE_ACCOUNT_KEY = get_secret("AZURE_ACCOUNT_KEY")
+SECRET_KEY = env("SECRET_KEY")
+AZURE_ACCOUNT_NAME = env("AZURE_ACCOUNT_NAME")
+AZURE_ACCOUNT_KEY = env("AZURE_ACCOUNT_KEY")
 AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.usgovcloudapi.net"
-AZURE_CONTAINER = get_secret("AZURE_CONTAINER")
+AZURE_CONTAINER = env("AZURE_CONTAINER")
 IS_PROD = True
 
-# DEBUG moved to Azure App Service environment var (or False, via common_settings)
+# DEBUG moved to Azure App Service environment var (or False, via settings.common)
 
-CSRF_TRUSTED_ORIGINS = [f"https://{x}" for x in get_secret("HOSTS")]
-ALLOWED_HOSTS = get_secret("HOSTS")
+CSRF_TRUSTED_ORIGINS = [f"https://{x}" for x in env.list("HOSTS")]
+ALLOWED_HOSTS = env.list("HOSTS")
 
-# Application definitions (outside of common_settings)
+# Application definitions (outside of settings.common)
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
@@ -67,15 +43,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'getyour_prod',
-        'USER': DB_USER,
-        'PASSWORD': DB_PASS,
+        'USER': env("DB_USER"),
+        'PASSWORD': env("DB_PASS"),
         'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'
     },
     'analytics': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'getyour_prod_analytics',
-        'USER': DB_USER,
-        'PASSWORD': DB_PASS,
+        'USER': env("DB_USER"),
+        'PASSWORD': env("DB_PASS"),
         'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'
     }
 }
