@@ -49,6 +49,9 @@ from app.models import (
 )
 from logger.wrappers import LoggerWrapper
 
+from python_http_client.exceptions import HTTPError as SendGridHTTPError
+from twilio.base.exceptions import TwilioRestException
+
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -98,9 +101,15 @@ def broadcast_sms(phone_Number):
     message_to_broadcast = (
         "Thank you for creating an account with Get FoCo! Be sure to review the programs you qualify for on your dashboard and click on Apply Now to finish the application process!")
     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-    client.messages.create(to=phone_Number,
-                           from_=settings.TWILIO_NUMBER,
-                           body=message_to_broadcast)
+
+    try:
+        message_instance = client.messages.create(
+            to=phone_Number,
+            from_=settings.TWILIO_NUMBER,
+            body=message_to_broadcast,
+        )
+    except TwilioRestException as e:
+        log.exception(e, function='broadcast_sms')
 
 
 def address_check(address_dict):
@@ -473,11 +482,17 @@ def broadcast_renewal_email(email):
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
         log.info(
-            f"Sendgrid returned HTTP {response.status_code}",
+            f"Sendgrid returned: HTTP {response.status_code}",
             function='broadcast_renewal_email',
         )
-    except Exception as e:
-        log.exception(e, function='broadcast_renewal_email')
+
+    except SendGridHTTPError as response:
+        log.exception(
+            f"Sendgrid returned: {response}",
+            function='broadcast_renewal_email',
+        )
+
+    return response.status_code
 
 
 def changed_modelfields_to_dict(

@@ -246,14 +246,6 @@ def fill_last_completed(global_objects: dict) -> None:
             	from (select user_id, min(applied_at) as first_applied_at from public.app_iqprogram group by user_id) as i
             	where u.id=i.user_id and u.is_archived = false and u.last_renewal_action is not null"""
         )
-    
-        # Once last_completed_at is filled and mid-renewals addressed, pause to
-        # manually correct some (older) last_renewal_action that are "stuck" at
-        # an incomplete state before continuing to the last_action_notification_at
-        # fill
-        input(
-            "\nPause here to manually revisit last_renewal_action values for users that are mid-renewal at this point. Follow instructions in the v4_cleanup_verification.sql script.\n\nPress Return to continue with the ETL script."
-        )
                     
     except:
         global_objects['conn'].rollback()
@@ -267,6 +259,14 @@ def fill_last_completed(global_objects: dict) -> None:
         
     finally:
         cursor.close()
+        
+    # Once last_completed_at is filled and mid-renewals addressed, pause to
+    # manually correct some (older) last_renewal_action that are "stuck" at
+    # an incomplete state before continuing to the last_action_notification_at
+    # fill
+    input(
+        "\nPause here to manually revisit last_renewal_action values for users that are mid-renewal at this point. Follow instructions in the v4_cleanup_verification.sql script.\n\nPress Return to continue with the ETL script."
+    )
         
         
 def fill_last_notification(global_objects: dict) -> None:
