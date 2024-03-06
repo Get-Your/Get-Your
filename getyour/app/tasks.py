@@ -28,7 +28,7 @@ def run_renewal_task():
     for user in User.objects.filter(
         is_archived=False,
         last_completed_at__isnull=False,
-    ):
+    ).order_by('id'):
         async_task(send_renewal_email, user)
 
 
