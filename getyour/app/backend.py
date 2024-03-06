@@ -855,6 +855,12 @@ def finalize_application(request, renewal_mode=False):
     
     """
 
+    log.debug(
+        f"Entering function with renewal_mode=={renewal_mode}",
+        function='finalize_application',
+        user_id=request.user.id,
+    )
+
     # Get all of the user's eligiblity programs and find the one with the lowest
     # 'ami_threshold' value which can be found in the related
     # eligiblityprogramrd table
@@ -983,6 +989,11 @@ def finalize_application(request, renewal_mode=False):
                 IQProgram.objects.create(
                     user_id=request.user.id,
                     program_id=program.id,
+                )
+                log.debug(
+                    f"User auto-applied for '{program.program_name}' IQ program",
+                    function='finalize_application',
+                    user_id=request.user.id,
                 )
 
         return 'app:broadcast'
