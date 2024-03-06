@@ -1140,7 +1140,7 @@ def household_members(request, **kwargs):
                 else:
                     log.info(
                         'No identification files to upload were found',
-                        function=household_members,
+                        function='household_members',
                         user_id=request.user.id,
                     )
             else:
@@ -1425,7 +1425,7 @@ def files(request, **kwargs):
                 if fileAmount == 0:
                     log.info(
                         'No Eligibility Program files to upload were found',
-                        function=household_members,
+                        function='files',
                         user_id=request.user.id,
                     )
 
