@@ -25,10 +25,8 @@ import base64
 import io
 import re
 from urllib.parse import urlencode
-import logging
 
 from django.shortcuts import render, redirect, reverse
-from django.contrib.auth import login
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import QueryDict, HttpResponseRedirect, JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
@@ -38,9 +36,37 @@ from django.forms.utils import ErrorList
 from django.core.files.storage import default_storage
 from django.contrib.auth.decorators import login_required
 
-from app.forms import HouseholdForm, UserForm, AddressForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm
-from app.backend import form_page_number, tag_mapping, address_check, serialize_household_members, validate_usps, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, broadcast_email, broadcast_sms, save_renewal_action, finalize_application
-from app.models import userfiles_path, AddressRD, Address, EligibilityProgram, Household, IQProgram, User, EligibilityProgramRD
+from app.forms import (
+    HouseholdForm,
+    UserForm,
+    AddressForm,
+    HouseholdMembersForm,
+    UserUpdateForm,
+    FileUploadForm,
+)
+from app.backend import (
+    login,
+    form_page_number,
+    tag_mapping,
+    address_check,
+    serialize_household_members,
+    validate_usps,
+    get_in_progress_eligiblity_file_uploads,
+    what_page,
+    broadcast_email,
+    broadcast_sms,
+    save_renewal_action,
+    finalize_application,
+)
+from app.models import (
+    userfiles_path,
+    AddressRD,
+    Address,
+    EligibilityProgram,
+    Household,
+    User,
+    EligibilityProgramRD,
+)
 from app.decorators import set_update_mode
 from logger.wrappers import LoggerWrapper
 

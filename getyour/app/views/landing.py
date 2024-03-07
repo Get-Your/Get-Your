@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import usaddress
-import logging 
+import logging
 
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import logout
