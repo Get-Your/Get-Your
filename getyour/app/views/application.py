@@ -99,7 +99,7 @@ def notify_remaining(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -127,7 +127,7 @@ def household_definition(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -176,7 +176,7 @@ def get_ready(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -335,7 +335,7 @@ def account(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -466,7 +466,7 @@ def address(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -746,7 +746,7 @@ def address_correction(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -921,7 +921,7 @@ def take_usps_address(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -1014,7 +1014,7 @@ def household(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -1243,7 +1243,7 @@ def household_members(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -1340,7 +1340,7 @@ def programs(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -1505,7 +1505,7 @@ def files(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -1528,7 +1528,7 @@ def broadcast(request, **kwargs):
         current_user = request.user
         try:
             broadcast_email(current_user.email)
-        except:
+        except Exception:
             log.exception(
                 "There was a problem with sending the email (Sendgrid)",
                 function='broadcast',
@@ -1538,7 +1538,7 @@ def broadcast(request, **kwargs):
         phone = str(current_user.phone_number)
         try:
             broadcast_sms(phone)
-        except:
+        except Exception:
             log.exception(
                 "Twilio servers may be down",
                 function='broadcast',
@@ -1571,7 +1571,7 @@ def broadcast(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',

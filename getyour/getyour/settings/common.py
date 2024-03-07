@@ -66,7 +66,7 @@ try:
             ['git', 'describe', '--tags']
         ).decode('ascii').strip()
         
-except:
+except Exception:
     # Cannot be found; use blank
     CODE_VERSION = ''
 

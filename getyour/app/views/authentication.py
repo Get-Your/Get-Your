@@ -93,7 +93,7 @@ def password_reset_request(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -187,7 +187,7 @@ def login_user(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',

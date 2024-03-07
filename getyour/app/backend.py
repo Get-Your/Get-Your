@@ -598,7 +598,7 @@ def login(request, user):
             function='login',
             user_id=request.user.id,
         )
-    except:
+    except Exception:
         log.exception(
             "HTTP agent parsing failed!",
             function='login',
