@@ -94,7 +94,6 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'app',
     'phonenumber_field',
-    'log',
     'logger',
     'django_q',
 ]
