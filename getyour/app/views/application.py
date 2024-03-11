@@ -55,7 +55,7 @@ from app.backend import (
     what_page,
     broadcast_email,
     broadcast_sms,
-    save_renewal_action,
+    save_user_action,
     finalize_application,
 )
 from app.models import (
@@ -67,7 +67,7 @@ from app.models import (
     User,
     EligibilityProgramRD,
 )
-from app.decorators import set_update_mode
+from app.decorators import set_user_mode
 from logger.wrappers import LoggerWrapper
 
 
@@ -159,7 +159,7 @@ def get_ready(request, **kwargs):
                 function='get_ready',
                 user_id=request.user.id,
             )
-            save_renewal_action(request, 'get_ready')
+            save_user_action(request, 'get_ready', action_type='renewal')
             return redirect('app:account')
         return render(
             request,
@@ -226,9 +226,9 @@ def account(request, **kwargs):
                 instance.save()
 
                 if renewal_mode:
-                    # Call save_renewal_action after .save() so as not to save
+                    # Call save_user_action after .save() so as not to save
                     # renewal metadata as data updates
-                    save_renewal_action(request, 'account')
+                    save_user_action(request, 'account', action_type='renewal')
                     return JsonResponse({"redirect": f"{reverse('app:address')}"})
                 elif (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard):
                     return JsonResponse({"redirect": f"{reverse('app:address')}"})
@@ -889,9 +889,9 @@ def take_usps_address(request, **kwargs):
                     address.save()
 
                 if renewal_mode:
-                    # Call save_renewal_action after .save() so as not to save
+                    # Call save_user_action after .save() so as not to save
                     # renewal metadata as data updates
-                    save_renewal_action(request, 'address')
+                    save_user_action(request, 'address', action_type='renewal')
 
                 return redirect(reverse('app:household'))
             else:
@@ -974,9 +974,9 @@ def household(request, **kwargs):
             instance.save()
 
             if renewal_mode:
-                # Call save_renewal_action after .save() so as not to save
+                # Call save_user_action after .save() so as not to save
                 # renewal metadata as data updates
-                save_renewal_action(request, 'household')
+                save_user_action(request, 'household', action_type='renewal')
 
             if update_mode:
                 return redirect(f'{reverse("app:household_members")}?update_mode=1')
@@ -1203,9 +1203,9 @@ def household_members(request, **kwargs):
             instance.save()
 
             if renewal_mode:
-                # Call save_renewal_action after .save() so as not to save
+                # Call save_user_action after .save() so as not to save
                 # renewal metadata as data updates
-                save_renewal_action(request, 'household_members')
+                save_user_action(request, 'household_members', action_type='renewal')
 
             if update_mode:
                 return redirect(f"{reverse('app:user_settings')}?page_updated=household")
@@ -1305,7 +1305,7 @@ def programs(request, **kwargs):
                 ))
 
             if renewal_mode:
-                save_renewal_action(request, 'eligibility_programs')
+                save_user_action(request, 'eligibility_programs', action_type='renewal')
 
             EligibilityProgram.objects.bulk_create(
                 selected_eligibility_programs)
