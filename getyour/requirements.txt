@@ -12,3 +12,4 @@ usaddress==0.5.10
 usps-api==0.5
 whitenoise==6.4.0
 django-q2==1.6.1
+httpagentparser==1.9.5

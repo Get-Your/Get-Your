@@ -165,7 +165,7 @@ def dashboard(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -249,7 +249,7 @@ def quick_apply(request, iq_program, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -306,7 +306,7 @@ def user_settings(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -344,7 +344,7 @@ def privacy(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -395,7 +395,7 @@ def qualified_programs(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -424,7 +424,7 @@ def feedback(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -455,7 +455,7 @@ def feedback_received(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -498,7 +498,7 @@ def programs_list(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',

@@ -23,6 +23,7 @@ import pendulum
 from enum import Enum
 from itertools import chain
 import logging
+import httpagentparser
 
 from twilio.rest import Client
 from sendgrid.helpers.mail import Mail
@@ -32,7 +33,7 @@ from usps import USPSApi, Address
 from django import http
 from django.shortcuts import reverse
 from django.contrib.auth.backends import UserModel
-from django.contrib.auth import get_user_model
+from django.contrib.auth import login as django_auth_login
 from django.conf import settings
 from django.db.models import Q
 from django.db.models.fields.files import FieldFile
@@ -582,24 +583,27 @@ def serialize_household_members(request, file_paths):
     household_info = json.loads(json.dumps(
         {'persons_in_household': household_members}, cls=DjangoJSONEncoder))
     return household_info
+    
 
+def login(request, user):
 
-def authenticate(username=None, password=None):
-    User = get_user_model()
-    try:  # to allow authentication through phone number or any other field, modify the below statement
-        user = User.objects.get(email=username)
-        if user.check_password(password):
-            return user
-        return None
-    except User.DoesNotExist:
-        return None
+    django_auth_login(request, user)
 
-
-def get_user(user_id):
+    # Try to log user agent data
     try:
-        return UserModel.objects.get(id=user_id)
-    except UserModel.DoesNotExist:
-        return None
+        log.info(
+            "User logged in; agent is {}".format(
+                httpagentparser.simple_detect(request.META['HTTP_USER_AGENT'])
+            ),
+            function='login',
+            user_id=request.user.id,
+        )
+    except Exception:
+        log.exception(
+            "HTTP agent parsing failed!",
+            function='login',
+            user_id=request.user.id,
+        )
 
 
 def what_page(user, request):
@@ -855,6 +859,12 @@ def finalize_application(request, renewal_mode=False):
     
     """
 
+    log.debug(
+        f"Entering function with renewal_mode=={renewal_mode}",
+        function='finalize_application',
+        user_id=request.user.id,
+    )
+
     # Get all of the user's eligiblity programs and find the one with the lowest
     # 'ami_threshold' value which can be found in the related
     # eligiblityprogramrd table
@@ -983,6 +993,11 @@ def finalize_application(request, renewal_mode=False):
                 IQProgram.objects.create(
                     user_id=request.user.id,
                     program_id=program.id,
+                )
+                log.debug(
+                    f"User auto-applied for '{program.program_name}' IQ program",
+                    function='finalize_application',
+                    user_id=request.user.id,
                 )
 
         return 'app:broadcast'

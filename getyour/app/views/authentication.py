@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import logging
 
 from django.shortcuts import render, redirect, reverse
-from django.contrib.auth import login, get_user_model, authenticate
+from django.contrib.auth import get_user_model, authenticate
 from django.http import HttpResponse
 from django.core.mail import BadHeaderError
 from django.contrib.auth.forms import PasswordResetForm
@@ -29,7 +29,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 
-from app.backend import authenticate, what_page, broadcast_email_pw_reset
+from app.backend import login, what_page, broadcast_email_pw_reset
 from logger.wrappers import LoggerWrapper
 
 
@@ -93,7 +93,7 @@ def password_reset_request(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -187,7 +187,7 @@ def login_user(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',

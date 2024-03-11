@@ -25,10 +25,8 @@ import base64
 import io
 import re
 from urllib.parse import urlencode
-import logging
 
 from django.shortcuts import render, redirect, reverse
-from django.contrib.auth import login
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import QueryDict, HttpResponseRedirect, JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
@@ -38,9 +36,37 @@ from django.forms.utils import ErrorList
 from django.core.files.storage import default_storage
 from django.contrib.auth.decorators import login_required
 
-from app.forms import HouseholdForm, UserForm, AddressForm, HouseholdMembersForm, UserUpdateForm, FileUploadForm
-from app.backend import form_page_number, tag_mapping, address_check, serialize_household_members, validate_usps, get_in_progress_eligiblity_file_uploads, get_users_iq_programs, what_page, broadcast_email, broadcast_sms, save_renewal_action, finalize_application
-from app.models import userfiles_path, AddressRD, Address, EligibilityProgram, Household, IQProgram, User, EligibilityProgramRD
+from app.forms import (
+    HouseholdForm,
+    UserForm,
+    AddressForm,
+    HouseholdMembersForm,
+    UserUpdateForm,
+    FileUploadForm,
+)
+from app.backend import (
+    login,
+    form_page_number,
+    tag_mapping,
+    address_check,
+    serialize_household_members,
+    validate_usps,
+    get_in_progress_eligiblity_file_uploads,
+    what_page,
+    broadcast_email,
+    broadcast_sms,
+    save_renewal_action,
+    finalize_application,
+)
+from app.models import (
+    userfiles_path,
+    AddressRD,
+    Address,
+    EligibilityProgram,
+    Household,
+    User,
+    EligibilityProgramRD,
+)
 from app.decorators import set_update_mode
 from logger.wrappers import LoggerWrapper
 
@@ -73,7 +99,7 @@ def notify_remaining(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -101,7 +127,7 @@ def household_definition(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -150,7 +176,7 @@ def get_ready(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -309,7 +335,7 @@ def account(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -440,7 +466,7 @@ def address(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -720,7 +746,7 @@ def address_correction(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -895,7 +921,7 @@ def take_usps_address(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -988,7 +1014,7 @@ def household(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -1140,7 +1166,7 @@ def household_members(request, **kwargs):
                 else:
                     log.info(
                         'No identification files to upload were found',
-                        function=household_members,
+                        function='household_members',
                         user_id=request.user.id,
                     )
             else:
@@ -1217,7 +1243,7 @@ def household_members(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -1314,7 +1340,7 @@ def programs(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -1425,7 +1451,7 @@ def files(request, **kwargs):
                 if fileAmount == 0:
                     log.info(
                         'No Eligibility Program files to upload were found',
-                        function=household_members,
+                        function='files',
                         user_id=request.user.id,
                     )
 
@@ -1479,7 +1505,7 @@ def files(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -1502,7 +1528,7 @@ def broadcast(request, **kwargs):
         current_user = request.user
         try:
             broadcast_email(current_user.email)
-        except:
+        except Exception:
             log.exception(
                 "There was a problem with sending the email (Sendgrid)",
                 function='broadcast',
@@ -1512,7 +1538,7 @@ def broadcast(request, **kwargs):
         phone = str(current_user.phone_number)
         try:
             broadcast_sms(phone)
-        except:
+        except Exception:
             log.exception(
                 "Twilio servers may be down",
                 function='broadcast',
@@ -1545,7 +1571,7 @@ def broadcast(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
