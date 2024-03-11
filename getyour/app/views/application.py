@@ -52,7 +52,7 @@ from app.backend import (
     serialize_household_members,
     validate_usps,
     get_in_progress_eligiblity_file_uploads,
-    what_page,
+    what_page_application,
     broadcast_email,
     broadcast_sms,
     save_user_action,
@@ -85,7 +85,7 @@ def notify_remaining(request, **kwargs):
             user_id=request.user.id,
         )
 
-        page = what_page(request.user, request)
+        page = what_page_application(request.user, request)
         return render(
             request,
             "application/notify_remaining.html",

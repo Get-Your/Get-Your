@@ -583,7 +583,7 @@ def serialize_household_members(request, file_paths):
     household_info = json.loads(json.dumps(
         {'persons_in_household': household_members}, cls=DjangoJSONEncoder))
     return household_info
-    
+
 
 def login(request, user):
 
@@ -606,42 +606,67 @@ def login(request, user):
         )
 
 
-def what_page(user, request):
+def what_page_application(request):
     """
-    Redirect user to whatever page they need to go to every time by checking which steps they've
-    completed in the application process
+    Redirect user to whatever page they need to go to every time by checking
+    which steps they've completed in the application process.
+
+    Calls to this function are always under the @login_required decorator or
+    authenticate(), so no need to verify the user is authenticated here.
+
     """
-    if user.is_authenticated:
-        # for some reason, none of these login correctly... reviewing this now
-        try:  # check if the addresses.is_verified==True
-            request.user.address
-        except AttributeError:
-            return "app:address"
 
-        try:
-            request.user.household
-        except AttributeError:
-            return "app:household"
+    # for some reason, none of these login correctly... reviewing this now
+    try:  # check if the addresses.is_verified==True
+        request.user.address
+    except AttributeError:
+        return "app:address"
 
-        if (HouseholdMembers.objects.all().filter(user_id=request.user.id).exists()):
-            pass
-        else:
-            return "app:household_members"
+    try:
+        request.user.household
+    except AttributeError:
+        return "app:household"
 
-        # Check to see if the user has selected any eligibility programs
-        if (request.user.eligibility_files.count()):
-            pass
-        else:
-            return "app:programs"
-
-        users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
-            request)
-        if users_programs_without_uploads.count():
-            return "app:files"
-
-        return "app:dashboard"
+    if (HouseholdMembers.objects.all().filter(user_id=request.user.id).exists()):
+        pass
     else:
-        return "app:account"
+        return "app:household_members"
+
+    # Check to see if the user has selected any eligibility programs
+    if (request.user.eligibility_files.count()):
+        pass
+    else:
+        return "app:programs"
+
+    users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
+        request)
+    if users_programs_without_uploads.count():
+        return "app:files"
+
+    return "app:dashboard"
+
+
+def what_page_renewal(last_renewal_action):
+    """Returns the what page for the renewal flow
+    Returns:
+        str: The what page for the renewal flow
+    """
+    pages = {
+        'get_ready': 'app:get_ready',
+        'account': 'app:account',
+        'address': 'app:address',
+        'household': 'app:household',
+        'household_members': 'app:household_members',
+        'eligibility_programs': 'app:programs',
+        'files': 'app:files'
+    }
+
+    for page, url in pages.items():
+        if page not in last_renewal_action:
+            return url
+
+    # Default return if all pages are present
+    return None
 
 
 def build_qualification_button(users_enrollment_status):
@@ -807,29 +832,6 @@ def save_user_action(
             user.last_renewal_action = json.loads(
                 json.dumps(last_renewal_action, cls=DjangoJSONEncoder))
             user.save()
-
-
-def what_page_renewal(last_renewal_action):
-    """Returns the what page for the renewal flow
-    Returns:
-        str: The what page for the renewal flow
-    """
-    pages = {
-        'get_ready': 'app:get_ready',
-        'account': 'app:account',
-        'address': 'app:address',
-        'household': 'app:household',
-        'household_members': 'app:household_members',
-        'eligibility_programs': 'app:programs',
-        'files': 'app:files'
-    }
-
-    for page, url in pages.items():
-        if page not in last_renewal_action:
-            return url
-
-    # Default return if all pages are present
-    return None
 
 
 def check_if_user_needs_to_renew(user_id):

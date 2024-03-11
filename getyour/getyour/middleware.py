@@ -148,7 +148,11 @@ class ValidRouteMiddleware:
 
 class RenewalModeMiddleware:
     """
-    Middleware that checks if the user is in renewal mode and redirects them to the correct page.
+    Middleware that checks if the user is in renewal mode and redirects them to
+    the correct page. This middleware is used because a renewing user is not
+    auto-redirected to their renewal; the user isn't necessarily in the
+    renewal_mode state just because they have a partial renewal.
+
     """
 
     def __init__(self, get_response):
@@ -170,15 +174,15 @@ class RenewalModeMiddleware:
             request.session['renewal_mode'] = True
 
             if request.user.last_renewal_action:
-                what_page = what_page_renewal(request.user.last_renewal_action)
+                page = what_page_renewal(request.user.last_renewal_action)
                 log.info(
-                    f"Continuing renewal: what_page_renewal() returned {what_page}"
+                    f"Continuing renewal: what_page_renewal() returned {page}"
                 )
 
-                # Redirect to the what_page designation, if exists (None is when
+                # Redirect to the page designation, if exists (None is when
                 # all pages have been completed)
-                if what_page is not None:
-                    return redirect(what_page)
+                if page is not None:
+                    return redirect(page)
 
         response = self.get_response(request)
 

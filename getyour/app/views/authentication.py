@@ -29,7 +29,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 
-from app.backend import login, what_page, broadcast_email_pw_reset
+from app.backend import login, what_page_application, broadcast_email_pw_reset
 from logger.wrappers import LoggerWrapper
 
 
@@ -138,9 +138,9 @@ def login_user(request, **kwargs):
                 if request.user.last_renewal_action is not None:
                     return redirect(reverse("app:dashboard"))
                 
-                page = what_page(request.user, request)
+                page = what_page_application(request.user, request)
                 log.info(
-                    f"Continuing application: what_page() returned {page}",
+                    f"Continuing application: what_page_application() returned {page}",
                     function='login_user',
                     user_id=request.user.id,
                 )
@@ -160,11 +160,11 @@ def login_user(request, **kwargs):
                 )
 
         # If it turns out user is already logged in but is trying to log in again,
-        # run through what_page() to find the correct place
+        # run through what_page_application() to find the correct place
         if request.method == "GET" and request.user.is_authenticated:
-            page = what_page(request.user, request)
+            page = what_page_application(request.user, request)
             log.info(
-                f"what_page() returned {page}",
+                f"what_page_application() returned {page}",
                 function='login_user',
                 user_id=request.user.id,
             )
