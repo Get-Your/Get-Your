@@ -776,25 +776,37 @@ def get_in_progress_eligiblity_file_uploads(request):
     return users_in_progress_file_uploads
 
 
-def save_renewal_action(request, action, status='completed', data={}):
-    """Saves a renewal action to the database
+def save_user_action(
+        request,
+        action,
+        action_type,
+        status='completed',
+        data=None,
+    ):
+    """Saves an update/renewal action to the database
     Args:
         request (HttpRequest): The request object
         action (str): The action to save
     """
+
+    # Define data as empty dict here, for safety
+    if data is None:
+        data = {}
+
     user = UserModel.objects.get(id=request.user.id)
-    if hasattr(user, 'last_renewal_action'):
-        last_renewal_action = user.last_renewal_action if user.last_renewal_action else {}
+    if action_type == 'renewal':
+        if hasattr(user, 'last_renewal_action'):
+            last_renewal_action = user.last_renewal_action if user.last_renewal_action else {}
 
-        # Check if the action exists in the last renewal action
-        if action in last_renewal_action:
-            last_renewal_action[action] = {'status': status, 'data': data}
-        else:
-            last_renewal_action[action] = {'status': status, 'data': data}
+            # Check if the action exists in the last renewal action
+            if action in last_renewal_action:
+                last_renewal_action[action] = {'status': status, 'data': data}
+            else:
+                last_renewal_action[action] = {'status': status, 'data': data}
 
-        user.last_renewal_action = json.loads(
-            json.dumps(last_renewal_action, cls=DjangoJSONEncoder))
-        user.save()
+            user.last_renewal_action = json.loads(
+                json.dumps(last_renewal_action, cls=DjangoJSONEncoder))
+            user.save()
 
 
 def what_page_renewal(last_renewal_action):
