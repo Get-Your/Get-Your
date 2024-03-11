@@ -136,6 +136,7 @@ def household_definition(request, **kwargs):
         )
         raise
 
+@set_user_mode
 def get_ready(request, **kwargs):
 
     try:
@@ -186,7 +187,7 @@ def get_ready(request, **kwargs):
         raise
 
 
-@set_update_mode
+@set_user_mode
 def account(request, **kwargs):
 
     try:
@@ -346,7 +347,7 @@ def account(request, **kwargs):
 
 
 @login_required(redirect_field_name='auth_next')
-@set_update_mode
+@set_user_mode
 def address(request, **kwargs):
 
     try:
@@ -932,7 +933,7 @@ def take_usps_address(request, **kwargs):
 
 
 @login_required(redirect_field_name='auth_next')
-@set_update_mode
+@set_user_mode
 def household(request, **kwargs):
 
     try:
@@ -1025,7 +1026,7 @@ def household(request, **kwargs):
 
 
 @login_required(redirect_field_name='auth_next')
-@set_update_mode
+@set_user_mode
 def household_members(request, **kwargs):
 
     try:
@@ -1350,7 +1351,7 @@ def programs(request, **kwargs):
         raise
 
 @login_required(redirect_field_name='auth_next')
-@set_update_mode
+@set_user_mode
 def files(request, **kwargs):
     '''
     Variables:
