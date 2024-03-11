@@ -107,7 +107,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 <a href="#" onclick="return false;" class="renewalModal"
                     style="text-decoration: none; text-align: center; margin-top: auto; margin-bottom: auto; padding: 2px">
                     <div class="quickapply linkQA" style="border-color: orange; color: orange">
-                        Renew</div>
+                        {% if partial_renewal %}Continue Renewal{% else %}Renew{% endif %}</div>
                 </a>
 
                 <button class="button button2" id="toggle-button3"><img src="{% static 'img/downArrow.svg' %}"

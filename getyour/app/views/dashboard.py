@@ -106,6 +106,9 @@ def dashboard(request, **kwargs):
             request.user.has_viewed_dashboard = True
             request.user.save()
 
+        # Determine if the user has partially renewed
+        partial_renewal = request.user.last_renewal_action is not None
+
         # Parse and stringify renewal_eligible and renewal_ineligible
         if len(renewal_eligible) == 1:
             renewal_eligible_str = "{sing} was successfully renewed!".format(
@@ -156,6 +159,7 @@ def dashboard(request, **kwargs):
                 'proxy_viewed_dashboard': proxy_viewed_dashboard,
                 'badge_visible': request.user.household.is_income_verified,
                 'app_renewed': app_renewed,
+                'partial_renewal': partial_renewal,
                 'renewal_eligible': renewal_eligible_str,
                 'renewal_ineligible': renewal_ineligible_str,
             },
