@@ -608,44 +608,24 @@ def login(request, user):
         )
 
 
-def what_page_application(request):
+def what_page_application(last_application_action):
     """
     Redirect user to whatever page they need to go to every time by checking
     which steps they've completed in the application process.
 
-    Calls to this function are always under the @login_required decorator or
-    authenticate(), so no need to verify the user is authenticated here.
+    Calls to this function are always under @login_required or authenticate(),
+    so no need to verify the user is authenticated here.
 
+    Returns:
+        str: The target page for the initial application flow
     """
 
-    # for some reason, none of these login correctly... reviewing this now
-    try:  # check if the addresses.is_verified==True
-        request.user.address
-    except AttributeError:
-        return "app:address"
+    for page, url in APPLICATION_PAGES.items():
+        if page not in last_application_action:
+            return url
 
-    try:
-        request.user.household
-    except AttributeError:
-        return "app:household"
-
-    if (HouseholdMembers.objects.all().filter(user_id=request.user.id).exists()):
-        pass
-    else:
-        return "app:household_members"
-
-    # Check to see if the user has selected any eligibility programs
-    if (request.user.eligibility_files.count()):
-        pass
-    else:
-        return "app:programs"
-
-    users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
-        request)
-    if users_programs_without_uploads.count():
-        return "app:files"
-
-    return "app:dashboard"
+    # Default return if all pages are present
+    return 'app:dashboard'
 
 
 def what_page_renewal(last_renewal_action):

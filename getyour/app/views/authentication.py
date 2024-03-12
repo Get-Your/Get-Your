@@ -130,24 +130,17 @@ def login_user(request, **kwargs):
                 # If auth_next exists, use it for the redirection
                 if request.session.get('auth_next', None) is not None:
                     return redirect(request.session['auth_next'])
-                
-                # Workaround for https://github.com/Get-Your/Get-Your/issues/251:
-                # existing data in last_renewal_action implies the user logged out
-                # during a renewal and therefore should be taken directly to the
-                # dashboard
-                if request.user.last_renewal_action is not None:
-                    return redirect(reverse("app:dashboard"))
-                
-                page = what_page_application(request.user, request)
+
+                page = what_page_application(request.user.last_application_action)
                 log.info(
-                    f"Continuing application: what_page_application() returned {page}",
+                    f"Initial login path: '{page}'",
                     function='login_user',
                     user_id=request.user.id,
                 )
                 if page == "app:dashboard":
-                    return redirect(reverse("app:dashboard"))
+                    return redirect("app:dashboard")
                 else:
-                    return redirect(reverse("app:notify_remaining"))
+                    return redirect("app:notify_remaining")
 
             else:
                 return render(
@@ -162,16 +155,16 @@ def login_user(request, **kwargs):
         # If it turns out user is already logged in but is trying to log in again,
         # run through what_page_application() to find the correct place
         if request.method == "GET" and request.user.is_authenticated:
-            page = what_page_application(request.user, request)
+            page = what_page_application(request.user.last_application_action)
             log.info(
-                f"what_page_application() returned {page}",
+                f"User already logged in; redirecting to '{page}'",
                 function='login_user',
                 user_id=request.user.id,
             )
             if page == "app:dashboard":
-                return redirect(reverse("app:dashboard"))
+                return redirect("app:dashboard")
             else:
-                return redirect(reverse("app:notify_remaining"))
+                return redirect("app:notify_remaining")
 
         # Just give back log in page if none of the above is true
         else:

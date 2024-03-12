@@ -85,7 +85,7 @@ def notify_remaining(request, **kwargs):
             user_id=request.user.id,
         )
 
-        page = what_page_application(request.user, request)
+        page = what_page_application(request.user.last_application_action)
         return render(
             request,
             "application/notify_remaining.html",
