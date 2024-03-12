@@ -798,20 +798,28 @@ def save_user_action(
         last_renewal_action = getattr(user, 'last_renewal_action', {})
 
         # Add or overwrite the last_renewal_action value
-        last_renewal_action[action] = {'status': status, 'data': data}
-        user.last_renewal_action = json.loads(
-            json.dumps(last_renewal_action, cls=DjangoJSONEncoder)
-        )
+        if action is not None:
+            last_renewal_action[action] = {'status': status, 'data': data}
+            user.last_renewal_action = json.loads(
+                json.dumps(last_renewal_action, cls=DjangoJSONEncoder)
+            )
+        else:
+            # If action is None, set last_renewal_action=None
+            user.last_renewal_action = None
 
     elif action_type == 'initial':
         # Return the last_renewal_action if exists, or {}
         last_application_action = getattr(user, 'last_application_action', {})
 
         # Add or overwrite the last_application_action value
-        last_application_action[action] = {'status': status, 'data': data}
-        user.last_application_action = json.loads(
-            json.dumps(last_application_action, cls=DjangoJSONEncoder)
-        )
+        if action is not None:
+            last_application_action[action] = {'status': status, 'data': data}
+            user.last_application_action = json.loads(
+                json.dumps(last_application_action, cls=DjangoJSONEncoder)
+            )
+        else:
+            # If action is None, set last_application_action=None
+            user.last_application_action = None
 
     user.save()
 
@@ -884,13 +892,13 @@ def finalize_application(request, renewal_mode=False):
         household.is_income_verified = False
         household.save()
 
-        # Set the user's last_completed_date to now, as well as set the user's
-        # last_renewal_action to null
+        # Set the user's last_completed_date to now
         user = User.objects.get(id=request.user.id)
         user.renewal_mode = True
         user.last_completed_at = pendulum.now()
-        user.last_renewal_action = None
         user.save()
+        # Set the user's last_renewal_action to null
+        save_user_action(request, None, action_type='renewal')
 
         # Get every IQ program for the user that have a renewal_interval_month
         # in the IQProgramRD table that is not null
@@ -968,9 +976,12 @@ def finalize_application(request, renewal_mode=False):
     else:
         household.save()
 
+        # Set the user's last_completed_date to now
         user = User.objects.get(id=request.user.id)
         user.last_completed_at = pendulum.now()
         user.save()
+        # Set the user's last_application_action to null
+        save_user_action(request, None, action_type='initial')
 
         # Get the user's eligibility address
         eligibility_address = AddressRD.objects.filter(
