@@ -142,6 +142,7 @@ class User(AbstractUser):
     is_archived = models.BooleanField(default=False)
     is_updated = models.BooleanField(default=False)
     last_completed_at = models.DateTimeField(null=True, blank=True)
+    last_application_action = models.JSONField(null=True, blank=True)
     last_renewal_action = models.JSONField(null=True, blank=True)
     last_action_notification_at = models.DateTimeField(null=True, blank=True)
 
