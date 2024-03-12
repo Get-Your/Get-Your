@@ -39,6 +39,7 @@ from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.core.serializers.json import DjangoJSONEncoder
 from phonenumber_field.phonenumber import PhoneNumber
+
 from app.models import (
     HouseholdMembers,
     EligibilityProgram,
@@ -48,6 +49,7 @@ from app.models import (
     Household,
     AddressRD,
 )
+from app.constants import APPLICATION_PAGES
 from logger.wrappers import LoggerWrapper
 
 from python_http_client.exceptions import HTTPError as SendGridHTTPError
@@ -651,17 +653,8 @@ def what_page_renewal(last_renewal_action):
     Returns:
         str: The what page for the renewal flow
     """
-    pages = {
-        'get_ready': 'app:get_ready',
-        'account': 'app:account',
-        'address': 'app:address',
-        'household': 'app:household',
-        'household_members': 'app:household_members',
-        'eligibility_programs': 'app:programs',
-        'files': 'app:files'
-    }
 
-    for page, url in pages.items():
+    for page, url in APPLICATION_PAGES.items():
         if page not in last_renewal_action:
             return url
 

@@ -22,3 +22,16 @@ notification_buffer_month = 1
 
 # Set the specified app label(s) for use in the logging db router
 logger_app_labels = {'logger'}
+
+# Define the ordered pages of the application, up until (but not including) the
+# final 'dashboard' page. Note that this should stay in this ``constants`` file
+# even if other variables are moved to a database table.
+APPLICATION_PAGES = {
+    'get_ready': 'app:get_ready',
+    'account': 'app:account',
+    'address': 'app:address',
+    'household': 'app:household',
+    'household_members': 'app:household_members',
+    'eligibility_programs': 'app:programs',
+    'files': 'app:files'
+}
