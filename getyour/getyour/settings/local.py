@@ -44,12 +44,12 @@ ALLOWED_HOSTS = []
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR.joinpath('getyour', 'db.sqlite3'),
     },
     # Note that a separate file is needed for proper concurrency
     'analytics': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db_analytics.sqlite3',
+        'NAME': BASE_DIR.joinpath('getyour', 'db_analytics.sqlite3'),
     }
 }
 
