@@ -792,19 +792,28 @@ def save_user_action(
         data = {}
 
     user = UserModel.objects.get(id=request.user.id)
+    
     if action_type == 'renewal':
-        if hasattr(user, 'last_renewal_action'):
-            last_renewal_action = user.last_renewal_action if user.last_renewal_action else {}
+        # Return the last_renewal_action if exists, or {}
+        last_renewal_action = getattr(user, 'last_renewal_action', {})
 
-            # Check if the action exists in the last renewal action
-            if action in last_renewal_action:
-                last_renewal_action[action] = {'status': status, 'data': data}
-            else:
-                last_renewal_action[action] = {'status': status, 'data': data}
+        # Add or overwrite the last_renewal_action value
+        last_renewal_action[action] = {'status': status, 'data': data}
+        user.last_renewal_action = json.loads(
+            json.dumps(last_renewal_action, cls=DjangoJSONEncoder)
+        )
 
-            user.last_renewal_action = json.loads(
-                json.dumps(last_renewal_action, cls=DjangoJSONEncoder))
-            user.save()
+    elif action_type == 'initial':
+        # Return the last_renewal_action if exists, or {}
+        last_application_action = getattr(user, 'last_application_action', {})
+
+        # Add or overwrite the last_application_action value
+        last_application_action[action] = {'status': status, 'data': data}
+        user.last_application_action = json.loads(
+            json.dumps(last_application_action, cls=DjangoJSONEncoder)
+        )
+
+    user.save()
 
 
 def check_if_user_needs_to_renew(user_id):

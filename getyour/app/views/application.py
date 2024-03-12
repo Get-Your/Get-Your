@@ -231,6 +231,12 @@ def account(request, **kwargs):
                     save_user_action(request, 'account', action_type='renewal')
                     return JsonResponse({"redirect": f"{reverse('app:address')}"})
                 elif (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard):
+                    # Call save_user_action after .save() so as not to save
+                    # renewal metadata as data updates
+                    # Since this is a brand new account, add 'get_ready' to
+                    # the user action here
+                    save_user_action(request, 'get_ready', action_type='initial')
+                    save_user_action(request, 'account', action_type='initial')
                     return JsonResponse({"redirect": f"{reverse('app:address')}"})
                 else:
                     return JsonResponse({"redirect": f"{reverse('app:user_settings')}?page_updated=account"})
@@ -892,6 +898,10 @@ def take_usps_address(request, **kwargs):
                     # Call save_user_action after .save() so as not to save
                     # renewal metadata as data updates
                     save_user_action(request, 'address', action_type='renewal')
+                elif not update_mode:
+                    # Call save_user_action after .save() so as not to save
+                    # renewal metadata as data updates
+                    save_user_action(request, 'address', action_type='initial')
 
                 return redirect(reverse('app:household'))
             else:
@@ -977,6 +987,10 @@ def household(request, **kwargs):
                 # Call save_user_action after .save() so as not to save
                 # renewal metadata as data updates
                 save_user_action(request, 'household', action_type='renewal')
+            elif not update_mode:
+                # Call save_user_action after .save() so as not to save
+                # renewal metadata as data updates
+                save_user_action(request, 'household', action_type='initial')
 
             if update_mode:
                 return redirect(f'{reverse("app:household_members")}?update_mode=1')
@@ -1206,6 +1220,10 @@ def household_members(request, **kwargs):
                 # Call save_user_action after .save() so as not to save
                 # renewal metadata as data updates
                 save_user_action(request, 'household_members', action_type='renewal')
+            elif not update_mode:
+                # Call save_user_action after .save() so as not to save
+                # renewal metadata as data updates
+                save_user_action(request, 'household_members', action_type='initial')
 
             if update_mode:
                 return redirect(f"{reverse('app:user_settings')}?page_updated=household")
@@ -1306,6 +1324,8 @@ def programs(request, **kwargs):
 
             if renewal_mode:
                 save_user_action(request, 'eligibility_programs', action_type='renewal')
+            else:
+                save_user_action(request, 'eligibility_programs', action_type='initial')
 
             EligibilityProgram.objects.bulk_create(
                 selected_eligibility_programs)
