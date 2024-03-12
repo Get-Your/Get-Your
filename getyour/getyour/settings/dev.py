@@ -85,11 +85,18 @@ DATABASES = {
 if DEBUG_LOGGING:
     LOGGING['loggers']['app']['level'] = 'DEBUG'
 
-
 Q_CLUSTER = {
     'name': 'DjangORM',
     'workers': 4,
+    # Each worker is constrained to the timeout period
     'timeout': 30,
+    # Each worker and the scheduled task itself is constrained to the retry
+    # period. At least some scheduled tasks in Get-Your are expected to be long-
+    # running because they loop through each user; set this accordingly
+    'retry': 21500,     # just under 6 hours
+    # The max_attempts parameter is actually a limit for number of *retries*.
+    # Appears to only accept positive integer or zero; zero indicates 'infinite'
+    'max_attempts': 1,
     'bulk': 10,
     'orm': 'default',
     'catch_up': False,
