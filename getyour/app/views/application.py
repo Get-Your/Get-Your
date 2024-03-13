@@ -68,6 +68,7 @@ from app.models import (
     EligibilityProgramRD,
 )
 from app.decorators import set_update_mode
+from app.constants import CONTACT_EMAIL
 from logger.wrappers import LoggerWrapper
 
 
@@ -738,6 +739,7 @@ def address_correction(request, **kwargs):
                 'link_next_page': link_next_page,
                 'address_feedback': address_feedback,
                 'address_type': in_progress_address['type'],
+                'contact_email': CONTACT_EMAIL,
                 'title': "Address Correction",
             },
         )

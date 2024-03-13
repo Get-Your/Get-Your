@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <span class="close">&times;</span>
         {% if qualified_programs == 0 and pending_programs == 0 and active_programs == 0 %}
         <p>We're sorry, currently you do not qualify for any programs. If you think this is an error please <a
-                href="mailto: GetFoCo@fcgov.com?subject=Income Qualification Question - Get FoCo&body=Hello Get FoCo team, I seem to be having an issue with qualification. Can you help clarify the qualifications for the available programs?"
+                href="mailto: {{ contact_email }}?subject=Income Qualification Question - Get FoCo&body=Hello Get FoCo team, I seem to be having an issue with qualification. Can you help clarify the qualifications for the available programs?"
                 style="font-style: none;">contact us</a>. <br> <br> In addition, please visit <a
                 style="display: inline;" href="/#Available%20Programs" target="_blank">Available Programs</a> to view
             each program's qualifications. </p>

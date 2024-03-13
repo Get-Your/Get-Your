@@ -26,7 +26,7 @@ from django.contrib.auth.decorators import login_required
 from app.forms import FeedbackForm
 from app.backend import address_check, get_users_iq_programs
 from app.models import AddressRD, IQProgram, IQProgramRD
-from app.constants import CONTACT_NUMBER
+from app.constants import CONTACT_NUMBER, CONTACT_EMAIL
 from logger.wrappers import LoggerWrapper
 
 
@@ -122,7 +122,7 @@ def dashboard(request, **kwargs):
             renewal_eligible_str = ""
 
         ineligible_pre = "Unfortunately, you are no longer qualified for"
-        ineligible_post = "If you think this is in error, please email getfoco@fcgov.com"
+        ineligible_post = f"If you think this is in error, please email {CONTACT_EMAIL}"
         if len(renewal_ineligible) == 1:
             renewal_ineligible_str = "{pre} {sing}. {pst}".format(
                 sing=renewal_ineligible[-1],
@@ -150,6 +150,7 @@ def dashboard(request, **kwargs):
                 "Settings_color": "white",
                 "Privacy_Policy_color": "white",
                 "contact_number": CONTACT_NUMBER,
+                "contact_email": CONTACT_EMAIL,
                 "iq_programs": users_iq_programs,
                 "qualified_programs": qualified_programs,
                 "pending_programs": pending_programs,
@@ -389,6 +390,7 @@ def qualified_programs(request, **kwargs):
                 "program_list_color": "var(--yellow)",
                 "Settings_color": "white",
                 "Privacy_Policy_color": "white",
+                "contact_email": CONTACT_EMAIL,
                 "iq_programs": users_iq_programs,
             },
         )
@@ -492,6 +494,7 @@ def programs_list(request, **kwargs):
                 "Settings_color": "white",
                 "Privacy_Policy_color": "white",
                 'title': "Programs List",
+                'contact_email': CONTACT_EMAIL,
                 'iq_programs': users_iq_programs,
             },
         )

@@ -35,3 +35,5 @@ parsed_number = re.match(
 CONTACT_NUMBER = "({prs[0]}) {prs[1]}-{prs[2]}".format(
     prs=parsed_number.groups()
 )
+
+CONTACT_EMAIL = 'getfoco@fcgov.com'
