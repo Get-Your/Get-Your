@@ -29,6 +29,12 @@ The universal income-qualified application for the City of Fort Collins, Colorad
         1. [Creating a Database](#creating-a-database)
         1. [Transferring Between Databases](#transferring-between-databases)
         1. [Set Up Database Users](#set-up-database-users)
+1. [Email Settings](#email-settings)
+1. [Phone Settings](#phone-settings)
+    1. [Sending SMS](#sending-sms)
+    1. [Call-Forwarding](#call-forwarding)
+        1. [Call-Forwarding Setup](#call-forwarding-setup)
+    1. [Call-Forwarding Configuration](#call-forwarding-configuration)
 1. [Request a Consultation](#request-a-consultation)
 1. [Appendix](#appendix)
     1. [Database Administration Tools](#database-administration-tools)
@@ -462,6 +468,57 @@ Connect to the database to configure and complete the following steps:
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
 
+# Email Settings
+SendGrid is the service used in this app to send automated email to users, although an upcoming change will be to use [`django-anymail`](https://anymail.dev/en/stable) with the SendGrid option order to genericize the email code.
+
+# Phone Settings
+Twilio is the service used in this app to [send SMS](#sending-sms) and [receive voice calls](#call-forwarding). For the best user experience, the recommended number that accepts calls is the same number that automated SMS are sent from (the `TWILIO_NUMBER` configuration variable). The [call-forwarding](#call-forwarding) section goes through the steps of setting up the SMS-sender number to forward voice calls to a real phone number.
+
+## Sending SMS
+Something here about how to set up Twilio to send SMS...
+
+## Call-Forwarding
+Voice calls from users are set up for simple pass-through forwarding. This is configured from the Twilio console.
+
+### Call-Forwarding Setup
+Twilio provides a simple page for initial setup, found at https://www.twilio.com/code-exchange/simple-call-forwarding under the default 'Quick Deploy to Twilio' tab. If the admin is already logged in to Twilio, all fields except 'My Phone Number' under Step 2 are prefilled. Fill in the number to forward to and select 'Deploy this application'.
+
+![Twilio Quick Deploy a forwarding number][1]
+
+To change the forwarding number, see [Call-Forwarding Configuration](#call-forwarding-configuration).
+
+## Call-Forwarding Configuration
+To reconfigure the voice forwarding function or change the target phone number, navigate to the function in the Twilio console.
+
+1. From the initial screen once logged in to Twilio, select 'Explore Products +'.
+
+1. Under the Developer Tools section, find 'Functions and Assets'. Select the pushpin icon to pin in to the Twilio sidebar navigation.
+
+    > The sidenav will likely not look like the screenshot; all that matters here is the 'Functions and Assets' section.
+
+    ![Pin 'Functions and Assets' to Twilio sidebar][2]
+
+1. Once it's on the sidenav, expand Functions and Assets and select Services.
+
+1. Select the name of call-forwarding service, shown here with the Twilio default "forward-call".
+
+    ![Call-forwarding service via Twilio Functions][3]
+
+1. The screen that opens allows editing of key files, including the `/forward-call` JS function that runs the service. For updating a phone number (e.g.changing the forward-to phone number or the affected Twilio number), however, select the 'Environment Variables' option.
+
+    ![Environment Variables option for the forward-call function][4]
+
+1. The `TWILIO_PHONE_NUMBER` and `MY_PHONE_NUMBER` values are the numbers that users can call and the forward-to number, respectively.
+
+    ![Environment variables used by the forward-call function][5]
+
+    To edit a value, select the 'Edit' option. Ensure that the new number is input with the same format as the currently-displayed value (e.g. "+\<country_code\>..."). When finished, select the 'Update' button; the log directly below the environment variables should show 'updating' then 'saved', at which point the new number is in effect.
+    
+    > The 'Deploy All' button at the bottom of the window is unnecessary for just changing environment variables.
+
+    ![Updating an environment variable in the forward-call function][6]
+
+
 # Request a Consultation
 
 The Get FoCo team is proud of the product we've created and we've released it as open-source to encourage its use in other organizations. If you'd like a consultation for implementing in your organization, please contact any of the program contributors with what you're looking for and we'll be in touch:
@@ -494,3 +551,12 @@ This is in the event a user needs to be deleted (except the original admin user,
     --DROP OWNED BY <username>;
     
     DROP USER <username>;
+
+
+
+[1]: ./media/twilio_quick_deploy_forwarding.png
+[2]: ./media/twilio_pin_functions_and_assets.png
+[3]: ./media/twilio_functions_services.png
+[4]: ./media/twilio_forward_call_initial_screen.png
+[5]: ./media/twilio_forward_call_env_vars.png
+[6]: ./media/twilio_forward_call_update_phone_number.png
