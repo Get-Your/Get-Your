@@ -469,10 +469,14 @@ Connect to the database to configure and complete the following steps:
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
 
 # Email Settings
-SendGrid is the service used in this app to send automated email to users, although an upcoming change will be to use [`django-anymail`](https://anymail.dev/en/stable) with the SendGrid option order to genericize the email code.
+SendGrid is the service used in this app to send automated email to users. Anything in this section references the `sendgrid` package, although a planned change will be to use [`django-anymail`](https://anymail.dev/en/stable) with the SendGrid option instead in order to genericize the email code.
+
+For the best user experience, the recommended email address to accept correspondence is the same address that automated emails are sent from. The code is set up this way, such that the `CONTACT_EMAIL` variable is propagated throughout.
 
 # Phone Settings
-Twilio is the service used in this app to [send SMS](#sending-sms) and [receive voice calls](#call-forwarding). For the best user experience, the recommended number that accepts calls is the same number that automated SMS are sent from (the `TWILIO_NUMBER` configuration variable). The [call-forwarding](#call-forwarding) section goes through the steps of setting up the SMS-sender number to forward voice calls to a real phone number.
+Twilio is the service used in this app to [send SMS](#sending-sms) and [receive voice calls](#call-forwarding).
+
+For the best user experience, the recommended number to accept calls is the same number that automated SMS are sent from. The code is set up this way, such that the `TWILIO_NUMBER` configuration variable is propagated throughout (prettified for display as `CONTACT_NUMBER`). The [call-forwarding](#call-forwarding) section goes through the steps of setting up the SMS-sender number to forward voice calls to a real phone number.
 
 ## Sending SMS
 Something here about how to set up Twilio to send SMS...
