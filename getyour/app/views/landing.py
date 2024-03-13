@@ -16,8 +16,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import usaddress
 import logging
+import usaddress
 
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import logout
@@ -25,6 +25,7 @@ from django.contrib.auth import logout
 from app.forms import AddressLookupForm
 from app.backend import tag_mapping, address_check, validate_usps
 from app.models import IQProgramRD
+from app.constants import CONTACT_NUMBER
 from logger.wrappers import LoggerWrapper
 
 
@@ -294,6 +295,7 @@ def quick_not_available(request, **kwargs):
             'landing/quick_not_available.html',
             {
                 'title': "Quick Connexion Not Available",
+                'contact_number': CONTACT_NUMBER,
             },
         )
     

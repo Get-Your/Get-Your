@@ -26,6 +26,7 @@ from django.contrib.auth.decorators import login_required
 from app.forms import FeedbackForm
 from app.backend import address_check, get_users_iq_programs
 from app.models import AddressRD, IQProgram, IQProgramRD
+from app.constants import CONTACT_NUMBER
 from logger.wrappers import LoggerWrapper
 
 
@@ -148,6 +149,7 @@ def dashboard(request, **kwargs):
                 "program_list_color": "white",
                 "Settings_color": "white",
                 "Privacy_Policy_color": "white",
+                "contact_number": CONTACT_NUMBER,
                 "iq_programs": users_iq_programs,
                 "qualified_programs": qualified_programs,
                 "pending_programs": pending_programs,
