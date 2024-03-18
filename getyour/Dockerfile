@@ -1,9 +1,12 @@
 FROM ubuntu:20.04
 
-#Layer for python and gdal support
+# Add timezone for processes using tzdata
+ENV TZ=Etc/UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+#Layer for python
 RUN apt-get update && apt-get install -y software-properties-common curl \
-    && add-apt-repository ppa:ubuntugis/ubuntugis-unstable && apt-get update \
-    && apt-get install -y python3-pip libssl-dev libffi-dev python3-gdal \
+    python3-pip libssl-dev libffi-dev \
     && update-alternatives --install /usr/bin/python python /usr/bin/python3 10 \
     && update-alternatives --install /usr/bin/pip    pip    /usr/bin/pip3    10 \
     && rm -rf /var/lib/apt/lists/*
