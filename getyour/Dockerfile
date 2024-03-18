@@ -15,34 +15,15 @@ RUN apt-get remove -y curl
 
 # Layers for the django app
 
-# RUN pip installs first, for caching
-# Note that updates to requirements.txt don't need to be replicated here, because requirements.txt
-# will add/update packages later in this script
-RUN apt-get install libmagic1
-RUN pip install pip --upgrade
-RUN pip install Django==4.1.8
-RUN pip install django-environ==0.10.0
-RUN pip install django-storages[azure]==1.12.3
-RUN pip install django-phonenumber-field[phonenumbers]==7.1.0
-RUN pip install gunicorn==20.1.0
-RUN pip install pendulum==2.1.2
-RUN pip install psycopg2-binary==2.9.6
-RUN pip install python-magic==0.4.27
-RUN pip install sendgrid==6.6.0
-RUN pip install twilio==8.1.0
-RUN pip install usaddress==0.5.10
-RUN pip install usps-api==0.5
-RUN pip install whitenoise==6.4.0
-RUN pip install django-q2==1.6.1
-
-
-# Then ADD code and 
-# RUN requirements.txt for completeness (this will ignore previously-installed packages or update
-# them if requirements.txt has different versions)
+# Create target dir and copy requirements.txt ONLY first, so we don't break the
+# docker cache with non-requirements.txt changes
 RUN mkdir /code
 WORKDIR /code
+COPY requirements.txt /code
+RUN pip install --quiet -r requirements.txt
+
+# Add the rest of the files
 ADD . /code/
-RUN pip install -r requirements.txt
 
 # Gather the code version from build var. Set to '' if DNE.
 ARG CODE_VERSION=''
