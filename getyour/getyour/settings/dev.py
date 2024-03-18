@@ -61,12 +61,22 @@ DATABASES = {
 if DEBUG_LOGGING:
     LOGGING['loggers']['app']['level'] = 'DEBUG'
 
-
 Q_CLUSTER = {
     'name': 'DjangORM',
     'workers': 4,
     'timeout': 30,
+    # Limit the number of retries
+    'max_attempts': 1,
     'bulk': 10,
     'orm': 'default',
     'catch_up': False,
+    'ALT_CLUSTERS': {
+        # Use an alternate cluster for the tasks that loop through all users
+        # (the timeout and retry are just under 6 hours)
+        'long': {
+            'timeout': 21500,
+            'retry': 21500,
+            'max_attempts': 1,
+        }
+    }
 }

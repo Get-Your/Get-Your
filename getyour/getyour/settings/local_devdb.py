@@ -62,12 +62,3 @@ DATABASES = {
 # env var for clarity
 LOGGING['loggers']['app']['level'] = 'DEBUG'
 DEBUG_LOGGING = True
-
-Q_CLUSTER = {
-    'name': 'DjangORM',
-    'workers': 4,
-    'timeout': 30,
-    'bulk': 10,
-    'orm': 'default',
-    'catch_up': False,
-}
