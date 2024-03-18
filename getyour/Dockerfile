@@ -4,14 +4,14 @@ FROM ubuntu:20.04
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-#Layer for python
-RUN apt-get update && apt-get install -y software-properties-common curl \
-    python3-pip libssl-dev libffi-dev \
+# Layer for python, supervisor, and redis
+RUN apt-get update && apt-get install -y curl gpg && \
+    curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
+    && apt-get update && apt-get install -y software-properties-common \
+    python3-pip libssl-dev libffi-dev supervisor redis \
     && update-alternatives --install /usr/bin/python python /usr/bin/python3 10 \
-    && update-alternatives --install /usr/bin/pip    pip    /usr/bin/pip3    10 \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get remove -y curl
+    && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 10 \
+    && rm -rf /var/lib/apt/lists/* && apt-get remove -y curl
 
 # Layers for the django app
 
@@ -32,9 +32,6 @@ ENV CODE_VERSION=$CODE_VERSION
 
 # Collect static files
 RUN python manage.py collectstatic --noinput
-
-# Install supervisord
-RUN apt-get update && apt-get install -y supervisor
 
 # Copy supervisord.conf to the appropriate location
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
