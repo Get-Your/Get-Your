@@ -33,10 +33,11 @@ ENV CODE_VERSION=$CODE_VERSION
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Copy supervisord.conf to the appropriate location
+# Copy supervisor and redis conf files to the appropriate locations
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY redis.conf /etc/redis/redis.conf
 
-#Layer for exposing the app through
+# Layer for exposing the Django app
 EXPOSE 8000
 
 # Run supervisord

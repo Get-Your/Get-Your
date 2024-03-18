@@ -13,3 +13,6 @@ usps-api==0.5
 whitenoise==6.4.0
 django-q2==1.6.1
 httpagentparser==1.9.5
+redis==5.0.3
+hiredis==2.3.2
+django-redis==5.4.0
