@@ -30,8 +30,8 @@ ARG CODE_VERSION=''
 # Save the code version to a runtime env var
 ENV CODE_VERSION=$CODE_VERSION
 
-RUN python manage.py collectstatic --noinput --settings=getyour.settings.dev
-#--settings=getyour.settings.production
+# Collect static files
+RUN python manage.py collectstatic --noinput
 
 # Install supervisord
 RUN apt-get update && apt-get install -y supervisor
