@@ -19,12 +19,13 @@ class Detail(models.Model):
     thread_id = models.CharField(max_length=100, db_index=True)
 
     app_name = models.CharField(max_length=20, db_index=True)
-    logger_name = models.CharField(max_length=100)
+    logger_name = models.CharField(max_length=100, db_index=True)
     log_level = models.PositiveSmallIntegerField(
         choices=LOG_LEVELS,
+        db_index=True,
     )
     function = models.CharField(max_length=50, null=True)
-    user_id = models.PositiveBigIntegerField(null=True)
+    user_id = models.PositiveBigIntegerField(null=True, db_index=True)
 
     message = models.TextField()
     trace = models.TextField(blank=True)
@@ -36,11 +37,19 @@ class Detail(models.Model):
         return str(self.message)
 
     class Meta:
-        ordering = ('-created_at',)
-        verbose_name_plural = verbose_name = 'Logging'
+        verbose_name = 'log'
+        verbose_name_plural = 'logs'
         indexes = [
             models.Index(
                 fields=['process_id', 'thread_id'],
                 name='logger_det_process_712f94_idx',
+            ),
+            models.Index(
+                fields=['thread_id', 'user_id'],
+                name='logger_det_thread_user_idx',
+            ),
+            models.Index(
+                fields=['logger_name', 'user_id'],
+                name='logger_det_logger_user_idx',
             ),
         ]
