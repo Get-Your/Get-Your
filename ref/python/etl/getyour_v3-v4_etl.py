@@ -16,11 +16,11 @@ import psycopg2
 import coftc_cred_man as crd
 
 # Define each renewal period. Per the specification, a NULL value for
-# renewal_interval_month denotes a non-expiring program (e.g. lifetime
+# renewal_interval_year denotes a non-expiring program (e.g. lifetime
 # enrollment)
 RENEWAL_UPDATE_DICT = {
-    'grocery': 12,
-    'recreation': 12,
+    'grocery': 1,
+    'recreation': 1,
     'spin': None,
     'spin_community_pass': None,
     'connexion': None,
@@ -117,7 +117,7 @@ def run_full_porting(profile):
     try:
         fill_last_completed(global_objects)
         fill_last_notification(global_objects)
-        add_renewal_interval_month(global_objects)
+        add_renewal_interval_year(global_objects)
         
         verify_transfer(global_objects)
         
@@ -324,10 +324,10 @@ def fill_last_notification(global_objects: dict) -> None:
         cursor.close()
 
 
-def add_renewal_interval_month(global_objects: dict) -> None:
+def add_renewal_interval_year(global_objects: dict) -> None:
     """
-    3) Fill ``renewal_interval_month`` for all IQ Programs. This is the number
-    of months between each necessary renewal.
+    3) Fill ``renewal_interval_year`` for all IQ Programs. This is the number
+    of years between each necessary renewal.
     
     Parameters
     ----------
@@ -349,7 +349,7 @@ def add_renewal_interval_month(global_objects: dict) -> None:
     dbNames = [x[0] for x in cursor.fetchall()]
     assert dbNames == sorted(RENEWAL_UPDATE_DICT.keys())
 
-    # Loop through each program and update renewal_interval_month
+    # Loop through each program and update renewal_interval_year
     try:
         with Progress() as progress:
 
@@ -360,7 +360,7 @@ def add_renewal_interval_month(global_objects: dict) -> None:
             
             for prg in RENEWAL_UPDATE_DICT.keys():
                 cursor.execute(
-                    """update public.app_iqprogramrd set "renewal_interval_month"=%s where "program_name"=%s""",
+                    """update public.app_iqprogramrd set "renewal_interval_year"=%s where "program_name"=%s""",
                     (RENEWAL_UPDATE_DICT[prg], prg),
                 )
                 
@@ -374,7 +374,7 @@ def add_renewal_interval_month(global_objects: dict) -> None:
         # Commit any changes after the loop runs
         global_objects['conn'].commit()
     
-        print('renewal_interval_month fill complete!')
+        print('renewal_interval_year fill complete!')
         
     finally:
         cursor.close()
@@ -461,7 +461,7 @@ def verify_transfer(global_objects: dict) -> None:
             
             for prg, mos in RENEWAL_UPDATE_DICT.items():
                 cursor.execute(
-                    """select "renewal_interval_month" from public.app_iqprogramrd where "program_name"=%s""",
+                    """select "renewal_interval_year" from public.app_iqprogramrd where "program_name"=%s""",
                     (prg, ),
                 )
                 assert cursor.fetchone()[0] == mos
