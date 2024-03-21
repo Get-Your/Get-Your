@@ -1150,7 +1150,7 @@ def household_members(request, **kwargs):
                     uploaded_file = SimpleUploadedFile(
                         file_name, buffer.read(), content_type)
                     file_paths.append(file_path)
-                    # default_storage.save(file_path, uploaded_file)
+                    default_storage.save(file_path, uploaded_file)
                     log.debug(
                         f"Identification file {file_path} saved successfully",
                         function='household_members',
@@ -1429,14 +1429,14 @@ def files(request, **kwargs):
                     # Eligibility Program record. Note that the database is updated
                     # each time this loop is run, plus again for the final save()
                     # afterward
-                    # instance.document_path.save(
-                    #     pendulum.now(
-                    #         'utc'
-                    #     ).format(
-                    #         f"YYYY-MM-DD[T]HHmmss[Z_{fileAmount}_{f}]"
-                    #     ),
-                    #     f,
-                    # )
+                    instance.document_path.save(
+                        pendulum.now(
+                            'utc'
+                        ).format(
+                            f"YYYY-MM-DD[T]HHmmss[Z_{fileAmount}_{f}]"
+                        ),
+                        f,
+                    )
                     fileNames.append(str(instance.document_path))
                     log.debug(
                         f"Eligibility file {instance.document_path} saved successfully",
