@@ -150,6 +150,10 @@ class User(AbstractUser):
 
     objects = CustomUserManager()
 
+    class Meta:
+        verbose_name = 'user'
+        verbose_name_plural = 'users'
+
     def __str__(self):
         return self.email
 
@@ -202,6 +206,10 @@ class AddressRD(GenericTimeStampedModel):
     has_connexion = models.BooleanField(null=True, default=None)
     is_verified = models.BooleanField(default=False)
     address_sha1 = models.CharField(max_length=40, unique=True)
+
+    class Meta:
+        verbose_name = 'address'
+        verbose_name_plural = 'addresses'
 
     def clean(self):
         self.address1 = self.address1.upper()
@@ -260,6 +268,10 @@ class Address(GenericTimeStampedModel):
     # Important: for this model, ``is_updated`` applies *only to the mailing address*
     is_updated = models.BooleanField(default=False)
 
+    class Meta:
+        verbose_name = 'address'
+        verbose_name_plural = 'addresses'
+
     # Define non-database attributes
     @property
     def update_mode(self):
@@ -312,6 +324,10 @@ class Household(GenericTimeStampedModel):
         max_digits=3, decimal_places=2, null=True, default=None)
     rent_own = models.CharField(max_length=200)
 
+    class Meta:
+        verbose_name = 'household'
+        verbose_name_plural = 'household'
+
     # Define non-database attributes
     @property
     def update_mode(self):
@@ -357,6 +373,10 @@ class HouseholdMembers(GenericTimeStampedModel):
     # quick storage and reference
     household_info = models.JSONField(null=True, blank=True)
     is_updated = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = 'household member'
+        verbose_name_plural = 'household members'
 
     # Define non-database attributes
     @property
@@ -440,6 +460,10 @@ class IQProgramRD(GenericTimeStampedModel):
     # IQ program is considered to be a lifetime enrollment. Measured in years
     renewal_interval_year = models.IntegerField(null=True)
 
+    class Meta:
+        verbose_name = 'IQ program'
+        verbose_name_plural = 'IQ programs'
+
     def __str__(self):
         return str(self.ami_threshold)
 
@@ -467,6 +491,10 @@ class IQProgram(IQProgramTimeStampedModel):
     )
 
     is_enrolled = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = 'IQ program'
+        verbose_name_plural = 'IQ programs'
 
     # Define non-database attributes
     @property
@@ -525,6 +553,10 @@ class EligibilityProgramRD(GenericTimeStampedModel):
 
     is_active = models.BooleanField(default=True)
 
+    class Meta:
+        verbose_name = 'eligibility program'
+        verbose_name_plural = 'eligibility programs'
+
 
 class EligibilityProgram(GenericTimeStampedModel):
     """
@@ -546,6 +578,10 @@ class EligibilityProgram(GenericTimeStampedModel):
     # the path
     document_path = models.FileField(
         max_length=5000, upload_to=userfiles_path, null=True, default=None)
+    
+    class Meta:
+        verbose_name = 'eligibility program'
+        verbose_name_plural = 'eligibility programs'
 
     # Define non-database attributes
     @property
