@@ -21,7 +21,7 @@ from getyour.settings.common import *
 from getyour.settings.common import env
 
 # Read the environment-specific secrets
-env.read_env(BASE_DIR.joinpath('.env'))
+env.read_env(BASE_DIR.joinpath('.dev.env'))
 
 SECRET_KEY = env("SECRET_KEY")
 AZURE_ACCOUNT_NAME = env("AZURE_ACCOUNT_NAME")
@@ -39,40 +39,19 @@ ALLOWED_HOSTS = []
 
 # Application definitions (outside of settings.common)
 
-DB_USER = env("DB_USER")
-DB_PASS = env("DB_PASS")
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'getyour_dev',
-        'USER': DB_USER,
-        'PASSWORD': DB_PASS,
-        'HOST': 'localhost'
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     },
     # Note that a separate file is needed for proper concurrency
     'analytics': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'getyour_logs_dev',
-        'USER': DB_USER,
-        'PASSWORD': DB_PASS,
-        'HOST': 'localhost'
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db_analytics.sqlite3',
     }
 }
-# # Database
-# # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     },
-#     # Note that a separate file is needed for proper concurrency
-#     'analytics': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db_analytics.sqlite3',
-#     }
-# }
 
 # Logging modifications - set logging level to DEBUG and overwrite DEBUG_LOGGER
 # env var for clarity
