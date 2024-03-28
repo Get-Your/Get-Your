@@ -328,4 +328,29 @@ class UserAdmin(admin.ModelAdmin):
     list_per_page = 100
 
 
+class AddressAdmin(admin.ModelAdmin):
+    search_fields = ('address1__contains', 'address2__contains')
+    list_display = ('address1', 'address2', 'is_in_gma', 'is_city_covered')
+    ordering = list_display_links = ('address1', 'address2')
+    list_filter = ('is_in_gma', 'is_city_covered')
+
+    readonly_fields = ('pretty_address', 'is_in_gma', 'is_city_covered')
+    fields = [
+        'pretty_address',
+        'is_in_gma',
+        'is_city_covered',
+    ]
+
+    @admin.display(description='address')
+    def pretty_address(self, obj):
+        if obj.address2 == '':
+            return f"{obj.address1}\n{obj.city}, {obj.state} {obj.zip_code}"
+        else:
+            return f"{obj.address1}\n{obj.address2}\n{obj.city}, {obj.state} {obj.zip_code}"
+        
+    list_per_page = 100
+
+
+# Register the models
 admin.site.register(User, UserAdmin)
+admin.site.register(AddressRD, AddressAdmin)
