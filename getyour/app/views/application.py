@@ -68,6 +68,7 @@ from app.models import (
     EligibilityProgramRD,
 )
 from app.decorators import set_update_mode
+from app.constants import supported_content_types
 from logger.wrappers import LoggerWrapper
 
 
@@ -1078,7 +1079,7 @@ def household_members(request, **kwargs):
                     filetype = magic.from_buffer(buffer)
 
                     # Check if any of the following strings ("PNG", "JPEG", "JPG", "PDF") are in the filetype
-                    if any(x in filetype for x in ["PNG", "JPEG", "JPG", "PDF"]):
+                    if any(x in filetype for x in [x.upper() for x in supported_content_types.keys()]):
                         pass
                     else:
                         log.error(
@@ -1124,12 +1125,10 @@ def household_members(request, **kwargs):
                 for f in updated_identification_paths:
                     file_name = f.split(",")[1]
                     file_contents = f.split(",")[0]
-                    content_type = {
-                        "png": "image/png",
-                        "jpg": "image/jpeg",
-                        "jpeg": "image/jpeg",
-                        "pdf": "application/pdf"
-                    }.get(file_name.split(".")[1], "text/plain")
+                    content_type = supported_content_types.get(
+                        file_name.split(".")[1],
+                        "text/plain",
+                    )
 
                     # Decode the Base64 string
                     decoded_bytes = base64.b64decode(file_contents)
