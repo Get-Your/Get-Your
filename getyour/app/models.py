@@ -21,7 +21,10 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
+from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
+from django.db.models import Value
+from django.db.models.functions import Concat
 
 
 def userfiles_path(instance, filename):
@@ -158,6 +161,11 @@ class User(AbstractUser):
         return self.email
 
     # Define non-database attributes
+    @property
+    @admin.display
+    def full_name(self):
+        return self.first_name + ' ' + self.last_name
+
     @property
     def update_mode(self):
         # Return update_mode for use in saving historical values

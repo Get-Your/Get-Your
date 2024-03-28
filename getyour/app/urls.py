@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
+from app.admin import views as admin_views
 from app.views import landing, authentication, application, dashboard
 
 
@@ -205,5 +206,13 @@ urlpatterns = [
         authentication.password_reset_request,
         name='password_reset',
         kwargs={'allow_direct_user': False},
+     ),
+
+    # Custom admin URLs
+    path(
+        'view_file/<path:blob_name>',
+        admin_views.view_file,
+        name='admin_view_file',
+        kwargs={'allow_direct_user': True},
      ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

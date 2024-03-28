@@ -25,3 +25,11 @@ enable_calendar_year_renewal = True
 
 # Set the specified app label(s) for use in the logging db router
 logger_app_labels = {'logger'}
+
+# Define the content types supported by this app
+supported_content_types = {
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'pdf': 'application/pdf',
+}
