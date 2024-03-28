@@ -289,6 +289,8 @@ class UserAdmin(admin.ModelAdmin):
     list_display_links = ('email', )
     date_hierarchy = 'last_completed_at'
 
+    # Calculated fields must be defined as read-only
+    readonly_fields = ('full_name',)
     fieldsets = [
         (
             'USER',
