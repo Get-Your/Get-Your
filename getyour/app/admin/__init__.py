@@ -346,7 +346,6 @@ class AddressAdmin(admin.ModelAdmin):
     list_filter = ('is_in_gma', 'is_city_covered')
     actions = ['update_gma']
 
-    readonly_fields = ('pretty_address', 'is_in_gma')
     fields = [
         'pretty_address',
         'is_in_gma',
@@ -361,6 +360,25 @@ class AddressAdmin(admin.ModelAdmin):
             return f"{obj.address1}\n{obj.address2}\n{obj.city}, {obj.state} {obj.zip_code}"
         
     list_per_page = 100
+
+    def get_readonly_fields(self, request, obj):
+        """
+        Return readonly fields based on GMA status.
+        
+        """
+
+        # Global readonly fields
+        readonly_fields = [
+            'pretty_address',
+            'is_in_gma',
+        ]
+
+        # is_city_covered cannot be modified (from True) if is_in_gma==True
+        if obj.is_in_gma:
+            readonly_fields.append('is_city_covered')
+
+        # Ensure there are no duplicates
+        return readonly_fields
 
     @admin.action(description='Update GMA for selected addresses')
     def update_gma(self, request, input_object):
