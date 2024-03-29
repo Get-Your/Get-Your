@@ -422,6 +422,7 @@ class AddressAdmin(admin.ModelAdmin):
             if is_in_gma != obj.is_in_gma:
                 # Save the address changes
                 obj.is_in_gma = is_in_gma
+                obj.is_city_covered = is_in_gma
                 obj.has_connexion = has_connexion
                 obj.save()
 
