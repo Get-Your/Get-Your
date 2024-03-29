@@ -265,12 +265,12 @@ class Address(GenericTimeStampedModel):
     mailing_address = models.ForeignKey(
         AddressRD,
         on_delete=models.DO_NOTHING,    # don't remove this value if address is deleted
-        related_name='+',   # don't relate AddressesNew_rearch id with this field
+        related_name='+',   # don't relate AddressRD with this field
     )
     eligibility_address = models.ForeignKey(
         AddressRD,
         on_delete=models.DO_NOTHING,    # don't remove this value if address is deleted
-        related_name='+',   # don't relate AddressesNew_rearch id with this field
+        related_name='eligibility_user',
     )
 
     # Important: for this model, ``is_updated`` applies *only to the mailing address*

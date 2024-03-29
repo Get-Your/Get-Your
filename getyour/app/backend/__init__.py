@@ -495,24 +495,28 @@ def check_if_user_needs_to_renew(user_id):
     return needs_renewal
 
 
-def finalize_application(request, renewal_mode=False):
+def finalize_application(user, renewal_mode=False, update_user=True):
     """
     Finalize the user's application. This is run after all Eligibility Program
     files are uploaded.
+
+    The defaults are:
+        - not in renewal_mode
+        - do update the user object (last_completed_at, etc)
     
     """
 
     log.debug(
         f"Entering function with renewal_mode=={renewal_mode}",
         function='finalize_application',
-        user_id=request.user.id,
+        user_id=user.id,
     )
 
     # Get all of the user's eligiblity programs and find the one with the lowest
     # 'ami_threshold' value which can be found in the related
     # eligiblityprogramrd table
     lowest_ami = EligibilityProgram.objects.filter(
-        Q(user_id=request.user.id)
+        Q(user_id=user.id)
     ).select_related(
         'program'
     ).values(
@@ -523,7 +527,7 @@ def finalize_application(request, renewal_mode=False):
 
     # Now save the value of the ami_threshold to the user's household
     household = Household.objects.get(
-        Q(user_id=request.user.id)
+        Q(user_id=user.id)
     )
     household.income_as_fraction_of_ami = lowest_ami['program__ami_threshold']
 
@@ -533,7 +537,7 @@ def finalize_application(request, renewal_mode=False):
 
         # Set the user's last_completed_date to now, as well as set the user's
         # last_renewal_action to null
-        user = User.objects.get(id=request.user.id)
+        user = User.objects.get(id=user.id)
         user.renewal_mode = True
         user.last_completed_at = pendulum.now()
         user.last_renewal_action = None
@@ -542,7 +546,7 @@ def finalize_application(request, renewal_mode=False):
         # Get every IQ program for the user that have a renewal_interval_year
         # in the IQProgramRD table that is not null
         users_current_iq_programs = IQProgram.objects.filter(
-            Q(user_id=request.user.id)
+            Q(user_id=user.id)
         ).select_related(
             'program'
         ).order_by(
@@ -559,11 +563,11 @@ def finalize_application(request, renewal_mode=False):
 
         # Get the user's eligibility address
         eligibility_address = AddressRD.objects.filter(
-            id=request.user.address.eligibility_address_id).first()
+            id=user.address.eligibility_address_id).first()
 
         # Now get all of the IQ Programs for which the user is eligible
         users_iq_programs = get_users_iq_programs(
-            request.user.id,
+            user.id,
             lowest_ami['program__ami_threshold'],
             eligibility_address,
         )
@@ -587,7 +591,7 @@ def finalize_application(request, renewal_mode=False):
             if program.id in [program.program.id for program in users_current_iq_programs]:
                 # Re-apply by creating the element
                 IQProgram.objects.create(
-                    user_id=request.user.id,
+                    user_id=user.id,
                     program_id=program.id,
                 )
 
@@ -595,55 +599,61 @@ def finalize_application(request, renewal_mode=False):
             elif program.enable_autoapply:
                 # Check if the user already has the program in the IQProgram table
                 if not IQProgram.objects.filter(
-                    Q(user_id=request.user.id) & Q(
+                    Q(user_id=user.id) & Q(
                         program_id=program.id)
                 ).exists():
                     # If the user doesn't have the program in the IQProgram
                     # table, then create it
                     IQProgram.objects.create(
-                        user_id=request.user.id,
+                        user_id=user.id,
                         program_id=program.id,
                     )
 
-        # Set renewal-specific session vars
-        request.session['app_renewed'] = True
-        request.session['renewal_eligible'] = sorted(renewal_eligible)
-        request.session['renewal_ineligible'] = sorted(renewal_ineligible)
-
-        return 'app:dashboard'
+        # Return the target page and a dictionary of <session var>: <value>
+        return (
+            'app:dashboard',
+            {
+                'app_renewed': True,
+                'renewal_eligible': sorted(renewal_eligible),
+                'renewal_ineligible': sorted(renewal_ineligible),
+            }
+        )
     
     else:
         household.save()
 
-        user = User.objects.get(id=request.user.id)
-        user.last_completed_at = pendulum.now()
-        user.save()
+        if update_user:
+            user.last_completed_at = pendulum.now()
+            user.save()
 
         # Get the user's eligibility address
         eligibility_address = AddressRD.objects.filter(
-            id=request.user.address.eligibility_address_id).first()
+            id=user.address.eligibility_address_id).first()
 
         # Now get all of the IQ Programs for which the user is eligible
         users_iq_programs = get_users_iq_programs(
-            request.user.id,
+            user.id,
             lowest_ami['program__ami_threshold'],
             eligibility_address,
         )
         # For every IQ program, check if the user should be automatically
         # enrolled in it if the program has enable_autoapply set to True
+        print()
         for program in users_iq_programs:
-            if program.enable_autoapply:
+            # program is an IQProgramRD object only if the user has not applied
+            if isinstance(program, IQProgramRD) and program.enable_autoapply:
                 IQProgram.objects.create(
-                    user_id=request.user.id,
+                    user_id=user.id,
                     program_id=program.id,
                 )
                 log.debug(
                     f"User auto-applied for '{program.program_name}' IQ program",
                     function='finalize_application',
-                    user_id=request.user.id,
+                    user_id=user.id,
                 )
 
-        return 'app:broadcast'
+        # Return the target page and an (empty) dictionary of <session var>: <value>
+        return ('app:broadcast', {})
 
 
 def enable_renew_now(user_id):

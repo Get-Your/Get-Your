@@ -1474,10 +1474,15 @@ def files(request, **kwargs):
                     )
                 else:
                     # Once all files have been uploaded, finalize the application
-                    target_page = finalize_application(
-                        request,
+                    target_page, session_updates = finalize_application(
+                        request.user,
                         renewal_mode=renewal_mode,
                     )
+                    # Update the session vars from the finalize application output
+                    for key, itm in session_updates.items():
+                        request.session[key] = itm
+
+                    # Redirect to the finalize application target
                     return redirect(target_page)
 
         else:
