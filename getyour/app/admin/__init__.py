@@ -31,6 +31,7 @@ from django.conf import settings
 from django.db.models import F
 from django.shortcuts import reverse
 from django.db.models.functions import Lower
+from django.db.models.query import QuerySet
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.http import HttpResponseRedirect
 
@@ -43,6 +44,7 @@ from app.models import (
     EligibilityProgram,
     IQProgram,
 )
+from app.backend.address import address_check
 from app.forms import UserUpdateForm
 
 
@@ -340,8 +342,9 @@ class AddressAdmin(admin.ModelAdmin):
     list_display = ('address1', 'address2', 'is_in_gma', 'is_city_covered')
     ordering = list_display_links = ('address1', 'address2')
     list_filter = ('is_in_gma', 'is_city_covered')
+    actions = ['update_gma']
 
-    readonly_fields = ('pretty_address', 'is_in_gma', 'is_city_covered')
+    readonly_fields = ('pretty_address', 'is_in_gma')
     fields = [
         'pretty_address',
         'is_in_gma',
@@ -357,6 +360,54 @@ class AddressAdmin(admin.ModelAdmin):
         
     list_per_page = 100
 
+    @admin.action(description='Update GMA for selected addresses')
+    def update_gma(self, request, input_object):
+        """
+        Update the GMA of the selected object(s).
+        
+        This is used both as a changelist action and a page-specific button, so
+        ``input_object`` can be either a single object (of the modeladmin type)
+        or a queryset from the changelist actions.
+        
+        """
+
+        # If the input_object is not a QuerySet, coerce it into a list so for
+        # similar operation
+        if isinstance(input_object, QuerySet):
+            queryset = input_object
+        else:
+            queryset = [input_object]
+
+        # Loop through the queryset (or similated queryset)
+        for obj in queryset:
+            # Format for address_check. All addresses in the database have been
+            # through USPS, so no need to re-validate (just copy formatting)
+            address_dict = {
+                'AddressValidateResponse': {
+                    'Address': {
+                        # Note 1 & 2 are swapped
+                        'Address1': obj.address2,
+                        'Address2': obj.address1,
+                        'City': obj.city,
+                        'State': obj.state,
+                        'Zip5': obj.zip_code,
+                    }
+                }
+            }
+
+            # Run the address check and save the results to the model
+            (is_in_gma, has_connexion) = address_check(address_dict)
+            obj.is_in_gma = is_in_gma
+            obj.has_connexion = has_connexion
+            obj.save()
+
+        # Add a message to the user when complete
+        self.message_user(request, ngettext(
+            'GMA update was executed for %d address.',
+            'GMA update was executed for %d addresses.',
+            len(queryset),
+        ) % len(queryset), messages.SUCCESS)
+
     # Add custom buttons to the save list in the admin template (from
     # https://stackoverflow.com/a/34899874/5438550 and
     # https://stackoverflow.com/a/69487616/5438550)
@@ -368,7 +419,7 @@ class AddressAdmin(admin.ModelAdmin):
         # (name, url). The 'url' portion must match the
         # "if 'url' in request.POST:" section of response_change()
         extra_context['custom_buttons'] = [
-            ('Custom Action', '_customaction'),
+            ('Update GMA', '_update_gma'),
         ]
         return super(AddressAdmin, self).change_view(
             request, object_id, form_url, extra_context=extra_context,
@@ -379,8 +430,11 @@ class AddressAdmin(admin.ModelAdmin):
         pk_value = obj._get_pk_val()
         preserved_filters = self.get_preserved_filters(request)
 
-        if "_customaction" in request.POST:
-            # Handle the 'Custom Action' (just redirect to the same page)
+        if "_update_gma" in request.POST:
+            # Handle 'Update GMA': run the logic to update ``is_in_gma`` then
+            # refresh the page
+            self.update_gma(request, obj)
+
             redirect_url = reverse(
                 'admin:%s_%s_change' % (opts.app_label, opts.model_name),
                 args=(pk_value,),
