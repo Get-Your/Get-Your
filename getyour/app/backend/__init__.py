@@ -49,7 +49,7 @@ from logger.wrappers import LoggerWrapper
 
 from python_http_client.exceptions import HTTPError as SendGridHTTPError
 from twilio.base.exceptions import TwilioRestException
-from app.constants import enable_calendar_year_renewal
+from app.constants import enable_calendar_year_renewal, application_pages
 
 
 # Initialize logger
@@ -454,17 +454,8 @@ def what_page_renewal(last_renewal_action):
     Returns:
         str: The what page for the renewal flow
     """
-    pages = {
-        'get_ready': 'app:get_ready',
-        'account': 'app:account',
-        'address': 'app:address',
-        'household': 'app:household',
-        'household_members': 'app:household_members',
-        'eligibility_programs': 'app:programs',
-        'files': 'app:files'
-    }
 
-    for page, url in pages.items():
+    for page, url in application_pages.items():
         if page not in last_renewal_action:
             return url
 

@@ -33,3 +33,14 @@ supported_content_types = {
     'jpeg': 'image/jpeg',
     'pdf': 'application/pdf',
 }
+
+# Define the pages for the application/renewal, in order
+application_pages = {
+    'get_ready': 'app:get_ready',
+    'account': 'app:account',
+    'address': 'app:address',
+    'household': 'app:household',
+    'household_members': 'app:household_members',
+    'eligibility_programs': 'app:programs',
+    'files': 'app:files'
+}
