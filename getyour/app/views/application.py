@@ -44,20 +44,6 @@ from app.forms import (
     UserUpdateForm,
     FileUploadForm,
 )
-from app.backend import (
-    login,
-    form_page_number,
-    tag_mapping,
-    address_check,
-    serialize_household_members,
-    validate_usps,
-    get_in_progress_eligiblity_file_uploads,
-    what_page,
-    broadcast_email,
-    broadcast_sms,
-    save_renewal_action,
-    finalize_application,
-)
 from app.models import (
     userfiles_path,
     AddressRD,
@@ -66,6 +52,22 @@ from app.models import (
     Household,
     User,
     EligibilityProgramRD,
+)
+from app.backend import (
+    login,
+    form_page_number,
+    serialize_household_members,
+    get_in_progress_eligiblity_file_uploads,
+    what_page,
+    broadcast_email,
+    broadcast_sms,
+    save_renewal_action,
+    finalize_application,
+)
+from app.backend.address import (
+    tag_mapping,
+    address_check,
+    validate_usps,
 )
 from app.decorators import set_update_mode
 from app.constants import supported_content_types

@@ -23,7 +23,7 @@ from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import logout
 
 from app.forms import AddressLookupForm
-from app.backend import tag_mapping, address_check, validate_usps
+from app.backend.address import tag_mapping, address_check, validate_usps
 from app.models import IQProgramRD
 from logger.wrappers import LoggerWrapper
 
