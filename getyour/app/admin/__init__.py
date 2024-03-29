@@ -80,12 +80,22 @@ class AddressInline(admin.TabularInline):
     
     fk_name = "user"
 
-    readonly_fields = ('created_at', 'modified_at', 'mailing_addr', 'eligibility_addr')
+    readonly_fields = [
+        'created_at',
+        'modified_at',
+        'mailing_addr',
+        'eligibility_addr',
+    ]
     fieldsets = [
         (
             None,
             {
-                'fields': ('created_at', 'modified_at', 'mailing_addr', 'eligibility_addr'),
+                'fields': [
+                    'created_at',
+                    'modified_at',
+                    'mailing_addr',
+                    'eligibility_addr',
+                ],
             },
         ),
     ]
@@ -94,17 +104,25 @@ class AddressInline(admin.TabularInline):
     def mailing_addr(self, obj):
         addr = AddressRD.objects.get(id=obj.mailing_address_id)
         if addr.address2 == '':
-            return f"{addr.address1}\n{addr.city}, {addr.state} {addr.zip_code}"
+            return format_html(
+                f'<a href="/admin/app/addressrd/{addr.id}/change">{addr.address1}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
+            )
         else:
-            return f"{addr.address1}\n{addr.address2}\n{addr.city}, {addr.state} {addr.zip_code}"
+            return format_html(
+                f'<a href="/admin/app/addressrd/{addr.id}/change">{addr.address1}<br />{addr.address2}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
+            )
 
     @admin.display(description='eligibility address')
     def eligibility_addr(self, obj):
         addr = AddressRD.objects.get(id=obj.eligibility_address_id)
         if addr.address2 == '':
-            return f"{addr.address1}\n{addr.city}, {addr.state} {addr.zip_code}"
+            return format_html(
+                f'<a href="/admin/app/addressrd/{addr.id}/change">{addr.address1}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
+            )
         else:
-            return f"{addr.address1}\n{addr.address2}\n{addr.city}, {addr.state} {addr.zip_code}"
+            return format_html(
+                f'<a href="/admin/app/addressrd/{addr.id}/change">{addr.address1}<br />{addr.address2}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
+            )
 
     # Show zero extra (unfilled) options
     extra = 0
@@ -432,6 +450,7 @@ class UserAdmin(admin.ModelAdmin):
             'date_joined',
             'last_login',
             'has_viewed_dashboard',
+            'last_action_notification_at',
         ]
         if request.user.is_superuser:
             # No extra readonly fields for superuser
