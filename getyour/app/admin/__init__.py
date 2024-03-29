@@ -158,14 +158,16 @@ class HouseholdMembersInline(admin.TabularInline):
 
                 # Parse each document_path into a link that can be used to view the
                 # file
-                person_list.append(
-                    """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
+                if 'identification_path' in itm and itm['identification_path'] is not None:
+                    document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
                         trg=reverse(
                             'app:admin_view_file',
                             kwargs={'blob_name': itm['identification_path']},
                         ),
                     )
-                )
+                else:
+                    document_link = "No identification available"
+                person_list.append(document_link)
                 person_list.append('')
 
         return format_html('<br />'.join(person_list))
@@ -213,25 +215,28 @@ class EligibilityProgramInline(admin.TabularInline):
 
         # Parse the stringified list of document_path values. Dynamically
         # converting to a list would be dangerous, so this is processed manually.
-        blob_list = obj.document_path.name.replace(
-            "['", ''
-        ).replace(
-            "']", ''
-        ).split(
-            ', '
-        )
-        url_list = []
-        for idx, itm in enumerate(blob_list):
-            url_list.append(
-                """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Document {nm} of {tot}</a>""".format(
-                    trg=reverse(
-                        'app:admin_view_file',
-                        kwargs={'blob_name': itm},
-                    ),
-                    nm=idx+1,
-                    tot=len(blob_list),
-                )
+        if obj.document_path.name != '':
+            blob_list = obj.document_path.name.replace(
+                "['", ''
+            ).replace(
+                "']", ''
+            ).split(
+                ', '
             )
+            url_list = []
+            for idx, itm in enumerate(blob_list):
+                url_list.append(
+                    """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Document {nm} of {tot}</a>""".format(
+                        trg=reverse(
+                            'app:admin_view_file',
+                            kwargs={'blob_name': itm},
+                        ),
+                        nm=idx+1,
+                        tot=len(blob_list),
+                    )
+                )
+        else:
+            url_list = ['No document available']
 
         # return format_html(url_list[0])
         return format_html('<br />'.join(url_list))
