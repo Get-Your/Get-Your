@@ -115,15 +115,54 @@ class HouseholdInline(admin.TabularInline):
     
     fk_name = "user"
 
-    readonly_fields = ('created_at', 'modified_at', 'duration_at_address', 'rent_or_own', 'income_percent')
     fieldsets = [
         (
             None,
             {
-                'fields': ('created_at', 'modified_at', 'duration_at_address', 'rent_or_own', 'income_percent'),
+                'fields': [
+                    'created_at',
+                    'modified_at',
+                    'duration_at_address',
+                    'rent_or_own',
+                    'number_persons_in_household',
+                    'income_percent',
+                    'is_income_verified',
+                ],
             },
         ),
     ]
+
+    def get_readonly_fields(self, request, obj):
+        """
+        Return readonly fields based on user type and groups. Note that groups
+        is looking for inclusion and is hierarchical (the most permissive is
+        first).
+        
+        """
+
+        # Global readonly fields
+        readonly_fields = [
+            'created_at',
+            'modified_at',
+        ]
+        if request.user.is_superuser:
+            # No extra readonly fields for superuser
+            pass
+        elif request.user.groups.filter(
+            name__startswith='Income Verification'
+        ).exists():
+            # This is moot because everything for this group is read-only anyway
+            readonly_fields.extend([
+                'duration_at_address',
+                'number_persons_in_household',
+            ])
+        # Ensure @property and calculated fields displayed here are always
+        # marked read-only. Note that duplicates are removed later, so no need
+        # to check here
+        static_fields = ['rent_or_own', 'income_percent']
+        readonly_fields.extend(static_fields)
+        # Ensure there are no duplicates
+        return list(set(readonly_fields))
 
     @admin.display(description='rent or own')
     def rent_or_own(self, obj):
@@ -279,7 +318,7 @@ class IQProgramInline(admin.TabularInline):
     @admin.display(description='enrolled at')
     def enrollment_status(self, obj):
         if obj.is_enrolled:
-            ts = pendulum.obj(obj.enrolled_at)
+            ts = pendulum.instance(obj.enrolled_at)
             ts_formatted = "{} {}.".format(
                 ts.format('MMM D, YYYY, h:mm'),
                 # Manually format the am/pm designator to match the Django ones
@@ -298,35 +337,120 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ('last_name', 'first_name', 'email', 'last_completed_at')
     ordering = (Lower('last_name'), Lower('first_name'))    # case-insensitive
     list_display_links = ('email', )
+    # list_filter = ('last_completed_at', )
     date_hierarchy = 'last_completed_at'
 
-    # Calculated fields must be defined as read-only
-    readonly_fields = ('full_name',)
-    fieldsets = [
-        (
-            'USER',
-            {
-                'fields': (
-                    'full_name',
-                    'email',
-                    'phone_number',
-                ),
-            },
-        ),
-        (
-            'APPLICATION',
-            {
-                'fields': (
-                    'date_joined',
-                    'last_login',
-                    'last_completed_at',
-                    'has_viewed_dashboard',
-                    # 'last_application_action',
-                    'last_renewal_action',
-                ),
-            },
-        ),
-    ]
+    @admin.display(description='last renewal action')
+    def renewal_action_parsed(self, obj):
+        if obj.last_renewal_action is not None:
+            status_list = ['Remaining steps:', '']
+            # Output the uncompleted pages in application page order. Include if
+            # key DNE in last_renewal_action or status is not 'completed'
+            status_list.extend([
+                key.replace('_', ' ').title() for key in application_pages.keys() \
+                    if key not in obj.last_renewal_action.keys() or \
+                    obj.last_renewal_action[key].get('status')!='completed'
+            ])
+
+            return '\n'.join(status_list)
+        else:
+            return self.get_empty_value_display()
+
+    def get_fieldsets(self, request, obj):
+        """
+        Return fieldsets based on user type. All users get the default fieldset,
+        then additional fields are added for superusers.
+        
+        """
+
+        fieldsets = [
+            (
+                'USER',
+                {
+                    'fields': [
+                        'full_name',
+                        'email',
+                        'phone_number',
+                        'id',
+                        'is_archived',
+                    ],
+                },
+            ),
+            (
+                'APPLICATION',
+                {
+                    'fields': [
+                        'date_joined',
+                        'last_login',
+                        'last_completed_at',
+                        'last_action_notification_at',
+                        # 'last_application_parsed',
+                        'renewal_action_parsed',
+                    ],
+                },
+            ),
+        ]
+
+        if request.user.is_superuser:
+            for idx, elem in enumerate(fieldsets):
+                if elem[0] == 'USER':
+                    fieldsets[idx][1]['fields'].extend([
+                        'first_name',
+                        'last_name',
+                        'is_active',
+                        'is_staff',
+                        'is_superuser',
+                        'groups',
+                    ])
+                elif elem[0] == 'APPLICATION':
+                    fieldsets[idx][1]['fields'].extend([
+                        'has_viewed_dashboard',
+                    ])
+
+        return fieldsets
+    
+    # def get_formset_kwargs(self, request, obj, inline, prefix):
+    #     return {
+    #         **super().get_formset_kwargs(request, obj, inline, prefix),
+    #         "form_kwargs": {"request": request},
+    #     }
+
+    # def get_form(self, request, obj=None, **kwargs):
+    #     if not request.user.is_superuser:
+    #         kwargs["form"] = UserUpdateForm
+    #     return super().get_form(request, obj, **kwargs)
+    
+    # exclude = ('date_joined',)
+    def get_readonly_fields(self, request, obj):
+        """
+        Return readonly fields based on user type and groups. Note that groups
+        is looking for inclusion and is hierarchical (the most permissive is
+        first).
+        
+        """
+
+        # Global readonly fields
+        readonly_fields = [
+            'id',
+            'date_joined',
+            'last_login',
+            'has_viewed_dashboard',
+        ]
+        if request.user.is_superuser:
+            # No extra readonly fields for superuser
+            pass
+        elif request.user.groups.filter(
+            name__startswith='Income Verification'
+        ).exists():
+            # This is moot because everything for this group is read-only anyway
+            readonly_fields.extend(['first_name', 'last_name'])
+        # Ensure @property and calculated fields displayed here are always
+        # marked read-only. Note that duplicates are removed later, so no need
+        # to check here
+        static_fields = ['full_name', 'renewal_action_parsed']
+        readonly_fields.extend(static_fields)
+        # Ensure there are no duplicates
+        return list(set(readonly_fields))
 
     inlines = [
         AddressInline,
@@ -372,11 +496,9 @@ class AddressAdmin(admin.ModelAdmin):
             'pretty_address',
             'is_in_gma',
         ]
-
         # is_city_covered cannot be modified (from True) if is_in_gma==True
         if obj.is_in_gma:
             readonly_fields.append('is_city_covered')
-
         # Ensure there are no duplicates
         return readonly_fields
 
@@ -485,5 +607,14 @@ class AddressAdmin(admin.ModelAdmin):
              return super().response_change(request, obj)
 
 # Register the models
+
+# # Create the proxy model and register it
+# create_modeladmin(
+#     UserAdmin,
+#     name='income-verification',
+#     model=User,
+#     pretty_name='Income verification',
+# )
+
 admin.site.register(User, UserAdmin)
 admin.site.register(AddressRD, AddressAdmin)
