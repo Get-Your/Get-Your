@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from django import forms
 from django.contrib.auth.password_validation import validate_password
 from app.models import HouseholdMembers, User, Household, AddressRD, EligibilityProgram, Feedback
+from app.constants import rent_own_choices, duration_at_address_choices
 
 
 class UserForm(forms.ModelForm):
@@ -93,18 +94,10 @@ class AddressForm(forms.ModelForm):
 
 
 class HouseholdForm(forms.ModelForm):
-    rent_own_choices = (
-        ('rent', 'Rent'),
-        ('own', 'Own'),
-    )
+    
     rent_own = forms.ChoiceField(
         choices=rent_own_choices, widget=forms.RadioSelect())
 
-    duration_at_address_choices = (
-        ('More than 3 Years', 'More than 3 Years'),
-        ('1 to 3 Years', '1 to 3 Years'),
-        ('Less than a Year', 'Less than a Year'),
-    )
     duration_at_address = forms.ChoiceField(
         choices=duration_at_address_choices, widget=forms.RadioSelect())
 

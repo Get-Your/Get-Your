@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import hashlib
+
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import AbstractUser
@@ -25,6 +26,8 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Value
 from django.db.models.functions import Concat
+
+from app.constants import rent_own_choices, duration_at_address_choices
 
 
 def userfiles_path(instance, filename):
@@ -142,11 +145,29 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=200)
     phone_number = PhoneNumberField()
     has_viewed_dashboard = models.BooleanField(default=False)
-    is_archived = models.BooleanField(default=False)
+    is_archived = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Designates whether the user is marked as 'archived'."
+        ),
+    )
     is_updated = models.BooleanField(default=False)
-    last_completed_at = models.DateTimeField(null=True, blank=True)
+    last_completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_(
+            "The latest time the user completed an application/renewal."
+        ),
+    )
     last_renewal_action = models.JSONField(null=True, blank=True)
-    last_action_notification_at = models.DateTimeField(null=True, blank=True)
+    last_action_notification_at = models.DateTimeField(
+        null=True, 
+        blank=True,
+        verbose_name="Last notification based on user action",
+        help_text=_(
+            "The latest time a notification was sent because of or requesting user action."
+        ),
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -210,7 +231,14 @@ class AddressRD(GenericTimeStampedModel):
     zip_code = models.DecimalField(max_digits=5, decimal_places=0)
 
     is_in_gma = models.BooleanField(null=True, default=None)
-    is_city_covered = models.BooleanField(null=True, default=None)
+    is_city_covered = models.BooleanField(
+        null=True,
+        default=None,
+        help_text=_(
+            "Designates whether an address is eligible for benefits. " 
+            "This can be altered if the address is outside the GMA."
+        ),
+    )
     has_connexion = models.BooleanField(null=True, default=None)
     is_verified = models.BooleanField(default=False)
     address_sha1 = models.CharField(max_length=40, unique=True)
@@ -322,15 +350,41 @@ class Household(GenericTimeStampedModel):
         primary_key=True,   # set this to the primary key of this model
     )
     is_updated = models.BooleanField(default=False)
-    is_income_verified = models.BooleanField(default=False)
-    duration_at_address = models.CharField(max_length=200)
-    number_persons_in_household = models.IntegerField(100, default=1)
+    is_income_verified = models.BooleanField(
+        default=False,
+        verbose_name="income has been verified",
+        help_text=_(
+            "Designates whether an applicant has had their income verified."
+        ),
+    )
+    duration_at_address = models.CharField(
+        max_length=200,
+        choices=duration_at_address_choices,
+    )
+    number_persons_in_household = models.IntegerField(
+        default=1,
+        verbose_name="household size",
+        help_text=_(
+            "Number of persons in the household."
+        ),
+    )
 
     # Define the min and max Gross Annual Household Income as a fraction of
     # AMI (which is a function of number of individuals in household)
     income_as_fraction_of_ami = models.DecimalField(
-        max_digits=3, decimal_places=2, null=True, default=None)
-    rent_own = models.CharField(max_length=200)
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+        default=None,
+    )
+    rent_own = models.CharField(
+        max_length=200,
+        choices=rent_own_choices,
+        verbose_name="rent or own",
+        help_text=_(
+            "Designates whether the applicant rents or owns their primary residence."
+        ),
+    )
 
     class Meta:
         verbose_name = 'household'

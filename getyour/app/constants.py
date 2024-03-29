@@ -44,3 +44,14 @@ application_pages = {
     'eligibility_programs': 'app:programs',
     'files': 'app:files'
 }
+
+# Define form choices for rent/own and duration at address
+rent_own_choices = (
+    ('rent', 'Rent'),
+    ('own', 'Own'),
+)
+duration_at_address_choices = (
+    ('More than 3 Years', 'More than 3 Years'),
+    ('1 to 3 Years', '1 to 3 Years'),
+    ('Less than a Year', 'Less than a Year'),
+)

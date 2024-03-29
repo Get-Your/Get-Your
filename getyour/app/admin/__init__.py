@@ -123,7 +123,7 @@ class HouseholdInline(admin.TabularInline):
                     'created_at',
                     'modified_at',
                     'duration_at_address',
-                    'rent_or_own',
+                    'rent_own',
                     'number_persons_in_household',
                     'income_percent',
                     'is_income_verified',
@@ -153,20 +153,17 @@ class HouseholdInline(admin.TabularInline):
         ).exists():
             # This is moot because everything for this group is read-only anyway
             readonly_fields.extend([
+                'rent_own',
                 'duration_at_address',
                 'number_persons_in_household',
             ])
         # Ensure @property and calculated fields displayed here are always
         # marked read-only. Note that duplicates are removed later, so no need
         # to check here
-        static_fields = ['rent_or_own', 'income_percent']
+        static_fields = ['income_percent']
         readonly_fields.extend(static_fields)
         # Ensure there are no duplicates
         return list(set(readonly_fields))
-
-    @admin.display(description='rent or own')
-    def rent_or_own(self, obj):
-        return obj.rent_own.capitalize()
 
     @admin.display(description='income relative to AMI')
     def income_percent(self, obj):
@@ -242,7 +239,7 @@ class EligibilityProgramInline(admin.TabularInline):
         ),
     ]
 
-    @admin.display(description='program')
+    @admin.display(description='program name')
     def program_name(self, obj):
         return obj.program.friendly_name
 
@@ -311,7 +308,7 @@ class IQProgramInline(admin.TabularInline):
         ),
     ]
 
-    @admin.display(description='program')
+    @admin.display(description='program name')
     def program_name(self, obj):
         return obj.program.friendly_name
 
