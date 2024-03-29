@@ -31,6 +31,8 @@ from django.conf import settings
 from django.db.models import F
 from django.shortcuts import reverse
 from django.db.models.functions import Lower
+from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
+from django.http import HttpResponseRedirect
 
 from app.models import (
     User,
@@ -355,6 +357,46 @@ class AddressAdmin(admin.ModelAdmin):
         
     list_per_page = 100
 
+    # Add custom buttons to the save list in the admin template (from
+    # https://stackoverflow.com/a/34899874/5438550 and
+    # https://stackoverflow.com/a/69487616/5438550)
+    change_form_template = 'admin/custom_button_change_form.html'
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+
+        # Add any custom buttons. This must be a list/tuple of list/tuples, as
+        # (name, url). The 'url' portion must match the
+        # "if 'url' in request.POST:" section of response_change()
+        extra_context['custom_buttons'] = [
+            ('Custom Action', '_customaction'),
+        ]
+        return super(AddressAdmin, self).change_view(
+            request, object_id, form_url, extra_context=extra_context,
+        )
+    
+    def response_change(self, request, obj):
+        opts = self.model._meta
+        pk_value = obj._get_pk_val()
+        preserved_filters = self.get_preserved_filters(request)
+
+        if "_customaction" in request.POST:
+            # Handle the 'Custom Action' (just redirect to the same page)
+            redirect_url = reverse(
+                'admin:%s_%s_change' % (opts.app_label, opts.model_name),
+                args=(pk_value,),
+                current_app=self.admin_site.name,
+            )
+            redirect_url = add_preserved_filters(
+                {
+                    'preserved_filters': preserved_filters,
+                    'opts': opts,
+                },
+                redirect_url,
+            )
+            return HttpResponseRedirect(redirect_url)
+        
+        else:
+             return super().response_change(request, obj)
 
 # Register the models
 admin.site.register(User, UserAdmin)

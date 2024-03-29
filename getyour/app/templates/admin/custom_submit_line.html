@@ -1,0 +1,12 @@
+{% extends "admin/submit_line.html" %}
+{% load i18n admin_urls %}
+<div class="submit-row">
+{% block submit-row %}
+
+{% for nm, hr in custom_buttons %}
+<input type="submit" value="{% translate nm %}"  name="{{ hr }}" />
+{% endfor %}
+
+{{ block.super }}
+
+{% endblock %}
