@@ -163,7 +163,7 @@ class User(AbstractUser):
     last_action_notification_at = models.DateTimeField(
         null=True, 
         blank=True,
-        verbose_name="Last notification based on user action",
+        verbose_name="Last user action notification",
         help_text=_(
             "The latest time a notification was sent because of or requesting user action."
         ),
