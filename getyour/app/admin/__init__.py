@@ -459,7 +459,7 @@ class UserAdmin(admin.ModelAdmin):
             name__startswith='Income Verification'
         ).exists():
             # This is moot because everything for this group is read-only anyway
-            readonly_fields.extend(['first_name', 'last_name'])
+            readonly_fields.extend(['first_name', 'last_name', 'last_completed_at'])
         # Ensure @property and calculated fields displayed here are always
         # marked read-only. Note that duplicates are removed later, so no need
         # to check here
