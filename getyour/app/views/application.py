@@ -62,12 +62,15 @@ from app.backend import (
     broadcast_email,
     broadcast_sms,
     save_renewal_action,
-    finalize_application,
 )
 from app.backend.address import (
     tag_mapping,
     address_check,
     validate_usps,
+)
+from app.backend.finalize import (
+    finalize_address,
+    finalize_application,
 )
 from app.decorators import set_update_mode
 from app.constants import supported_content_types
@@ -810,14 +813,8 @@ def take_usps_address(request, **kwargs):
                 )
                 instance.clean()
 
-            # Record the service area and Connexion status
-            instance.is_in_gma = is_in_gma
-            instance.is_city_covered = is_in_gma
-            instance.has_connexion = has_connexion
-
-            # Final step: mark the address record as 'verified'
-            instance.is_verified = True
-            instance.save()
+            # Finalize the address portion
+            finalize_address(instance, is_in_gma, has_connexion)
 
             # Get the first address in the list of addresses
             # that is not yet processed

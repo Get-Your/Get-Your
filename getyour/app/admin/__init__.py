@@ -44,8 +44,8 @@ from app.models import (
     EligibilityProgram,
     IQProgram,
 )
-from app.backend import finalize_application
 from app.backend.address import address_check
+from app.backend.finalize import finalize_address, finalize_application
 from app.constants import application_pages
 from app.forms import UserUpdateForm
 
@@ -560,11 +560,7 @@ class AddressAdmin(admin.ModelAdmin):
 
             # Only make changes if there is an update
             if is_in_gma != obj.is_in_gma:
-                # Save the address changes
-                obj.is_in_gma = is_in_gma
-                obj.is_city_covered = is_in_gma
-                obj.has_connexion = has_connexion
-                obj.save()
+                finalize_address(obj, is_in_gma, has_connexion)
 
                 # Loop through any users with this as their eligibility address
                 # and correct their application if they have already completed it
