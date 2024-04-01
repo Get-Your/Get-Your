@@ -167,9 +167,10 @@ class HouseholdInline(admin.TabularInline):
             # No extra readonly fields for superuser
             pass
         elif request.user.groups.filter(
-            name__startswith='Income Verification'
+            name__istartswith='income'
         ).exists():
-            # This is moot because everything for this group is read-only anyway
+            # Add these fields as read-only if the user is in a group whose name
+            # starts with case-insensitive 'income'
             readonly_fields.extend([
                 'rent_own',
                 'duration_at_address',
@@ -456,9 +457,10 @@ class UserAdmin(admin.ModelAdmin):
             # No extra readonly fields for superuser
             pass
         elif request.user.groups.filter(
-            name__startswith='Income Verification'
+            name__istartswith='income'
         ).exists():
-            # This is moot because everything for this group is read-only anyway
+            # Add these fields as read-only if the user is in a group whose name
+            # starts with case-insensitive 'income'
             readonly_fields.extend(['first_name', 'last_name', 'last_completed_at'])
         # Ensure @property and calculated fields displayed here are always
         # marked read-only. Note that duplicates are removed later, so no need
