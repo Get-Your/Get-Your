@@ -464,19 +464,15 @@ class UserAdmin(admin.ModelAdmin):
                     ])
 
         return fieldsets
-    
-    # def get_formset_kwargs(self, request, obj, inline, prefix):
-    #     return {
-    #         **super().get_formset_kwargs(request, obj, inline, prefix),
-    #         "form_kwargs": {"request": request},
-    #     }
 
-    # def get_form(self, request, obj=None, **kwargs):
-    #     if not request.user.is_superuser:
-    #         kwargs["form"] = UserUpdateForm
-    #     return super().get_form(request, obj, **kwargs)
-    
-    # exclude = ('date_joined',)
+    def get_form(self, *args, **kwargs):
+        # Use this function to add help_text to the display-only fields
+        help_texts = {
+            'renewal_action_parsed': "The uncompleted steps in a user's renewal flow. An empty value indicates the user is not mid-renewal."
+        }
+        kwargs.update({'help_texts': help_texts})
+        return super().get_form(*args, **kwargs)
+
     def get_readonly_fields(self, request, obj):
         """
         Return readonly fields based on user type and groups. Note that groups
