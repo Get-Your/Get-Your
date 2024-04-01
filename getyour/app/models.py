@@ -542,7 +542,7 @@ class IQProgram(IQProgramTimeStampedModel):
     # ``id`` is the implicit primary key
     user = models.ForeignKey(
         User,
-        related_name='user',
+        related_name='iq_programs',
         on_delete=models.CASCADE,
     )
 
