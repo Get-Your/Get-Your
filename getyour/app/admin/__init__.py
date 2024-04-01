@@ -48,6 +48,11 @@ from app.backend.address import address_check
 from app.backend.finalize import finalize_address, finalize_application
 from app.constants import application_pages
 from app.forms import UserUpdateForm
+from app.admin.list_filters import (
+    GMAListFilter,
+    CityCoveredListFilter,
+    NeedsVerificationListFilter,
+)
 
 
 def create_modeladmin(
@@ -353,7 +358,7 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ('last_name', 'first_name', 'email', 'last_completed_at')
     ordering = (Lower('last_name'), Lower('first_name'))    # case-insensitive
     list_display_links = ('email', )
-    # list_filter = ('last_completed_at', )
+    list_filter = (NeedsVerificationListFilter, )
     date_hierarchy = 'last_completed_at'
 
     @admin.display(description='last renewal action')
@@ -485,7 +490,7 @@ class AddressAdmin(admin.ModelAdmin):
     search_fields = ('address1__contains', 'address2__contains')
     list_display = ('address1', 'address2', 'is_in_gma', 'is_city_covered')
     ordering = list_display_links = ('address1', 'address2')
-    list_filter = ('is_in_gma', 'is_city_covered')
+    list_filter = (GMAListFilter, CityCoveredListFilter)
     actions = ['update_gma']
 
     fields = [
@@ -500,7 +505,7 @@ class AddressAdmin(admin.ModelAdmin):
             return f"{obj.address1}\n{obj.city}, {obj.state} {obj.zip_code}"
         else:
             return f"{obj.address1}\n{obj.address2}\n{obj.city}, {obj.state} {obj.zip_code}"
-        
+
     list_per_page = 100
 
     def get_readonly_fields(self, request, obj):
@@ -619,6 +624,7 @@ class AddressAdmin(admin.ModelAdmin):
         
         else:
              return super().response_change(request, obj)
+
 
 # Register the models
 
