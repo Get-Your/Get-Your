@@ -157,9 +157,9 @@ class HouseholdInline(admin.TabularInline):
 
     def get_readonly_fields(self, request, obj):
         """
-        Return readonly fields based on user type and groups. Note that groups
-        is looking for inclusion and is hierarchical (the most permissive is
-        first).
+        Return readonly fields based on user type and groups. Note that this
+        follows zero-trust; it starts with all fields read-only and removes them
+        based on permissions.
         
         """
 
@@ -167,27 +167,39 @@ class HouseholdInline(admin.TabularInline):
         readonly_fields = [
             'created_at',
             'modified_at',
+            'email_address',
+            'phone_number',
+            'rent_own',
+            'duration_at_address',
+            'number_persons_in_household',
         ]
+        # Ensure @property and calculated fields displayed here are always
+        # marked read-only
+        static_fields = ['income_percent']
+        readonly_fields.extend(static_fields)
+
+        readonly_remove = []
         if request.user.is_superuser:
-            # No extra readonly fields for superuser
-            pass
-        elif request.user.groups.filter(
-            name__istartswith='income'
-        ).exists():
-            # Add these fields as read-only if the user is in a group whose name
-            # starts with case-insensitive 'income'
-            readonly_fields.extend([
+            # Remove the following readonly fields for superusers
+            readonly_remove.extend([
+                'email_address',
+                'phone_number',
                 'rent_own',
                 'duration_at_address',
                 'number_persons_in_household',
             ])
-        # Ensure @property and calculated fields displayed here are always
-        # marked read-only. Note that duplicates are removed later, so no need
-        # to check here
-        static_fields = ['income_percent']
-        readonly_fields.extend(static_fields)
-        # Ensure there are no duplicates
-        return list(set(readonly_fields))
+        elif request.user.groups.filter(
+            name__istartswith='income'
+        ).exists():
+            # Remove these fields from read-only if the user is in the
+            # 'income...' group
+            readonly_remove.extend([
+                'email_address',
+                'phone_number',
+            ])
+        
+        # Remove the fields and re-listify
+        return list(set(readonly_fields) - set(readonly_remove))
 
     @admin.display(description='income relative to AMI')
     def income_percent(self, obj):
