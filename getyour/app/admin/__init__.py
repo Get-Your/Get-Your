@@ -54,6 +54,11 @@ from app.admin.filters import (
     NeedsVerificationListFilter,
     needs_income_verification_filter,
 )
+from logger.wrappers import LoggerWrapper
+
+
+# Initialize logger
+log = LoggerWrapper(logging.getLogger(__name__))
 
 
 def create_modeladmin(
@@ -406,6 +411,14 @@ class UserAdmin(admin.ModelAdmin):
         
         """
 
+        # Log entrance to this changelist. This attempts to track called
+        # functions
+        log.info(
+            "Entering admin changelist",
+            function='UserAdmin',
+            user_id=request.user.id,
+        )
+
         fieldsets = [
             (
                 'USER',
@@ -513,6 +526,15 @@ class UserAdmin(admin.ModelAdmin):
     def mark_verified(self, request, queryset):
         # Mark the selected users verified, but only if they meet the 'needs
         # income verification' criteria
+
+        # Log entrance to this action. This attempts to track called
+        # functions
+        log.info(
+            "Entering admin action",
+            function='mark_verified',
+            user_id=request.user.id,
+        )
+
         check_queryset = needs_income_verification_filter(queryset)
 
         # check_queryset is a potentially-further-filtered queryset. If their
@@ -527,6 +549,12 @@ class UserAdmin(admin.ModelAdmin):
                 ).update(
                     is_income_verified=True
                 )
+
+            log.info(
+                f"{len(queryset)} users marked as verified.",
+                function='mark_verified',
+                user_id=request.user.id,
+            )
             
             # Add a message to the user when complete
             self.message_user(request, ngettext(
@@ -538,6 +566,13 @@ class UserAdmin(admin.ModelAdmin):
         else:
             # Add an error message to the user
             error_count = len(queryset) - len(check_queryset)
+
+            log.error(
+                f"Not all users are applicable (only {len(check_queryset)} of the {len(queryset)} selected could have been verified).",
+                function='mark_verified',
+                user_id=request.user.id,
+            )
+
             self.message_user(request, ngettext(
                 'Cancelled: the user is not applicable for income verification.',
                 'Cancelled: not all users are applicable for income verification.',
@@ -575,6 +610,14 @@ class AddressAdmin(admin.ModelAdmin):
         
         """
 
+        # Log entrance to this changelist. This attempts to track called
+        # functions
+        log.info(
+            "Entering admin changelist",
+            function='AddressAdmin',
+            user_id=request.user.id,
+        )
+
         # Global readonly fields
         readonly_fields = [
             'pretty_address',
@@ -596,6 +639,14 @@ class AddressAdmin(admin.ModelAdmin):
         or a queryset from the changelist actions.
         
         """
+        
+        # Log entrance to this action. This attempts to track called
+        # functions
+        log.info(
+            "Entering admin action",
+            function='update_gma',
+            user_id=request.user.id,
+        )        
 
         # If the input_object is not a QuerySet, coerce it into a list so for
         # similar operation
@@ -605,6 +656,7 @@ class AddressAdmin(admin.ModelAdmin):
             queryset = [input_object]
 
         # Loop through the queryset (or similated queryset)
+        updated_addr_count = 0
         for obj in queryset:
             # Format for address_check. All addresses in the database have been
             # through USPS, so no need to re-validate (just copy formatting)
@@ -626,6 +678,7 @@ class AddressAdmin(admin.ModelAdmin):
 
             # Only make changes if there is an update
             if is_in_gma != obj.is_in_gma:
+                updated_addr_count += 1
                 finalize_address(obj, is_in_gma, has_connexion)
 
                 # Loop through any users with this as their eligibility address
@@ -634,6 +687,11 @@ class AddressAdmin(admin.ModelAdmin):
                     if addr.user.last_completed_at is not None:
                         _ = finalize_application(addr.user, update_user=False)
 
+        log.info(
+            f"{len(queryset)} addresses checked; updates applied to {updated_addr_count}.",
+            function='update_gma',
+            user_id=request.user.id,
+        )
 
         # Add a message to the user when complete
         self.message_user(request, ngettext(
