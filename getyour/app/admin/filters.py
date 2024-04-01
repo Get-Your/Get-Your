@@ -22,6 +22,40 @@ from django.utils.translation import gettext_lazy as _
 
 from app.models import EligibilityProgram
 
+
+def needs_income_verification_filter(queryset):
+    """
+    Filter a queryset for users that need income verification.
+    
+    This uses the logic from ``Get-Your-utils``
+    python.run_extracts.export_income().
+    
+    """
+    return queryset.filter(
+        # User has at least one eligibility program that is 'active'
+        Exists(
+            EligibilityProgram.objects.filter(
+                user=OuterRef('pk'),    # use the current outer reference
+                program__is_active=True,
+            )
+        ),
+        # User has no programs with missing files
+        ~Exists(
+            EligibilityProgram.objects.filter(
+                user=OuterRef('pk'),    # use the current outer reference
+                document_path__exact='',
+            )
+        ),
+        # User is not 'archived'
+        is_archived=False,
+        # User's household is not 'income verified'
+        household__is_income_verified=False,
+        # User's addresses are verified (via USPS)
+        address__eligibility_address__is_verified=True,
+        address__mailing_address__is_verified=True,
+    )
+
+
 class NeedsVerificationListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
     # right admin sidebar just above the filter options
@@ -41,7 +75,6 @@ class NeedsVerificationListFilter(admin.SimpleListFilter):
         return (
             ('yes', _('Needs Verification')),
             ('no', _('Already Verified')),
-            # ('all', _('all users')),
         )
 
     def queryset(self, request, queryset):
@@ -52,30 +85,7 @@ class NeedsVerificationListFilter(admin.SimpleListFilter):
         """
         # Compare the requested value to decide how to filter the queryset
         if self.value() == 'yes':
-            # Use the logic from Get-Your-utils python.run_extracts
-            return queryset.filter(
-                # User has at least one eligibility program that is 'active'
-                Exists(
-                    EligibilityProgram.objects.filter(
-                        user=OuterRef('pk'),    # use the current outer reference
-                        program__is_active=True,
-                    )
-                ),
-                # User has no programs with missing files
-                ~Exists(
-                    EligibilityProgram.objects.filter(
-                        user=OuterRef('pk'),    # use the current outer reference
-                        document_path__exact='',
-                    )
-                ),
-                # User is not 'archived'
-                is_archived=False,
-                # User's household is not 'income verified'
-                household__is_income_verified=False,
-                # User's addresses are verified (via USPS)
-                address__eligibility_address__is_verified=True,
-                address__mailing_address__is_verified=True,
-            )
+            return needs_income_verification_filter(queryset)
         if self.value() == 'no':
             return queryset.filter(
                 household__is_income_verified=True,

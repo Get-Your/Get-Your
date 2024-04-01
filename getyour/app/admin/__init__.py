@@ -48,10 +48,11 @@ from app.backend.address import address_check
 from app.backend.finalize import finalize_address, finalize_application
 from app.constants import application_pages
 from app.forms import UserUpdateForm
-from app.admin.list_filters import (
+from app.admin.filters import (
     GMAListFilter,
     CityCoveredListFilter,
     NeedsVerificationListFilter,
+    needs_income_verification_filter,
 )
 
 
@@ -372,6 +373,7 @@ class UserAdmin(admin.ModelAdmin):
     list_display_links = ('email', )
     list_filter = (NeedsVerificationListFilter, )
     date_hierarchy = 'last_completed_at'
+    actions = ('mark_verified', )
 
     @admin.display(description='last renewal action')
     def renewal_action_parsed(self, obj):
@@ -388,6 +390,14 @@ class UserAdmin(admin.ModelAdmin):
             return '\n'.join(status_list)
         else:
             return self.get_empty_value_display()
+        
+    def has_income_verification_permission(self, request, obj=None):
+        # Define income_verification permissions
+        if request.user.is_superuser or request.user.groups.filter(
+            name__istartswith='income'
+        ).exists():
+            return True
+        return False
 
     def get_fieldsets(self, request, obj):
         """
@@ -494,6 +504,45 @@ class UserAdmin(admin.ModelAdmin):
         EligibilityProgramInline,
         IQProgramInline,
     ]
+
+    @admin.action(
+        # Only allow this action with 'income_verification' permissions
+        permissions=['income_verification'],
+        description="Mark selected users as 'income verified'",
+    )
+    def mark_verified(self, request, queryset):
+        # Mark the selected users verified, but only if they meet the 'needs
+        # income verification' criteria
+        check_queryset = needs_income_verification_filter(queryset)
+
+        # check_queryset is a potentially-further-filtered queryset. If their
+        # lengths are the same, mark 'income verified'; else return an error msg
+        if len(queryset) == len(check_queryset):
+            # Note that queryset.update() cannot be used here, since the update
+            # is on a related model; instead, loop through queryset and update
+            # each related model (in order to avoid .save() calls)
+            for usr in queryset:
+                Household.objects.filter(
+                    user=usr
+                ).update(
+                    is_income_verified=True
+                )
+            
+            # Add a message to the user when complete
+            self.message_user(request, ngettext(
+                'Income was verified for %d user.',
+                'Income was verified for %d users.',
+                len(queryset),
+            ) % len(queryset), messages.SUCCESS)
+
+        else:
+            # Add an error message to the user
+            error_count = len(queryset) - len(check_queryset)
+            self.message_user(request, ngettext(
+                'Cancelled: the user is not applicable for income verification.',
+                'Cancelled: not all users are applicable for income verification.',
+                error_count,
+            ), messages.ERROR)
 
     list_per_page = 100
 
@@ -621,7 +670,7 @@ class AddressAdmin(admin.ModelAdmin):
             self.update_gma(request, obj)
 
             redirect_url = reverse(
-                'admin:%s_%s_change' % (opts.app_label, opts.model_name),
+                f"admin:{opts.app_label}_{opts.model_name}_change",
                 args=(pk_value,),
                 current_app=self.admin_site.name,
             )
@@ -633,9 +682,9 @@ class AddressAdmin(admin.ModelAdmin):
                 redirect_url,
             )
             return HttpResponseRedirect(redirect_url)
-        
+
         else:
-             return super().response_change(request, obj)
+            return super().response_change(request, obj)
 
 
 # Register the models
