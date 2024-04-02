@@ -34,6 +34,7 @@ from django.db.models.functions import Lower
 from django.db.models.query import QuerySet
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.http import HttpResponseRedirect
+from django.contrib.contenttypes.models import ContentType
 
 from app.models import (
     User,
@@ -86,6 +87,25 @@ def create_modeladmin(
     return modeladmin
 
 
+def get_admin_url(obj, urltype='change'):
+    """
+    Return the admin URL of the specific object.
+    
+    Uses the built-in URL patterns documented at
+    https://docs.djangoproject.com/en/4.2/ref/contrib/admin/#reversing-admin-urls.
+    
+    """
+    content_type = ContentType.objects.get_for_model(obj.__class__)
+    return reverse(
+        "admin:{al}_{md}_{tp}".format(
+            al=content_type.app_label,
+            md=content_type.model,
+            tp=urltype,
+        ),
+        args=(obj.id,),
+    )
+
+
 class AddressInline(admin.TabularInline):
     model = Address
     
@@ -116,11 +136,11 @@ class AddressInline(admin.TabularInline):
         addr = AddressRD.objects.get(id=obj.mailing_address_id)
         if addr.address2 == '':
             return format_html(
-                f'<a href="/admin/app/addressrd/{addr.id}/change">{addr.address1}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
+                f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
             )
         else:
             return format_html(
-                f'<a href="/admin/app/addressrd/{addr.id}/change">{addr.address1}<br />{addr.address2}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
+                f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.address2}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
             )
 
     @admin.display(description='eligibility address')
@@ -128,11 +148,11 @@ class AddressInline(admin.TabularInline):
         addr = AddressRD.objects.get(id=obj.eligibility_address_id)
         if addr.address2 == '':
             return format_html(
-                f'<a href="/admin/app/addressrd/{addr.id}/change">{addr.address1}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
+                f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
             )
         else:
             return format_html(
-                f'<a href="/admin/app/addressrd/{addr.id}/change">{addr.address1}<br />{addr.address2}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
+                f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.address2}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
             )
 
     # Show zero extra (unfilled) options
