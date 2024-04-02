@@ -87,6 +87,45 @@ def create_modeladmin(
     return modeladmin
 
 
+def document_path_parsed(obj):
+    """
+    Parse each document_path into a link that can be used to view the
+    files.
+
+    This function spoofs the URLs that ``django-storages`` creates
+    automatically; this could be eliminated (except for the headers) if the
+    data model was updated to save one file per record.
+    
+    """
+    # Parse the stringified list of document_path values. Dynamically
+    # converting to a list would be dangerous, so this is processed manually.
+    if obj.document_path.name != '':
+        blob_list = obj.document_path.name.replace(
+            "['", ''
+        ).replace(
+            "']", ''
+        ).split(
+            ', '
+        )
+        url_list = []
+        for idx, itm in enumerate(blob_list):
+            url_list.append(
+                """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Document {nm} of {tot}</a>""".format(
+                    trg=reverse(
+                        'app:admin_view_file',
+                        kwargs={'blob_name': itm},
+                    ),
+                    nm=idx+1,
+                    tot=len(blob_list),
+                )
+            )
+    else:
+        url_list = ['No document available']
+
+    # return format_html(url_list[0])
+    return format_html('<br />'.join(url_list))
+
+
 def get_admin_url(obj, urltype='change'):
     """
     Return the admin URL of the specific object.
@@ -291,12 +330,19 @@ class EligibilityProgramInline(admin.TabularInline):
 
     fk_name = "user"
 
-    readonly_fields = ('created_at', 'modified_at', 'program_name', 'document_path_parsed')
+    all_fields = [
+        'created_at',
+        'modified_at',
+        'program_name',
+        'record_edit',
+        'display_document_link',
+    ]
+    readonly_fields = all_fields
     fieldsets = [
         (
             None,
             {
-                'fields': ('created_at', 'modified_at', 'program_name', 'document_path_parsed'),
+                'fields': all_fields,
             },
         ),
     ]
@@ -304,46 +350,21 @@ class EligibilityProgramInline(admin.TabularInline):
     @admin.display(description='program name')
     def program_name(self, obj):
         return obj.program.friendly_name
+    
+    @admin.display(description='edit record')
+    def record_edit(self, obj):
+        # Record can only be edited if is_income_verified is False
+        if obj.user.household.is_income_verified is False:
+            return format_html(
+                f'<a href="{get_admin_url(obj)}" target="_blank">Edit Record</a>'
+            )
+        else:
+            return "Cannot Be Edited"
 
     @admin.display(description='document')
-    def document_path_parsed(self, obj):
-        """
-        Parse each document_path into a link that can be used to view the
-        files.
-
-        This function spoofs the URLs that ``django-storages`` creates
-        automatically; this could be eliminated (except for the headers) if the
-        data model was updated to save one file per record.
-        
-        """
-
-        # Parse the stringified list of document_path values. Dynamically
-        # converting to a list would be dangerous, so this is processed manually.
-        if obj.document_path.name != '':
-            blob_list = obj.document_path.name.replace(
-                "['", ''
-            ).replace(
-                "']", ''
-            ).split(
-                ', '
-            )
-            url_list = []
-            for idx, itm in enumerate(blob_list):
-                url_list.append(
-                    """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Document {nm} of {tot}</a>""".format(
-                        trg=reverse(
-                            'app:admin_view_file',
-                            kwargs={'blob_name': itm},
-                        ),
-                        nm=idx+1,
-                        tot=len(blob_list),
-                    )
-                )
-        else:
-            url_list = ['No document available']
-
-        # return format_html(url_list[0])
-        return format_html('<br />'.join(url_list))
+    def display_document_link(self, obj):
+        """ Display a link to each document. """
+        return document_path_parsed(obj)
 
     # Show zero extra (unfilled) options
     extra = 0
@@ -761,6 +782,187 @@ class AddressAdmin(admin.ModelAdmin):
             return super().response_change(request, obj)
 
 
+class EligibilityProgramAdmin(admin.ModelAdmin):
+    search_fields = ('program__program_name__contains', )
+    list_display = ('user_email', 'program_name')
+    list_display_links = ('program_name', )
+    ordering = ('user__email', )
+    # actions = ['update_gma']
+
+    # def get_list_display(self, request):
+    #     return None
+
+    eligibility_fields = [
+        'created_at',
+        'modified_at',
+        'program_name',
+        'display_document_link',
+    ]
+    readonly_fields = eligibility_fields + ['user_email']
+
+    def get_fieldsets(self, request, obj):
+        """
+        Return fieldsets based on user type. All users get the default fieldset,
+        then additional fields are added for superusers.
+        
+        """
+
+        # Log entrance to this changelist. This attempts to track called
+        # functions
+        log.info(
+            "Entering admin changelist",
+            function='EligibilityProgramAdmin',
+            user_id=request.user.id,
+        )
+
+        fieldsets = [
+            (
+                'USER',
+                {
+                    'fields': ['user_email'],
+                },
+            ),
+            (
+                'PROGRAM',
+                {
+                    'fields': self.eligibility_fields,
+                },
+            ),
+        ]
+
+        return fieldsets
+
+    @admin.display
+    def user_email(self, obj):
+        return obj.user.email
+
+    @admin.display(description='program name')
+    def program_name(self, obj):
+        return obj.program.friendly_name
+    
+    @admin.display(description='document')
+    def display_document_link(self, obj):
+        """ Display a link to each document. """
+        return document_path_parsed(obj)
+
+    list_per_page = 100
+
+    # @admin.action(description='Update GMA for selected addresses')
+    # def update_gma(self, request, input_object):
+    #     """
+    #     Update the GMA of the selected object(s).
+        
+    #     This is used both as a changelist action and a page-specific button, so
+    #     ``input_object`` can be either a single object (of the modeladmin type)
+    #     or a queryset from the changelist actions.
+        
+    #     """
+        
+    #     # Log entrance to this action. This attempts to track called
+    #     # functions
+    #     log.info(
+    #         "Entering admin action",
+    #         function='update_gma',
+    #         user_id=request.user.id,
+    #     )        
+
+    #     # If the input_object is not a QuerySet, coerce it into a list so for
+    #     # similar operation
+    #     if isinstance(input_object, QuerySet):
+    #         queryset = input_object
+    #     else:
+    #         queryset = [input_object]
+
+    #     # Loop through the queryset (or similated queryset)
+    #     updated_addr_count = 0
+    #     for obj in queryset:
+    #         # Format for address_check. All addresses in the database have been
+    #         # through USPS, so no need to re-validate (just copy formatting)
+    #         address_dict = {
+    #             'AddressValidateResponse': {
+    #                 'Address': {
+    #                     # Note 1 & 2 are swapped
+    #                     'Address1': obj.address2,
+    #                     'Address2': obj.address1,
+    #                     'City': obj.city,
+    #                     'State': obj.state,
+    #                     'Zip5': obj.zip_code,
+    #                 }
+    #             }
+    #         }
+
+    #         # Run the address check and make the final adjustments
+    #         (is_in_gma, has_connexion) = address_check(address_dict)
+
+    #         # Only make changes if there is an update
+    #         if is_in_gma != obj.is_in_gma:
+    #             updated_addr_count += 1
+    #             finalize_address(obj, is_in_gma, has_connexion)
+
+    #             # Loop through any users with this as their eligibility address
+    #             # and correct their application if they have already completed it
+    #             for addr in obj.eligibility_user.all():
+    #                 if addr.user.last_completed_at is not None:
+    #                     _ = finalize_application(addr.user, update_user=False)
+
+    #     log.info(
+    #         f"{len(queryset)} addresses checked; updates applied to {updated_addr_count}.",
+    #         function='update_gma',
+    #         user_id=request.user.id,
+    #     )
+
+    #     # Add a message to the user when complete
+    #     self.message_user(request, ngettext(
+    #         'GMA update was executed for %d address.',
+    #         'GMA update was executed for %d addresses.',
+    #         len(queryset),
+    #     ) % len(queryset), messages.SUCCESS)
+
+    # # Add custom buttons to the save list in the admin template (from
+    # # https://stackoverflow.com/a/34899874/5438550 and
+    # # https://stackoverflow.com/a/69487616/5438550)
+    # change_form_template = 'admin/custom_button_change_form.html'
+    # def change_view(self, request, object_id, form_url='', extra_context=None):
+    #     extra_context = extra_context or {}
+
+    #     # Add any custom buttons. This must be a list/tuple of list/tuples, as
+    #     # (name, url). The 'url' portion must match the
+    #     # "if 'url' in request.POST:" section of response_change()
+    #     extra_context['custom_buttons'] = [
+    #         ('Update GMA', '_update_gma'),
+    #     ]
+    #     return super(AddressAdmin, self).change_view(
+    #         request, object_id, form_url, extra_context=extra_context,
+    #     )
+    
+    # def response_change(self, request, obj):
+    #     opts = self.model._meta
+    #     pk_value = obj._get_pk_val()
+    #     preserved_filters = self.get_preserved_filters(request)
+
+    #     if "_update_gma" in request.POST:
+    #         # Handle 'Update GMA': run the logic to update ``is_in_gma`` then
+    #         # refresh the page
+    #         self.update_gma(request, obj)
+
+    #         redirect_url = reverse(
+    #             f"admin:{opts.app_label}_{opts.model_name}_change",
+    #             args=(pk_value,),
+    #             current_app=self.admin_site.name,
+    #         )
+    #         redirect_url = add_preserved_filters(
+    #             {
+    #                 'preserved_filters': preserved_filters,
+    #                 'opts': opts,
+    #             },
+    #             redirect_url,
+    #         )
+    #         return HttpResponseRedirect(redirect_url)
+
+    #     else:
+    #         return super().response_change(request, obj)
+        
+
 # Register the models
 
 # # Create the proxy model and register it
@@ -773,3 +975,4 @@ class AddressAdmin(admin.ModelAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(AddressRD, AddressAdmin)
+admin.site.register(EligibilityProgram, EligibilityProgramAdmin)
