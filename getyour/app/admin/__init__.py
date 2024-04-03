@@ -34,7 +34,6 @@ from django.db.models.functions import Lower
 from django.db.models.query import QuerySet
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.http import HttpResponseRedirect
-from django.contrib.contenttypes.models import ContentType
 
 from app.models import (
     User,
@@ -134,11 +133,10 @@ def get_admin_url(obj, urltype='change'):
     https://docs.djangoproject.com/en/4.2/ref/contrib/admin/#reversing-admin-urls.
     
     """
-    content_type = ContentType.objects.get_for_model(obj.__class__)
     return reverse(
         "admin:{al}_{md}_{tp}".format(
-            al=content_type.app_label,
-            md=content_type.model,
+            al=obj._meta.app_label,
+            md=obj._meta.model_name,
             tp=urltype,
         ),
         args=(obj.id,),
