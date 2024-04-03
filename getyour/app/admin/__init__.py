@@ -160,24 +160,11 @@ class AddressInline(admin.TabularInline):
     
     fk_name = "user"
 
-    readonly_fields = [
+    fields = readonly_fields = [
         'created_at',
         'modified_at',
         'mailing_addr',
         'eligibility_addr',
-    ]
-    fieldsets = [
-        (
-            None,
-            {
-                'fields': [
-                    'created_at',
-                    'modified_at',
-                    'mailing_addr',
-                    'eligibility_addr',
-                ],
-            },
-        ),
     ]
 
     @admin.display(description='mailing address')
@@ -213,21 +200,14 @@ class HouseholdInline(admin.TabularInline):
     
     fk_name = "user"
 
-    fieldsets = [
-        (
-            None,
-            {
-                'fields': [
-                    'created_at',
-                    'modified_at',
-                    'duration_at_address',
-                    'rent_own',
-                    'number_persons_in_household',
-                    'income_percent',
-                    'is_income_verified',
-                ],
-            },
-        ),
+    fields = [
+        'created_at',
+        'modified_at',
+        'duration_at_address',
+        'rent_own',
+        'number_persons_in_household',
+        'income_percent',
+        'is_income_verified',
     ]
 
     def get_readonly_fields(self, request, obj):
@@ -291,14 +271,10 @@ class HouseholdMembersInline(admin.TabularInline):
 
     fk_name = "user"
 
-    readonly_fields = ('created_at', 'modified_at', 'household_info_parsed')
-    fieldsets = [
-        (
-            None,
-            {
-                'fields': ('created_at', 'modified_at', 'household_info_parsed'),
-            },
-        ),
+    fields = readonly_fields = [
+        'created_at',
+        'modified_at',
+        'household_info_parsed',
     ]
 
     @admin.display(description='individuals in household')
@@ -340,21 +316,12 @@ class EligibilityProgramInline(admin.TabularInline):
 
     fk_name = "user"
 
-    all_fields = [
+    fields = readonly_fields = [
         'created_at',
         'modified_at',
         'program_name',
         'record_edit',
         'display_document_link',
-    ]
-    readonly_fields = all_fields
-    fieldsets = [
-        (
-            None,
-            {
-                'fields': all_fields,
-            },
-        ),
     ]
 
     @admin.display(description='program name')
@@ -391,14 +358,10 @@ class IQProgramInline(admin.TabularInline):
 
     fk_name = "user"
 
-    readonly_fields = ('program_name', 'applied_at', 'enrollment_status')
-    fieldsets = [
-        (
-            None,
-            {
-                'fields': ('program_name', 'applied_at', 'enrollment_status'),
-            },
-        ),
+    fields = readonly_fields = [
+        'program_name',
+        'applied_at',
+        'enrollment_status',
     ]
 
     @admin.display(description='program name')
