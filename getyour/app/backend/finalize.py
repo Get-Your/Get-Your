@@ -28,6 +28,8 @@ from app.models import (
     Household,
     AddressRD,
 )
+from app.backend import get_users_iq_programs
+
 from logger.wrappers import LoggerWrapper
 
 
@@ -90,11 +92,12 @@ def finalize_application(user, renewal_mode=False, update_user=True):
 
         # Set the user's last_completed_date to now, as well as set the user's
         # last_renewal_action to null
-        user = User.objects.get(id=user.id)
-        user.renewal_mode = True
-        user.last_completed_at = pendulum.now()
-        user.last_renewal_action = None
-        user.save()
+        if update_user:
+            user = User.objects.get(id=user.id)
+            user.renewal_mode = True
+            user.last_completed_at = pendulum.now()
+            user.last_renewal_action = None
+            user.save()
 
         # Get every IQ program for the user that have a renewal_interval_year
         # in the IQProgramRD table that is not null
@@ -191,7 +194,6 @@ def finalize_application(user, renewal_mode=False, update_user=True):
         )
         # For every IQ program, check if the user should be automatically
         # enrolled in it if the program has enable_autoapply set to True
-        print()
         for program in users_iq_programs:
             # program is an IQProgramRD object only if the user has not applied
             if isinstance(program, IQProgramRD) and program.enable_autoapply:
