@@ -210,9 +210,9 @@ urlpatterns = [
 
     # Custom admin URLs
     path(
-        'view_file/<path:blob_name>',
+        'app_admin/view_file/<path:blob_name>',
         admin_views.view_file,
         name='admin_view_file',
         kwargs={'allow_direct_user': True},
-     ),
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
