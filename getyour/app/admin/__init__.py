@@ -47,6 +47,7 @@ from app.models import (
     EligibilityProgramRD,
     IQProgram,
 )
+from app.backend import get_eligible_iq_programs, get_iqprogram_required_fields
 from app.backend.address import address_check
 from app.backend.finalize import (
     finalize_address,
@@ -419,6 +420,37 @@ class UserAdmin(admin.ModelAdmin):
         else:
             return self.get_empty_value_display()
         
+    @admin.display(description='message to user')
+    def user_message(self, obj):
+        msg = []
+        # Get the user's eligibility address
+        eligibility_address = AddressRD.objects.filter(
+            id=obj.address.eligibility_address_id
+        ).first()
+
+        # Notify if the user is not qualified for any programs
+        if len(get_eligible_iq_programs(obj, eligibility_address)) == 0:
+            msg.append("User is not eligible for any programs.")
+
+            # If the user doesn't qualify for any programs, check if the user's
+            # address doesn't have a required component
+            req_fields = get_iqprogram_required_fields()
+            # The second element holds the field requirements in AddressRD
+            for req, fd in req_fields:
+                if not getattr(eligibility_address, fd):
+                    msg.append(
+                        f"User's address has False `{fd}`; IQ Programs may require it to be True (see `{req}`)."
+                    )
+
+        # Notify if the user is archived
+        if obj.is_archived:
+            msg.append("User account is disabled ('is archived').")
+
+        if len(msg) > 0:
+            return "- {}".format('\n- '.join(msg))
+        else:
+            return self.get_empty_value_display()
+        
     def has_income_verification_permission(self, request, obj=None):
         # Define income_verification permissions
         if request.user.is_superuser or request.user.groups.filter(
@@ -450,6 +482,7 @@ class UserAdmin(admin.ModelAdmin):
                         'full_name',
                         'email',
                         'phone_number',
+                        'user_message',
                         'id',
                         'is_archived',
                     ],
@@ -491,7 +524,8 @@ class UserAdmin(admin.ModelAdmin):
     def get_form(self, *args, **kwargs):
         # Use this function to add help_text to the display-only fields
         help_texts = {
-            'renewal_action_parsed': "The uncompleted steps in a user's renewal flow. An empty value indicates the user is not mid-renewal."
+            'renewal_action_parsed': "The uncompleted steps in a user's renewal flow. An empty value indicates the user is not mid-renewal.",
+            'user_message': "Message to the user regarding their application or account. Aspects shown here may not yet be available to the user.",
         }
         kwargs.update({'help_texts': help_texts})
         return super().get_form(*args, **kwargs)
@@ -524,7 +558,11 @@ class UserAdmin(admin.ModelAdmin):
         # Ensure @property and calculated fields displayed here are always
         # marked read-only. Note that duplicates are removed later, so no need
         # to check here
-        static_fields = ['full_name', 'renewal_action_parsed']
+        static_fields = [
+            'full_name',
+            'renewal_action_parsed',
+            'user_message',
+        ]
         readonly_fields.extend(static_fields)
         # Ensure there are no duplicates
         return list(set(readonly_fields))

@@ -440,11 +440,8 @@ def get_eligible_iq_programs(
     )
 
     # Gather all `req_` fields in the IQProgramRD model along with their
-    # corresponding AddressRD Boolean.
-    field_prefix = 'req_'
-    req_fields = [
-        (x.name, x.name.replace(field_prefix, '')) for x in IQProgramRD._meta.fields if x.name.startswith(field_prefix)
-    ]
+    # corresponding AddressRD Boolean
+    req_fields = get_iqprogram_required_fields()
 
     # Filter programs further based on address requirements. Fields beginning 
     # with `req_` permissively specify whether the matching field in AddressRD
@@ -583,3 +580,17 @@ def enable_renew_now(user_id):
         return True
     else:
         return False
+
+
+def get_iqprogram_required_fields():
+    """
+    Gather all `req_` fields in the IQProgramRD model along with their
+    corresponding AddressRD Boolean.
+
+    """
+    field_prefix = 'req_'
+    req_fields = [
+        (x.name, x.name.replace(field_prefix, '')) for x in IQProgramRD._meta.fields if x.name.startswith(field_prefix)
+    ]
+
+    return req_fields
