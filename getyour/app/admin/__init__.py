@@ -56,7 +56,7 @@ from app.admin.filters import (
     NeedsVerificationListFilter,
     needs_income_verification_filter,
 )
-from app.admin.forms import ProgramChangeForm
+from app.admin.forms import ProgramChangeForm, ProgramAddForm
 
 from logger.wrappers import LoggerWrapper
 
@@ -594,6 +594,187 @@ class UserAdmin(admin.ModelAdmin):
             ), messages.ERROR)
 
     list_per_page = 100
+
+    # Add custom buttons to the save list in the admin template (from
+    # https://stackoverflow.com/a/34899874/5438550 and
+    # https://stackoverflow.com/a/69487616/5438550)
+    change_form_template = 'admin/custom_button_change_form.html'
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+
+        # Add any custom buttons. This must be a list/tuple of list/tuples, as
+        # (name, url). The 'url' portion must match the
+        # "if 'url' in request.POST:" section of response_change()
+
+        # Programs can be added at any time
+        extra_context['custom_buttons'] = [
+            ('Add IQ Program', '_add_program'),
+        ]
+
+        opts = self.model._meta
+        pk_value = object_id
+        preserved_filters = self.get_preserved_filters(request)
+        if '_add_program_submit' in request.POST:
+            # Handle 'Update Program' after 'submit' has been selected
+            form = ProgramAddForm(object_id, request.POST)
+            # form = ProgramChangeForm(request.POST)
+            if form.is_valid():
+                # Extract the program ID (in the 'program_name' form field) and
+                # add the program to the current model
+                _ = IQProgram.objects.create(
+                    user_id=object_id,
+                    program_id=int(form.cleaned_data['program_name']),
+                )
+
+                # Add a message to the user when complete
+                self.message_user(
+                    request,
+                    "Successfully added the program for this user.",
+                    messages.SUCCESS,
+                )
+
+            else:
+                # Form is not valid; notify the user
+                self.message_user(
+                    request,
+                    'Cancelled: something went wrong.',
+                    messages.ERROR,
+                )
+
+            redirect_url = reverse(
+                f"admin:{opts.app_label}_{opts.model_name}_change",
+                args=(pk_value,),
+                current_app=self.admin_site.name,
+            )
+            redirect_url = add_preserved_filters(
+                {
+                    'preserved_filters': preserved_filters,
+                    'opts': opts,
+                },
+                redirect_url,
+            )
+            return HttpResponseRedirect(redirect_url)
+
+        elif '_add_program_cancel' in request.POST:
+            # User selected 'cancel'
+            self.message_user(
+                request,
+                'Program add cancelled.',
+                messages.INFO,
+            )
+
+            redirect_url = reverse(
+                f"admin:{opts.app_label}_{opts.model_name}_change",
+                args=(pk_value,),
+                current_app=self.admin_site.name,
+            )
+            redirect_url = add_preserved_filters(
+                {
+                    'preserved_filters': preserved_filters,
+                    'opts': opts,
+                },
+                redirect_url,
+            )
+            return HttpResponseRedirect(redirect_url)
+
+        response = super().change_view(
+            request, object_id, form_url, extra_context=extra_context,
+        )
+    
+        # if custom_button_selected:
+        #     request.method = 'POST'
+
+        return response
+    
+    def response_change(self, request, obj):
+        opts = self.model._meta
+        pk_value = obj._get_pk_val()
+        preserved_filters = self.get_preserved_filters(request)
+
+        if "_add_program" in request.POST:
+            # Handle 'Add Program': load the page to select the program name
+            form = ProgramAddForm(obj.id)
+            # form = ProgramChangeForm()
+
+            # Set the current_app for the admin base template
+            request.current_app = self.admin_site.name
+            return render(
+                request,
+                'admin/program_add.html',
+                {
+                    'form': form,
+                    # Set some page-specific text
+                    'site_header': 'Get FoCo administration',
+                    'title': 'Add Program',
+                    'site_title': 'Get FoCo administration',
+                },
+            )
+
+        elif '_add_program_submit' in request.POST:
+            # Handle 'Update Program' after 'submit' has been selected
+            form = ProgramAddForm(request.POST)
+            # form = ProgramChangeForm(request.POST)
+            if form.is_valid():
+                # Extract the program ID (in the 'program_name' form field) and
+                # add the program to the current model
+                _ = IQProgram.objects.create(
+                    user_id=obj.user.id,
+                    program_id=int(form.cleaned_data['program_name']),
+                )
+
+                # Add a message to the user when complete
+                self.message_user(
+                    request,
+                    "Successfully added the program for this user.",
+                    messages.SUCCESS,
+                )
+
+            else:
+                # Form is not valid; notify the user
+                self.message_user(
+                    request,
+                    'Cancelled: something went wrong.',
+                    messages.ERROR,
+                )
+
+            redirect_url = reverse(
+                f"admin:{opts.app_label}_{opts.model_name}_change",
+                args=(pk_value,),
+                current_app=self.admin_site.name,
+            )
+            redirect_url = add_preserved_filters(
+                {
+                    'preserved_filters': preserved_filters,
+                    'opts': opts,
+                },
+                redirect_url,
+            )
+            return HttpResponseRedirect(redirect_url)
+
+        elif '_add_program_cancel' in request.POST:
+            # User selected 'cancel'
+            self.message_user(
+                request,
+                'Program add cancelled.',
+                messages.INFO,
+            )
+
+            redirect_url = reverse(
+                f"admin:{opts.app_label}_{opts.model_name}_change",
+                args=(pk_value,),
+                current_app=self.admin_site.name,
+            )
+            redirect_url = add_preserved_filters(
+                {
+                    'preserved_filters': preserved_filters,
+                    'opts': opts,
+                },
+                redirect_url,
+            )
+            return HttpResponseRedirect(redirect_url)
+
+        else:
+            return super().response_change(request, obj)
 
 
 class AddressAdmin(admin.ModelAdmin):
