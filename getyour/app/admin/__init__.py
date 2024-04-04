@@ -29,6 +29,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.translation import ngettext
 from django.conf import settings
+from django.db import transaction
 from django.db.models import F
 from django.shortcuts import reverse
 from django.db.models.functions import Lower
@@ -47,7 +48,11 @@ from app.models import (
     IQProgram,
 )
 from app.backend.address import address_check
-from app.backend.finalize import finalize_address, finalize_application
+from app.backend.finalize import (
+    finalize_address,
+    finalize_application,
+    remove_ineligible_programs,
+)
 from app.constants import application_pages
 from app.forms import UserUpdateForm
 from app.admin.filters import (
@@ -1054,22 +1059,43 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             # Handle 'Update Program' after 'submit' has been selected
             form = ProgramChangeForm(request.POST)
             if form.is_valid():
-                # Extract the program ID (in the 'program_name' form field) and
-                # update the current model with the new program
-                obj.program = EligibilityProgramRD.objects.get(
-                    id=int(form.cleaned_data['program_name'])
-                )
-                obj.save()
+                # Execute the following in a transaction so that it can be
+                # rolled back if a user can't be removed from no-longer-eligible
+                # programs
+                try:
+                    with transaction.atomic():
+                        # Extract the program ID (in the 'program_name' form field) and
+                        # update the current model with the new program
+                        obj.program = EligibilityProgramRD.objects.get(
+                            id=int(form.cleaned_data['program_name'])
+                        )
+                        obj.save()
 
-                # Finalize the user's application to update their income
-                _ = finalize_application(obj.user, update_user=False)
+                        # Finalize the user's application to update their income
+                        _ = finalize_application(obj.user, update_user=False)
 
-                # Add a message to the user when complete
-                self.message_user(
-                    request,
-                    "Successfully updated the program for this record.",
-                    messages.SUCCESS,
-                )
+                        # Remove any no-longer-eligible programs
+                        msg = remove_ineligible_programs(
+                            obj.user,
+                            income_override=obj.program.ami_threshold,
+                        )
+
+                except AttributeError as e:
+                    # Undo the changes (automatic, since an exception was
+                    # thrown) and notify the user
+                    self.message_user(
+                        request,
+                        f"Program update could not be made: {e}.",
+                        messages.ERROR,
+                    )
+
+                else:
+                    # Add a message to the user when complete
+                    self.message_user(
+                        request,
+                        f"Successfully updated the program for this record. {msg}",
+                        messages.SUCCESS,
+                    )
 
             else:
                 # Form is not valid; notify the user

@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import logging
 import pendulum
+from decimal import Decimal
 
 from django.db.models import Q
 from app.models import (
@@ -28,7 +29,7 @@ from app.models import (
     Household,
     AddressRD,
 )
-from app.backend import get_users_iq_programs
+from app.backend import get_users_iq_programs, get_eligible_iq_programs
 
 from logger.wrappers import LoggerWrapper
 
@@ -209,3 +210,63 @@ def finalize_application(user, renewal_mode=False, update_user=True):
 
         # Return the target page and an (empty) dictionary of <session var>: <value>
         return ('app:broadcast', {})
+
+
+def remove_ineligible_programs(
+        user,
+        income_override: Decimal = None,
+    ):
+    """
+    Remove programs that a user no longer qualifies for, based on application
+    updates made after the user selected their programs.
+
+    A use-case for this is when a user's documentation is changed from a 30% AMI
+    eligibility program to a 60% AMI program via the admin panel.
+
+    ``income_override`` will be used instead of ``income_as_a_fraction_of_ami``
+    in get_eligible_iq_programs to test changes to the user's Household.
+    ``income_override`` should be a Decimal() type.
+
+    """
+
+    # Get the user's eligibility address
+    eligibility_address = AddressRD.objects.filter(
+        id=user.address.eligibility_address_id
+    ).first()
+
+    # Get the user's current programs
+    users_iq_programs = IQProgram.objects.filter(user_id=user.id)
+
+    # Get the programs the user is eligible for
+    eligible_programs = get_eligible_iq_programs(
+        user,
+        eligibility_address,
+        income_override=income_override,
+    )
+
+    # Compare current programs with eligible programs
+    ineligible_current_programs = [
+        x for x in users_iq_programs if x.program not in eligible_programs
+    ]
+
+    # Remove the user from the ineligible program(s), but ONLY IF they're not
+    # currently enrolled
+
+    # If a user is enrolled in any program, raise an exception
+    enrolled_programs = [
+        x for x in ineligible_current_programs if x.is_enrolled
+    ]
+    if len(enrolled_programs) > 0:
+        raise AttributeError(
+            "User is enrolled in {} but would no longer be eligible with the proposed change".format(
+                ', '.join([x.program.program_name for x in enrolled_programs]),
+            )
+        )
+
+    # Delete user from ineligible programs; return message describing the changes
+    msg = []
+    for program in ineligible_current_programs:
+        program.delete()
+        msg.append(f"User was removed from {program.program.program_name}")
+
+    return '; '.join(msg)
