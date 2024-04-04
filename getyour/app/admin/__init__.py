@@ -308,7 +308,7 @@ class HouseholdMembersInline(admin.TabularInline):
 class EligibilityProgramInline(admin.TabularInline):
     def get_queryset(self, request):
         """ Override ordering to use program friendly name instead. """
-        qs = super(EligibilityProgramInline, self).get_queryset(request)
+        qs = super().get_queryset(request)
         qs = qs.order_by('program__friendly_name')
         return qs
 
@@ -350,7 +350,7 @@ class EligibilityProgramInline(admin.TabularInline):
 class IQProgramInline(admin.TabularInline):
     def get_queryset(self, request):
         """ Override ordering to use program friendly name instead. """
-        qs = super(IQProgramInline, self).get_queryset(request)
+        qs = super().get_queryset(request)
         qs = qs.order_by('program__friendly_name')
         return qs
 
@@ -723,7 +723,7 @@ class AddressAdmin(admin.ModelAdmin):
         extra_context['custom_buttons'] = [
             ('Update GMA', '_update_gma'),
         ]
-        return super(AddressAdmin, self).change_view(
+        return super().change_view(
             request, object_id, form_url, extra_context=extra_context,
         )
     
