@@ -27,32 +27,14 @@ def needs_income_verification_filter(queryset):
     """
     Filter a queryset for users that need income verification.
     
-    This uses the logic from ``Get-Your-utils``
-    python.run_extracts.export_income().
-    
     """
     return queryset.filter(
-        # User has at least one eligibility program that is 'active'
-        Exists(
-            EligibilityProgram.objects.filter(
-                user=OuterRef('pk'),    # use the current outer reference
-                program__is_active=True,
-            )
-        ),
-        # User has no programs with missing files
-        ~Exists(
-            EligibilityProgram.objects.filter(
-                user=OuterRef('pk'),    # use the current outer reference
-                document_path__exact='',
-            )
-        ),
+        # User has completed the application (non-null last_completed_at)
+        last_completed_at__isnull=False,
         # User is not 'archived'
         is_archived=False,
         # User's household is not 'income verified'
         household__is_income_verified=False,
-        # User's addresses are verified (via USPS)
-        address__eligibility_address__is_verified=True,
-        address__mailing_address__is_verified=True,
     )
 
 
@@ -74,7 +56,7 @@ class NeedsVerificationListFilter(admin.SimpleListFilter):
         """
         return (
             ('yes', _('Needs Verification')),
-            ('no', _('Already Verified')),
+            ('no', _('Has Been Verified')),
         )
 
     def queryset(self, request, queryset):
