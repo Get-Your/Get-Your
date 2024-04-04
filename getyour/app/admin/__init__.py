@@ -438,9 +438,7 @@ class UserAdmin(admin.ModelAdmin):
             # The second element holds the field requirements in AddressRD
             for req, fd in req_fields:
                 if not getattr(eligibility_address, fd):
-                    msg.append(
-                        f"User's address has False `{fd}`; IQ Programs may require it to be True (see `{req}`)."
-                    )
+                    msg[-1] += f" User's address has False `{fd}`; IQ Programs may require it to be True (see `{req}`)."
 
         # Notify if the user is archived
         if obj.is_archived:
