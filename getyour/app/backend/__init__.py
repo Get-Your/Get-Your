@@ -23,6 +23,7 @@ from itertools import chain
 import logging
 import pendulum
 import httpagentparser
+from decimal import Decimal
 
 from twilio.rest import Client
 from sendgrid.helpers.mail import Mail
@@ -414,6 +415,70 @@ def get_users_iq_programs(
         program.id = program.program.id if hasattr(
             program, 'program') else program.id
     return programs
+
+
+def get_eligible_iq_programs(
+        user,
+        eligibility_address,
+        income_override: Decimal = None,
+    ):
+    """ 
+    Return IQ Programs that the user is eligible for, without accounting for
+    current enrollment or program-specific application.
+
+    ``income_override`` will be used instead of ``income_as_a_fraction_of_ami``
+    to test changes to the user's Household. ``income_override`` should be a
+    Decimal() type.
+    
+    """
+
+    # Get all active IQ Programs with an AMI Threshold >= the user's income
+    # fraction
+    income_eligible_iq_programs = IQProgramRD.objects.filter(
+        is_active=True,
+        ami_threshold__gte=income_override or user.household.income_as_fraction_of_ami,
+    )
+
+    # Gather all `req_` fields in the IQProgramRD model along with their
+    # corresponding AddressRD Boolean.
+    field_prefix = 'req_'
+    req_fields = [
+        (x.name, x.name.replace(field_prefix, '')) for x in IQProgramRD._meta.fields if x.name.startswith(field_prefix)
+    ]
+
+    # Filter programs further based on address requirements. Fields beginning 
+    # with `req_` permissively specify whether the matching field in AddressRD
+    # is a filter for the program, so a True value in the `req_` field requires
+    # the corresponding address Boolean to also be True to be eligible, but
+    # because it's permissive, a False value in the `req_` field means that all
+    # addresses are eligible, regardless of the value of the corresponding
+    # Boolean. Or as a truth table:
+
+    # An address is eligible for benefits under the following conditions:
+    #
+    #                         ``req_`` field
+    #                         *TRUE*  *FALSE*
+    # corresponding  *TRUE*    TRUE    TRUE
+    #    Boolean     *FALSE*   FALSE   TRUE
+    #
+    # === ( (corresponding Boolean) OR NOT(`req_`) )
+
+    # Due to the permissive nature of the individual `req_` fields, multiple
+    # `req_` criteria are then ANDed together for the overall eligibility. For
+    # example, if no `req_` fields are enabled, *all* addresses are eligible
+    # (eligibility = True AND True AND True AND ... == True), but if any one of
+    # the `req_` fields are enabled, an address is ineligible if it doesn't meet
+    # that criteria (eligibility = True AND False AND True AND ... == False)
+
+    # For each program, take (<address Boolean> or not <req_>) for all `req_`
+    # fields, and AND them together (via all())
+    eligible_iq_programs = [
+        prog for prog in income_eligible_iq_programs if all(
+            (getattr(eligibility_address, cor) or not getattr(prog, req)) for req, cor in req_fields
+        )
+    ]
+
+    return eligible_iq_programs
 
 
 def get_in_progress_eligiblity_file_uploads(request):
