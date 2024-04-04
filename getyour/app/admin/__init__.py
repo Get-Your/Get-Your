@@ -46,6 +46,7 @@ from app.models import (
     EligibilityProgram,
     EligibilityProgramRD,
     IQProgram,
+    Admin,
 )
 from app.backend import get_eligible_iq_programs, get_iqprogram_required_fields
 from app.backend.address import address_check
@@ -395,6 +396,17 @@ class IQProgramInline(admin.TabularInline):
     extra = 0
 
 
+class AdminInline(admin.StackedInline):
+    model = Admin
+    
+    fk_name = "user"
+
+    fields = ['awaiting_user_response']
+
+    # Show zero extra (unfilled) options
+    extra = 0
+
+
 class UserAdmin(admin.ModelAdmin):
     search_fields = ('last_name__startswith', 'first_name__startswith', 'email')
     list_display = ('last_name', 'first_name', 'email', 'last_completed_at')
@@ -402,7 +414,7 @@ class UserAdmin(admin.ModelAdmin):
     list_display_links = ('email', )
     list_filter = (NeedsVerificationListFilter, )
     date_hierarchy = 'last_completed_at'
-    actions = ('mark_verified', )
+    actions = ('mark_verified', 'mark_awaiting_response')
 
     @admin.display(description='last renewal action')
     def renewal_action_parsed(self, obj):
@@ -566,12 +578,33 @@ class UserAdmin(admin.ModelAdmin):
         return list(set(readonly_fields))
 
     inlines = [
+        AdminInline,
         AddressInline,
         HouseholdInline,
         HouseholdMembersInline,
         EligibilityProgramInline,
         IQProgramInline,
     ]
+
+    @admin.action(
+        description="Mark selected users as 'awaiting response'",
+    )
+    def mark_awaiting_response(self, request, queryset):
+        # Mark the selected users as 'awaiting response', which will hide them
+        # from the 'new' needs verification filter
+
+        log.info(
+            "Entering admin action",
+            function='mark_awaiting_response',
+            user_id=request.user.id,
+        )
+
+        # Create Admin queryset of the same users and update the field
+        Admin.objects.filter(
+            user__in=[usr for usr in queryset]
+        ).update(
+            awaiting_user_response=True
+        )
 
     @admin.action(
         # Only allow this action with 'income_verification' permissions

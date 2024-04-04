@@ -52,6 +52,7 @@ from app.models import (
     Household,
     User,
     EligibilityProgramRD,
+    Admin,
 )
 from app.backend import (
     login,
@@ -262,11 +263,16 @@ def account(request, **kwargs):
                 try:
                     user = form.save()
                     login(request, user)
+
                     log.info(
                         "User account creation successful",
                         function='account',
                         user_id=user.id,
                     )
+
+                    # Also create matching app.Admin model record
+                    Admin.objects.create(user=user)
+
                     data = {
                         'result': "success",
                     }

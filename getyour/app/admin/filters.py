@@ -55,8 +55,9 @@ class NeedsVerificationListFilter(admin.SimpleListFilter):
 
         """
         return (
-            ('yes', _('Needs Verification')),
-            ('no', _('Has Been Verified')),
+            ('new_verify', _('New Needs Verification')),
+            ('all_verify', _('All Needs Verification')),
+            ('been_verified', _('Has Been Verified')),
         )
 
     def queryset(self, request, queryset):
@@ -66,9 +67,15 @@ class NeedsVerificationListFilter(admin.SimpleListFilter):
 
         """
         # Compare the requested value to decide how to filter the queryset
-        if self.value() == 'yes':
+        if self.value() == 'new_verify':
+            return needs_income_verification_filter(
+                queryset
+            ).exclude(
+                admin__awaiting_user_response=True,
+            )
+        if self.value() == 'all_verify':
             return needs_income_verification_filter(queryset)
-        if self.value() == 'no':
+        if self.value() == 'been_verified':
             return queryset.filter(
                 household__is_income_verified=True,
             )

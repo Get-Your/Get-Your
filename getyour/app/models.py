@@ -691,3 +691,23 @@ class Feedback(TimeStampedModel):
     feedback_comments = models.TextField(
         max_length=500
     )
+
+class Admin(models.Model):
+    """ A model for admin-related user data. """
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='admin',
+        primary_key=True,   # set this to the primary key of this model
+    )
+
+    awaiting_user_response = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Designates that the admin is waiting for a user to respond to a request made separate from this platform. "
+            "This is used only to filter income-verification applicants."
+        ),
+    )
+
+    class Meta:
+        verbose_name = 'administration'
