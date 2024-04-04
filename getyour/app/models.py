@@ -555,8 +555,8 @@ class IQProgram(IQProgramTimeStampedModel):
     is_enrolled = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = 'IQ program'
-        verbose_name_plural = 'IQ programs'
+        verbose_name = "user IQ program"
+        verbose_name_plural = "user IQ programs"
 
     # Define non-database attributes
     @property
@@ -642,8 +642,8 @@ class EligibilityProgram(GenericTimeStampedModel):
         max_length=5000, upload_to=userfiles_path, null=True, default=None)
     
     class Meta:
-        verbose_name = 'eligibility program'
-        verbose_name_plural = 'eligibility programs'
+        verbose_name = "user eligibility program"
+        verbose_name_plural = "user eligibility programs"
 
     # Define non-database attributes
     @property
