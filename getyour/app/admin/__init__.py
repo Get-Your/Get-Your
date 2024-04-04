@@ -1243,6 +1243,22 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         else:
             return super().response_change(request, obj)
 
+
+class EligibilityProgramRDAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        """ Override ordering to use friendly name instead. """
+        qs = super().get_queryset(request)
+        qs = qs.order_by('friendly_name')
+        return qs
+
+    search_fields = ('friendly_name__contains', )
+    list_display = ('friendly_name', 'is_active', 'ami_threshold')
+    list_filter = ('is_active', )
+    list_display_links = ('friendly_name', )
+
+    list_per_page = 100
+
+
 # Register the models
 
 # # Create the proxy model and register it
@@ -1256,3 +1272,4 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
 admin.site.register(User, UserAdmin)
 admin.site.register(AddressRD, AddressAdmin)
 admin.site.register(EligibilityProgram, EligibilityProgramAdmin)
+admin.site.register(EligibilityProgramRD, EligibilityProgramRDAdmin)

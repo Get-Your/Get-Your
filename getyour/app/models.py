@@ -597,10 +597,24 @@ class EligibilityProgramRD(GenericTimeStampedModel):
     Model class to store the eligibility programs.
     """
     # ``id`` is the implicit primary key
-    program_name = models.CharField(max_length=40, unique=True)
+    program_name = models.CharField(
+        max_length=40,
+        unique=True,
+        help_text=_(
+            "Program reference name within the platform. "
+            "Must be lowercase with no spaces."
+        ),
+    )
 
     # Store the AMI threshold that the users with each program are underneath
-    ami_threshold = models.DecimalField(max_digits=3, decimal_places=2)
+    ami_threshold = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        help_text=_(
+            "Income threshold of the program, as a fraction of AMI "
+            "(e.g. '0.30' == 30% of AMI)"
+        ),
+    )
 
     # This is the friendly name displayed to the user
 
@@ -610,10 +624,28 @@ class EligibilityProgramRD(GenericTimeStampedModel):
     # max_length is currently set to a large value, but below Postgres's
     # VARCHAR(MAX).
 
-    friendly_name = models.CharField(max_length=5000)
-    friendly_description = models.CharField(max_length=5000)
+    friendly_name = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "The user-friendly name of the program. "
+            "This will be visible to users on the platform."
+        ),
+    )
+    friendly_description = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "The user-friendly description of the program. "
+            "This will be visible to users on the platform."
+        ),
+    )
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=True,
+        help_text=_(
+            "Designates whether the program is in-use or not. "
+            "Unselect this instead of deleting programs."
+        ),
+    )
 
     class Meta:
         verbose_name = 'eligibility program'
