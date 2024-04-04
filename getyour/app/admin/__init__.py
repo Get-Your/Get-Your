@@ -21,6 +21,7 @@ from decimal import Decimal
 from django.http import HttpRequest
 import pendulum
 
+from django.shortcuts import render
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.auth.decorators import user_passes_test
@@ -42,6 +43,7 @@ from app.models import (
     Household,
     HouseholdMembers,
     EligibilityProgram,
+    EligibilityProgramRD,
     IQProgram,
 )
 from app.backend.address import address_check
@@ -54,6 +56,8 @@ from app.admin.filters import (
     NeedsVerificationListFilter,
     needs_income_verification_filter,
 )
+from app.admin.forms import ProgramChangeForm
+
 from logger.wrappers import LoggerWrapper
 
 
@@ -333,7 +337,7 @@ class EligibilityProgramInline(admin.TabularInline):
         # Record can only be edited if is_income_verified is False
         if obj.user.household.is_income_verified is False:
             return format_html(
-                f'<a href="{get_admin_url(obj)}" target="_blank">Edit Record</a>'
+                f'<a href="{get_admin_url(obj)}">Edit Record</a>'
             )
         else:
             return "Cannot Be Edited"
@@ -756,11 +760,19 @@ class AddressAdmin(admin.ModelAdmin):
 
 
 class EligibilityProgramAdmin(admin.ModelAdmin):
-    search_fields = ('program__program_name__contains', )
-    list_display = ('user_email', 'program_name')
+    search_fields = (
+        'user__last_name__startswith',
+        'user__first_name__startswith',
+        'user__email__contains',
+    )
+    list_display = (
+        'user_last_name',
+        'user_first_name',
+        'user_email',
+        'program_name',
+    )
     list_display_links = ('program_name', )
-    ordering = ('user__email', )
-    # actions = ['update_gma']
+    ordering = (Lower('user__last_name'), Lower('user__first_name'))    # case-insensitive
 
     # def get_list_display(self, request):
     #     return None
@@ -771,7 +783,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         'program_name',
         'display_document_link',
     ]
-    readonly_fields = eligibility_fields + ['user_email']
+    readonly_fields = eligibility_fields + ['user_email', 'full_name']
 
     def get_fieldsets(self, request, obj):
         """
@@ -792,7 +804,10 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             (
                 'USER',
                 {
-                    'fields': ['user_email'],
+                    'fields': [
+                        'full_name',
+                        'user_email',
+                    ],
                 },
             ),
             (
@@ -804,6 +819,18 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         ]
 
         return fieldsets
+    
+    @admin.display
+    def full_name(self, obj):
+        return obj.user.full_name
+    
+    @admin.display
+    def user_last_name(self, obj):
+        return obj.user.last_name
+    
+    @admin.display
+    def user_first_name(self, obj):
+        return obj.user.first_name
 
     @admin.display
     def user_email(self, obj):
@@ -820,121 +847,125 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
 
     list_per_page = 100
 
-    # @admin.action(description='Update GMA for selected addresses')
-    # def update_gma(self, request, input_object):
-    #     """
-    #     Update the GMA of the selected object(s).
+    # Add custom buttons to the save list in the admin template (from
+    # https://stackoverflow.com/a/34899874/5438550 and
+    # https://stackoverflow.com/a/69487616/5438550)
+    change_form_template = 'admin/custom_button_change_form.html'
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+
+        # Add any custom buttons. This must be a list/tuple of list/tuples, as
+        # (name, url). The 'url' portion must match the
+        # "if 'url' in request.POST:" section of response_change()
+
+        # Editing is disallowed once income has been verified
+        obj = EligibilityProgram.objects.get(pk=object_id)
+        if obj.user.household.is_income_verified is False:
+            extra_context['custom_buttons'] = [
+                ('Update Program', '_update_program'),
+            ]
+
+        # Intercept any POSTs from the custom button intermediate pages before
+        # calling super() (so that super() only handles the following GET)
+        opts = self.model._meta
+        preserved_filters = self.get_preserved_filters(request)
+        if '_update_program_submit' in request.POST:
+            # Handle 'Update Program' after 'submit' has been selected
+            form = ProgramChangeForm(request.POST)
+            if form.is_valid():
+                # Extract the program ID (in the 'program_name' form field) and
+                # update the current model with the new program
+                obj.program = EligibilityProgramRD.objects.get(
+                    id=int(form.cleaned_data['program_name'])
+                )
+                obj.save()
+
+                # Finalize the user's application to update their income
+                _ = finalize_application(obj.user, update_user=False)
+
+                # Add a message to the user when complete
+                self.message_user(
+                    request,
+                    "Successfully updated the program for this record.",
+                    messages.SUCCESS,
+                )
+
+            else:
+                # Form is not valid; notify the user
+                self.message_user(
+                    request,
+                    'Cancelled: something went wrong.',
+                    messages.ERROR,
+                )
+
+            redirect_url = reverse(
+                f"admin:{opts.app_label}_{opts.model_name}_change",
+                args=(object_id,),
+                current_app=self.admin_site.name,
+            )
+            redirect_url = add_preserved_filters(
+                {
+                    'preserved_filters': preserved_filters,
+                    'opts': opts,
+                },
+                redirect_url,
+            )
+            return HttpResponseRedirect(redirect_url)
         
-    #     This is used both as a changelist action and a page-specific button, so
-    #     ``input_object`` can be either a single object (of the modeladmin type)
-    #     or a queryset from the changelist actions.
-        
-    #     """
-        
-    #     # Log entrance to this action. This attempts to track called
-    #     # functions
-    #     log.info(
-    #         "Entering admin action",
-    #         function='update_gma',
-    #         user_id=request.user.id,
-    #     )        
+        elif '_update_program_cancel' in request.POST:
+            # User selected 'cancel'
+            self.message_user(
+                request,
+                'Program update cancelled.',
+                messages.INFO,
+            )
 
-    #     # If the input_object is not a QuerySet, coerce it into a list so for
-    #     # similar operation
-    #     if isinstance(input_object, QuerySet):
-    #         queryset = input_object
-    #     else:
-    #         queryset = [input_object]
+            redirect_url = reverse(
+                f"admin:{opts.app_label}_{opts.model_name}_change",
+                args=(object_id,),
+                current_app=self.admin_site.name,
+            )
+            redirect_url = add_preserved_filters(
+                {
+                    'preserved_filters': preserved_filters,
+                    'opts': opts,
+                },
+                redirect_url,
+            )
+            return HttpResponseRedirect(redirect_url)
 
-    #     # Loop through the queryset (or similated queryset)
-    #     updated_addr_count = 0
-    #     for obj in queryset:
-    #         # Format for address_check. All addresses in the database have been
-    #         # through USPS, so no need to re-validate (just copy formatting)
-    #         address_dict = {
-    #             'AddressValidateResponse': {
-    #                 'Address': {
-    #                     # Note 1 & 2 are swapped
-    #                     'Address1': obj.address2,
-    #                     'Address2': obj.address1,
-    #                     'City': obj.city,
-    #                     'State': obj.state,
-    #                     'Zip5': obj.zip_code,
-    #                 }
-    #             }
-    #         }
-
-    #         # Run the address check and make the final adjustments
-    #         (is_in_gma, has_connexion) = address_check(address_dict)
-
-    #         # Only make changes if there is an update
-    #         if is_in_gma != obj.is_in_gma:
-    #             updated_addr_count += 1
-    #             finalize_address(obj, is_in_gma, has_connexion)
-
-    #             # Loop through any users with this as their eligibility address
-    #             # and correct their application if they have already completed it
-    #             for addr in obj.eligibility_user.all():
-    #                 if addr.user.last_completed_at is not None:
-    #                     _ = finalize_application(addr.user, update_user=False)
-
-    #     log.info(
-    #         f"{len(queryset)} addresses checked; updates applied to {updated_addr_count}.",
-    #         function='update_gma',
-    #         user_id=request.user.id,
-    #     )
-
-    #     # Add a message to the user when complete
-    #     self.message_user(request, ngettext(
-    #         'GMA update was executed for %d address.',
-    #         'GMA update was executed for %d addresses.',
-    #         len(queryset),
-    #     ) % len(queryset), messages.SUCCESS)
-
-    # # Add custom buttons to the save list in the admin template (from
-    # # https://stackoverflow.com/a/34899874/5438550 and
-    # # https://stackoverflow.com/a/69487616/5438550)
-    # change_form_template = 'admin/custom_button_change_form.html'
-    # def change_view(self, request, object_id, form_url='', extra_context=None):
-    #     extra_context = extra_context or {}
-
-    #     # Add any custom buttons. This must be a list/tuple of list/tuples, as
-    #     # (name, url). The 'url' portion must match the
-    #     # "if 'url' in request.POST:" section of response_change()
-    #     extra_context['custom_buttons'] = [
-    #         ('Update GMA', '_update_gma'),
-    #     ]
-    #     return super(AddressAdmin, self).change_view(
-    #         request, object_id, form_url, extra_context=extra_context,
-    #     )
+        return super().change_view(
+            request, object_id, form_url, extra_context=extra_context,
+        )
     
-    # def response_change(self, request, obj):
-    #     opts = self.model._meta
-    #     pk_value = obj._get_pk_val()
-    #     preserved_filters = self.get_preserved_filters(request)
+    def response_change(self, request, obj):
+        if "_update_program" in request.POST:
+            # Handle 'Update Program': load the page to select the program name
+            form = ProgramChangeForm(
+                    initial={
+                        "program_name": (
+                            str(obj.program.id),
+                            obj.program.friendly_name,
+                        ),
+                    },
+                )
 
-    #     if "_update_gma" in request.POST:
-    #         # Handle 'Update GMA': run the logic to update ``is_in_gma`` then
-    #         # refresh the page
-    #         self.update_gma(request, obj)
+            # Set the current_app for the admin base template
+            request.current_app = self.admin_site.name
+            return render(
+                request,
+                'admin/program_change.html',
+                {
+                    'form': form,
+                    # Set some page-specific text
+                    'site_header': 'Get FoCo administration',
+                    'title': 'Update Program',
+                    'site_title': 'Get FoCo administration',
+                },
+            )
 
-    #         redirect_url = reverse(
-    #             f"admin:{opts.app_label}_{opts.model_name}_change",
-    #             args=(pk_value,),
-    #             current_app=self.admin_site.name,
-    #         )
-    #         redirect_url = add_preserved_filters(
-    #             {
-    #                 'preserved_filters': preserved_filters,
-    #                 'opts': opts,
-    #             },
-    #             redirect_url,
-    #         )
-    #         return HttpResponseRedirect(redirect_url)
-
-    #     else:
-    #         return super().response_change(request, obj)
-        
+        else:
+            return super().response_change(request, obj)
 
 # Register the models
 
