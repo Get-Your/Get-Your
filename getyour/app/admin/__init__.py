@@ -229,40 +229,40 @@ class HouseholdInline(admin.TabularInline):
         
         """
 
-        # Global readonly fields
-        readonly_fields = [
-            'created_at',
-            'modified_at',
-            'email_address',
-            'phone_number',
+        # Global readonly fields. Note that @property and calculated fields must
+        # be read-only
+        readonly_fields = self.fields
+
+        # Remove fields from readonly_fields based on permissions group
+        income_remove = [
+            'is_income_verified',
+        ]
+        # admin_remove extends income_remove
+        admin_remove = income_remove + [
             'rent_own',
             'duration_at_address',
+        ]
+        # superuser_remove extends admin_remove
+        superuser_remove = admin_remove + [
             'number_persons_in_household',
         ]
-        # Ensure @property and calculated fields displayed here are always
-        # marked read-only
-        static_fields = ['income_percent']
-        readonly_fields.extend(static_fields)
 
         readonly_remove = []
         if request.user.is_superuser:
             # Remove the following readonly fields for superusers
-            readonly_remove.extend([
-                'email_address',
-                'phone_number',
-                'rent_own',
-                'duration_at_address',
-                'number_persons_in_household',
-            ])
-        elif request.user.groups.filter(
+            readonly_remove.extend(superuser_remove)
+        if request.user.groups.filter(
             name__istartswith='income'
         ).exists():
             # Remove these fields from read-only if the user is in the
             # 'income...' group
-            readonly_remove.extend([
-                'email_address',
-                'phone_number',
-            ])
+            readonly_remove.extend(income_remove)
+        if request.user.groups.filter(
+            name__istartswith='admin'
+        ).exists():
+            # Remove these fields from read-only if the user is in the
+            # 'admin...' group
+            readonly_remove.extend(admin_remove)
         
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
@@ -416,6 +416,23 @@ class UserAdmin(admin.ModelAdmin):
     date_hierarchy = 'last_completed_at'
     actions = ('mark_verified', 'mark_awaiting_response')
 
+    user_fields = [
+        'full_name',
+        'email',
+        'phone_number',
+        'user_message',
+        'id',
+        'is_archived',
+    ]
+    application_fields = [
+        'date_joined',
+        'last_login',
+        'last_completed_at',
+        'last_action_notification_at',
+        # 'last_application_parsed',
+        'renewal_action_parsed',
+    ]
+
     @admin.display(description='last renewal action')
     def renewal_action_parsed(self, obj):
         if obj.last_renewal_action is not None:
@@ -488,27 +505,15 @@ class UserAdmin(admin.ModelAdmin):
             (
                 'USER',
                 {
-                    'fields': [
-                        'full_name',
-                        'email',
-                        'phone_number',
-                        'user_message',
-                        'id',
-                        'is_archived',
-                    ],
+                    # Take a copy of the object to avoid duplicates on page refresh
+                    'fields': [x for x in self.user_fields],
                 },
             ),
             (
                 'APPLICATION',
                 {
-                    'fields': [
-                        'date_joined',
-                        'last_login',
-                        'last_completed_at',
-                        'last_action_notification_at',
-                        # 'last_application_parsed',
-                        'renewal_action_parsed',
-                    ],
+                    # Take a copy of the object to avoid duplicates on page refresh
+                    'fields': [x for x in self.application_fields],
                 },
             ),
         ]
@@ -542,40 +547,38 @@ class UserAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj):
         """
-        Return readonly fields based on user type and groups. Note that groups
-        is looking for inclusion and is hierarchical (the most permissive is
-        first).
+        Return readonly fields based on user type and groups. Note that this
+        follows zero-trust; it starts with all fields read-only and removes them
+        based on permissions.
         
         """
 
-        # Global readonly fields
-        readonly_fields = [
-            'id',
-            'date_joined',
-            'last_login',
-            'has_viewed_dashboard',
-            'last_action_notification_at',
-        ]
+        # Global readonly fields. Note that @property and calculated fields must
+        # be read-only
+        readonly_fields = self.user_fields + self.application_fields
+
+        # Remove fields from readonly_fields based on permissions group
+        readonly_remove = []
         if request.user.is_superuser:
-            # No extra readonly fields for superuser
-            pass
-        elif request.user.groups.filter(
-            name__istartswith='income'
+            # Remove all readonly fields except the calculated fields
+            readonly_remove.extend([
+                'email',
+                'phone_number',
+                'is_archived',
+                'last_completed_at',
+            ])
+        if request.user.groups.filter(
+            name__istartswith='admin'
         ).exists():
-            # Add these fields as read-only if the user is in a group whose name
-            # starts with case-insensitive 'income'
-            readonly_fields.extend(['first_name', 'last_name', 'last_completed_at'])
-        # Ensure @property and calculated fields displayed here are always
-        # marked read-only. Note that duplicates are removed later, so no need
-        # to check here
-        static_fields = [
-            'full_name',
-            'renewal_action_parsed',
-            'user_message',
-        ]
-        readonly_fields.extend(static_fields)
-        # Ensure there are no duplicates
-        return list(set(readonly_fields))
+            # Remove these fields from read-only if the user is in the
+            # 'income...' group
+            readonly_remove.extend([
+                'phone_number',
+                'is_archived',
+            ])
+        
+        # Remove the fields and re-listify
+        return list(set(readonly_fields) - set(readonly_remove))
 
     inlines = [
         AdminInline,
@@ -1068,7 +1071,8 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             (
                 'PROGRAM',
                 {
-                    'fields': self.eligibility_fields,
+                    # Take a copy of the object to avoid duplicates on page refresh
+                    'fields': [x for x in self.eligibility_fields],
                 },
             ),
         ]
