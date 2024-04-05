@@ -52,7 +52,7 @@ from app.models import (
     Household,
     User,
     EligibilityProgramRD,
-    Admin,
+    Admin as AppAdmin,
 )
 from app.backend import (
     login,
@@ -271,7 +271,7 @@ def account(request, **kwargs):
                     )
 
                     # Also create matching app.Admin model record
-                    Admin.objects.create(user=user)
+                    AppAdmin.objects.create(user=user)
 
                     data = {
                         'result': "success",

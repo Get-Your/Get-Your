@@ -46,7 +46,7 @@ from app.models import (
     EligibilityProgram,
     EligibilityProgramRD,
     IQProgram,
-    Admin,
+    Admin as AppAdmin,
 )
 from app.backend import get_eligible_iq_programs, get_iqprogram_required_fields
 from app.backend.address import address_check
@@ -397,7 +397,7 @@ class IQProgramInline(admin.TabularInline):
 
 
 class AdminInline(admin.StackedInline):
-    model = Admin
+    model = AppAdmin
     
     fk_name = "user"
 
@@ -603,7 +603,7 @@ class UserAdmin(admin.ModelAdmin):
         )
 
         # Create Admin queryset of the same users and update the field
-        Admin.objects.filter(
+        AppAdmin.objects.filter(
             user__in=[usr for usr in queryset]
         ).update(
             awaiting_user_response=True
