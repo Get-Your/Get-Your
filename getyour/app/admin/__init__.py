@@ -46,6 +46,7 @@ from app.models import (
     EligibilityProgram,
     EligibilityProgramRD,
     IQProgram,
+    IQProgramRD,
     Admin as AppAdmin,
 )
 from app.backend import get_eligible_iq_programs, get_iqprogram_required_fields
@@ -63,7 +64,11 @@ from app.admin.filters import (
     NeedsVerificationListFilter,
     needs_income_verification_filter,
 )
-from app.admin.forms import ProgramChangeForm, ProgramAddForm
+from app.admin.forms import (
+    ProgramChangeForm,
+    ProgramAddForm,
+    IQProgramRDForm,
+)
 
 from logger.wrappers import LoggerWrapper
 
@@ -467,7 +472,12 @@ class UserAdmin(admin.ModelAdmin):
             # The second element holds the field requirements in AddressRD
             for req, fd in req_fields:
                 if not getattr(eligibility_address, fd):
-                    msg[-1] += f" User's address has False `{fd}`; IQ Programs may require it to be True (see `{req}`)."
+                    msg[-1] += " User's address has False `{}`; IQ Programs may require it to be True (see '{}' on the 'IQ Programs' page).".format(
+                        fd,
+                        # Attempt to match the formatting of the 'IQ programs'
+                        # admin page
+                        req.capitalize().replace('_', ' '),
+                    )
 
         # Notify if the user is archived
         if obj.is_archived:
@@ -1260,6 +1270,23 @@ class EligibilityProgramRDAdmin(admin.ModelAdmin):
     list_filter = ('is_active', )
     list_display_links = ('friendly_name', )
 
+
+class IQProgramRDAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        """ Override ordering to use friendly name instead. """
+        qs = super().get_queryset(request)
+        qs = qs.order_by('friendly_name')
+        return qs
+
+    search_fields = ('friendly_name__contains', )
+    list_display = ('friendly_name', 'is_active')
+    list_filter = ('is_active', )
+    list_display_links = ('friendly_name', )
+
+    def get_form(self, request, obj=None, **kwargs):
+        kwargs["form"] = IQProgramRDForm
+        return super().get_form(request, obj, **kwargs)
+
     list_per_page = 100
 
 
@@ -1277,3 +1304,4 @@ admin.site.register(User, UserAdmin)
 admin.site.register(AddressRD, AddressAdmin)
 admin.site.register(EligibilityProgram, EligibilityProgramAdmin)
 admin.site.register(EligibilityProgramRD, EligibilityProgramRDAdmin)
+admin.site.register(IQProgramRD, IQProgramRDAdmin)

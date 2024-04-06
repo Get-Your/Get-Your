@@ -17,6 +17,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django import forms
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+from django.forms.widgets import Textarea
 
 from app.models import (
     User,
@@ -25,7 +28,7 @@ from app.models import (
     EligibilityProgramRD,
     IQProgramRD,
 )
-from app.backend import get_users_iq_programs
+from app.backend import get_users_iq_programs, get_iqprogram_required_fields
 
 
 class ProgramChangeForm(forms.Form):
@@ -68,3 +71,46 @@ class ProgramAddForm(forms.Form):
         label='Select the program to add',
         widget=forms.Select(),
     )
+
+
+class IQProgramRDForm(forms.ModelForm):
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # Raise a ValidationError on the form if there isn't at least one True
+        # `req_` field
+        if not any(
+            cleaned_data.get(x[0]) for x in get_iqprogram_required_fields()
+        ):
+            msg = ValidationError(
+                _("At least one 'Req ' box must be checked (otherwise any address anywhere is eligible)."),
+                code="invalid",
+            )
+            for fd, x in get_iqprogram_required_fields():
+                self.add_error(fd, msg)
+
+    class Meta:
+        model = IQProgramRD
+        program_fields = [
+            'program_name',
+            'ami_threshold',
+            'is_active',
+            'enable_autoapply',
+            'renewal_interval_year',
+        ]
+        display_fields = [
+            'friendly_name',
+            'friendly_category',
+            'friendly_description',
+            'friendly_supplemental_info',
+            'learn_more_link',
+            'friendly_eligibility_review_period',
+        ]
+        address_fields = [x[0] for x in get_iqprogram_required_fields()]
+
+        fields = program_fields + display_fields + address_fields
+
+        # Override the widgets for description field
+        widgets = {
+            'friendly_description': Textarea,
+        }

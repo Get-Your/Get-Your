@@ -476,10 +476,24 @@ class HouseholdMembersHist(models.Model):
 
 class IQProgramRD(GenericTimeStampedModel):
     # ``id`` is the implicity primary key
-    program_name = models.CharField(max_length=40, unique=True)
+    program_name = models.CharField(
+        max_length=40,
+        unique=True,
+        help_text=_(
+            "Program reference name within the platform. "
+            "Must be lowercase with no spaces."
+        ),
+    )
 
     # Store the AMI for which users must be below in order to be eligible
-    ami_threshold = models.DecimalField(max_digits=3, decimal_places=2)
+    ami_threshold = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        help_text=_(
+            "Income threshold of the program, as a fraction of AMI "
+            "(e.g. '0.30' == 30% of AMI)."
+        ),
+    )
 
     # The following "friendly" fields will be viewable by users. None of them
     # have a database-constrained length in order to maximize flexibility.
@@ -491,43 +505,104 @@ class IQProgramRD(GenericTimeStampedModel):
     # VARCHAR(MAX).
 
     # Name of the program
-    friendly_name = models.CharField(max_length=5000)
+    friendly_name = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "The user-friendly name of the program. "
+            "This will be visible to users on the platform."
+        ),
+    )
     # Program category (as defined by the Program Lead)
-    friendly_category = models.CharField(max_length=5000)
+    friendly_category = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "The user-friendly category this program is in. "
+            "This will be visible to users on the platform."
+        ),
+    )
     # Description of the program
-    friendly_description = models.CharField(max_length=5000)
+    friendly_description = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "The user-friendly description of the program. "
+            "This will be visible to users on the platform."
+        ),
+    )
     # Supplmental information about the program (recommend leaving blank
     # (``''``) unless further info is necessary)
-    friendly_supplemental_info = models.CharField(max_length=5000)
+    friendly_supplemental_info = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "Any supplmental information to display to the user."
+        ),
+    )
     # Hyperlink to learn more about the program
-    learn_more_link = models.CharField(max_length=5000)
+    learn_more_link = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "Link for the user to learn more about the program."
+        ),
+    )
     # Estimated time period for the eligibility review (in readable text, e.g.
     # 'Two Weeks'). This should be manually updated periodically based on
     # program metrics.
-    friendly_eligibility_review_period = models.CharField(max_length=5000)
+    friendly_eligibility_review_period = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "The estimated time it will take to review a user's application. "
+            "This will be visible to users on the platform."
+        ),
+    )
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=True,
+        help_text=_(
+            "Designates whether the program is in-use or not. "
+            "Unselect this instead of deleting programs."
+        ),
+    )
 
     # Enable auto-apply for the designated program
-    enable_autoapply = models.BooleanField(default=False)
+    enable_autoapply = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Designates whether the program should automatically apply new users who are eligible."
+        ),
+    )
 
-    # All fields beginning with `req_` are Boolean and specify whether the matching
-    # field in `app_addressrd` is a filter for the program (e.g. a program with
-    # `req_is_city_covered`==True will require a user’s `app_address.eligibility_address_id`
-    # to have `app_addressrd.is_city_covered`=True, but `req_is_in_gma`==False will
-    # ignore `app_addressrd.is_in_gma`)
-    req_is_in_gma = models.BooleanField(default=False)
-    req_is_city_covered = models.BooleanField(default=False)
+    # All fields beginning with `req_` are Boolean and specify whether the
+    # matching field in AddressRD is a filter for the program. See
+    # backend.get_eligible_iq_programs() for more detail
+    req_is_in_gma = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Designates whether the user's eligibility address is required to be in the GMA to be eligible."
+        ),
+    )
+    req_is_city_covered = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Designates whether the user's eligibility address is required to be 'covered by the City' to be eligible. "
+            "'City coverage' is determined by the Get FoCo administrators."
+        ),
+    )
     # The frequency at which an IQ program needs to be renewed. If null, the
     # IQ program is considered to be a lifetime enrollment. Measured in years
-    renewal_interval_year = models.IntegerField(null=True)
+    renewal_interval_year = models.IntegerField(
+        null=True,
+        verbose_name="renewal interval in years",
+        help_text=_(
+            "The frequency at which a user needs to renew their application for this IQ program. "
+            "Leave blank for a non-renewing (lifetime-enrollment) program."
+        ),
+    )
 
     class Meta:
         verbose_name = 'IQ program'
         verbose_name_plural = 'IQ programs'
 
     def __str__(self):
-        return str(self.ami_threshold)
+        return str(self.friendly_name)
 
 
 class IQProgram(IQProgramTimeStampedModel):
