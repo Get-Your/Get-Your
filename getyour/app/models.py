@@ -726,6 +726,9 @@ class EligibilityProgramRD(GenericTimeStampedModel):
         verbose_name = 'eligibility program'
         verbose_name_plural = 'eligibility programs'
 
+    def __str__(self):
+        return str(self.friendly_name)
+
 
 class EligibilityProgram(GenericTimeStampedModel):
     """

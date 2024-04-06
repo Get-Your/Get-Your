@@ -73,6 +73,24 @@ class ProgramAddForm(forms.Form):
     )
 
 
+class EligibilityProgramRDForm(forms.ModelForm):
+    class Meta:
+        model = EligibilityProgramRD
+
+        fields = [
+            'program_name',
+            'ami_threshold',
+            'is_active',
+            'friendly_name',
+            'friendly_description',
+        ]
+
+        # Override the widgets for description field
+        widgets = {
+            'friendly_description': Textarea,
+        }
+
+
 class IQProgramRDForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()

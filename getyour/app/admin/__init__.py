@@ -29,7 +29,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.translation import ngettext
 from django.conf import settings
-from django.db import transaction
+from django.db import transaction, models
 from django.db.models import F
 from django.shortcuts import reverse
 from django.db.models.functions import Lower
@@ -67,6 +67,7 @@ from app.admin.filters import (
 from app.admin.forms import (
     ProgramChangeForm,
     ProgramAddForm,
+    EligibilityProgramRDForm,
     IQProgramRDForm,
 )
 
@@ -1269,6 +1270,12 @@ class EligibilityProgramRDAdmin(admin.ModelAdmin):
     list_display = ('friendly_name', 'is_active', 'ami_threshold')
     list_filter = ('is_active', )
     list_display_links = ('friendly_name', )
+
+    def get_form(self, request, obj=None, **kwargs):
+        kwargs["form"] = EligibilityProgramRDForm
+        return super().get_form(request, obj, **kwargs)
+
+    list_per_page = 100
 
 
 class IQProgramRDAdmin(admin.ModelAdmin):
