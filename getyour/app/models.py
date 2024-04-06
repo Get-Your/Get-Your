@@ -583,7 +583,7 @@ class IQProgramRD(GenericTimeStampedModel):
         default=False,
         help_text=_(
             "Designates whether the user's eligibility address is required to be 'covered by the City' to be eligible. "
-            "'City coverage' is determined by the Get FoCo administrators."
+            "'City coverage' is always True for addresses within the GMA, otherwise it's determined by the Get FoCo administrators."
         ),
     )
     # The frequency at which an IQ program needs to be renewed. If null, the
