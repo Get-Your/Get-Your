@@ -28,7 +28,7 @@ from app.models import (
     EligibilityProgramRD,
     IQProgramRD,
 )
-from app.backend import get_users_iq_programs, get_iqprogram_required_fields
+from app.backend import get_users_iq_programs, get_iqprogram_requires_fields
 
 
 class ProgramChangeForm(forms.Form):
@@ -96,19 +96,22 @@ class IQProgramRDForm(forms.ModelForm):
         cleaned_data = super().clean()
 
         # Raise a ValidationError on the form if there isn't at least one True
-        # `req_` field
+        # `requires_` field
         if not any(
-            cleaned_data.get(x[0]) for x in get_iqprogram_required_fields()
+            cleaned_data.get(x[0]) for x in get_iqprogram_requires_fields()
         ):
             msg = ValidationError(
-                _("At least one 'Req ' box must be checked (otherwise any address anywhere is eligible)."),
+                _("At least one 'Requires' box must be checked (otherwise any address anywhere is eligible)."),
                 code="invalid",
             )
-            for fd, x in get_iqprogram_required_fields():
+            for fd, x in get_iqprogram_requires_fields():
                 self.add_error(fd, msg)
 
     class Meta:
         model = IQProgramRD
+
+        req_fields = get_iqprogram_requires_fields()
+
         program_fields = [
             'program_name',
             'ami_threshold',
@@ -124,7 +127,7 @@ class IQProgramRDForm(forms.ModelForm):
             'learn_more_link',
             'friendly_eligibility_review_period',
         ]
-        address_fields = [x[0] for x in get_iqprogram_required_fields()]
+        address_fields = [x[0] for x in req_fields]
 
         fields = program_fields + display_fields + address_fields
 
@@ -132,3 +135,15 @@ class IQProgramRDForm(forms.ModelForm):
         widgets = {
             'friendly_description': Textarea,
         }
+
+        # Override the labels for the 'requires_' fields to capitalize the first
+        # word and place single quotes around the field name
+        labels = {}
+        for req, x in req_fields:
+            label_list = req.capitalize().split('_')
+
+            # Insert single quotes at the beginning and end of the field name
+            label_list[1] = f"'{label_list[1]}"
+            label_list[-1] = f"{label_list[-1]}'"
+
+            labels[req] = ' '.join(label_list)

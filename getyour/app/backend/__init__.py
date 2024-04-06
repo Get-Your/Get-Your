@@ -375,10 +375,10 @@ def get_users_iq_programs(
     ))
 
     # Filter out the active programs that the user is not geographically eligible for.
-    # If the IQ program's req_is_city_covered is true, then check to make sure
+    # If the IQ program's requires_is_city_covered is true, then check to make sure
     # the user's eligibility address is_city_covered.
     active_iq_programs = [
-        program for program in active_iq_programs if not (program.req_is_city_covered and not users_eligiblity_address.is_city_covered)]
+        program for program in active_iq_programs if not (program.requires_is_city_covered and not users_eligiblity_address.is_city_covered)]
 
     # Gather list of active programs
     programs = list(chain(users_iq_programs, active_iq_programs))
@@ -439,36 +439,37 @@ def get_eligible_iq_programs(
         ami_threshold__gte=income_override or user.household.income_as_fraction_of_ami,
     )
 
-    # Gather all `req_` fields in the IQProgramRD model along with their
+    # Gather all `requires_` fields in the IQProgramRD model along with their
     # corresponding AddressRD Boolean
-    req_fields = get_iqprogram_required_fields()
+    req_fields = get_iqprogram_requires_fields()
 
-    # Filter programs further based on address requirements. Fields beginning 
-    # with `req_` permissively specify whether the matching field in AddressRD
-    # is a filter for the program, so a True value in the `req_` field requires
-    # the corresponding address Boolean to also be True to be eligible, but
-    # because it's permissive, a False value in the `req_` field means that all
-    # addresses are eligible, regardless of the value of the corresponding
-    # Boolean. Or as a truth table:
+    # Filter programs further based on address requirements. Fields beginning
+    # with `requires_` permissively specify whether the matching field in
+    # AddressRD is a filter for the program, so a True value in the `requires_`
+    # field requires the corresponding address Boolean to also be True to be
+    # eligible, but because it's permissive, a False value in the `requires_`
+    # field means that all addresses are eligible, regardless of the value of
+    # the corresponding Boolean. Or as a truth table:
 
     # An address is eligible for benefits under the following conditions:
     #
-    #                         ``req_`` field
-    #                         *TRUE*  *FALSE*
-    # corresponding  *TRUE*    TRUE    TRUE
-    #    Boolean     *FALSE*   FALSE   TRUE
+    #                         ``requires_`` field
+    #                         *TRUE*        *FALSE*
+    # corresponding  *TRUE*    TRUE         TRUE
+    #    Boolean     *FALSE*   FALSE        TRUE
     #
-    # === ( (corresponding Boolean) OR NOT(`req_`) )
+    # === ( (corresponding Boolean) OR NOT(`requires_`) )
 
-    # Due to the permissive nature of the individual `req_` fields, multiple
-    # `req_` criteria are then ANDed together for the overall eligibility. For
-    # example, if no `req_` fields are enabled, *all* addresses are eligible
-    # (eligibility = True AND True AND True AND ... == True), but if any one of
-    # the `req_` fields are enabled, an address is ineligible if it doesn't meet
-    # that criteria (eligibility = True AND False AND True AND ... == False)
+    # Due to the permissive nature of the individual `requires_` fields,
+    # multiple `requires_` criteria are then ANDed together for the overall
+    # eligibility. For example, if no `requires_` fields are enabled, *all*
+    # addresses are eligible (eligibility = True AND True AND True AND ... ==
+    # True), but if any one of the `requires_` fields are enabled, an address is
+    # ineligible if it doesn't meet that criteria (eligibility = True AND False
+    # AND True AND ... == False)
 
-    # For each program, take (<address Boolean> or not <req_>) for all `req_`
-    # fields, and AND them together (via all())
+    # For each program, take (<address Boolean> or not <requires_>) for all
+    # `requires_` fields, and AND them together (via all())
     eligible_iq_programs = [
         prog for prog in income_eligible_iq_programs if all(
             (getattr(eligibility_address, cor) or not getattr(prog, req)) for req, cor in req_fields
@@ -582,13 +583,13 @@ def enable_renew_now(user_id):
         return False
 
 
-def get_iqprogram_required_fields():
+def get_iqprogram_requires_fields():
     """
-    Gather all `req_` fields in the IQProgramRD model along with their
+    Gather all `requires_` fields in the IQProgramRD model along with their
     corresponding AddressRD Boolean.
 
     """
-    field_prefix = 'req_'
+    field_prefix = 'requires_'
     req_fields = [
         (x.name, x.name.replace(field_prefix, '')) for x in IQProgramRD._meta.fields if x.name.startswith(field_prefix)
     ]

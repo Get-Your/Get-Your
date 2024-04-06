@@ -49,7 +49,7 @@ from app.models import (
     IQProgramRD,
     Admin as AppAdmin,
 )
-from app.backend import get_eligible_iq_programs, get_iqprogram_required_fields
+from app.backend import get_eligible_iq_programs, get_iqprogram_requires_fields
 from app.backend.address import address_check
 from app.backend.finalize import (
     finalize_address,
@@ -469,13 +469,13 @@ class UserAdmin(admin.ModelAdmin):
 
             # If the user doesn't qualify for any programs, check if the user's
             # address doesn't have a required component
-            req_fields = get_iqprogram_required_fields()
+            req_fields = get_iqprogram_requires_fields()
             # The second element holds the field requirements in AddressRD
             for req, fd in req_fields:
                 if not getattr(eligibility_address, fd):
                     msg[-1] += " User's address has False `{}`; IQ Programs may require it to be True (see '{}' on the 'IQ Programs' page).".format(
                         fd,
-                        # Attempt to match the formatting of the 'IQ programs'
+                        # Somewhat match the formatting of the 'IQ programs'
                         # admin page
                         req.capitalize().replace('_', ' '),
                     )

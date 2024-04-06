@@ -570,16 +570,16 @@ class IQProgramRD(GenericTimeStampedModel):
         ),
     )
 
-    # All fields beginning with `req_` are Boolean and specify whether the
+    # All fields beginning with `requires_` are Boolean and specify whether the
     # matching field in AddressRD is a filter for the program. See
     # backend.get_eligible_iq_programs() for more detail
-    req_is_in_gma = models.BooleanField(
+    requires_is_in_gma = models.BooleanField(
         default=False,
         help_text=_(
             "Designates whether the user's eligibility address is required to be in the GMA to be eligible."
         ),
     )
-    req_is_city_covered = models.BooleanField(
+    requires_is_city_covered = models.BooleanField(
         default=False,
         help_text=_(
             "Designates whether the user's eligibility address is required to be 'covered by the City' to be eligible. "
