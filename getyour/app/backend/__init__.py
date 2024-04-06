@@ -20,10 +20,10 @@ import json
 import datetime
 from enum import Enum
 from itertools import chain
+from decimal import Decimal
 import logging
 import pendulum
 import httpagentparser
-from decimal import Decimal
 
 from twilio.rest import Client
 from sendgrid.helpers.mail import Mail
@@ -43,8 +43,6 @@ from app.models import (
     IQProgramRD,
     IQProgram,
     User,
-    Household,
-    AddressRD,
 )
 from logger.wrappers import LoggerWrapper
 

@@ -17,25 +17,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import logging
-from decimal import Decimal
-from django.http import HttpRequest
 import pendulum
 
-from django.shortcuts import render
-from django import forms
-from django.contrib import admin, messages
-from django.contrib.auth.decorators import user_passes_test
-from django.utils import timezone
+from django.shortcuts import render, reverse
+from django.http import HttpResponseRedirect
 from django.utils.html import format_html
 from django.utils.translation import ngettext
-from django.conf import settings
-from django.db import transaction, models
-from django.db.models import F
-from django.shortcuts import reverse
+from django.db import transaction
 from django.db.models.functions import Lower
 from django.db.models.query import QuerySet
+from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
-from django.http import HttpResponseRedirect
 
 from app.models import (
     User,
@@ -57,7 +49,6 @@ from app.backend.finalize import (
     remove_ineligible_programs,
 )
 from app.constants import application_pages
-from app.forms import UserUpdateForm
 from app.admin.filters import (
     GMAListFilter,
     CityCoveredListFilter,

@@ -32,7 +32,6 @@ from app.backend import get_users_iq_programs, get_iqprogram_requires_fields
 
 
 class ProgramChangeForm(forms.Form):
-
     program_name = forms.ChoiceField(
         label='Select the program to use for this record',
         choices=[(str(x.id), x.friendly_name) for x in EligibilityProgramRD.objects.filter(is_active=True).order_by('friendly_name')],
