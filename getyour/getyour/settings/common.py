@@ -23,7 +23,7 @@ import subprocess
 
 env = environ.Env()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Build paths inside the project like this: BASE_DIR.joinpath('subdir')
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Read and apply the environment-agnostic secrets
