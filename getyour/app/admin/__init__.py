@@ -40,6 +40,7 @@ from app.models import (
     IQProgram,
     IQProgramRD,
     Admin as AppAdmin,
+    Feedback,
 )
 from app.backend import get_eligible_iq_programs, get_iqprogram_requires_fields
 from app.backend.address import address_check
@@ -1288,6 +1289,22 @@ class IQProgramRDAdmin(admin.ModelAdmin):
     list_per_page = 100
 
 
+class FeedbackAdmin(admin.ModelAdmin):
+    search_fields = ('feedback_comments__contains', )
+    list_display = list_display_links = ('created', 'star_rating')
+    list_filter = ('star_rating', )
+    ordering = ('-created', )
+    date_hierarchy = 'created'
+
+    fields = readonly_fields = [
+        'created',
+        'star_rating',
+        'feedback_comments',
+    ]
+
+    list_per_page = 100
+
+
 # Register the models
 
 # # Create the proxy model and register it
@@ -1303,3 +1320,4 @@ admin.site.register(AddressRD, AddressAdmin)
 admin.site.register(EligibilityProgram, EligibilityProgramAdmin)
 admin.site.register(EligibilityProgramRD, EligibilityProgramRDAdmin)
 admin.site.register(IQProgramRD, IQProgramRDAdmin)
+admin.site.register(Feedback, FeedbackAdmin)
