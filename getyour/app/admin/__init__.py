@@ -686,10 +686,13 @@ class UserAdmin(admin.ModelAdmin):
         # (name, url). The 'url' portion must match the
         # "if 'url' in request.POST:" section of response_change()
 
-        # Programs can be added at any time
-        extra_context['custom_buttons'] = [
-            ('Add IQ Program', '_add_program'),
-        ]
+        # Programs can be added at any time after the user has completed the
+        # application
+        obj = User.objects.get(pk=object_id)
+        if obj.last_completed_at is not None:
+            extra_context['custom_buttons'] = [
+                ('Add IQ Program', '_add_program'),
+            ]
 
         opts = self.model._meta
         pk_value = object_id
