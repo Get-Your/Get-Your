@@ -802,6 +802,9 @@ class Feedback(TimeStampedModel):
         max_length=500
     )
 
+    class Meta:
+        verbose_name = verbose_name_plural = 'feedback'
+
 class Admin(models.Model):
     """ A model for admin-related user data. """
     user = models.OneToOneField(
@@ -820,4 +823,4 @@ class Admin(models.Model):
     )
 
     class Meta:
-        verbose_name = 'administration'
+        verbose_name = verbose_name_plural = 'administration'
