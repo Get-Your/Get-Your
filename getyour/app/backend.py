@@ -53,6 +53,7 @@ from logger.wrappers import LoggerWrapper
 
 from python_http_client.exceptions import HTTPError as SendGridHTTPError
 from twilio.base.exceptions import TwilioRestException
+from app.constants import enable_calendar_year_renewal
 
 
 # Initialize logger
@@ -678,9 +679,9 @@ def map_iq_enrollment_status(program, needs_renewal=False):
         if not program.is_enrolled:
             return "PENDING"
         # If the user is enrolled in a "lifetime" program (i.e. a program that 
-        # does not have a renewal_interval_month), don't set the status to
+        # does not have a renewal_interval_year), don't set the status to
         # renewal
-        elif program.is_enrolled and needs_renewal and program.renewal_interval_month is not None:
+        elif program.is_enrolled and needs_renewal and program.renewal_interval_year is not None:
             return "RENEWAL"
         elif program.is_enrolled:
             return "ACTIVE"
@@ -735,8 +736,8 @@ def get_users_iq_programs(
     needs_renewal = check_if_user_needs_to_renew(user_id)
 
     for program in programs:
-        program.renewal_interval_month = program.program.renewal_interval_month if hasattr(
-            program, 'program') else program.renewal_interval_month
+        program.renewal_interval_year = program.program.renewal_interval_year if hasattr(
+            program, 'program') else program.renewal_interval_year
         status_for_user = map_iq_enrollment_status(program, needs_renewal=needs_renewal)
         program.button = build_qualification_button(
             status_for_user)
@@ -830,25 +831,25 @@ def check_if_user_needs_to_renew(user_id):
     """
     user_profile = User.objects.get(id=user_id)
 
-    # Get the highest frequency renewal_interval_month from the IQProgramRD
-    #table and filter out any null renewal_interval_month
+    # Get the highest frequency renewal_interval_year from the IQProgramRD
+    # table and filter out any null renewal_interval_year
     highest_freq_program = IQProgramRD.objects.filter(
-        renewal_interval_month__isnull=False
-    ).order_by('renewal_interval_month').first()
+        renewal_interval_year__isnull=False
+    ).order_by('renewal_interval_year').first()
     
     # If there are no programs without lifetime enrollment (e.g. without
-    # non-null renewal_interval_month), always return False for needs_renewal
+    # non-null renewal_interval_year), always return False for needs_renewal
     if highest_freq_program is None:
         return False
     
-    highest_freq_renewal_interval = highest_freq_program.renewal_interval_month
+    highest_freq_renewal_interval = highest_freq_program.renewal_interval_year
 
-    # The highest_freq_renewal_interval is measured in months. We need to check
+    # The highest_freq_renewal_interval is measured in years. We need to check
     # if the user's next renewal date is greater than or equal to the current
     # date.
     needs_renewal = pendulum.parse(
         user_profile.last_completed_at.isoformat()).add(
-        months=highest_freq_renewal_interval) <= pendulum.now()
+        years=highest_freq_renewal_interval) <= pendulum.now()
 
     return needs_renewal
 
@@ -897,16 +898,16 @@ def finalize_application(request, renewal_mode=False):
         user.last_renewal_action = None
         user.save()
 
-        # Get every IQ program for the user that have a renewal_interval_month
+        # Get every IQ program for the user that have a renewal_interval_year
         # in the IQProgramRD table that is not null
         users_current_iq_programs = IQProgram.objects.filter(
             Q(user_id=request.user.id)
         ).select_related(
             'program'
         ).order_by(
-            'program__renewal_interval_month'
+            'program__renewal_interval_year'
         ).exclude(
-            program__renewal_interval_month__isnull=True
+            program__renewal_interval_year__isnull=True
         )
 
         # For each element in users_current_iq_programs, delete the program.
@@ -1002,3 +1003,28 @@ def finalize_application(request, renewal_mode=False):
                 )
 
         return 'app:broadcast'
+
+
+def enable_renew_now(user_id):
+    """
+    Enable the 'Renew Now' button on the dashboard pages
+    """
+    # Get the year from the last_completed_at of the user
+    user_profile = User.objects.get(id=user_id)
+    last_completed_at = user_profile.last_completed_at.year
+
+    # Get the highest frequency renewal_interval_year from the IQProgramRD
+    # table and filter out any null renewal_interval_year
+    highest_freq_program = IQProgramRD.objects.filter(
+        renewal_interval_year__isnull=False
+    ).order_by('renewal_interval_year').first()
+
+    # If there are no programs without lifetime enrollment (e.g. without
+    # non-null renewal_interval_year), always return False
+    if highest_freq_program is None:
+        return False
+
+    if enable_calendar_year_renewal and pendulum.now().year == last_completed_at + highest_freq_program.renewal_interval_year:
+        return True
+    else:
+        return False

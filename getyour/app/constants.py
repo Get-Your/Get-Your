@@ -23,6 +23,9 @@ from django.conf import settings
 # Set the notification buffer to be used for reminders
 notification_buffer_month = 1
 
+# Enable Calendar Year Renewals
+enable_calendar_year_renewal = True
+
 # Set the specified app label(s) for use in the logging db router
 logger_app_labels = {'logger'}
 

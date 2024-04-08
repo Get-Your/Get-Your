@@ -24,7 +24,7 @@ from django.shortcuts import render, redirect, reverse
 from django.contrib.auth.decorators import login_required
 
 from app.forms import FeedbackForm
-from app.backend import address_check, get_users_iq_programs
+from app.backend import address_check, enable_renew_now, get_users_iq_programs
 from app.models import AddressRD, IQProgram, IQProgramRD
 from app.constants import CONTACT_NUMBER, CONTACT_EMAIL
 from logger.wrappers import LoggerWrapper
@@ -161,6 +161,7 @@ def dashboard(request, **kwargs):
                 'app_renewed': app_renewed,
                 'renewal_eligible': renewal_eligible_str,
                 'renewal_ineligible': renewal_ineligible_str,
+                'enable_renew_now': enable_renew_now(request.user.id),
             },
         )
     
@@ -392,6 +393,7 @@ def qualified_programs(request, **kwargs):
                 "Privacy_Policy_color": "white",
                 "contact_email": CONTACT_EMAIL,
                 "iq_programs": users_iq_programs,
+                "enable_renew_now": enable_renew_now(request.user.id),
             },
         )
     
