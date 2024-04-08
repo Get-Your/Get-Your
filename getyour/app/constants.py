@@ -35,8 +35,8 @@ parsed_number = re.match(
     r'\+?\d?(\d{3})(\d{3})(\d{4})$',
     settings.TWILIO_NUMBER,
 )
-CONTACT_NUMBER = "({prs[0]}) {prs[1]}-{prs[2]}".format(
+contact_number = "({prs[0]}) {prs[1]}-{prs[2]}".format(
     prs=parsed_number.groups()
 )
 
-CONTACT_EMAIL = 'getfoco@fcgov.com'
+contact_email = 'getfoco@fcgov.com'

@@ -25,7 +25,7 @@ from django.contrib.auth import logout
 from app.forms import AddressLookupForm
 from app.backend import tag_mapping, address_check, validate_usps
 from app.models import IQProgramRD
-from app.constants import CONTACT_NUMBER
+from app.constants import contact_number
 from logger.wrappers import LoggerWrapper
 
 
@@ -295,7 +295,7 @@ def quick_not_available(request, **kwargs):
             'landing/quick_not_available.html',
             {
                 'title': "Quick Connexion Not Available",
-                'contact_number': CONTACT_NUMBER,
+                'contact_number': contact_number,
             },
         )
     
