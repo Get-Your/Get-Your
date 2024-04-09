@@ -822,5 +822,13 @@ class Admin(models.Model):
         ),
     )
 
+    internal_notes = models.TextField(
+        blank=True,
+        help_text=_(
+            "Notes pertaining to this user, for internal use. "
+            "This field is not visible to applicants."
+        ),
+    )
+
     class Meta:
         verbose_name = verbose_name_plural = 'administration'

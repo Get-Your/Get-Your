@@ -399,7 +399,10 @@ class AdminInline(admin.StackedInline):
     
     fk_name = "user"
 
-    fields = ['awaiting_user_response']
+    fields = [
+        'awaiting_user_response',
+        'internal_notes',
+    ]
 
     # Show zero extra (unfilled) options
     extra = 0
