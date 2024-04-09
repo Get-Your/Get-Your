@@ -28,6 +28,7 @@ from django.db.models.functions import Lower
 from django.db.models.query import QuerySet
 from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
+from django.contrib.contenttypes.models import ContentType
 
 from app.models import (
     User,
@@ -1067,6 +1068,10 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             user_id=request.user.id,
         )
 
+        # Store is_income_verified in session var, for use with
+        # has_delete_permissions
+        request.session['is_income_verified'] = obj.user.household.is_income_verified
+
         fieldsets = [
             (
                 'USER',
@@ -1114,6 +1119,22 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         return document_path_parsed(obj)
 
     list_per_page = 100
+
+    def has_delete_permission(self, request, obj=None):
+        if request.session.get('is_income_verified', True):
+            # If the user's income has been verified (or the session var DNE),
+            # nobody has delete permissions
+            return False
+        else:
+            # Otherwise, use the django.auth permissions for this admin user
+            return request.user.has_perm(
+                "{}.{}".format(
+                    ContentType.objects.get_for_model(
+                        EligibilityProgram
+                    ).app_label,
+                    'delete_eligibilityprogram',
+                )
+            )
 
     # Add custom buttons to the save list in the admin template (from
     # https://stackoverflow.com/a/34899874/5438550 and
@@ -1224,7 +1245,10 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             return HttpResponseRedirect(redirect_url)
 
         return super().change_view(
-            request, object_id, form_url, extra_context=extra_context,
+            request,
+            object_id,
+            form_url,
+            extra_context=extra_context,
         )
     
     def response_change(self, request, obj):
@@ -1255,6 +1279,57 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
 
         else:
             return super().response_change(request, obj)
+
+    # Add logic before an object is deleted, before returning the confirmation
+    def delete_view(self, request, object_id, extra_context=None):
+        # Get the target object
+        obj = EligibilityProgram.objects.get(id=int(object_id))
+
+        # If this is the user's only eligibility program, can't delete. Return
+        # to the object change page with an error message
+
+        # Ensure this isn't the only file
+        if obj.user.eligibility_files.count() == 1:
+            # Define the params for the current page
+            opts = self.model._meta
+            preserved_filters = self.get_preserved_filters(request)
+
+            self.message_user(
+                    request,
+                    "Cancelled: can't delete this user's only program.",
+                    messages.ERROR,
+                )
+
+            redirect_url = reverse(
+                f"admin:{opts.app_label}_{opts.model_name}_change",
+                args=(object_id,),
+                current_app=self.admin_site.name,
+            )
+            redirect_url = add_preserved_filters(
+                {
+                    'preserved_filters': preserved_filters,
+                    'opts': opts,
+                },
+                redirect_url,
+            )
+            return HttpResponseRedirect(redirect_url)
+
+        return super().delete_view(
+            request,
+            object_id,
+            extra_context=extra_context,
+        )
+
+    # Add logic to update the user's info after the object is deleted. Note that
+    # the is only database deletion; blobs are retained for posterity
+    def delete_model(self, request, obj):
+        # If there is an exception with finalize_application, the deletion will
+        # automatically be rolled back due to this transaction.atomic() block
+        with transaction.atomic():
+            super().delete_model(request, obj)
+
+            # Although the object itself is deleted, the relations still exist
+            _ = finalize_application(obj.user, update_user=False)
 
 
 class EligibilityProgramRDAdmin(admin.ModelAdmin):
