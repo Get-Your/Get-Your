@@ -321,6 +321,11 @@ class EligibilityProgramInline(admin.TabularInline):
         qs = super().get_queryset(request)
         qs = qs.order_by('program__friendly_name')
         return qs
+    
+    def has_delete_permission(self, request, obj=None):
+        # Deleting from this inline doesn't hit the same logic as via the
+        # EligibilityProgramAdmin pages; therefore, nobody has delete permissions
+        return False
 
     model = EligibilityProgram
 
@@ -1069,7 +1074,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         )
 
         # Store is_income_verified in session var, for use with
-        # has_delete_permissions
+        # has_delete_permission
         request.session['is_income_verified'] = obj.user.household.is_income_verified
 
         fieldsets = [
