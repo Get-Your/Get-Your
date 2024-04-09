@@ -1130,14 +1130,14 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         obj = EligibilityProgram.objects.get(pk=object_id)
         if obj.user.household.is_income_verified is False:
             extra_context['custom_buttons'] = [
-                ('Update Program', '_update_program'),
+                ('Change Program', '_change_program'),
             ]
 
         # Intercept any POSTs from the custom button intermediate pages before
         # calling super() (so that super() only handles the following GET)
         opts = self.model._meta
         preserved_filters = self.get_preserved_filters(request)
-        if '_update_program_submit' in request.POST:
+        if '_change_program_submit' in request.POST:
             # Handle 'Update Program' after 'submit' has been selected
             form = ProgramChangeForm(request.POST)
             if form.is_valid():
@@ -1201,7 +1201,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             )
             return HttpResponseRedirect(redirect_url)
         
-        elif '_update_program_cancel' in request.POST:
+        elif '_change_program_cancel' in request.POST:
             # User selected 'cancel'
             self.message_user(
                 request,
@@ -1228,7 +1228,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         )
     
     def response_change(self, request, obj):
-        if "_update_program" in request.POST:
+        if "_change_program" in request.POST:
             # Handle 'Update Program': load the page to select the program name
             form = ProgramChangeForm(
                     initial={
