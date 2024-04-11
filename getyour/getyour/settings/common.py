@@ -1,7 +1,7 @@
 """
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
-Copyright (C) 2023
+Copyright (C) 2022-2024
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,12 +16,59 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import environ
 import os
 from pathlib import Path
 import subprocess
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+env = environ.Env()
+
+# Build paths inside the project like this: BASE_DIR.joinpath('subdir')
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Read and apply the environment-agnostic secrets
+env.read_env(BASE_DIR.joinpath('.env'))
+
+TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN")
+TWILIO_NUMBER = env("TWILIO_NUMBER")
+USPS_SID = env("USPS_SID")
+SENDGRID_API_KEY = env("SENDGRID_API_KEY")
+WELCOME_EMAIL_TEMPLATE = env("WELCOME_EMAIL_TEMPLATE")
+PW_RESET_EMAIL_TEMPLATE = env("PW_RESET_EMAIL_TEMPLATE")
+RENEWAL_EMAIL_TEMPLATE = env("RENEWAL_EMAIL_TEMPLATE")
+
+# Add environment variables optionally set by Azure or in the Docker build.
+# These will use the environment var if exists, else the .env file or fallback
+# to the defined default
+if os.environ.get("DEBUG") is None:
+    DEBUG = env.bool("DEBUG", False)
+else:
+    DEBUG = str(os.environ.get("DEBUG")).lower() == 'true'
+
+if os.environ.get("DEBUG_LOGGING") is None:
+    DEBUG_LOGGING = env.bool("DEBUG_LOGGING", False)
+else:
+    DEBUG_LOGGING = str(os.environ.get("DEBUG_LOGGING")).lower() == 'true'
+
+try:
+    # Try to load the code version from environment vars. Note that the
+    # Dockerfile defaults to '', so False is only returned if CODE_VERSION env
+    # var DNE
+    CODE_VERSION = os.environ.get("CODE_VERSION", False)
+    if CODE_VERSION is False:
+        # Otherwise, try to find the current Git version directly from the repo.
+        # The assumption is that this is part of a Git repo if not built by
+        # Docker
+
+        # Run `git describe --tags`
+        CODE_VERSION = subprocess.check_output(
+            ['git', 'describe', '--tags']
+        ).decode('ascii').strip()
+        
+except Exception:
+    # Cannot be found; use blank
+    CODE_VERSION = ''
 
 # Application definition
 
@@ -47,7 +94,6 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'app',
     'phonenumber_field',
-    'log',
     'logger',
     'django_q',
 ]
@@ -81,7 +127,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, '..', 'templates')
+            BASE_DIR.joinpath('templates')
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -136,7 +182,7 @@ PHONENUMBER_DEFAULT_REGION = 'US'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
+STATIC_ROOT = BASE_DIR.joinpath('static')
 
 # Media storage and common Azure setting
 # Ref https://stackoverflow.com/a/54767932/5438550 for details
@@ -181,26 +227,3 @@ LOGGING = {
         },
     },
 }
-
-# Import environment vars (via Azure or injected into `docker run`). Note that
-# the env vars are brought in as strings and must be converted (safely) to bool.
-DEBUG = str(os.environ.get('DEBUG', 'false')).lower() == 'true'
-DEBUG_LOGGING = str(os.environ.get('DEBUG_LOGGING', 'false')).lower() == 'true'
-# Add code version to the Django settings vars
-try:
-    # Try to load from environment vars. Note that the Dockerfile defaults to
-    # '', so False is only returned if CODE_VERSION env var DNE.
-    CODE_VERSION = os.environ.get('CODE_VERSION', False)
-    if CODE_VERSION is False:
-        # Otherwise, try to find the current Git version directly from the repo.
-        # The assumption is that this is part of a Git repo if not built by
-        # Docker
-
-        # Run `git describe --tags`
-        CODE_VERSION = subprocess.check_output(
-            ['git', 'describe', '--tags']
-        ).decode('ascii').strip()
-
-except:
-    # Cannot be found; use blank
-    CODE_VERSION = ''

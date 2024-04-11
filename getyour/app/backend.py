@@ -1,7 +1,7 @@
 """
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
-Copyright (C) 2023
+Copyright (C) 2022-2024
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import pendulum
 from enum import Enum
 from itertools import chain
 import logging
+import httpagentparser
 
 from twilio.rest import Client
 from sendgrid.helpers.mail import Mail
@@ -32,7 +33,7 @@ from usps import USPSApi, Address
 from django import http
 from django.shortcuts import reverse
 from django.contrib.auth.backends import UserModel
-from django.contrib.auth import get_user_model
+from django.contrib.auth import login as django_auth_login
 from django.conf import settings
 from django.db.models import Q
 from django.db.models.fields.files import FieldFile
@@ -51,6 +52,7 @@ from logger.wrappers import LoggerWrapper
 
 from python_http_client.exceptions import HTTPError as SendGridHTTPError
 from twilio.base.exceptions import TwilioRestException
+from app.constants import enable_calendar_year_renewal
 
 
 # Initialize logger
@@ -428,12 +430,11 @@ def validate_usps(inobj):
 
 
 def broadcast_email(email):
-    TEMPLATE_ID = settings.TEMPLATE_ID
     message = Mail(
         from_email='getfoco@fcgov.com',
         to_emails=email)
 
-    message.template_id = TEMPLATE_ID
+    message.template_id = settings.WELCOME_EMAIL_TEMPLATE
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
@@ -446,7 +447,6 @@ def broadcast_email(email):
 
 
 def broadcast_email_pw_reset(email, content):
-    TEMPLATE_ID_PW_RESET = settings.TEMPLATE_ID_PW_RESET
     message = Mail(
         subject='Password Reset Requested',
         from_email='getfoco@fcgov.com',
@@ -456,7 +456,7 @@ def broadcast_email_pw_reset(email, content):
         'subject': 'Password Reset Requested',
         'html_content': content,
     }
-    message.template_id = TEMPLATE_ID_PW_RESET
+    message.template_id = settings.PW_RESET_EMAIL_TEMPLATE
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
@@ -472,12 +472,11 @@ def broadcast_email_pw_reset(email, content):
 
 
 def broadcast_renewal_email(email):
-    TEMPLATE_ID = settings.TEMPLATE_ID_RENEWAL
     message = Mail(
         from_email='getfoco@fcgov.com',
         to_emails=email)
 
-    message.template_id = TEMPLATE_ID
+    message.template_id = settings.RENEWAL_EMAIL_TEMPLATE
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
@@ -585,24 +584,27 @@ def serialize_household_members(request, file_paths):
     household_info = json.loads(json.dumps(
         {'persons_in_household': household_members}, cls=DjangoJSONEncoder))
     return household_info
+    
 
+def login(request, user):
 
-def authenticate(username=None, password=None):
-    User = get_user_model()
-    try:  # to allow authentication through phone number or any other field, modify the below statement
-        user = User.objects.get(email=username)
-        if user.check_password(password):
-            return user
-        return None
-    except User.DoesNotExist:
-        return None
+    django_auth_login(request, user)
 
-
-def get_user(user_id):
+    # Try to log user agent data
     try:
-        return UserModel.objects.get(id=user_id)
-    except UserModel.DoesNotExist:
-        return None
+        log.info(
+            "User logged in; agent is {}".format(
+                httpagentparser.simple_detect(request.META['HTTP_USER_AGENT'])
+            ),
+            function='login',
+            user_id=request.user.id,
+        )
+    except Exception:
+        log.exception(
+            "HTTP agent parsing failed!",
+            function='login',
+            user_id=request.user.id,
+        )
 
 
 def what_page(user, request):
@@ -676,9 +678,9 @@ def map_iq_enrollment_status(program, needs_renewal=False):
         if not program.is_enrolled:
             return "PENDING"
         # If the user is enrolled in a "lifetime" program (i.e. a program that 
-        # does not have a renewal_interval_month), don't set the status to
+        # does not have a renewal_interval_year), don't set the status to
         # renewal
-        elif program.is_enrolled and needs_renewal and program.renewal_interval_month is not None:
+        elif program.is_enrolled and needs_renewal and program.renewal_interval_year is not None:
             return "RENEWAL"
         elif program.is_enrolled:
             return "ACTIVE"
@@ -733,8 +735,8 @@ def get_users_iq_programs(
     needs_renewal = check_if_user_needs_to_renew(user_id)
 
     for program in programs:
-        program.renewal_interval_month = program.program.renewal_interval_month if hasattr(
-            program, 'program') else program.renewal_interval_month
+        program.renewal_interval_year = program.program.renewal_interval_year if hasattr(
+            program, 'program') else program.renewal_interval_year
         status_for_user = map_iq_enrollment_status(program, needs_renewal=needs_renewal)
         program.button = build_qualification_button(
             status_for_user)
@@ -828,25 +830,25 @@ def check_if_user_needs_to_renew(user_id):
     """
     user_profile = User.objects.get(id=user_id)
 
-    # Get the highest frequency renewal_interval_month from the IQProgramRD
-    #table and filter out any null renewal_interval_month
+    # Get the highest frequency renewal_interval_year from the IQProgramRD
+    # table and filter out any null renewal_interval_year
     highest_freq_program = IQProgramRD.objects.filter(
-        renewal_interval_month__isnull=False
-    ).order_by('renewal_interval_month').first()
+        renewal_interval_year__isnull=False
+    ).order_by('renewal_interval_year').first()
     
     # If there are no programs without lifetime enrollment (e.g. without
-    # non-null renewal_interval_month), always return False for needs_renewal
+    # non-null renewal_interval_year), always return False for needs_renewal
     if highest_freq_program is None:
         return False
     
-    highest_freq_renewal_interval = highest_freq_program.renewal_interval_month
+    highest_freq_renewal_interval = highest_freq_program.renewal_interval_year
 
-    # The highest_freq_renewal_interval is measured in months. We need to check
+    # The highest_freq_renewal_interval is measured in years. We need to check
     # if the user's next renewal date is greater than or equal to the current
     # date.
     needs_renewal = pendulum.parse(
         user_profile.last_completed_at.isoformat()).add(
-        months=highest_freq_renewal_interval) <= pendulum.now()
+        years=highest_freq_renewal_interval) <= pendulum.now()
 
     return needs_renewal
 
@@ -857,6 +859,12 @@ def finalize_application(request, renewal_mode=False):
     files are uploaded.
     
     """
+
+    log.debug(
+        f"Entering function with renewal_mode=={renewal_mode}",
+        function='finalize_application',
+        user_id=request.user.id,
+    )
 
     # Get all of the user's eligiblity programs and find the one with the lowest
     # 'ami_threshold' value which can be found in the related
@@ -889,16 +897,16 @@ def finalize_application(request, renewal_mode=False):
         user.last_renewal_action = None
         user.save()
 
-        # Get every IQ program for the user that have a renewal_interval_month
+        # Get every IQ program for the user that have a renewal_interval_year
         # in the IQProgramRD table that is not null
         users_current_iq_programs = IQProgram.objects.filter(
             Q(user_id=request.user.id)
         ).select_related(
             'program'
         ).order_by(
-            'program__renewal_interval_month'
+            'program__renewal_interval_year'
         ).exclude(
-            program__renewal_interval_month__isnull=True
+            program__renewal_interval_year__isnull=True
         )
 
         # For each element in users_current_iq_programs, delete the program.
@@ -987,5 +995,35 @@ def finalize_application(request, renewal_mode=False):
                     user_id=request.user.id,
                     program_id=program.id,
                 )
+                log.debug(
+                    f"User auto-applied for '{program.program_name}' IQ program",
+                    function='finalize_application',
+                    user_id=request.user.id,
+                )
 
         return 'app:broadcast'
+
+
+def enable_renew_now(user_id):
+    """
+    Enable the 'Renew Now' button on the dashboard pages
+    """
+    # Get the year from the last_completed_at of the user
+    user_profile = User.objects.get(id=user_id)
+    last_completed_at = user_profile.last_completed_at.year
+
+    # Get the highest frequency renewal_interval_year from the IQProgramRD
+    # table and filter out any null renewal_interval_year
+    highest_freq_program = IQProgramRD.objects.filter(
+        renewal_interval_year__isnull=False
+    ).order_by('renewal_interval_year').first()
+
+    # If there are no programs without lifetime enrollment (e.g. without
+    # non-null renewal_interval_year), always return False
+    if highest_freq_program is None:
+        return False
+
+    if enable_calendar_year_renewal and pendulum.now().year == last_completed_at + highest_freq_program.renewal_interval_year:
+        return True
+    else:
+        return False

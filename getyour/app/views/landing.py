@@ -1,7 +1,7 @@
 """
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
-Copyright (C) 2023
+Copyright (C) 2022-2024
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import usaddress
-import logging 
+import logging
 
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import logout
@@ -119,7 +119,7 @@ def index(request, **kwargs):
                     else:
                         return redirect(reverse("app:quick_available"))
 
-                except:
+                except Exception:
                     return redirect(reverse("app:quick_not_found"))
 
         else:
@@ -171,7 +171,7 @@ def index(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -207,7 +207,7 @@ def privacy_policy(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -239,7 +239,7 @@ def programs_info(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -270,7 +270,7 @@ def quick_available(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -301,7 +301,7 @@ def quick_not_available(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -332,7 +332,7 @@ def quick_not_found(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -363,7 +363,7 @@ def quick_coming_soon(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',

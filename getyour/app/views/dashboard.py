@@ -1,7 +1,7 @@
 """
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
-Copyright (C) 2023
+Copyright (C) 2022-2024
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ from django.shortcuts import render, redirect, reverse
 from django.contrib.auth.decorators import login_required
 
 from app.forms import FeedbackForm
-from app.backend import address_check, get_users_iq_programs
+from app.backend import address_check, enable_renew_now, get_users_iq_programs
 from app.models import AddressRD, IQProgram, IQProgramRD
 from logger.wrappers import LoggerWrapper
 
@@ -158,6 +158,7 @@ def dashboard(request, **kwargs):
                 'app_renewed': app_renewed,
                 'renewal_eligible': renewal_eligible_str,
                 'renewal_ineligible': renewal_ineligible_str,
+                'enable_renew_now': enable_renew_now(request.user.id),
             },
         )
     
@@ -165,7 +166,7 @@ def dashboard(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -249,7 +250,7 @@ def quick_apply(request, iq_program, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -306,7 +307,7 @@ def user_settings(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -344,7 +345,7 @@ def privacy(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -388,6 +389,7 @@ def qualified_programs(request, **kwargs):
                 "Settings_color": "white",
                 "Privacy_Policy_color": "white",
                 "iq_programs": users_iq_programs,
+                "enable_renew_now": enable_renew_now(request.user.id),
             },
         )
     
@@ -395,7 +397,7 @@ def qualified_programs(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -424,7 +426,7 @@ def feedback(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -455,7 +457,7 @@ def feedback_received(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',
@@ -498,7 +500,7 @@ def programs_list(request, **kwargs):
     except:
         try:
             user_id = request.user.id
-        except:
+        except Exception:
             user_id = None
         log.exception(
             'Uncaught view-level exception',

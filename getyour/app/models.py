@@ -1,7 +1,7 @@
 """
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
-Copyright (C) 2023
+Copyright (C) 2022-2024
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -437,8 +437,8 @@ class IQProgramRD(GenericTimeStampedModel):
     req_is_in_gma = models.BooleanField(default=False)
     req_is_city_covered = models.BooleanField(default=False)
     # The frequency at which an IQ program needs to be renewed. If null, the
-    # IQ program is considered to be a lifetime enrollment. Measured in months
-    renewal_interval_month = models.IntegerField(null=True)
+    # IQ program is considered to be a lifetime enrollment. Measured in years
+    renewal_interval_year = models.IntegerField(null=True)
 
     def __str__(self):
         return str(self.ami_threshold)

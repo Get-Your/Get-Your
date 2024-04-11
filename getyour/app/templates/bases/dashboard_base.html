@@ -1,7 +1,7 @@
 <!--
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
-Copyright (C) 2023
+Copyright (C) 2022-2024
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -48,6 +48,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                         <a style="color:{{ Settings_color }};" href="{% url 'app:user_settings' %}">
                             <li>Settings</li>
                         </a>
+                        {% if enable_renew_now %}
+                        <a class="renew_now" style="color:white; " href="javascript:void(0)">
+                            <li>Renew Now</li>
+                        </a>
+                        {% endif %}
                         {% if badge_visible %}
                         <a class="badge" style="color:{{ Settings_color }}; " href="#">
                             <li>Badge</li>
@@ -80,6 +85,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                         <p> <img src="{% static 'img/Settings.svg' %}"> <a
                                 style="color:{{ Settings_color }};text-decoration:none; "
                                 href="{% url 'app:user_settings' %}">Settings</a></p>
+                        {% if enable_renew_now %}
+                        <p><i class="fa-solid fa-rotate-right"></i>
+                            <a class="renew_now" style="color:white;text-decoration:none; " href="javascript:void(0)">Renew Now</a></p>
+                        {% endif %}
                         {% if badge_visible %}
                         <p class="badge"> <i class="fa-solid fa-certificate"></i><a
                                 style="color:white;text-decoration:none;padding-left:10px;" href="#">Badge</a></p>
@@ -103,7 +112,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </div>
         </nav>
         <p style="font-weight: 400; color:var(--darkblue);">{{ page_title }}</p>
-        <img src="{% static 'img/AlertBell.svg' %}" alt="back" style="width:min(4.5vw,30px)">
+        {% if enable_renew_now %}
+        <button type="button" class="renew_now">Renew Now</button>
+        {% endif %}
     </div>
     
     <div class="extraspace">
@@ -124,6 +135,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 text: formattedDateTime,
                 confirmButtonColor: "#13467D",
                 confirmButtonText: "Close"
+            });
+        });
+
+        $('.renew_now').click(function () {
+            Swal.fire({
+                title: "Renew Now",
+                text: "Renewing now may impact your benefits. Are you sure you want to renew now?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#13467D",
+                confirmButtonText: "Yes, Renew Now",
+                cancelButtonText: "Cancel",
+                cancelButtonColor: "#d33",
+                preConfirm: () => {
+                    window.location.href = "{% url 'app:get_ready' %}?renewal_mode=1";
+                },
             });
         });
     </script>

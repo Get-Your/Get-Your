@@ -1,7 +1,7 @@
 """
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
-Copyright (C) 2023
+Copyright (C) 2022-2024
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,6 +19,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # Set the notification buffer to be used for reminders
 notification_buffer_month = 1
+
+# Enable Calendar Year Renewals
+enable_calendar_year_renewal = True
 
 # Set the specified app label(s) for use in the logging db router
 logger_app_labels = {'logger'}
