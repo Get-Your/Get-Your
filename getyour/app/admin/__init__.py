@@ -959,6 +959,9 @@ class AddressAdmin(admin.ModelAdmin):
                     if addr.user.last_completed_at is not None:
                         _ = finalize_application(addr.user, update_user=False)
 
+                        # Remove any no-longer-eligible programs
+                        remove_ineligible_programs(addr.user.id)
+
         log.info(
             f"{len(queryset)} addresses checked; updates applied to {updated_addr_count}.",
             function='update_gma',
@@ -1182,7 +1185,8 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                         )
 
                         # Finalize the user's application to update their income
-                        _ = finalize_application(obj.user, update_user=False)
+                        if obj.user.last_completed_at is not None:
+                            _ = finalize_application(obj.user, update_user=False)
 
                         # Remove any no-longer-eligible programs
                         msg = remove_ineligible_programs(obj.user.id)
@@ -1333,7 +1337,24 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             super().delete_model(request, obj)
 
             # Although the object itself is deleted, the relations still exist
-            _ = finalize_application(obj.user, update_user=False)
+            if obj.user.last_completed_at is not None:
+                _ = finalize_application(obj.user, update_user=False)
+
+                # Remove any no-longer-eligible programs
+                request.session['remove_ineligible_message'] = remove_ineligible_programs(
+                    obj.user.id,
+                )
+                
+    def response_delete(self, request, obj_display, obj_id):
+        msg = request.session.pop('remove_ineligible_message', '')
+
+        # Add a message to the user when complete
+        self.message_user(
+            request,
+            f"Successfully deleted the program. {msg}",
+            messages.SUCCESS,
+        )
+        return super().response_delete(request, obj_display, obj_id)
 
 
 class EligibilityProgramRDAdmin(admin.ModelAdmin):
