@@ -796,7 +796,7 @@ class UserAdmin(admin.ModelAdmin):
             )
             return HttpResponseRedirect(redirect_url)
 
-        elif '_add_program_cancel' in request.POST:
+        elif '_add_iq_program_cancel' in request.POST:
             # User selected 'cancel'
             self.message_user(
                 request,
