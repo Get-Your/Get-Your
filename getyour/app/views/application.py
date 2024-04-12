@@ -18,7 +18,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import json
 import usaddress
-import magic
 import pendulum
 import logging
 import base64
@@ -63,6 +62,7 @@ from app.backend import (
     broadcast_email,
     broadcast_sms,
     save_renewal_action,
+    file_validation,
 )
 from app.backend.address import (
     tag_mapping,
@@ -1061,17 +1061,8 @@ def household_members(request, **kwargs):
             if form.is_valid():
                 instance = form.save(commit=False)
 
-                # fileAmount = 0
-                # process is as follows:
-                # 1) file is physically saved from the buffer
-                # 2) file is then SCANNED using magic
-                # 3) file is then deleted or nothing happens if magic sees it's ok
-
-                # update, magic no longer needs to scan from saved file, can now scan from buffer! so with this in mind
-                '''
-                1) For loop #1 file(s) scanned first
-                2) For Loop #2 file saved if file(s) are valid
-                '''
+                # Loop 1: scans files
+                # Loop 2: saves file(s) if valid
                 identification_paths = request.POST.getlist('identification_path')
                 updated_identification_paths = []
 
@@ -1080,19 +1071,13 @@ def household_members(request, **kwargs):
                     decoded_bytes = base64.b64decode(base64_content)
                     # Create a buffer from the decoded bytes
                     buffer = io.BytesIO(decoded_bytes).getvalue()
-                    # fileValidation found below
-                    filetype = magic.from_buffer(buffer)
 
-                    # Check if any of the following strings ("PNG", "JPEG", "JPG", "PDF") are in the filetype
-                    if any(x in filetype for x in [x.upper() for x in supported_content_types.keys()]):
-                        pass
-                    else:
-                        log.error(
-                            f"File is not a valid file type ({filetype})",
-                            function='household_members',
-                            user_id=request.user.id,
-                        )
-
+                    file_validated, validation_message = file_validation(
+                        buffer,
+                        request.user.id,
+                        calling_function='household_members',
+                    )
+                    if not file_validated:
                         # Attempt to define household_info to load
                         try:
                             household_info = request.user.householdmembers.household_info
@@ -1104,7 +1089,7 @@ def household_members(request, **kwargs):
                             "application/household_members.html",
                             {
                                 'step': 3,
-                                "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
+                                "message": validation_message,
                                 'dependent': str(request.user.household.number_persons_in_household),
                                 'list': list(range(request.user.household.number_persons_in_household)),
                                 'form': form,
@@ -1385,36 +1370,23 @@ def files(request, **kwargs):
                 instance = form.save(commit=False)
                 fileNames = []
                 fileAmount = 0
-                # process is as follows:
-                # 1) file is physically saved from the buffer
-                # 2) file is then SCANNED using magic
-                # 3) file is then deleted or nothing happens if magic sees it's ok
-
-                # update, magic no longer needs to scan from saved file, can now scan from buffer! so with this in mind
-                '''
-                1) For loop #1 file(s) scanned first
-                2) For Loop #2 file saved if file(s) are valid
-                '''
+                
+                # Loop 1: scans files
+                # Loop 2: saves file(s) if valid
                 for f in request.FILES.getlist('document_path'):
-                    # fileValidation found below
-                    filetype = magic.from_buffer(f.read())
-
-                    # Check if any of the following strings ("PNG", "JPEG", "JPG", "PDF") are in the filetype
-                    if any(x in filetype for x in ["PNG", "JPEG", "JPG", "PDF"]):
-                        pass
-                    else:
-                        log.error(
-                            f"File is not a valid file type ({filetype})",
-                            function='files',
-                            user_id=request.user.id,
-                        )
+                    file_validated, validation_message = file_validation(
+                        f,
+                        request.user.id,
+                        calling_function='files',
+                    )
+                    if not file_validated:
                         users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
                             request)
                         return render(
                             request,
                             'application/files.html',
                             {
-                                "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
+                                "message": validation_message,
                                 'form': form,
                                 'eligiblity_programs': users_programs_without_uploads,
                                 'step': 5,

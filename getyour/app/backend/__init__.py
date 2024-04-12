@@ -24,6 +24,7 @@ from decimal import Decimal
 import logging
 import pendulum
 import httpagentparser
+import magic
 
 from twilio.rest import Client
 from sendgrid.helpers.mail import Mail
@@ -44,6 +45,7 @@ from app.models import (
     IQProgram,
     User,
 )
+from app.constants import supported_content_types
 from logger.wrappers import LoggerWrapper
 
 from python_http_client.exceptions import HTTPError as SendGridHTTPError
@@ -593,3 +595,37 @@ def get_iqprogram_requires_fields():
     ]
 
     return req_fields
+
+
+def file_validation(
+        file,
+        user_id,
+        calling_function=None,
+    ):
+    """
+    Validate the uploaded file with ``magic``.
+    
+    Returns a tuple of whether validation was successful and any error messages.
+    
+    """
+
+    filetype = magic.from_buffer(file.read())
+
+    # Check if the filetype is in the supported_content_types
+    if any(x in filetype for x in [x.upper() for x in supported_content_types.keys()]):
+        return (True, '')
+    
+    log.error(
+        "File{} is not a valid file type ({})".format(
+            f" from {calling_function}" if calling_function else "",
+            filetype,
+        ),
+        function='file_validation',
+        user_id=user_id,
+    )
+    return (
+        False,
+        "File is not a valid type. Only these file types are supported: {}".format(
+            ', '.join([x.upper() for x in supported_content_types.keys()])
+        ),
+    )
