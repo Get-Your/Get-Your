@@ -27,9 +27,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% endif %}
 <form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    {{ form }}
+    <table>
+    {{ form.as_table }}
+    </table>
     <input type="submit" name="_add_elig_program_submit" value="Submit">
-    <!-- <input type="submit" name="_add_program_cancel" value="Cancel"> -->
+    <input type="submit" onclick="javascript:window.close()" value="Cancel">
 </form>
 {% endif %}
 {% endblock %}
