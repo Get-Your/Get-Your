@@ -25,6 +25,7 @@ from app.models import (
     User,
     Household,
     AddressRD,
+    EligibilityProgram,
     EligibilityProgramRD,
     IQProgramRD,
 )
@@ -39,7 +40,7 @@ class ProgramChangeForm(forms.Form):
     )
 
 
-class ProgramAddForm(forms.Form):
+class IQProgramAddForm(forms.Form):
     def __init__(self, user_id, *args, **kwargs):
         # Initialize the form
         super().__init__(*args, **kwargs)
@@ -70,6 +71,16 @@ class ProgramAddForm(forms.Form):
         label='Select the program to add',
         widget=forms.Select(),
     )
+
+
+class EligProgramAddForm(forms.Form):
+
+    program_name = forms.ChoiceField(
+        label='Select the program to add',
+        choices=[('', '')]+[(str(x.id), x.friendly_name) for x in EligibilityProgramRD.objects.filter(is_active=True).order_by('friendly_name')],
+    )
+
+    document_path = forms.FileField(label='Select a file')
 
 
 class EligibilityProgramRDForm(forms.ModelForm):

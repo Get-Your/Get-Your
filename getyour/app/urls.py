@@ -215,4 +215,10 @@ urlpatterns = [
         name='admin_view_file',
         kwargs={'allow_direct_user': True},
     ),
+    path(
+        'app_admin/add_elig_program/<int:user_id>',
+        admin_views.add_elig_program,
+        name='admin_add_elig_program',
+        kwargs={'allow_direct_user': False},
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -59,10 +59,12 @@ from app.admin.filters import (
 )
 from app.admin.forms import (
     ProgramChangeForm,
-    ProgramAddForm,
+    IQProgramAddForm,
+    EligProgramAddForm,
     EligibilityProgramRDForm,
     IQProgramRDForm,
 )
+from app.admin.views import add_elig_program
 
 from logger.wrappers import LoggerWrapper
 
@@ -695,23 +697,38 @@ class UserAdmin(admin.ModelAdmin):
         # (name, url). The 'url' portion must match the
         # "if 'url' in request.POST:" section of response_change()
 
-        # Programs can be added at any time after the user has completed the
-        # application
         obj = User.objects.get(pk=object_id)
+        extra_context['custom_buttons'] = []
+        # IQ Programs can be added at any time after the user has completed the
+        # application
         if obj.last_completed_at is not None:
-            extra_context['custom_buttons'] = [
+            # ...but Eligibility Program addition is disallowed once income has
+            # been verified
+            if obj.household.is_income_verified is False:
+                extra_context['custom_buttons'].extend([
+                    {
+                        'title': 'Add Eligibility Program',
+                        'link': reverse(
+                            'app:admin_add_elig_program',
+                            kwargs={'user_id': obj.id},
+                        ),
+                        # Open in new window for proper request methods
+                        'target': 'new',
+                    },
+                ])
+            extra_context['custom_buttons'].extend([
                 {
                     'title': 'Add IQ Program',
                     'link': '_add_iq_program',
                 },
-            ]
+            ])
 
         opts = self.model._meta
         pk_value = object_id
         preserved_filters = self.get_preserved_filters(request)
-        if '_add_program_submit' in request.POST:
+        if '_add_iq_program_submit' in request.POST:
             # Handle 'Update Program' after 'submit' has been selected
-            form = ProgramAddForm(object_id, request.POST)
+            form = IQProgramAddForm(object_id, request.POST)
             # form = ProgramChangeForm(request.POST)
             if form.is_valid():
                 # Extract the program ID (in the 'program_name' form field) and
@@ -772,101 +789,31 @@ class UserAdmin(admin.ModelAdmin):
             )
             return HttpResponseRedirect(redirect_url)
 
-        response = super().change_view(
-            request, object_id, form_url, extra_context=extra_context,
+        return super().change_view(
+            request,
+            object_id,
+            form_url,
+            extra_context=extra_context,
         )
     
-        # if custom_button_selected:
-        #     request.method = 'POST'
-
-        return response
-    
     def response_change(self, request, obj):
-        opts = self.model._meta
-        pk_value = obj._get_pk_val()
-        preserved_filters = self.get_preserved_filters(request)
-
-        if "_add_program" in request.POST:
+        if "_add_iq_program" in request.POST:
             # Handle 'Add Program': load the page to select the program name
-            form = ProgramAddForm(obj.id)
-            # form = ProgramChangeForm()
+            form = IQProgramAddForm(obj.id)
 
             # Set the current_app for the admin base template
             request.current_app = self.admin_site.name
             return render(
                 request,
-                'admin/program_add.html',
+                'admin/program_add_iq.html',
                 {
                     'form': form,
                     # Set some page-specific text
                     'site_header': 'Get FoCo administration',
-                    'title': 'Add Program',
+                    'title': 'Add IQ Program',
                     'site_title': 'Get FoCo administration',
                 },
             )
-
-        elif '_add_program_submit' in request.POST:
-            # Handle 'Update Program' after 'submit' has been selected
-            form = ProgramAddForm(request.POST)
-            # form = ProgramChangeForm(request.POST)
-            if form.is_valid():
-                # Extract the program ID (in the 'program_name' form field) and
-                # add the program to the current model
-                _ = IQProgram.objects.create(
-                    user_id=obj.user.id,
-                    program_id=int(form.cleaned_data['program_name']),
-                )
-
-                # Add a message to the user when complete
-                self.message_user(
-                    request,
-                    "Successfully added the program for this user.",
-                    messages.SUCCESS,
-                )
-
-            else:
-                # Form is not valid; notify the user
-                self.message_user(
-                    request,
-                    'Cancelled: something went wrong.',
-                    messages.ERROR,
-                )
-
-            redirect_url = reverse(
-                f"admin:{opts.app_label}_{opts.model_name}_change",
-                args=(pk_value,),
-                current_app=self.admin_site.name,
-            )
-            redirect_url = add_preserved_filters(
-                {
-                    'preserved_filters': preserved_filters,
-                    'opts': opts,
-                },
-                redirect_url,
-            )
-            return HttpResponseRedirect(redirect_url)
-
-        elif '_add_program_cancel' in request.POST:
-            # User selected 'cancel'
-            self.message_user(
-                request,
-                'Program add cancelled.',
-                messages.INFO,
-            )
-
-            redirect_url = reverse(
-                f"admin:{opts.app_label}_{opts.model_name}_change",
-                args=(pk_value,),
-                current_app=self.admin_site.name,
-            )
-            redirect_url = add_preserved_filters(
-                {
-                    'preserved_filters': preserved_filters,
-                    'opts': opts,
-                },
-                redirect_url,
-            )
-            return HttpResponseRedirect(redirect_url)
 
         else:
             return super().response_change(request, obj)
