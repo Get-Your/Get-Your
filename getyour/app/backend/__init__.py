@@ -420,15 +420,10 @@ def get_users_iq_programs(
 def get_eligible_iq_programs(
         user,
         eligibility_address,
-        income_override: Decimal = None,
     ):
     """ 
     Return IQ Programs that the user is eligible for, without accounting for
     current enrollment or program-specific application.
-
-    ``income_override`` will be used instead of ``income_as_a_fraction_of_ami``
-    to test changes to the user's Household. ``income_override`` should be a
-    Decimal() type.
     
     """
 
@@ -436,7 +431,7 @@ def get_eligible_iq_programs(
     # fraction
     income_eligible_iq_programs = IQProgramRD.objects.filter(
         is_active=True,
-        ami_threshold__gte=income_override or user.household.income_as_fraction_of_ami,
+        ami_threshold__gte=user.household.income_as_fraction_of_ami,
     )
 
     # Gather all `requires_` fields in the IQProgramRD model along with their

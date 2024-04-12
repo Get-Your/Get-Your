@@ -212,10 +212,7 @@ def finalize_application(user, renewal_mode=False, update_user=True):
         return ('app:broadcast', {})
 
 
-def remove_ineligible_programs(
-        user,
-        income_override: Decimal = None,
-    ):
+def remove_ineligible_programs(user_id):
     """
     Remove programs that a user no longer qualifies for, based on application
     updates made after the user selected their programs.
@@ -223,11 +220,10 @@ def remove_ineligible_programs(
     A use-case for this is when a user's documentation is changed from a 30% AMI
     eligibility program to a 60% AMI program via the admin panel.
 
-    ``income_override`` will be used instead of ``income_as_a_fraction_of_ami``
-    in get_eligible_iq_programs to test changes to the user's Household.
-    ``income_override`` should be a Decimal() type.
-
     """
+
+    # Get the user object (with updates that were presumably made just prior)
+    user = User.objects.get(id=user_id)
 
     # Get the user's eligibility address
     eligibility_address = AddressRD.objects.filter(
@@ -241,7 +237,6 @@ def remove_ineligible_programs(
     eligible_programs = get_eligible_iq_programs(
         user,
         eligibility_address,
-        income_override=income_override,
     )
 
     # Compare current programs with eligible programs

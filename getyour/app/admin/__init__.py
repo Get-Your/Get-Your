@@ -1185,10 +1185,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                         _ = finalize_application(obj.user, update_user=False)
 
                         # Remove any no-longer-eligible programs
-                        msg = remove_ineligible_programs(
-                            obj.user,
-                            income_override=obj.program.ami_threshold,
-                        )
+                        msg = remove_ineligible_programs(obj.user.id)
 
                 except AttributeError as e:
                     # Undo the changes (automatic, since an exception was
