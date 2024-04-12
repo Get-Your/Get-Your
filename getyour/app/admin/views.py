@@ -24,6 +24,8 @@ from pathlib import PurePosixPath
 from django.shortcuts import render
 from django.core.files.storage import default_storage
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
+from django.contrib.contenttypes.models import ContentType
 from azure.core.exceptions import ResourceNotFoundError
 
 from app.models import User, EligibilityProgram, EligibilityProgramRD
@@ -157,9 +159,46 @@ def add_elig_program(request, **kwargs):
                 instance.document_path = str(fileNames)
                 instance.save()
 
+                # Add a log entry to UserAdmin for this new program
+                _ = LogEntry.objects.log_action(
+                    user_id=request.user.id,
+                    # Use the target (user) object from here
+                    content_type_id=ContentType.objects.get_for_model(user).pk,
+                    object_id=user.id,
+                    object_repr=str(user),
+                    action_flag=CHANGE,
+                    change_message=f'Added User eligibility program "{str(instance)}".'
+                )
+
+                # Add a log entry to EligibilityProgram admin that the program
+                # was added
+                _ = LogEntry.objects.log_action(
+                    user_id=request.user.id,
+                    # Use the target (eligibility program) object from here
+                    content_type_id=ContentType.objects.get_for_model(instance).pk,
+                    object_id=instance.id,
+                    object_repr=str(instance),
+                    action_flag=ADDITION,
+                    change_message=f'Added User eligibility program "{str(instance)}".'
+                )
+
                 # Finalize the application with the new program, if applicable
                 if user.last_completed_at is not None:
+                    prev_income_as_fraction_of_ami = user.household.income_as_fraction_of_ami
                     _ = finalize_application(user, update_user=False)
+
+                    # Add a log entry to UserAdmin if income was changed
+                    # IQ Program changes are planned for a later date
+                    if user.household.income_as_fraction_of_ami != prev_income_as_fraction_of_ami:
+                        _ = LogEntry.objects.log_action(
+                            user_id=request.user.id,
+                            # Use the target (user) object from here
+                            content_type_id=ContentType.objects.get_for_model(user).pk,
+                            object_id=user.id,
+                            object_repr=str(user),
+                            action_flag=CHANGE,
+                            change_message='Changed Income relative to AMI.'
+                        )
 
                 return render(
                     request,

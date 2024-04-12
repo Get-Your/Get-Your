@@ -29,6 +29,7 @@ from django.db.models.query import QuerySet
 from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 
 from app.models import (
     User,
@@ -733,9 +734,32 @@ class UserAdmin(admin.ModelAdmin):
             if form.is_valid():
                 # Extract the program ID (in the 'program_name' form field) and
                 # add the program to the current model
-                _ = IQProgram.objects.create(
+                new_obj = IQProgram.objects.create(
                     user_id=object_id,
                     program_id=int(form.cleaned_data['program_name']),
+                )
+
+                # Add a log entry to user admin that the program was added
+                user = User.objects.get(id=object_id)
+                _ = LogEntry.objects.log_action(
+                    user_id=request.user.id,
+                    # Use the target (user) object from here
+                    content_type_id=ContentType.objects.get_for_model(user).pk,
+                    object_id=user.id,
+                    object_repr=str(user),
+                    action_flag=CHANGE,
+                    change_message=f'Added User IQ program "{str(new_obj)}".'
+                )
+
+                # Add a log entry to IQProgram admin that the program was added
+                _ = LogEntry.objects.log_action(
+                    user_id=request.user.id,
+                    # Use the target (iq_program) object from here
+                    content_type_id=ContentType.objects.get_for_model(new_obj).pk,
+                    object_id=new_obj.id,
+                    object_repr=str(new_obj),
+                    action_flag=ADDITION,
+                    change_message=f'Added User IQ program "{str(new_obj)}".'
                 )
 
                 # Add a message to the user when complete
@@ -917,6 +941,17 @@ class AddressAdmin(admin.ModelAdmin):
             if is_in_gma != obj.is_in_gma:
                 updated_addr_count += 1
                 finalize_address(obj, is_in_gma, has_connexion)
+
+                # Add a log entry to admin that the address was updated
+                _ = LogEntry.objects.log_action(
+                    user_id=request.user.id,
+                    # Use the target object from here
+                    content_type_id=ContentType.objects.get_for_model(obj).pk,
+                    object_id=obj.id,
+                    object_repr=str(obj),
+                    action_flag=CHANGE,
+                    change_message='Changed Is in GMA.'
+                )
 
                 # Loop through any users with this as their eligibility address
                 # and correct their application if they have already completed it
@@ -1134,6 +1169,17 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                             id=int(form.cleaned_data['program_name'])
                         )
                         obj.save()
+
+                        # Add a log entry to admin that the program was changed
+                        _ = LogEntry.objects.log_action(
+                            user_id=request.user.id,
+                            # Use the target (obj) object from here
+                            content_type_id=ContentType.objects.get_for_model(obj).pk,
+                            object_id=obj.id,
+                            object_repr=str(obj),
+                            action_flag=CHANGE,
+                            change_message=f'Changed program name for User eligibility program "{str(obj)}".'
+                        )
 
                         # Finalize the user's application to update their income
                         _ = finalize_application(obj.user, update_user=False)
