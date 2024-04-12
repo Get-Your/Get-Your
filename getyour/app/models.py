@@ -221,11 +221,26 @@ class UserHist(models.Model):
 
 
 class AddressRD(GenericTimeStampedModel):
-    address1 = models.CharField(max_length=200, default="")
-    address2 = models.CharField(max_length=200, blank=True, default="")
+    address1 = models.CharField(
+        max_length=200,
+        default="",
+        verbose_name="street address",
+        help_text=_(
+            "House number and street name."
+        ),
+    )
+    address2 = models.CharField(
+        max_length=200,
+        blank=True,
+        default="",
+        verbose_name="apt, suite, etc.",
+        help_text=_(
+            "Leave blank if not applicable."
+        ),
+    )
 
     # Try to get past the things that should be the same for every applicant
-    city = models.CharField(max_length=64,)
+    city = models.CharField(max_length=64)
     state = models.CharField(max_length=2, default="")
 
     zip_code = models.DecimalField(max_digits=5, decimal_places=0)

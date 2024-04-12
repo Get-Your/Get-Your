@@ -17,10 +17,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import logging
+from django.http.response import HttpResponse
 import pendulum
 
 from django.shortcuts import render, reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.html import format_html
 from django.utils.translation import ngettext
 from django.db import transaction
@@ -45,7 +46,7 @@ from app.models import (
     Feedback,
 )
 from app.backend import get_eligible_iq_programs, get_iqprogram_requires_fields
-from app.backend.address import address_check
+from app.backend.address import address_check, format_and_lookup_address
 from app.backend.finalize import (
     finalize_address,
     finalize_application,
@@ -870,6 +871,31 @@ class AddressAdmin(admin.ModelAdmin):
 
     list_per_page = 100
 
+    def get_fields(self, request, obj):
+        """
+        Return fields based on whether object exists (new or existing).
+
+        Existing addresses can only update is_city_covered, when applicable.
+        New addresses can only enter the address information itself.
+        
+        """
+
+        if obj is None:
+            fields = [
+                'address1',
+                'address2',
+                ('city', 'state'),
+                'zip_code',
+            ]
+        else:
+            fields = [
+                'pretty_address',
+                'is_in_gma',
+                'is_city_covered',
+            ]
+
+        return fields
+
     def get_readonly_fields(self, request, obj):
         """
         Return readonly fields based on GMA status.
@@ -883,6 +909,11 @@ class AddressAdmin(admin.ModelAdmin):
             function='AddressAdmin',
             user_id=request.user.id,
         )
+
+        # If obj is None (as in, adding a new address), there are no readonly
+        # fields
+        if obj is None:
+            return []
 
         # Global readonly fields
         readonly_fields = [
@@ -979,6 +1010,30 @@ class AddressAdmin(admin.ModelAdmin):
             'GMA update was executed for %d addresses.',
             len(queryset),
         ) % len(queryset), messages.SUCCESS)
+
+    # Temporarily redirect the user to an error message if trying to add new
+    def add_view(self, request, form_url='', extra_context=None):
+
+        self.message_user(
+            request,
+            "Sorry, that isn't available yet.",
+            messages.ERROR,
+        )
+
+        opts = self.model._meta
+        preserved_filters = self.get_preserved_filters(request)
+        redirect_url = reverse(
+            f"admin:{opts.app_label}_{opts.model_name}_changelist",
+            current_app=self.admin_site.name,
+        )
+        redirect_url = add_preserved_filters(
+            {
+                'preserved_filters': preserved_filters,
+                'opts': opts,
+            },
+            redirect_url,
+        )
+        return HttpResponseRedirect(redirect_url)
 
     # Add custom buttons to the save list in the admin template (from
     # https://stackoverflow.com/a/34899874/5438550 and
@@ -1240,7 +1295,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             self.message_user(
                 request,
                 'Program update cancelled.',
-                messages.INFO,
+                messages.WARNING,
             )
 
             redirect_url = reverse(
