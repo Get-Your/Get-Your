@@ -403,7 +403,7 @@ class IQProgramInline(admin.TabularInline):
     extra = 0
 
 
-class AdminInline(admin.StackedInline):
+class AppAdminInline(admin.StackedInline):
     model = AppAdmin
     
     fk_name = "user"
@@ -516,6 +516,11 @@ class UserAdmin(admin.ModelAdmin):
             user_id=request.user.id,
         )
 
+        # Create an AppAdmin object for the current user, if DNE
+        if AppAdmin.objects.filter(user=obj).count() == 0:
+            AppAdmin.objects.create(user=obj)
+
+
         fieldsets = [
             (
                 'USER',
@@ -596,7 +601,7 @@ class UserAdmin(admin.ModelAdmin):
         return list(set(readonly_fields) - set(readonly_remove))
 
     inlines = [
-        AdminInline,
+        AppAdminInline,
         AddressInline,
         HouseholdInline,
         HouseholdMembersInline,

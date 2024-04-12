@@ -270,9 +270,6 @@ def account(request, **kwargs):
                         user_id=user.id,
                     )
 
-                    # Also create matching app.Admin model record
-                    AppAdmin.objects.create(user=user)
-
                     data = {
                         'result': "success",
                     }
