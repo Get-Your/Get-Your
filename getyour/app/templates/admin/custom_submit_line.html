@@ -3,8 +3,8 @@
 <div class="submit-row">
 {% block submit-row %}
 
-{% for nm, hr in custom_buttons %}
-<input type="submit" value="{% translate nm %}"  name="{{ hr }}" />
+{% for buttondict in custom_buttons %}
+<input type="submit" value="{% translate buttondict.title %}" name="{{ buttondict.link }}" />
 {% endfor %}
 
 {{ block.super }}

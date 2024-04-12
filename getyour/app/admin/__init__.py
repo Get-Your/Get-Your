@@ -700,7 +700,10 @@ class UserAdmin(admin.ModelAdmin):
         obj = User.objects.get(pk=object_id)
         if obj.last_completed_at is not None:
             extra_context['custom_buttons'] = [
-                ('Add IQ Program', '_add_program'),
+                {
+                    'title': 'Add IQ Program',
+                    'link': '_add_iq_program',
+                },
             ]
 
         opts = self.model._meta
@@ -998,7 +1001,10 @@ class AddressAdmin(admin.ModelAdmin):
         # (name, url). The 'url' portion must match the
         # "if 'url' in request.POST:" section of response_change()
         extra_context['custom_buttons'] = [
-            ('Update GMA', '_update_gma'),
+            {
+                'title': 'Update GMA',
+                'link': '_update_gma',
+            },
         ]
         return super().change_view(
             request, object_id, form_url, extra_context=extra_context,
@@ -1156,7 +1162,10 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         obj = EligibilityProgram.objects.get(pk=object_id)
         if obj.user.household.is_income_verified is False:
             extra_context['custom_buttons'] = [
-                ('Change Program', '_change_program'),
+                {
+                    'title': 'Change Program',
+                    'link': '_change_program',
+                },
             ]
 
         # Intercept any POSTs from the custom button intermediate pages before
