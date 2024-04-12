@@ -63,13 +63,9 @@ from app.backend import (
     broadcast_sms,
     save_renewal_action,
     file_validation,
-)
-from app.backend.address import (
     tag_mapping,
     address_check,
     validate_usps,
-)
-from app.backend.finalize import (
     finalize_address,
     finalize_application,
 )

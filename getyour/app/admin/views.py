@@ -30,8 +30,7 @@ from azure.core.exceptions import ResourceNotFoundError
 
 from app.models import User, EligibilityProgram, EligibilityProgramRD
 from app.constants import supported_content_types
-from app.backend import file_validation
-from app.backend.finalize import finalize_application
+from app.backend import file_validation, finalize_application
 from app.admin.forms import EligProgramAddForm
 
 from logger.wrappers import LoggerWrapper

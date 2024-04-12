@@ -45,12 +45,13 @@ from app.models import (
     Admin as AppAdmin,
     Feedback,
 )
-from app.backend import get_eligible_iq_programs, get_iqprogram_requires_fields
-from app.backend.address import address_check, format_and_lookup_address
-from app.backend.finalize import (
+from app.backend import (
+    get_eligible_iq_programs,
+    get_iqprogram_requires_fields,
     finalize_address,
     finalize_application,
     remove_ineligible_programs,
+    address_check,
 )
 from app.constants import application_pages
 from app.admin.filters import (
