@@ -16,10 +16,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import re
-
-from django.conf import settings
-
 # Set the notification buffer to be used for reminders
 notification_buffer_month = 1
 
@@ -28,15 +24,3 @@ enable_calendar_year_renewal = True
 
 # Set the specified app label(s) for use in the logging db router
 logger_app_labels = {'logger'}
-
-# Set the contact number to display on the site. This is the prettified Twilio
-# number set in the config vars
-parsed_number = re.match(
-    r'\+?\d?(\d{3})(\d{3})(\d{4})$',
-    settings.TWILIO_NUMBER,
-)
-contact_number = "({prs[0]}) {prs[1]}-{prs[2]}".format(
-    prs=parsed_number.groups()
-)
-
-contact_email = 'getfoco@fcgov.com'
