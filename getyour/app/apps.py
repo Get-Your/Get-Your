@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import os
 from django.apps import AppConfig
 
 
@@ -24,6 +25,7 @@ class AppConfig(AppConfig):
     name = 'app'
 
     def ready(self):
-        import app.signals
-        from app.signals import populate_cache
-        populate_cache.send(sender=self.__class__)
+        if os.getenv('BUILD_ENV') != 'docker':
+            import app.signals
+            from app.signals import populate_cache
+            populate_cache.send(sender=self.__class__)
