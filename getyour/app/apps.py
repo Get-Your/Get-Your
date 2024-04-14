@@ -25,3 +25,5 @@ class AppConfig(AppConfig):
 
     def ready(self):
         import app.signals
+        from app.signals import populate_cache
+        populate_cache.send(sender=self.__class__)

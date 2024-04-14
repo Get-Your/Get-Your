@@ -59,11 +59,11 @@ LOGGING['loggers']['app']['level'] = 'DEBUG'
 DEBUG_LOGGING = True
 
 Q_CLUSTER = {
-    'name': 'DjangORM',
+    'name': 'DJRedis',
     'workers': 4,
     'timeout': 30,
     'bulk': 10,
-    'orm': 'default',
+    'django_redis': 'default',
     'catch_up': False,
     'sync': True,   # this is required for Windows
 }
