@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import logging
 
+from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth.decorators import login_required
@@ -121,7 +122,7 @@ def dashboard(request, **kwargs):
             renewal_eligible_str = ""
 
         ineligible_pre = "Unfortunately, you are no longer qualified for"
-        ineligible_post = "If you think this is in error, please email getfoco@fcgov.com"
+        ineligible_post = f"If you think this is in error, please email {settings.CONTACT_EMAIL}"
         if len(renewal_ineligible) == 1:
             renewal_ineligible_str = "{pre} {sing}. {pst}".format(
                 sing=renewal_ineligible[-1],
