@@ -44,12 +44,12 @@ ALLOWED_HOSTS = []
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR.joinpath('getyour', 'db.sqlite3'),
     },
     # Note that a separate file is needed for proper concurrency
     'analytics': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db_analytics.sqlite3',
+        'NAME': BASE_DIR.joinpath('getyour', 'db_analytics.sqlite3'),
     }
 }
 
@@ -59,11 +59,11 @@ LOGGING['loggers']['app']['level'] = 'DEBUG'
 DEBUG_LOGGING = True
 
 Q_CLUSTER = {
-    'name': 'DjangORM',
+    'name': 'DJRedis',
     'workers': 4,
     'timeout': 30,
     'bulk': 10,
-    'orm': 'default',
+    'django_redis': 'default',
     'catch_up': False,
     'sync': True,   # this is required for Windows
 }

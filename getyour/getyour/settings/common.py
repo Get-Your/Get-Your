@@ -23,7 +23,7 @@ import subprocess
 
 env = environ.Env()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Build paths inside the project like this: BASE_DIR.joinpath('subdir')
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Read and apply the environment-agnostic secrets
@@ -141,6 +141,16 @@ TEMPLATES = [
         },
     },
 ]
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    },
+}
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
