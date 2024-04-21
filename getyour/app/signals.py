@@ -35,6 +35,12 @@ from app.models import (
     IQProgramHist,
 )
 from app.backend import changed_modelfields_to_dict
+from app.tasks import populate_cache_task
+from django.dispatch import Signal
+
+
+# Defines a custom signal for us to listen for
+populate_cache = Signal()
 
 
 @receiver(pre_save, sender=Household)
@@ -253,3 +259,8 @@ def eligiblity_program_pre_delete(sender, instance, **kwargs):
                 eligiblity_program_history.save()
                 # Set is_updated if any values have changed
                 instance.is_updated = True
+
+
+@receiver(populate_cache)
+def trigger_cache_population(sender, **kwargs):
+    populate_cache_task()

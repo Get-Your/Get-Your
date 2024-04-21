@@ -17,14 +17,31 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import logging
+import pendulum
+from django.core.cache import cache
+from django_q.tasks import async_task
 from app.backend import broadcast_renewal_email, check_if_user_needs_to_renew
 from app.models import User
 from app.constants import notification_buffer_month
 from logger.wrappers import LoggerWrapper
 
-from django_q.tasks import async_task
-import logging
-import pendulum
+
+def populate_cache_task():
+    async_task(populate_redis_cache)
+
+
+def populate_redis_cache():
+    users = User.objects.all()
+    for user in users:
+        cache_key = f"user_last_notified_{user.id}"
+
+        # Check if user needs to renew their application. We don't want to
+        # cache users that don't need application renewals
+        needs_renewal = check_if_user_needs_to_renew(user.id)
+
+        if needs_renewal and user.last_action_notification_at:
+            cache.set(cache_key, str(user.last_action_notification_at), timeout=3600 * 24 * 30)
 
 
 def run_renewal_task():
@@ -48,7 +65,15 @@ def run_renewal_task():
         is_archived=False,
         last_completed_at__isnull=False,
     ):
-        async_task(send_renewal_email, user)
+        cache_key = f"user_last_notified_{user.id}"
+        last_notified = cache.get(cache_key)
+        should_enqueue = (
+            last_notified is None or 
+            (pendulum.now() - pendulum.parse(last_notified)).in_months() > notification_buffer_month
+        )
+        
+        if should_enqueue:
+            async_task(send_renewal_email, user)
 
 
 def send_renewal_email(user):
@@ -63,6 +88,7 @@ def send_renewal_email(user):
 
     # Initialize logger (needs to be done within the async task)
     log = LoggerWrapper(logging.getLogger(__name__))
+    cache_key = f"user_last_notified_{user.id}"
 
     # Check if user needs to renew their application
     needs_renewal = check_if_user_needs_to_renew(user.id)
@@ -77,10 +103,12 @@ def send_renewal_email(user):
         # `.months` specifies number of months within a year,
         # where `in_months()` (used here) specifies overall number of months
         # (e.g. period.months + period.years*12 = period.in_months())
-        months_since_last_notification = (
-            pendulum.now() - user.last_action_notification_at
-        ).in_months()
-        if months_since_last_notification > notification_buffer_month:
+        last_notified = cache.get(cache_key)
+        should_notify = (
+            last_notified is None or 
+            (pendulum.now() - pendulum.parse(last_notified)).in_months() > notification_buffer_month
+        )
+        if should_notify:
             log.info(
                 "User needs renewal; sending notification",
                 function='send_renewal_email',
@@ -103,6 +131,13 @@ def send_renewal_email(user):
                 )
                 user.last_action_notification_at = pendulum.now()
                 user.save()
+                cache.set(cache_key, str(pendulum.now()), timeout=3600 * 24 * 30 * notification_buffer_month)
+            else:
+                log.debug(
+                    f"SendGrid call failed. SendGrid status_code: '{status_code}'",
+                    function='send_renewal_email',
+                    user_id=user.id,
+                )
         else:
             log.debug(
                 "User needs renewal but has recently been notified",

@@ -62,10 +62,12 @@ if DEBUG_LOGGING:
     LOGGING['loggers']['app']['level'] = 'DEBUG'
 
 Q_CLUSTER = {
-    'name': 'DjangORM',
+    'name': 'DJRedis',
     'workers': 4,
     'timeout': 30,
+    # Limit the number of retries
+    'max_attempts': 1,
     'bulk': 10,
-    'orm': 'default',
+    'django_redis': 'default',
     'catch_up': False,
 }
