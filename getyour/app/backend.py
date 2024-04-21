@@ -436,7 +436,7 @@ def validate_usps(inobj):
 
 def broadcast_email(email):
     message = Mail(
-        from_email='getfoco@fcgov.com',
+        from_email=settings.CONTACT_EMAIL,
         to_emails=email)
 
     message.template_id = settings.WELCOME_EMAIL_TEMPLATE
@@ -454,7 +454,7 @@ def broadcast_email(email):
 def broadcast_email_pw_reset(email, content):
     message = Mail(
         subject='Password Reset Requested',
-        from_email='getfoco@fcgov.com',
+        from_email=settings.CONTACT_EMAIL,
         to_emails=email,
     )
     message.dynamic_template_data = {
@@ -478,7 +478,7 @@ def broadcast_email_pw_reset(email, content):
 
 def broadcast_renewal_email(email):
     message = Mail(
-        from_email='getfoco@fcgov.com',
+        from_email=settings.CONTACT_EMAIL,
         to_emails=email)
 
     message.template_id = settings.RENEWAL_EMAIL_TEMPLATE
