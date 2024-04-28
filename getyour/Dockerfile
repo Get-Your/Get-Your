@@ -30,14 +30,8 @@ ARG CODE_VERSION=''
 # Save the code version to a runtime env var
 ENV CODE_VERSION=$CODE_VERSION
 
-# Used to skip code execution while building
-# the Get FoCo Docker image
-ENV BUILD_ENV=docker
 # Collect static files
 RUN python manage.py collectstatic --noinput
-# Hacky solution to make collectstatic work
-# the value below has no meaning
-ENV BUILD_ENV=solongandthanksforallthefish
 
 # Copy supervisor and redis conf files to the appropriate locations
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
