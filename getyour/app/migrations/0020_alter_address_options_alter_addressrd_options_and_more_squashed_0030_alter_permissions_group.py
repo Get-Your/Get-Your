@@ -29,90 +29,90 @@ def apply_admin_group(apps, schema_editor):
 
     # Define the list of permissions (from testing)
     permissions_list = [
-        Permission.objects.get(
+        Permission.objects.get_or_create(
             codename='change_user',
             content_type=ContentType.objects.get_for_model(User),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_user',
             content_type=ContentType.objects.get_for_model(User),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_admin',
             content_type=ContentType.objects.get_for_model(AppAdmin),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='change_admin',
             content_type=ContentType.objects.get_for_model(AppAdmin),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_address',
             content_type=ContentType.objects.get_for_model(Address),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='change_addressrd',
             content_type=ContentType.objects.get_for_model(AddressRD),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_addressrd',
             content_type=ContentType.objects.get_for_model(AddressRD),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='change_household',
             content_type=ContentType.objects.get_for_model(Household),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_household',
             content_type=ContentType.objects.get_for_model(Household),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_householdmembers',
             content_type=ContentType.objects.get_for_model(HouseholdMembers),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='change_eligibilityprogram',
             content_type=ContentType.objects.get_for_model(EligibilityProgram),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_eligibilityprogram',
             content_type=ContentType.objects.get_for_model(EligibilityProgram),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='add_eligibilityprogramrd',
             content_type=ContentType.objects.get_for_model(EligibilityProgramRD),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='change_eligibilityprogramrd',
             content_type=ContentType.objects.get_for_model(EligibilityProgramRD),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_eligibilityprogramrd',
             content_type=ContentType.objects.get_for_model(EligibilityProgramRD),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_iqprogram',
             content_type=ContentType.objects.get_for_model(IQProgram),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='add_iqprogramrd',
             content_type=ContentType.objects.get_for_model(IQProgramRD),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='change_iqprogramrd',
             content_type=ContentType.objects.get_for_model(IQProgramRD),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_iqprogramrd',
             content_type=ContentType.objects.get_for_model(IQProgramRD),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_feedback',
             content_type=ContentType.objects.get_for_model(Feedback),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='delete_eligibilityprogram',
             content_type=ContentType.objects.get_for_model(EligibilityProgram),
-        ),
+        )[0],
     ]
 
     # Set the permissions for the group
@@ -126,58 +126,58 @@ def apply_income_group(apps, schema_editor):
 
     # Define the list of permissions (from testing)
     permissions_list = [
-        Permission.objects.get(
+        Permission.objects.get_or_create(
             codename='change_user',
             content_type=ContentType.objects.get_for_model(User),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_user',
             content_type=ContentType.objects.get_for_model(User),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_admin',
             content_type=ContentType.objects.get_for_model(AppAdmin),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='change_admin',
             content_type=ContentType.objects.get_for_model(AppAdmin),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_address',
             content_type=ContentType.objects.get_for_model(Address),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='change_addressrd',
             content_type=ContentType.objects.get_for_model(AddressRD),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_addressrd',
             content_type=ContentType.objects.get_for_model(AddressRD),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='change_eligibilityprogram',
             content_type=ContentType.objects.get_for_model(EligibilityProgram),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_eligibilityprogram',
             content_type=ContentType.objects.get_for_model(EligibilityProgram),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='change_household',
             content_type=ContentType.objects.get_for_model(Household),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_household',
             content_type=ContentType.objects.get_for_model(Household),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_householdmembers',
             content_type=ContentType.objects.get_for_model(HouseholdMembers),
-        ),
-        Permission.objects.get(
+        )[0],
+        Permission.objects.get_or_create(
             codename='view_iqprogram',
             content_type=ContentType.objects.get_for_model(IQProgram),
-        ),
+        )[0],
     ]
 
     # Set the permissions for the group
