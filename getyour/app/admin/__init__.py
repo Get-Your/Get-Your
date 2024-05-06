@@ -737,7 +737,6 @@ class UserAdmin(admin.ModelAdmin):
         if '_add_iq_program_submit' in request.POST:
             # Handle 'Update Program' after 'submit' has been selected
             form = IQProgramAddForm(object_id, request.POST)
-            # form = ProgramChangeForm(request.POST)
             if form.is_valid():
                 # Extract the program ID (in the 'program_name' form field) and
                 # add the program to the current model

@@ -33,9 +33,24 @@ from app.backend import get_users_iq_programs, get_iqprogram_requires_fields
 
 
 class ProgramChangeForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        # Initialize the form
+        super().__init__(*args, **kwargs)
+
+        # Return the available Eligibility Programs, sorted by friendly_name
+        self.fields['program_name'].choices = list(map(
+            lambda x:
+            (str(x.id), x.friendly_name),
+            EligibilityProgramRD.objects.filter(
+                is_active=True
+            ).order_by(
+                'friendly_name'
+            )
+        ))
+
     program_name = forms.ChoiceField(
         label='Select the program to use for this record',
-        choices=[(str(x.id), x.friendly_name) for x in EligibilityProgramRD.objects.filter(is_active=True).order_by('friendly_name')],
+        choices=(),
         widget=forms.Select(),
     )
 
@@ -74,10 +89,25 @@ class IQProgramAddForm(forms.Form):
 
 
 class EligProgramAddForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        # Initialize the form
+        super().__init__(*args, **kwargs)
+
+        # Return the available Eligibility Programs, sorted by friendly_name
+        # Prepend empty (and unusable) option
+        self.fields['program_name'].choices = [('', '')] + list(map(
+            lambda x:
+            (str(x.id), x.friendly_name),
+            EligibilityProgramRD.objects.filter(
+                is_active=True
+            ).order_by(
+                'friendly_name'
+            )
+        ))
 
     program_name = forms.ChoiceField(
         label='Select the program to add',
-        choices=[('', '')]+[(str(x.id), x.friendly_name) for x in EligibilityProgramRD.objects.filter(is_active=True).order_by('friendly_name')],
+        choices=(),
     )
 
     document_path = forms.FileField(label='Select a file')
