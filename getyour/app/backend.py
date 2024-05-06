@@ -1121,9 +1121,14 @@ def file_validation(
     filetype = magic.from_buffer(file.read())
 
     # Check if the filetype is in the supported_content_types
-    if any(x in filetype for x in [x.upper() for x in supported_content_types.keys()]):
-        return (True, '')
+    matched_file_extension = next(
+        (x for x in supported_content_types if x in filetype.lower()), None
+    )
+    # If a match is found, return 'success' and the file extension
+    if matched_file_extension:
+        return (True, matched_file_extension)
     
+    # A match was not found, so return 'failed' and the error message
     log.error(
         "File{} is not a valid file type ({})".format(
             f" from {calling_function}" if calling_function else "",
@@ -1135,7 +1140,7 @@ def file_validation(
     return (
         False,
         "File is not a valid type. Only these file types are supported: {}".format(
-            ', '.join([x.upper() for x in supported_content_types.keys()])
+            ', '.join(supported_content_types)
         ),
     )
 

@@ -1065,7 +1065,7 @@ def household_members(request, **kwargs):
                     # Create a buffer from the decoded bytes
                     buffer = io.BytesIO(decoded_bytes).getvalue()
 
-                    file_validated, validation_message = file_validation(
+                    file_validated, failure_message_or_file_extension = file_validation(
                         buffer,
                         request.user.id,
                         calling_function='household_members',
@@ -1082,7 +1082,7 @@ def household_members(request, **kwargs):
                             "application/household_members.html",
                             {
                                 'step': 3,
-                                "message": validation_message,
+                                "message": failure_message_or_file_extension,
                                 'dependent': str(request.user.household.number_persons_in_household),
                                 'list': list(range(request.user.household.number_persons_in_household)),
                                 'form': form,
@@ -1093,13 +1093,9 @@ def household_members(request, **kwargs):
                             },
                         )
 
-                    # Regular expression pattern for matching PNG, JPEG, JPG, or PDF file extensions
-                    pattern = r'(?i)\b(png|jpe?g|pdf)\b'
-                    # Search for the pattern in the filetype string
-                    match = re.search(pattern, filetype, re.IGNORECASE)
-                    # Extract the matched file extension
-                    file_extension = match.group(1).lower()
-                    file_name = f"household_member_id.{file_extension}"
+                    # File was successfully validated; file_validation() output
+                    # will be the file extension
+                    file_name = f"household_member_id.{failure_message_or_file_extension}"
                     # Assuming file_name is already defined
                     updated_base64_content = base64_content + "," + file_name
                     updated_identification_paths.append(updated_base64_content)
@@ -1367,7 +1363,7 @@ def files(request, **kwargs):
                 # Loop 1: scans files
                 # Loop 2: saves file(s) if valid
                 for f in request.FILES.getlist('document_path'):
-                    file_validated, validation_message = file_validation(
+                    file_validated, failure_message_or_file_extension = file_validation(
                         f,
                         request.user.id,
                         calling_function='files',
@@ -1379,7 +1375,7 @@ def files(request, **kwargs):
                             request,
                             'application/files.html',
                             {
-                                "message": validation_message,
+                                "message": failure_message_or_file_extension,
                                 'form': form,
                                 'eligiblity_programs': users_programs_without_uploads,
                                 'step': 5,
