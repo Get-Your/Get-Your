@@ -42,6 +42,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from phonenumber_field.phonenumber import PhoneNumber
 from app.models import (
     HouseholdMembers,
@@ -1107,7 +1108,7 @@ def get_iqprogram_requires_fields():
 
 
 def file_validation(
-        file,
+        obj,
         user_id,
         calling_function=None,
     ):
@@ -1118,7 +1119,11 @@ def file_validation(
     
     """
 
-    filetype = magic.from_buffer(file.read())
+    # If obj is an uploaded file, use .read(); else, take directly from the buffer
+    if isinstance(obj, InMemoryUploadedFile):
+        filetype = magic.from_buffer(obj.read())
+    else:
+        filetype = magic.from_buffer(obj)
 
     # Check if the filetype is in the supported_content_types
     matched_file_extension = next(
