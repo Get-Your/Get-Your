@@ -327,9 +327,11 @@ class EligibilityProgramInline(admin.TabularInline):
         qs = qs.order_by('program__friendly_name')
         return qs
     
+    # Adding/deleting directly from this inline is always disabled since these
+    # wouldn't be governed by the same logic as via EligibilityProgramAdmin
+    def has_add_permission(self, request, obj=None):
+        return False
     def has_delete_permission(self, request, obj=None):
-        # Deleting from this inline doesn't hit the same logic as via the
-        # EligibilityProgramAdmin pages; therefore, nobody has delete permissions
         return False
 
     model = EligibilityProgram
@@ -373,6 +375,11 @@ class IQProgramInline(admin.TabularInline):
         qs = super().get_queryset(request)
         qs = qs.order_by('program__friendly_name')
         return qs
+    
+    def has_add_permission(self, request, obj=None):
+        # Adding directly from this inline is always disabled since it wouldn't
+        # be governed by the same logic as via IQProgramAdmin
+        return False
 
     model = IQProgram
 
