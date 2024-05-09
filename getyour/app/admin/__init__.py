@@ -618,6 +618,32 @@ class UserAdmin(admin.ModelAdmin):
         IQProgramInline,
     ]
 
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+
+        enrolled_iq_programs = []
+        for obj in formset.deleted_objects:
+            # IQProgram objects cannot be deleted if the user is enrolled;
+            # add to list to notify the user
+            if isinstance(obj, IQProgram) and obj.is_enrolled:
+                enrolled_iq_programs.append(obj.program.friendly_name)
+            else:
+                obj.delete()
+
+        for instance in instances:
+            instance.user = request.user
+            instance.save()
+        formset.save_m2m()
+
+        # Warn the user that the specified programs weren't deleted. Unicode
+        # quotes are used in order to match the stock Django messages
+        if enrolled_iq_programs:
+            self.message_user(request, ngettext(
+                'Program “%s” cannot be deleted; user is already enrolled.',
+                'Programs “%s” cannot be deleted; user is already enrolled.',
+                len(enrolled_iq_programs),
+            ) % '”, “'.join(enrolled_iq_programs), messages.WARNING)
+
     @admin.action(
         description="Mark selected users as 'awaiting response'",
     )
