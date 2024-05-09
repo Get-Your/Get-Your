@@ -502,6 +502,10 @@ class UserAdmin(admin.ModelAdmin):
         else:
             return self.get_empty_value_display()
         
+    def has_add_permission(self, request, obj=None):
+        # Adding directly from the admin panel is disallowed for everyone
+        return False
+        
     def has_income_verification_permission(self, request, obj=None):
         # Define income_verification permissions
         if request.user.is_superuser or request.user.groups.filter(
@@ -1142,6 +1146,10 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
     ]
     readonly_fields = eligibility_fields + ['user_email', 'full_name']
 
+    def has_add_permission(self, request, obj=None):
+        # Adding directly from the admin panel is disallowed for everyone
+        return False
+
     def get_fieldsets(self, request, obj):
         """
         Return fieldsets based on user type. All users get the default fieldset,
@@ -1502,6 +1510,10 @@ class FeedbackAdmin(admin.ModelAdmin):
     ]
 
     list_per_page = 100
+
+    def has_add_permission(self, request, obj=None):
+        # Adding directly from the admin panel is disallowed for everyone
+        return False
 
 
 # Register the models
