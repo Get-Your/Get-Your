@@ -20,6 +20,7 @@ import logging
 from django.http.response import HttpResponse
 import pendulum
 
+from django.conf import settings
 from django.shortcuts import render, reverse
 from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.html import format_html
@@ -428,7 +429,12 @@ class IQProgramInline(admin.TabularInline):
     @admin.display(description='enrolled at')
     def enrollment_status(self, obj):
         if obj.is_enrolled:
-            ts = pendulum.instance(obj.enrolled_at)
+            # Convert the timestamp to the (Django) system timezone for formatting
+            ts = pendulum.instance(
+                obj.enrolled_at
+            ).in_timezone(
+                settings.TIME_ZONE
+            )
             ts_formatted = "{} {}.".format(
                 ts.format('MMM D, YYYY, h:mm'),
                 # Manually format the am/pm designator to match the Django ones
