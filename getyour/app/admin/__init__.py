@@ -380,16 +380,46 @@ class IQProgramInline(admin.TabularInline):
         # Adding directly from this inline is always disabled since it wouldn't
         # be governed by the same logic as via IQProgramAdmin
         return False
+    
+    fields = [
+        'program_name',
+        'applied_at',
+        'is_enrolled',
+        'enrollment_status',
+    ]
+    
+    def get_readonly_fields(self, request, obj):
+        """
+        Return readonly fields based on user type and groups. Note that this
+        follows zero-trust; it starts with all fields read-only and removes them
+        based on permissions.
+        
+        """
+
+        # Global readonly fields. Note that @property and calculated fields must
+        # be read-only
+        readonly_fields = self.fields
+
+        readonly_remove = []
+        # Enrollment status can only be altered if income has been verified
+        if obj.household.is_income_verified is True:
+            # Remove fields from readonly_fields based on permissions group
+            if request.user.is_superuser:
+            # # Stub of planned functionality
+            # if request.user.is_superuser or request.user.groups.filter(
+            #     name__istartswith='program'
+            # ).exists():
+                # Remove is_enrolled
+                readonly_remove.extend([
+                    'is_enrolled',
+                ])
+        
+        # Remove the fields and re-listify
+        return list(set(readonly_fields) - set(readonly_remove))
 
     model = IQProgram
 
     fk_name = "user"
-
-    fields = readonly_fields = [
-        'program_name',
-        'applied_at',
-        'enrollment_status',
-    ]
 
     @admin.display(description='program name')
     def program_name(self, obj):
@@ -405,8 +435,8 @@ class IQProgramInline(admin.TabularInline):
                 '.'.join(ts.format('A').lower()),
             )
             return ts_formatted
-        else:
-            return "Not enrolled"
+        
+        return self.get_empty_value_display()
 
     # Show zero extra (unfilled) options
     extra = 0
@@ -465,8 +495,8 @@ class UserAdmin(admin.ModelAdmin):
             ])
 
             return '\n'.join(status_list)
-        else:
-            return self.get_empty_value_display()
+        
+        return self.get_empty_value_display()
         
     @admin.display(description='message to user')
     def user_message(self, obj):
@@ -499,8 +529,7 @@ class UserAdmin(admin.ModelAdmin):
 
         if len(msg) > 0:
             return "- {}".format('\n- '.join(msg))
-        else:
-            return self.get_empty_value_display()
+        return self.get_empty_value_display()
         
     def has_add_permission(self, request, obj=None):
         # Adding directly from the admin panel is disallowed for everyone
@@ -635,6 +664,14 @@ class UserAdmin(admin.ModelAdmin):
                 obj.delete()
 
         for instance in instances:
+            # Add logic to alterations of IQProgramInline
+            if isinstance(instance, IQProgram):
+                if instance.is_enrolled:
+                    # Set enrolled_at to current time if there is no value
+                    if instance.enrolled_at is None:
+                        instance.enrolled_at = pendulum.now()
+                else:
+                    instance.enrolled_at = None
             instance.user = request.user
             instance.save()
         formset.save_m2m()
