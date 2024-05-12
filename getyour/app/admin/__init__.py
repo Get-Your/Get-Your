@@ -21,6 +21,7 @@ from django.http.response import HttpResponse
 import pendulum
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, reverse
 from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.html import format_html
@@ -472,7 +473,7 @@ class UserAdmin(admin.ModelAdmin):
     list_display_links = ('email', )
     list_filter = (NeedsVerificationListFilter, )
     date_hierarchy = 'last_completed_at'
-    actions = ('mark_verified', 'mark_awaiting_response')
+    actions = ('export_users', 'mark_awaiting_response', 'mark_verified')
 
     user_fields = [
         'full_name',
@@ -774,6 +775,119 @@ class UserAdmin(admin.ModelAdmin):
                 'Cancelled: not all users are applicable for income verification.',
                 error_count,
             ), messages.ERROR)
+
+    @admin.action(
+        description="Export selected users",
+    )
+    def export_users(self, request, queryset):
+        # No need to import these on load if they won't be used
+        import csv
+        from operator import attrgetter
+
+        # Define the output filename without extension (always CSV)
+        filename_root = 'User Export'
+        # Define field names as a nested dictionary. Each field has a transform
+        # for display and a pretty name for headers; the top-level keys are the
+        # model linkage (None is the base 'user' object)
+        fields_to_export = {
+            None: {
+                'first_name': {
+                    'pretty_name': 'First Name',
+                },
+                'last_name': {
+                    'pretty_name': 'Last Name',
+                },
+                'email': {
+                    'pretty_name': 'Email',
+                },
+                'phone_number': {
+                    'transform': 'as_national',
+                    'pretty_name': 'Phone Number',
+                },
+            },
+            'address.mailing_address': {
+                'address1': {
+                    'pretty_name': 'Mailing Address1',
+                },
+                'address2': {
+                    'pretty_name': 'Mailing Address2',
+                },
+                'city': {
+                    'pretty_name': 'Mailing City',
+                },
+                'state': {
+                    'pretty_name': 'Mailing State',
+                },
+                'zip_code': {
+                    'pretty_name': 'Mailing Zip Code',
+                },
+            }
+        }
+
+        # The code below is modular and based solely on the filename string and
+        # fields_to_export dict
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f"attachment; filename={filename_root}.csv"
+        writer = csv.writer(response)
+
+        # Write headers from a flattened list of pretty_name
+        headers = [
+            x for itm in [
+                [x['pretty_name'] for x in val.values()] for val in fields_to_export.values()
+            ] for x in itm
+        ]
+        writer.writerow(headers)
+
+        # Loop through each user, gather the data, and write to a row
+
+        # Chain the top-level non-base models to load in the initial db call
+        for key in fields_to_export.keys():
+            if key is not None:
+                queryset = queryset.select_related(key.split('.')[0])
+        for obj in queryset:
+            # Get each object data, if exists, using the specified transform
+            # where applicable
+            row_data = []
+            for model, params in fields_to_export.items():
+                try:
+                    # Define the model obj to work on. fields_to_export[None] is the top-
+                    # level object
+                    if model is None:
+                        modelobj = obj
+                    else:
+                        # Get the attribute of any dotted attributes
+                        modelobj = attrgetter(model)(obj)
+
+                except ObjectDoesNotExist:
+                    # There will be no row_data addition if the object DNE
+                    pass
+
+                else:
+                    # Get the starting index based on the headers
+                    start_idx = headers.index(
+                        list(fields_to_export[model].values())[0]['pretty_name']
+                    )
+                    # Ensure row_data is padded to the proper starting index
+                    row_data.extend([None]*(start_idx-len(row_data)))
+
+                    # Add the current-modelobj data to the row
+                    row_data.extend([
+                        str(
+                            getattr(
+                                getattr(modelobj, fd), itm['transform']
+                            )
+                        ) if 'transform' in itm else str(
+                            getattr(
+                                modelobj, fd
+                            )
+                        ) for fd, itm in params.items()
+                    ])
+
+            if row_data:
+                writer.writerow(row_data)
+
+        return response
 
     list_per_page = 100
 
