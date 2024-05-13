@@ -39,6 +39,11 @@ from logger.wrappers import LoggerWrapper
 
 
 def populate_cache_task():
+    """
+    Use this task at AppConfig.ready to populate the cache on server startup
+    without base Django touching the database (inadvisable, per the docs).
+    
+    """
     # Initialize logger
     log = LoggerWrapper(logging.getLogger(__name__))
 
@@ -72,41 +77,50 @@ def populate_redis_cache():
             function='populate_redis_cache',
             user_id=user.id,
         )
-        cache_key = renewal_cache_key_preform.format(user_id=user.id)
+        async_task(add_cache_user, user)
 
-        # No need to run calculations if cache_key already exists in the cache
-        if cache.has_key(cache_key):
-            continue
 
-        # Check if user needs to renew their application. We don't want to
-        # cache users that don't need application renewals
-        needs_renewal = check_if_user_needs_to_renew(user.id)
-        if needs_renewal:
-            log.debug(
-                f"Caching user {user.id} (needs_renewal==True)",
-                function='populate_redis_cache',
+def add_cache_user(user):
+    """ Add a user to the cache, if applicable. """
+
+    # Initialize logger
+    log = LoggerWrapper(logging.getLogger(__name__))
+
+    cache_key = renewal_cache_key_preform.format(user_id=user.id)
+
+    # No need to run calculations if cache_key already exists in the cache
+    if cache.has_key(cache_key):
+        return
+
+    # Check if user needs to renew their application. We don't want to
+    # cache users that don't need application renewals
+    needs_renewal = check_if_user_needs_to_renew(user.id)
+    if needs_renewal:
+        log.debug(
+            f"Caching user {user.id} (needs renewal)",
+            function='add_cache_user',
+            user_id=user.id,
+        )
+
+        ok = cache.set(
+            cache_key,
+            {
+                'user_id': user.id,
+                # Use last_action_notification_at if exists (it should, since
+                # last_completed_at is nonnull), else set to epoch to ensure the
+                # user gets notified
+                'last_notified': str(user.last_action_notification_at) or '1970-01-01 00:00:00',
+            },
+            # Don't timeout a user needing renewal (deletion is elsewhere)
+            timeout=None,
+        )
+        # If the cache didn't set properly, log an error and continue
+        if not ok:
+            log.error(
+                f"ERROR: User could not be cached.",
+                function='add_cache_user',
                 user_id=user.id,
             )
-
-            ok = cache.set(
-                cache_key,
-                {
-                    'user_id': user.id,
-                    # Use last_action_notification_at if exists (it should,
-                    # since last_completed_at is nonnull), else set to epoch to
-                    # ensure the user gets notified
-                    'last_notified': str(user.last_action_notification_at) or '1970-01-01 00:00:00',
-                },
-                # Don't timeout a user needing renewal (deletion is elsewhere)
-                timeout=None,
-            )
-            # If the cache didn't set properly, log an error and continue
-            if not ok:
-                log.error(
-                    f"ERROR: User could not be cached.",
-                    function='populate_redis_cache',
-                    user_id=user.id,
-                )
 
 
 def run_renewal_task():
