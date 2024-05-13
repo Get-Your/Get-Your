@@ -33,7 +33,7 @@ from django_q.tasks import async_task
 
 from app.backend import broadcast_renewal_email, check_if_user_needs_to_renew
 from app.models import User
-from app.constants import notification_buffer_month
+from app.constants import notification_buffer_month, renewal_cache_key_preform
 from logger.wrappers import LoggerWrapper
 
 
@@ -50,7 +50,7 @@ def populate_redis_cache():
         is_archived=False,
         last_completed_at__isnull=False,
     ):
-        cache_key = f"user_last_notified_{user.id}"
+        cache_key = renewal_cache_key_preform.format(user_id=user.id)
 
         # No need to run calculations if cache_key already exists in the cache
         if cache.has_key(cache_key):

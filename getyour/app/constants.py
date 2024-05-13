@@ -54,3 +54,6 @@ duration_at_address_choices = (
     ('1 to 3 Years', '1 to 3 Years'),
     ('Less than a Year', 'Less than a Year'),
 )
+
+# Define the preformatted string for the renewal cache key
+renewal_cache_key_preform = "renewal_user_{user_id}"
