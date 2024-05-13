@@ -35,6 +35,7 @@ from python_http_client.exceptions import HTTPError as SendGridHTTPError
 from twilio.base.exceptions import TwilioRestException
 
 from django import http
+from django.core.cache import cache
 from django.shortcuts import reverse
 from django.contrib.auth.backends import UserModel
 from django.contrib.auth import login as django_auth_login
@@ -57,6 +58,7 @@ from app.constants import (
     supported_content_types,
     enable_calendar_year_renewal,
     application_pages,
+    renewal_cache_key_preform,
 )
 from logger.wrappers import LoggerWrapper
 
@@ -942,6 +944,19 @@ def finalize_application(user, renewal_mode=False, update_user=True):
         Q(user_id=user.id)
     )
     household.income_as_fraction_of_ami = lowest_ami['program__ami_threshold']
+
+    # Remove the user from the renewal cache (regardless of renewal_mode; use
+    # cache existence only)
+    cache_key = renewal_cache_key_preform.format(user_id=user.id)
+    if cache.has_key(cache_key):
+        ok = cache.delete(cache_key)
+        # If the cache didn't delete properly, log an error and continue
+        if not ok:
+            log.error(
+                f"ERROR: User cache deletion failed ({cache_key})",
+                function='finalize_application',
+                user_id=user.id,
+            )
 
     if renewal_mode:
         household.is_income_verified = False
