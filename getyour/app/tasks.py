@@ -42,16 +42,34 @@ def populate_cache_task():
 
 
 def populate_redis_cache():
-    users = User.objects.all()
-    for user in users:
+    # Add each user needing renewal to the renewal cache 
+    
+    # Loop through every user in the database that isn't archived or has a NULL
+    # last_completed_at
+    for user in User.objects.filter(
+        is_archived=False,
+        last_completed_at__isnull=False,
+    ):
         cache_key = f"user_last_notified_{user.id}"
+
+        # No need to run calculations if cache_key already exists in the cache
+        if cache.has_key(cache_key):
+            continue
 
         # Check if user needs to renew their application. We don't want to
         # cache users that don't need application renewals
         needs_renewal = check_if_user_needs_to_renew(user.id)
 
-        if needs_renewal and user.last_action_notification_at:
-            cache.set(cache_key, str(user.last_action_notification_at), timeout=3600 * 24 * 30)
+        if needs_renewal:
+            cache.set(
+                cache_key,
+                # Use last_action_notification_at if exists (it should, since
+                # last_completed_at is nonnull), else set to epoch to ensure the
+                # user gets notified
+                str(user.last_action_notification_at) or '1970-01-01 00:00:00',
+                # Don't timeout a user needing renewal (deletion is elsewhere)
+                timeout=None,
+            )
 
 
 def run_renewal_task():
