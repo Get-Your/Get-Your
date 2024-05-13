@@ -16,11 +16,21 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-
 import logging
 import pendulum
+
+from sendgrid.helpers.mail import Mail
+from sendgrid import SendGridAPIClient
+
+from python_http_client.exceptions import (
+    HTTPError as SendGridHTTPError,
+    BadRequestsError as SendGridBadRequest,
+)
+
+from django.conf import settings
 from django.core.cache import cache
 from django_q.tasks import async_task
+
 from app.backend import broadcast_renewal_email, check_if_user_needs_to_renew
 from app.models import User
 from app.constants import notification_buffer_month
@@ -154,3 +164,94 @@ def send_renewal_email(user):
             function='send_renewal_email',
             user_id=user.id,
         )
+
+
+def send_generic_email(template_str, *args):
+    """
+    Send a generic email to any number of recipients. This allows a scheduled
+    email to be sent via the email service without code changes, by just adding
+    it to the Django-Q schedule.
+
+    This is 'generic' because it must follow these rules:
+    - The email template cannot be passed any parameters
+    - There are no CC addresses; all users (in the *args parameter) are sent
+    the same email, each with their own version.
+
+    Parameters
+    ----------
+    template_str : str
+        Either the name of the email template to use (specified in the .env file
+        with a corresponding template ID) or the template ID itself. The name
+        will be checked first.
+    *args : str
+        Each arg is the email address of a recipient. Each recipient will be
+        sent the email specified by ``template_str`` (these will not be sent
+        as a single bulk email).
+
+    Returns
+    -------
+    None
+
+    """
+
+    # Initialize logger
+    log = LoggerWrapper(logging.getLogger(__name__))
+
+    log.info(
+        f"Entering function using template '{template_str}'",
+        function='send_generic_email',
+    )
+
+    # Determine if the template name or ID is to be used
+    try:
+        template_id = getattr(settings, template_str)
+    except AttributeError:
+        template_id = template_str
+        log.info(
+            f"'{template_str}' is not a known template name; attempting to use as ID",
+            function='send_generic_email',
+        )
+    else:
+        log.info(
+            f"'{template_str}' is a known template name",
+            function='send_generic_email',
+        )
+
+    # Loop through each value in *args to send the email. Since the email itself
+    # is handled by the email service, this is done synchronously for simplicity
+    try:
+        for eml in args:
+            log.debug(
+                f"Attempting email to {eml}",
+                function='send_generic_email',
+            )
+            
+            message = Mail(
+                from_email='getfoco@fcgov.com',
+                to_emails=eml)
+
+            message.template_id = template_id
+            try:
+                sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+                _ = sg.send(message)
+
+            except SendGridBadRequest:
+                log.exception(
+                    f"Template likely does not exist; exiting function",
+                    function='send_generic_email',
+                )
+                # exit the loop if this exception is raised
+                break
+
+            except SendGridHTTPError as e:
+                log.exception(
+                    f"Sendgrid returned: {e}",
+                    function='send_generic_email',
+                )
+        
+    except Exception as e:
+        log.exception(
+            "General exception raised; exiting function",
+            function='send_generic_email',
+        )
+        raise

@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
+from app.admin import views as admin_views
 from app.views import landing, authentication, application, dashboard
 
 
@@ -206,4 +207,18 @@ urlpatterns = [
         name='password_reset',
         kwargs={'allow_direct_user': False},
      ),
+
+    # Custom admin URLs
+    path(
+        'app_admin/view_file/<path:blob_name>',
+        admin_views.view_file,
+        name='admin_view_file',
+        kwargs={'allow_direct_user': True},
+    ),
+    path(
+        'app_admin/add_elig_program/<int:user_id>',
+        admin_views.add_elig_program,
+        name='admin_add_elig_program',
+        kwargs={'allow_direct_user': False},
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

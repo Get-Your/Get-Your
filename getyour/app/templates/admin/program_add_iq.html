@@ -1,4 +1,4 @@
-"""
+<!--
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
 Copyright (C) 2022-2024
@@ -15,20 +15,16 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
+-->
+{% extends "admin/base_site.html" %}
 
-import sys
-from django.apps import AppConfig
-from django.conf import settings
-
-
-class AppConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "app"
-
-    def ready(self):
-        # Only execute the code if we're running the server
-        if len(sys.argv) > 1 and sys.argv[1] == "runserver" and not settings.DEBUG:
-            from app.signals import populate_cache
-
-            populate_cache.send(sender=self.__class__)
+{% block content %}
+<form action="" method="post">
+    {% csrf_token %}
+    <table>
+    {{ form.as_table }}
+    </table>
+    <input type="submit" name="_add_iq_program_submit" value="Submit">
+    <input type="submit" name="_add_iq_program_cancel" value="Cancel">
+</form>
+{% endblock %}

@@ -25,7 +25,7 @@ from django.shortcuts import render, redirect, reverse
 from django.contrib.auth.decorators import login_required
 
 from app.forms import FeedbackForm
-from app.backend import address_check, enable_renew_now, get_users_iq_programs
+from app.backend import enable_renew_now, get_users_iq_programs, address_check
 from app.models import AddressRD, IQProgram, IQProgramRD
 from logger.wrappers import LoggerWrapper
 
