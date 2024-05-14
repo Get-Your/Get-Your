@@ -180,10 +180,11 @@ def send_renewal_email(cache_key, cache_value):
     
     # `.months` specifies number of months within a year,
     # where `in_months()` (used here) specifies overall number of months
-    # (e.g. period.months + period.years*12 = period.in_months())
+    # (e.g. period.months + period.years*12 = period.in_months()), starting with
+    # zero to designate 'within one month'
     should_notify = (
         pendulum.now() - pendulum.parse(cache_value['last_notified'])
-    ).in_months() > notification_buffer_month
+    ).in_months() >= notification_buffer_month
 
     if should_notify:
         log.info(
