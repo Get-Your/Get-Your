@@ -39,7 +39,7 @@ from app.constants import notification_buffer_month, renewal_cache_key_preform
 from logger.wrappers import LoggerWrapper
 
 
-def populate_cache_task():
+def populate_cache_on_startup():
     """
     Use this task at AppConfig.ready to populate the cache on server startup
     without the base Django touching the database (inadvisable, per the docs).
@@ -50,7 +50,7 @@ def populate_cache_task():
 
     log.debug(
         "Entering function",
-        function='populate_cache_task',
+        function='populate_cache_on_startup',
     )
 
     async_task(populate_redis_cache)

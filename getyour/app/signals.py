@@ -35,7 +35,7 @@ from app.models import (
     IQProgramHist,
 )
 from app.backend import changed_modelfields_to_dict
-from app.tasks import populate_cache_task
+from app.tasks import populate_cache_on_startup
 from django.dispatch import Signal
 
 
@@ -263,4 +263,4 @@ def eligiblity_program_pre_delete(sender, instance, **kwargs):
 
 @receiver(populate_cache)
 def trigger_cache_population(sender, **kwargs):
-    populate_cache_task()
+    populate_cache_on_startup()
