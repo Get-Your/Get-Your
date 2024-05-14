@@ -45,14 +45,6 @@ def populate_cache_on_startup():
     without the base Django touching the database (inadvisable, per the docs).
     
     """
-    # Initialize logger
-    log = LoggerWrapper(logging.getLogger(__name__))
-
-    log.debug(
-        "Entering function",
-        function='populate_cache_on_startup',
-    )
-
     async_task(populate_redis_cache)
 
 
@@ -61,7 +53,7 @@ def populate_redis_cache():
     log = LoggerWrapper(logging.getLogger(__name__))
 
     log.debug(
-        "Entering function",
+        "Populating Redis cache",
         function='populate_redis_cache',
     )
 
@@ -73,11 +65,6 @@ def populate_redis_cache():
         is_archived=False,
         last_completed_at__isnull=False,
     ):
-        log.debug(
-            f"Looping through users: user {user.id}",
-            function='populate_redis_cache',
-            user_id=user.id,
-        )
         async_task(add_cache_user, user)
 
 
@@ -98,7 +85,7 @@ def add_cache_user(user):
     needs_renewal = check_if_user_needs_to_renew(user.id)
     if needs_renewal:
         log.debug(
-            f"Caching user {user.id} (needs renewal)",
+            f"Caching renewal user {user.id}",
             function='add_cache_user',
             user_id=user.id,
         )
@@ -139,7 +126,7 @@ def run_renewal_task():
     log = LoggerWrapper(logging.getLogger(__name__))
 
     log.debug(
-        "Entering function",
+        "Starting renewal notification loop",
         function='run_renewal_task',
     )
 
@@ -157,10 +144,6 @@ def run_renewal_task():
     cache_dict = cache.get_many(renewal_keys)
     
     for key, val in cache_dict.items():
-        log.debug(
-            f"Looping through cache keys: {key}",
-            function='run_renewal_task',
-        )
         async_task(send_renewal_email, key, val)
 
 
