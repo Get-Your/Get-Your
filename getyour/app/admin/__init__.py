@@ -138,21 +138,19 @@ def document_path_parsed(obj):
         url_list = []
         for idx, itm in enumerate(blob_list):
             url_list.append(
-                # """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Document {nm} of {tot}</a>""".format(
-                #     trg=reverse(
-                #         'app:admin_view_file',
-                #         kwargs={'blob_name': itm},
-                #     ),
-                #     nm=idx+1,
-                #     tot=len(blob_list),
-                # )
-                itm
+                """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Document {nm} of {tot}</a>""".format(
+                    trg=reverse(
+                        'app:admin_view_file',
+                        kwargs={'blob_name': itm},
+                    ),
+                    nm=idx+1,
+                    tot=len(blob_list),
+                )
             )
     else:
         url_list = ['No document available']
 
-    # return format_html('<br />'.join(url_list))
-    return '\n'.join(url_list)
+    return format_html('<br />'.join(url_list))
 
 
 def get_admin_url(obj, urltype='change'):
@@ -306,20 +304,18 @@ class HouseholdMembersInline(admin.TabularInline):
                 # Parse each document_path into a link that can be used to view the
                 # file
                 if 'identification_path' in itm and itm['identification_path'] is not None:
-                    # document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
-                    #     trg=reverse(
-                    #         'app:admin_view_file',
-                    #         kwargs={'blob_name': itm['identification_path']},
-                    #     ),
-                    # )
-                    document_link = itm['identification_path']
+                    document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
+                        trg=reverse(
+                            'app:admin_view_file',
+                            kwargs={'blob_name': itm['identification_path']},
+                        ),
+                    )
                 else:
                     document_link = "No identification available"
                 person_list.append(document_link)
                 person_list.append('')
 
-        # return format_html('<br />'.join(person_list))
-        return '\n'.join(person_list)
+        return format_html('<br />'.join(person_list))
 
     # Show zero extra (unfilled) options
     extra = 0
