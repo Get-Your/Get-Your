@@ -21,7 +21,7 @@ import base64
 import pendulum
 from pathlib import PurePosixPath
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.core.files.storage import default_storage
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
@@ -69,14 +69,16 @@ def view_file(request, blob_name, **kwargs):
         # supported_content_types dict
         content_type = supported_content_types[blob_name_path.suffix[1:].lower()]
 
-        return render(
-            request,
-            'admin/view_file.html',
-            {
-                'blob_data': base64.b64encode(blob_data).decode('utf-8'),
-                'content_type': content_type,
-            },
+        # Save the blob data and content type to the session var
+        request.session['blob_data'] = base64.b64encode(
+            blob_data
+        ).decode(
+            'utf-8'
         )
+        request.session['content_type'] = content_type
+
+        # Redirect to the file-viewing URL set up as a separate Web App
+        return redirect(FILE_VIEW_URL, permanent=True)
     
     # General view-level exception catching
     except:
