@@ -77,7 +77,7 @@ def get_blob(request, blob_name, **kwargs):
         ).decode(
             'utf-8'
         )
-        request.session['content_type'] = content_type
+        request.session['blob_type'] = content_type
 
         # Redirect to the file-viewing URL set up as a separate Web App
         return redirect(

@@ -14,13 +14,19 @@ def view_blob(request):
         function='view_blob',
     )
     
-    return render(
+    response = render(
         request,
         'view_blob.html',
         {
             'blob_data': request.session['blob_data'],
-            'content_type': request.session['content_type'],
+            'content_type': request.session['blob_type'],
         },
         # # Set the redirect status
         # status=302,
     )
+
+    # Delete the session vars just before serving the blob
+    del request.session['blob_data']
+    del request.session['blob_type']
+
+    return response
