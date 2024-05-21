@@ -213,7 +213,7 @@ urlpatterns = [
         'app_admin/get_blob/<path:blob_name>',
         admin_views.get_blob,
         name='admin_get_blob',
-        kwargs={'allow_direct_user': True},
+        kwargs={'allow_direct_user': False},
     ),
     path(
         'app_admin/add_elig_program/<int:user_id>',
