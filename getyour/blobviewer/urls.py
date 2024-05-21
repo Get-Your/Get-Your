@@ -22,8 +22,8 @@ from blobviewer import views
 
 urlpatterns = [
     path(
-        'view_file',
-        views.view_file,
-        name='view_file',
+        'view_blob',
+        views.view_blob,
+        name='view_blob',
     ),
 ]

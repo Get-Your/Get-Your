@@ -8,15 +8,15 @@ from logger.wrappers import LoggerWrapper
 log = LoggerWrapper(logging.getLogger(__name__))
 
 
-def view_file(request):
+def view_blob(request):
     log.debug(
         "Entering function",
-        function='view_file',
+        function='view_blob',
     )
     
     return render(
         request,
-        'view_file.html',
+        'view_blob.html',
         {
             'blob_data': request.session['blob_data'],
             'content_type': request.session['content_type'],
