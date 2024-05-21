@@ -41,11 +41,11 @@ log = LoggerWrapper(logging.getLogger(__name__))
 
 
 @staff_member_required
-def view_file(request, blob_name, **kwargs):
+def get_blob(request, blob_name, **kwargs):
     try:
         log.debug(
             "Entering function",
-            function='view_file',
+            function='get_blob',
             user_id=request.user.id,
         )
 
@@ -58,7 +58,7 @@ def view_file(request, blob_name, **kwargs):
         except ResourceNotFoundError as e:
             log.exception(
                 f"ResourceNotFoundError: {e}",
-                function='view_file',
+                function='get_blob',
                 user_id=request.user.id,
             )
             raise ResourceNotFoundError(message=e)
@@ -88,7 +88,7 @@ def view_file(request, blob_name, **kwargs):
             user_id = None
         log.exception(
             'Uncaught view-level exception',
-            function='view_file',
+            function='get_blob',
             user_id=user_id,
         )
         raise
