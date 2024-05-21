@@ -20,8 +20,10 @@ import logging
 import base64
 import pendulum
 from pathlib import PurePosixPath
+from urllib.parse import urljoin
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
+from django.conf import settings
 from django.core.files.storage import default_storage
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
@@ -78,8 +80,13 @@ def get_blob(request, blob_name, **kwargs):
         request.session['content_type'] = content_type
 
         # Redirect to the file-viewing URL set up as a separate Web App
-        return redirect(FILE_VIEW_URL, permanent=True)
-    
+        return redirect(
+            urljoin(
+                settings.BLOBVIEWER_ORIGIN,
+                reverse('blobviewer:view_blob'),
+            ),
+        )
+
     # General view-level exception catching
     except:
         try:
