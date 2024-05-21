@@ -63,6 +63,7 @@ DATABASES = {
 # Logging modifications - set logging level to DEBUG and overwrite DEBUG_LOGGER
 # env var for clarity
 LOGGING['loggers']['app']['level'] = 'DEBUG'
+LOGGING['loggers']['blobviewer']['level'] = 'DEBUG'
 DEBUG_LOGGING = True
 
 if not BLOBVIEWER_ONLY:

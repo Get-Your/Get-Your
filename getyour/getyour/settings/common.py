@@ -255,6 +255,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'blobviewer': {
+            'handlers': ['db_log'],
+            'level': 'INFO',
+            'propagate': False,
+        },
         'django.request': {
             'handlers': ['db_log'],
             'level': 'ERROR',

@@ -67,6 +67,7 @@ DATABASES = {
 # This uses an Azure App Service environment var
 if DEBUG_LOGGING:
     LOGGING['loggers']['app']['level'] = 'DEBUG'
+    LOGGING['loggers']['blobviewer']['level'] = 'DEBUG'
 
 if not BLOBVIEWER_ONLY:
     Q_CLUSTER = {
