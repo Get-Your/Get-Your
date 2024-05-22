@@ -142,7 +142,7 @@ SESSION_COOKIE_AGE = 6*60*60
 
 ROOT_URLCONF = 'getyour.urls'
 
-# No auth if BLOBVIEWER_ONLY
+# No auth if BLOBVIEWER_ONLY; leave at Django defaults
 if not BLOBVIEWER_ONLY:
     AUTH_USER_MODEL = "app.User"
     LOGIN_URL = 'app:login'
@@ -180,7 +180,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 WSGI_APPLICATION = 'getyour.wsgi.application'
 
-# Password validation (no auth for BLOBVIEWER_ONLY)
+# Password validation (no auth for BLOBVIEWER_ONLY; leave at Django defaults)
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 if not BLOBVIEWER_ONLY:
     AUTH_PASSWORD_VALIDATORS = [

@@ -40,7 +40,7 @@ CSRF_TRUSTED_ORIGINS = []
 ALLOWED_HOSTS = []
 
 # Throw exception if BLOBVIEWER_ORIGIN scheme is not included. An excluded
-# scheme will load the file on the current domain, which is unwanted
+# scheme results in odd urlparse behavior that could make debugging difficult
 if not re.match(r'https?://', BLOBVIEWER_ORIGIN):
     raise AttributeError("BLOBVIEWER_ORIGIN must include scheme (http(s)://)")
 

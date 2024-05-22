@@ -51,8 +51,8 @@ if not settings.BLOBVIEWER_ONLY:
             template_name='authentication/password_reset_complete.html'), name='password_reset_complete'),
     ])
 
-# Always include blobviewer. By including here regardless of whether in
-# INSTALLED_APPS, we can reference the name to reverse-resolve it
+# Always include blobviewer. By including here regardless of whether it's
+# an installed app, we can reference the name to reverse-resolve it
 urlpatterns.extend([
      path(
         'viewer/',

@@ -38,7 +38,7 @@ CSRF_TRUSTED_ORIGINS = [f"https://{x}" for x in env.list("HOSTS")]
 ALLOWED_HOSTS = env.list("HOSTS")
 
 # Throw exception if BLOBVIEWER_ORIGIN scheme is not included. An excluded
-# scheme will load the file on the current domain, which is unwanted
+# scheme results in odd urlparse behavior that could make debugging difficult
 if not re.match(r'https?://', BLOBVIEWER_ORIGIN):
     raise AttributeError("BLOBVIEWER_ORIGIN must include scheme (http(s)://)")
 
@@ -69,6 +69,7 @@ if DEBUG_LOGGING:
     LOGGING['loggers']['app']['level'] = 'DEBUG'
     LOGGING['loggers']['blobviewer']['level'] = 'DEBUG'
 
+# django_q is not installed for BLOBVIEWER_ONLY; no need for Q_CLUSTER
 if not BLOBVIEWER_ONLY:
     Q_CLUSTER = {
         'name': 'DJRedis',
