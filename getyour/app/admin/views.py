@@ -20,8 +20,10 @@ import logging
 import base64
 import pendulum
 from pathlib import PurePosixPath
+from urllib.parse import urljoin
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect, reverse
+from django.conf import settings
 from django.core.files.storage import default_storage
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
@@ -41,11 +43,11 @@ log = LoggerWrapper(logging.getLogger(__name__))
 
 
 @staff_member_required
-def view_file(request, blob_name, **kwargs):
+def get_blob(request, blob_name, **kwargs):
     try:
         log.debug(
             "Entering function",
-            function='view_file',
+            function='get_blob',
             user_id=request.user.id,
         )
 
@@ -58,7 +60,7 @@ def view_file(request, blob_name, **kwargs):
         except ResourceNotFoundError as e:
             log.exception(
                 f"ResourceNotFoundError: {e}",
-                function='view_file',
+                function='get_blob',
                 user_id=request.user.id,
             )
             raise ResourceNotFoundError(message=e)
@@ -69,15 +71,22 @@ def view_file(request, blob_name, **kwargs):
         # supported_content_types dict
         content_type = supported_content_types[blob_name_path.suffix[1:].lower()]
 
-        return render(
-            request,
-            'admin/view_file.html',
-            {
-                'blob_data': base64.b64encode(blob_data).decode('utf-8'),
-                'content_type': content_type,
-            },
+        # Save the blob data and content type to the session var
+        request.session['blob_data'] = base64.b64encode(
+            blob_data
+        ).decode(
+            'utf-8'
         )
-    
+        request.session['blob_type'] = content_type
+
+        # Redirect to the file-viewing URL set up as a separate Web App
+        return redirect(
+            urljoin(
+                settings.BLOBVIEWER_ORIGIN,
+                reverse('blobviewer:view_blob'),
+            ),
+        )
+
     # General view-level exception catching
     except:
         try:
@@ -86,7 +95,7 @@ def view_file(request, blob_name, **kwargs):
             user_id = None
         log.exception(
             'Uncaught view-level exception',
-            function='view_file',
+            function='get_blob',
             user_id=user_id,
         )
         raise

@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import re
 
 from getyour.settings.common import *
 from getyour.settings.common import env
@@ -26,8 +27,9 @@ env.read_env(BASE_DIR.joinpath('.dev.env'))
 SECRET_KEY = env("SECRET_KEY")
 AZURE_ACCOUNT_NAME = env("AZURE_ACCOUNT_NAME")
 AZURE_ACCOUNT_KEY = env("AZURE_ACCOUNT_KEY")
-AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.usgovcloudapi.net"
+AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
 AZURE_CONTAINER = env("AZURE_CONTAINER")
+BLOBVIEWER_ORIGIN = env("BLOBVIEWER_ORIGIN")
 IS_PROD = False
 
 # SECURITY WARNING: don't run with debug turned on for any live site!
@@ -36,6 +38,11 @@ DEBUG = True
 # Revert to default (permissive) values when running locally
 CSRF_TRUSTED_ORIGINS = []
 ALLOWED_HOSTS = []
+
+# Throw exception if BLOBVIEWER_ORIGIN scheme is not included. An excluded
+# scheme results in odd urlparse behavior that could make debugging difficult
+if not re.match(r'https?://', BLOBVIEWER_ORIGIN):
+    raise AttributeError("BLOBVIEWER_ORIGIN must include scheme (http(s)://)")
 
 # Application definitions (outside of settings.common)
 
@@ -61,4 +68,5 @@ DATABASES = {
 # Logging modifications - set logging level to DEBUG and overwrite DEBUG_LOGGER
 # env var for clarity
 LOGGING['loggers']['app']['level'] = 'DEBUG'
+LOGGING['loggers']['blobviewer']['level'] = 'DEBUG'
 DEBUG_LOGGING = True
