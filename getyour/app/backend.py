@@ -646,7 +646,7 @@ def what_page(user, request):
         if users_programs_without_uploads.count():
             return "app:files"
 
-        return "app:dashboard"
+        return "app:account_overview"
     else:
         return "app:account"
 
@@ -1024,7 +1024,7 @@ def finalize_application(user, renewal_mode=False, update_user=True):
 
         # Return the target page and a dictionary of <session var>: <value>
         return (
-            'app:dashboard',
+            'app:account_overview',
             {
                 'app_renewed': True,
                 'renewal_eligible': sorted(renewal_eligible),

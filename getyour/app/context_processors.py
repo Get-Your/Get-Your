@@ -1,6 +1,6 @@
 import re
-
 from django.conf import settings
+from app.models import IQProgramRD
 
 
 def global_template_variables(request):
@@ -21,6 +21,7 @@ def global_template_variables(request):
         'code_version': settings.CODE_VERSION,
         'contact_email': settings.CONTACT_EMAIL,
         'contact_number': contact_number,
+        'footer_iq_programs': IQProgramRD.objects.filter(is_active=True),
     }
 
     return data

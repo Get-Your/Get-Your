@@ -188,7 +188,7 @@ class ValidRouteTest(TestCase):
                 if viewname == 'login':
                     self.assertURLEqual(
                         response.url,
-                        reverse("app:dashboard"),
+                        reverse("app:account_overview"),
                     )
 
                 else:

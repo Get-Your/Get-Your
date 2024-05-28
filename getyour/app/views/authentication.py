@@ -136,7 +136,7 @@ def login_user(request, **kwargs):
                 # during a renewal and therefore should be taken directly to the
                 # dashboard
                 if request.user.last_renewal_action is not None:
-                    return redirect(reverse("app:dashboard"))
+                    return redirect(reverse("app:account_overview"))
                 
                 page = what_page(request.user, request)
                 log.info(
@@ -144,8 +144,8 @@ def login_user(request, **kwargs):
                     function='login_user',
                     user_id=request.user.id,
                 )
-                if page == "app:dashboard":
-                    return redirect(reverse("app:dashboard"))
+                if page == "app:account_overview":
+                    return redirect(reverse("app:account_overview"))
                 else:
                     return redirect(reverse("app:notify_remaining"))
 
@@ -168,8 +168,8 @@ def login_user(request, **kwargs):
                 function='login_user',
                 user_id=request.user.id,
             )
-            if page == "app:dashboard":
-                return redirect(reverse("app:dashboard"))
+            if page == "app:account_overview":
+                return redirect(reverse("app:account_overview"))
             else:
                 return redirect(reverse("app:notify_remaining"))
 

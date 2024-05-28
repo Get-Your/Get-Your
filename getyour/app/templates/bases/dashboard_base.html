@@ -39,7 +39,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <span></span>
     
                     <ul id="menu">
-                        <a style="color: {{ dashboard_color }} ; " href="{% url 'app:dashboard' %}">
+                        <a style="color: {{ dashboard_color }} ; " href="{% url 'app:account_overview' %}">
                             <li>Dashboard</li>
                         </a>
                         <a style="color:{{ program_list_color }}; " href="{% url 'app:programs_list' %}">
@@ -78,7 +78,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                         </p>
                         <p> <img src="{% static 'img/Dashboard.svg' %}"> <a
                                 style="color: {{ dashboard_color }}; text-decoration:none; "
-                                href="{% url 'app:dashboard' %}">Dashboard</a></p>
+                                href="{% url 'app:account_overview' %}">Dashboard</a></p>
                         <p> <img src="{% static 'img/ProgramList.svg' %}"> <a
                                 style="color:{{ program_list_color }}; text-decoration:none;"
                                 href="{% url 'app:programs_list' %}">Programs</a></p>
