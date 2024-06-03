@@ -931,9 +931,14 @@ class UserAdmin(admin.ModelAdmin):
 
         obj = User.objects.get(pk=object_id)
         extra_context['custom_buttons'] = []
+        # Only superusers and admins have access to custom buttons
         # IQ Programs can be added at any time after the user has completed the
         # application
-        if obj.last_completed_at is not None:
+        if obj.last_completed_at is not None and (
+            request.user.is_superuser or request.user.groups.filter(
+                name__istartswith='admin'
+            ).exists()
+        ):
             # ...but Eligibility Program addition is disallowed once income has
             # been verified
             if obj.household.is_income_verified is False:
@@ -1140,15 +1145,20 @@ class AddressAdmin(admin.ModelAdmin):
             return []
 
         # Global readonly fields
-        readonly_fields = [
-            'pretty_address',
-            'is_in_gma',
-        ]
-        # is_city_covered cannot be modified (from True) if is_in_gma==True
-        if obj.is_in_gma:
-            readonly_fields.append('is_city_covered')
-        # Ensure there are no duplicates
-        return readonly_fields
+        readonly_fields = self.fields
+
+        readonly_remove = []
+        # is_city_covered can be modified only if is_in_gma==False and user is
+        # either superuser or in 'admin' group
+        if not obj.is_in_gma and (
+            request.user.is_superuser or request.user.groups.filter(
+                name__istartswith='admin'
+            ).exists()
+        ):
+            readonly_remove.append('is_city_covered')
+        
+        # Remove the fields and re-listify
+        return list(set(readonly_fields) - set(readonly_remove))
 
     @admin.action(description='Update GMA for selected addresses')
     def update_gma(self, request, input_object):
