@@ -18,7 +18,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import json
 import usaddress
-import magic
 import pendulum
 import logging
 import base64
@@ -44,20 +43,6 @@ from app.forms import (
     UserUpdateForm,
     FileUploadForm,
 )
-from app.backend import (
-    login,
-    form_page_number,
-    tag_mapping,
-    address_check,
-    serialize_household_members,
-    validate_usps,
-    get_in_progress_eligiblity_file_uploads,
-    what_page,
-    broadcast_email,
-    broadcast_sms,
-    save_renewal_action,
-    finalize_application,
-)
 from app.models import (
     userfiles_path,
     AddressRD,
@@ -66,8 +51,26 @@ from app.models import (
     Household,
     User,
     EligibilityProgramRD,
+    Admin as AppAdmin,
+)
+from app.backend import (
+    login,
+    form_page_number,
+    serialize_household_members,
+    get_in_progress_eligiblity_file_uploads,
+    what_page,
+    broadcast_email,
+    broadcast_sms,
+    save_renewal_action,
+    file_validation,
+    tag_mapping,
+    address_check,
+    validate_usps,
+    finalize_address,
+    finalize_application,
 )
 from app.decorators import set_update_mode
+from app.constants import supported_content_types
 from logger.wrappers import LoggerWrapper
 
 
@@ -256,11 +259,13 @@ def account(request, **kwargs):
                 try:
                     user = form.save()
                     login(request, user)
+
                     log.info(
                         "User account creation successful",
                         function='account',
                         user_id=user.id,
                     )
+
                     data = {
                         'result': "success",
                     }
@@ -807,14 +812,8 @@ def take_usps_address(request, **kwargs):
                 )
                 instance.clean()
 
-            # Record the service area and Connexion status
-            instance.is_in_gma = is_in_gma
-            instance.is_city_covered = is_in_gma
-            instance.has_connexion = has_connexion
-
-            # Final step: mark the address record as 'verified'
-            instance.is_verified = True
-            instance.save()
+            # Finalize the address portion
+            finalize_address(instance, is_in_gma, has_connexion)
 
             # Get the first address in the list of addresses
             # that is not yet processed
@@ -1055,17 +1054,8 @@ def household_members(request, **kwargs):
             if form.is_valid():
                 instance = form.save(commit=False)
 
-                # fileAmount = 0
-                # process is as follows:
-                # 1) file is physically saved from the buffer
-                # 2) file is then SCANNED using magic
-                # 3) file is then deleted or nothing happens if magic sees it's ok
-
-                # update, magic no longer needs to scan from saved file, can now scan from buffer! so with this in mind
-                '''
-                1) For loop #1 file(s) scanned first
-                2) For Loop #2 file saved if file(s) are valid
-                '''
+                # Loop 1: scans files
+                # Loop 2: saves file(s) if valid
                 identification_paths = request.POST.getlist('identification_path')
                 updated_identification_paths = []
 
@@ -1074,19 +1064,13 @@ def household_members(request, **kwargs):
                     decoded_bytes = base64.b64decode(base64_content)
                     # Create a buffer from the decoded bytes
                     buffer = io.BytesIO(decoded_bytes).getvalue()
-                    # fileValidation found below
-                    filetype = magic.from_buffer(buffer)
 
-                    # Check if any of the following strings ("PNG", "JPEG", "JPG", "PDF") are in the filetype
-                    if any(x in filetype for x in ["PNG", "JPEG", "JPG", "PDF"]):
-                        pass
-                    else:
-                        log.error(
-                            f"File is not a valid file type ({filetype})",
-                            function='household_members',
-                            user_id=request.user.id,
-                        )
-
+                    file_validated, failure_message_or_file_extension = file_validation(
+                        buffer,
+                        request.user.id,
+                        calling_function='household_members',
+                    )
+                    if not file_validated:
                         # Attempt to define household_info to load
                         try:
                             household_info = request.user.householdmembers.household_info
@@ -1098,7 +1082,7 @@ def household_members(request, **kwargs):
                             "application/household_members.html",
                             {
                                 'step': 3,
-                                "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
+                                "message": failure_message_or_file_extension,
                                 'dependent': str(request.user.household.number_persons_in_household),
                                 'list': list(range(request.user.household.number_persons_in_household)),
                                 'form': form,
@@ -1109,13 +1093,9 @@ def household_members(request, **kwargs):
                             },
                         )
 
-                    # Regular expression pattern for matching PNG, JPEG, JPG, or PDF file extensions
-                    pattern = r'(?i)\b(png|jpe?g|pdf)\b'
-                    # Search for the pattern in the filetype string
-                    match = re.search(pattern, filetype, re.IGNORECASE)
-                    # Extract the matched file extension
-                    file_extension = match.group(1).lower()
-                    file_name = f"household_member_id.{file_extension}"
+                    # File was successfully validated; file_validation() output
+                    # will be the file extension
+                    file_name = f"household_member_id.{failure_message_or_file_extension}"
                     # Assuming file_name is already defined
                     updated_base64_content = base64_content + "," + file_name
                     updated_identification_paths.append(updated_base64_content)
@@ -1124,12 +1104,10 @@ def household_members(request, **kwargs):
                 for f in updated_identification_paths:
                     file_name = f.split(",")[1]
                     file_contents = f.split(",")[0]
-                    content_type = {
-                        "png": "image/png",
-                        "jpg": "image/jpeg",
-                        "jpeg": "image/jpeg",
-                        "pdf": "application/pdf"
-                    }.get(file_name.split(".")[1], "text/plain")
+                    content_type = supported_content_types.get(
+                        file_name.split(".")[1],
+                        "text/plain",
+                    )
 
                     # Decode the Base64 string
                     decoded_bytes = base64.b64decode(file_contents)
@@ -1381,36 +1359,23 @@ def files(request, **kwargs):
                 instance = form.save(commit=False)
                 fileNames = []
                 fileAmount = 0
-                # process is as follows:
-                # 1) file is physically saved from the buffer
-                # 2) file is then SCANNED using magic
-                # 3) file is then deleted or nothing happens if magic sees it's ok
-
-                # update, magic no longer needs to scan from saved file, can now scan from buffer! so with this in mind
-                '''
-                1) For loop #1 file(s) scanned first
-                2) For Loop #2 file saved if file(s) are valid
-                '''
+                
+                # Loop 1: scans files
+                # Loop 2: saves file(s) if valid
                 for f in request.FILES.getlist('document_path'):
-                    # fileValidation found below
-                    filetype = magic.from_buffer(f.read())
-
-                    # Check if any of the following strings ("PNG", "JPEG", "JPG", "PDF") are in the filetype
-                    if any(x in filetype for x in ["PNG", "JPEG", "JPG", "PDF"]):
-                        pass
-                    else:
-                        log.error(
-                            f"File is not a valid file type ({filetype})",
-                            function='files',
-                            user_id=request.user.id,
-                        )
+                    file_validated, failure_message_or_file_extension = file_validation(
+                        f,
+                        request.user.id,
+                        calling_function='files',
+                    )
+                    if not file_validated:
                         users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
                             request)
                         return render(
                             request,
                             'application/files.html',
                             {
-                                "message": "File is not a valid file type. Please upload either  JPG, PNG, OR PDF.",
+                                "message": failure_message_or_file_extension,
                                 'form': form,
                                 'eligiblity_programs': users_programs_without_uploads,
                                 'step': 5,
@@ -1473,10 +1438,15 @@ def files(request, **kwargs):
                     )
                 else:
                     # Once all files have been uploaded, finalize the application
-                    target_page = finalize_application(
-                        request,
+                    target_page, session_updates = finalize_application(
+                        request.user,
                         renewal_mode=renewal_mode,
                     )
+                    # Update the session vars from the finalize application output
+                    for key, itm in session_updates.items():
+                        request.session[key] = itm
+
+                    # Redirect to the finalize application target
                     return redirect(target_page)
 
         else:

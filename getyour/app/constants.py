@@ -16,7 +16,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-
 # Set the notification buffer to be used for reminders
 notification_buffer_month = 1
 
@@ -25,3 +24,33 @@ enable_calendar_year_renewal = True
 
 # Set the specified app label(s) for use in the logging db router
 logger_app_labels = {'logger'}
+
+# Define the content types supported by this app
+supported_content_types = {
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'pdf': 'application/pdf',
+}
+
+# Define the pages for the application/renewal, in order
+application_pages = {
+    'get_ready': 'app:get_ready',
+    'account': 'app:account',
+    'address': 'app:address',
+    'household': 'app:household',
+    'household_members': 'app:household_members',
+    'eligibility_programs': 'app:programs',
+    'files': 'app:files'
+}
+
+# Define form choices for rent/own and duration at address
+rent_own_choices = (
+    ('rent', 'Rent'),
+    ('own', 'Own'),
+)
+duration_at_address_choices = (
+    ('More than 3 Years', 'More than 3 Years'),
+    ('1 to 3 Years', '1 to 3 Years'),
+    ('Less than a Year', 'Less than a Year'),
+)

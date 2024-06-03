@@ -17,11 +17,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import hashlib
+
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
+from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
+from django.db.models import Value
+from django.db.models.functions import Concat
+
+from app.constants import rent_own_choices, duration_at_address_choices
 
 
 def userfiles_path(instance, filename):
@@ -139,21 +145,48 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=200)
     phone_number = PhoneNumberField()
     has_viewed_dashboard = models.BooleanField(default=False)
-    is_archived = models.BooleanField(default=False)
+    is_archived = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Designates whether the user is marked as 'archived'."
+        ),
+    )
     is_updated = models.BooleanField(default=False)
-    last_completed_at = models.DateTimeField(null=True, blank=True)
+    last_completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_(
+            "The latest time the user completed an application/renewal."
+        ),
+    )
     last_renewal_action = models.JSONField(null=True, blank=True)
-    last_action_notification_at = models.DateTimeField(null=True, blank=True)
+    last_action_notification_at = models.DateTimeField(
+        null=True, 
+        blank=True,
+        verbose_name="Last user action notification",
+        help_text=_(
+            "The latest time a notification was sent because of or requesting user action."
+        ),
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
     objects = CustomUserManager()
 
+    class Meta:
+        verbose_name = 'user'
+        verbose_name_plural = 'users'
+
     def __str__(self):
         return self.email
 
     # Define non-database attributes
+    @property
+    @admin.display
+    def full_name(self):
+        return self.first_name + ' ' + self.last_name
+
     @property
     def update_mode(self):
         # Return update_mode for use in saving historical values
@@ -188,20 +221,46 @@ class UserHist(models.Model):
 
 
 class AddressRD(GenericTimeStampedModel):
-    address1 = models.CharField(max_length=200, default="")
-    address2 = models.CharField(max_length=200, blank=True, default="")
+    address1 = models.CharField(
+        max_length=200,
+        default="",
+        verbose_name="street address",
+        help_text=_(
+            "House number and street name."
+        ),
+    )
+    address2 = models.CharField(
+        max_length=200,
+        blank=True,
+        default="",
+        verbose_name="apt, suite, etc.",
+        help_text=_(
+            "Leave blank if not applicable."
+        ),
+    )
 
     # Try to get past the things that should be the same for every applicant
-    city = models.CharField(max_length=64,)
+    city = models.CharField(max_length=64)
     state = models.CharField(max_length=2, default="")
 
     zip_code = models.DecimalField(max_digits=5, decimal_places=0)
 
     is_in_gma = models.BooleanField(null=True, default=None)
-    is_city_covered = models.BooleanField(null=True, default=None)
+    is_city_covered = models.BooleanField(
+        null=True,
+        default=None,
+        help_text=_(
+            "Designates whether an address is eligible for benefits. " 
+            "This can be altered if the address is outside the GMA."
+        ),
+    )
     has_connexion = models.BooleanField(null=True, default=None)
     is_verified = models.BooleanField(default=False)
     address_sha1 = models.CharField(max_length=40, unique=True)
+
+    class Meta:
+        verbose_name = 'address'
+        verbose_name_plural = 'addresses'
 
     def clean(self):
         self.address1 = self.address1.upper()
@@ -249,16 +308,20 @@ class Address(GenericTimeStampedModel):
     mailing_address = models.ForeignKey(
         AddressRD,
         on_delete=models.DO_NOTHING,    # don't remove this value if address is deleted
-        related_name='+',   # don't relate AddressesNew_rearch id with this field
+        related_name='+',   # don't relate AddressRD with this field
     )
     eligibility_address = models.ForeignKey(
         AddressRD,
         on_delete=models.DO_NOTHING,    # don't remove this value if address is deleted
-        related_name='+',   # don't relate AddressesNew_rearch id with this field
+        related_name='eligibility_user',
     )
 
     # Important: for this model, ``is_updated`` applies *only to the mailing address*
     is_updated = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = 'address'
+        verbose_name_plural = 'addresses'
 
     # Define non-database attributes
     @property
@@ -302,15 +365,45 @@ class Household(GenericTimeStampedModel):
         primary_key=True,   # set this to the primary key of this model
     )
     is_updated = models.BooleanField(default=False)
-    is_income_verified = models.BooleanField(default=False)
-    duration_at_address = models.CharField(max_length=200)
-    number_persons_in_household = models.IntegerField(100, default=1)
+    is_income_verified = models.BooleanField(
+        default=False,
+        verbose_name="income has been verified",
+        help_text=_(
+            "Designates whether an applicant has had their income verified."
+        ),
+    )
+    duration_at_address = models.CharField(
+        max_length=200,
+        choices=duration_at_address_choices,
+    )
+    number_persons_in_household = models.IntegerField(
+        default=1,
+        verbose_name="household size",
+        help_text=_(
+            "Number of persons in the household."
+        ),
+    )
 
     # Define the min and max Gross Annual Household Income as a fraction of
     # AMI (which is a function of number of individuals in household)
     income_as_fraction_of_ami = models.DecimalField(
-        max_digits=3, decimal_places=2, null=True, default=None)
-    rent_own = models.CharField(max_length=200)
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+        default=None,
+    )
+    rent_own = models.CharField(
+        max_length=200,
+        choices=rent_own_choices,
+        verbose_name="rent or own",
+        help_text=_(
+            "Designates whether the applicant rents or owns their primary residence."
+        ),
+    )
+
+    class Meta:
+        verbose_name = 'household'
+        verbose_name_plural = 'household'
 
     # Define non-database attributes
     @property
@@ -358,6 +451,10 @@ class HouseholdMembers(GenericTimeStampedModel):
     household_info = models.JSONField(null=True, blank=True)
     is_updated = models.BooleanField(default=False)
 
+    class Meta:
+        verbose_name = 'household member'
+        verbose_name_plural = 'household members'
+
     # Define non-database attributes
     @property
     def update_mode(self):
@@ -394,10 +491,24 @@ class HouseholdMembersHist(models.Model):
 
 class IQProgramRD(GenericTimeStampedModel):
     # ``id`` is the implicity primary key
-    program_name = models.CharField(max_length=40, unique=True)
+    program_name = models.CharField(
+        max_length=40,
+        unique=True,
+        help_text=_(
+            "Program reference name within the platform. "
+            "Must be lowercase with no spaces."
+        ),
+    )
 
     # Store the AMI for which users must be below in order to be eligible
-    ami_threshold = models.DecimalField(max_digits=3, decimal_places=2)
+    ami_threshold = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        help_text=_(
+            "Income threshold of the program, as a fraction of AMI "
+            "(e.g. '0.30' == 30% of AMI)."
+        ),
+    )
 
     # The following "friendly" fields will be viewable by users. None of them
     # have a database-constrained length in order to maximize flexibility.
@@ -409,39 +520,104 @@ class IQProgramRD(GenericTimeStampedModel):
     # VARCHAR(MAX).
 
     # Name of the program
-    friendly_name = models.CharField(max_length=5000)
+    friendly_name = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "The user-friendly name of the program. "
+            "This will be visible to users on the platform."
+        ),
+    )
     # Program category (as defined by the Program Lead)
-    friendly_category = models.CharField(max_length=5000)
+    friendly_category = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "The user-friendly category this program is in. "
+            "This will be visible to users on the platform."
+        ),
+    )
     # Description of the program
-    friendly_description = models.CharField(max_length=5000)
+    friendly_description = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "The user-friendly description of the program. "
+            "This will be visible to users on the platform."
+        ),
+    )
     # Supplmental information about the program (recommend leaving blank
     # (``''``) unless further info is necessary)
-    friendly_supplemental_info = models.CharField(max_length=5000)
+    friendly_supplemental_info = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "Any supplmental information to display to the user."
+        ),
+    )
     # Hyperlink to learn more about the program
-    learn_more_link = models.CharField(max_length=5000)
+    learn_more_link = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "Link for the user to learn more about the program."
+        ),
+    )
     # Estimated time period for the eligibility review (in readable text, e.g.
     # 'Two Weeks'). This should be manually updated periodically based on
     # program metrics.
-    friendly_eligibility_review_period = models.CharField(max_length=5000)
+    friendly_eligibility_review_period = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "The estimated time it will take to review a user's application. "
+            "This will be visible to users on the platform."
+        ),
+    )
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=True,
+        help_text=_(
+            "Designates whether the program is in-use or not. "
+            "Unselect this instead of deleting programs."
+        ),
+    )
 
     # Enable auto-apply for the designated program
-    enable_autoapply = models.BooleanField(default=False)
+    enable_autoapply = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Designates whether the program should automatically apply new users who are eligible."
+        ),
+    )
 
-    # All fields beginning with `req_` are Boolean and specify whether the matching
-    # field in `app_addressrd` is a filter for the program (e.g. a program with
-    # `req_is_city_covered`==True will require a user’s `app_address.eligibility_address_id`
-    # to have `app_addressrd.is_city_covered`=True, but `req_is_in_gma`==False will
-    # ignore `app_addressrd.is_in_gma`)
-    req_is_in_gma = models.BooleanField(default=False)
-    req_is_city_covered = models.BooleanField(default=False)
+    # All fields beginning with `requires_` are Boolean and specify whether the
+    # matching field in AddressRD is a filter for the program. See
+    # backend.get_eligible_iq_programs() for more detail
+    requires_is_in_gma = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Designates whether the user's eligibility address is required to be in the GMA to be eligible."
+        ),
+    )
+    requires_is_city_covered = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Designates whether the user's eligibility address is required to be 'covered by the City' to be eligible. "
+            "'City coverage' is always True for addresses within the GMA, otherwise it's determined by the Get FoCo administrators."
+        ),
+    )
     # The frequency at which an IQ program needs to be renewed. If null, the
     # IQ program is considered to be a lifetime enrollment. Measured in years
-    renewal_interval_year = models.IntegerField(null=True)
+    renewal_interval_year = models.IntegerField(
+        null=True,
+        verbose_name="renewal interval in years",
+        help_text=_(
+            "The frequency at which a user needs to renew their application for this IQ program. "
+            "Leave blank for a non-renewing (lifetime-enrollment) program."
+        ),
+    )
+
+    class Meta:
+        verbose_name = 'IQ program'
+        verbose_name_plural = 'IQ programs'
 
     def __str__(self):
-        return str(self.ami_threshold)
+        return str(self.friendly_name)
 
 
 class IQProgram(IQProgramTimeStampedModel):
@@ -456,7 +632,7 @@ class IQProgram(IQProgramTimeStampedModel):
     # ``id`` is the implicit primary key
     user = models.ForeignKey(
         User,
-        related_name='user',
+        related_name='iq_programs',
         on_delete=models.CASCADE,
     )
 
@@ -467,6 +643,10 @@ class IQProgram(IQProgramTimeStampedModel):
     )
 
     is_enrolled = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "user IQ program"
+        verbose_name_plural = "user IQ programs"
 
     # Define non-database attributes
     @property
@@ -507,10 +687,24 @@ class EligibilityProgramRD(GenericTimeStampedModel):
     Model class to store the eligibility programs.
     """
     # ``id`` is the implicit primary key
-    program_name = models.CharField(max_length=40, unique=True)
+    program_name = models.CharField(
+        max_length=40,
+        unique=True,
+        help_text=_(
+            "Program reference name within the platform. "
+            "Must be lowercase with no spaces."
+        ),
+    )
 
     # Store the AMI threshold that the users with each program are underneath
-    ami_threshold = models.DecimalField(max_digits=3, decimal_places=2)
+    ami_threshold = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        help_text=_(
+            "Income threshold of the program, as a fraction of AMI "
+            "(e.g. '0.30' == 30% of AMI)"
+        ),
+    )
 
     # This is the friendly name displayed to the user
 
@@ -520,10 +714,35 @@ class EligibilityProgramRD(GenericTimeStampedModel):
     # max_length is currently set to a large value, but below Postgres's
     # VARCHAR(MAX).
 
-    friendly_name = models.CharField(max_length=5000)
-    friendly_description = models.CharField(max_length=5000)
+    friendly_name = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "The user-friendly name of the program. "
+            "This will be visible to users on the platform."
+        ),
+    )
+    friendly_description = models.CharField(
+        max_length=5000,
+        help_text=_(
+            "The user-friendly description of the program. "
+            "This will be visible to users on the platform."
+        ),
+    )
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=True,
+        help_text=_(
+            "Designates whether the program is in-use or not. "
+            "Unselect this instead of deleting programs."
+        ),
+    )
+
+    class Meta:
+        verbose_name = 'eligibility program'
+        verbose_name_plural = 'eligibility programs'
+
+    def __str__(self):
+        return str(self.friendly_name)
 
 
 class EligibilityProgram(GenericTimeStampedModel):
@@ -546,6 +765,10 @@ class EligibilityProgram(GenericTimeStampedModel):
     # the path
     document_path = models.FileField(
         max_length=5000, upload_to=userfiles_path, null=True, default=None)
+    
+    class Meta:
+        verbose_name = "user eligibility program"
+        verbose_name_plural = "user eligibility programs"
 
     # Define non-database attributes
     @property
@@ -593,3 +816,34 @@ class Feedback(TimeStampedModel):
     feedback_comments = models.TextField(
         max_length=500
     )
+
+    class Meta:
+        verbose_name = verbose_name_plural = 'feedback'
+
+class Admin(models.Model):
+    """ A model for admin-related user data. """
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='admin',
+        primary_key=True,   # set this to the primary key of this model
+    )
+
+    awaiting_user_response = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Designates that the admin is waiting for a user to respond to a request made separate from this platform. "
+            "This is used only to filter income-verification applicants."
+        ),
+    )
+
+    internal_notes = models.TextField(
+        blank=True,
+        help_text=_(
+            "Notes pertaining to this user, for internal use. "
+            "This field is not visible to applicants."
+        ),
+    )
+
+    class Meta:
+        verbose_name = verbose_name_plural = 'administration'

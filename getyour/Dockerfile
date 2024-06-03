@@ -1,61 +1,43 @@
 FROM ubuntu:20.04
 
-#Layer for python and gdal support
-RUN apt-get update && apt-get install -y software-properties-common curl \
-    && add-apt-repository ppa:ubuntugis/ubuntugis-unstable && apt-get update \
-    && apt-get install -y python3-pip libssl-dev libffi-dev python3-gdal \
-    && update-alternatives --install /usr/bin/python python /usr/bin/python3 10 \
-    && update-alternatives --install /usr/bin/pip    pip    /usr/bin/pip3    10 \
-    && rm -rf /var/lib/apt/lists/*
+# Add timezone for processes using tzdata
+ENV TZ=Etc/UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN apt-get remove -y curl
+# Layer for python, supervisor, and redis
+RUN apt-get update && apt-get install -y curl gpg && \
+    curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
+    && apt-get update && apt-get install -y software-properties-common \
+    python3-pip libssl-dev libffi-dev supervisor redis \
+    && update-alternatives --install /usr/bin/python python /usr/bin/python3 10 \
+    && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 10 \
+    && rm -rf /var/lib/apt/lists/* && apt-get remove -y curl
 
 # Layers for the django app
 
-# RUN pip installs first, for caching
-# Note that updates to requirements.txt don't need to be replicated here, because requirements.txt
-# will add/update packages later in this script
-RUN apt-get install libmagic1
-RUN pip install pip --upgrade
-RUN pip install Django==4.1.8
-RUN pip install django-environ==0.10.0
-RUN pip install django-storages[azure]==1.12.3
-RUN pip install django-phonenumber-field[phonenumbers]==7.1.0
-RUN pip install gunicorn==20.1.0
-RUN pip install pendulum==2.1.2
-RUN pip install psycopg2-binary==2.9.6
-RUN pip install python-magic==0.4.27
-RUN pip install sendgrid==6.6.0
-RUN pip install twilio==8.1.0
-RUN pip install usaddress==0.5.10
-RUN pip install usps-api==0.5
-RUN pip install whitenoise==6.4.0
-RUN pip install django-q2==1.6.1
-
-
-# Then ADD code and 
-# RUN requirements.txt for completeness (this will ignore previously-installed packages or update
-# them if requirements.txt has different versions)
+# Create target dir and copy requirements.txt ONLY first, so we don't break the
+# docker cache with non-requirements.txt changes
 RUN mkdir /code
 WORKDIR /code
+COPY requirements.txt /code
+RUN pip install --quiet -r requirements.txt
+
+# Add the rest of the files
 ADD . /code/
-RUN pip install -r requirements.txt
 
 # Gather the code version from build var. Set to '' if DNE.
 ARG CODE_VERSION=''
 # Save the code version to a runtime env var
 ENV CODE_VERSION=$CODE_VERSION
 
-RUN python manage.py collectstatic --noinput --settings=getyour.settings.dev
-#--settings=getyour.settings.production
+# Collect static files
+RUN python manage.py collectstatic --noinput
 
-# Install supervisord
-RUN apt-get update && apt-get install -y supervisor
-
-# Copy supervisord.conf to the appropriate location
+# Copy supervisor and redis conf files to the appropriate locations
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY redis.conf /etc/redis/redis.conf
 
-#Layer for exposing the app through
+# Layer for exposing the Django app
 EXPOSE 8000
 
 # Run supervisord

@@ -1,0 +1,16 @@
+{% extends "admin/submit_line.html" %}
+{% load i18n admin_urls %}
+<div class="submit-row">
+{% block submit-row %}
+
+{% for buttondict in custom_buttons %}
+{% if buttondict.target == 'new' %}
+    <input type="submit" onclick="javascript:window.open('{{ buttondict.link }}', 'newwindow', 'width=600, height=600'); return false;" value="{% translate buttondict.title %}" />
+{% else %}
+    <input type="submit" value="{% translate buttondict.title %}" name="{{ buttondict.link }}" />
+{% endif %}
+{% endfor %}
+
+{{ block.super }}
+
+{% endblock %}

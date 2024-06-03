@@ -16,12 +16,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
+import sys
 from django.apps import AppConfig
+from django.conf import settings
 
 
 class AppConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'app'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "app"
 
     def ready(self):
-        import app.signals
+        # Only execute the code if we're running the server
+        if len(sys.argv) > 1 and sys.argv[1] == "runserver" and not settings.DEBUG:
+            from app.signals import populate_cache
+
+            populate_cache.send(sender=self.__class__)
