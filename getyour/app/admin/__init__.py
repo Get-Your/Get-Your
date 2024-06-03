@@ -140,7 +140,7 @@ def document_path_parsed(obj):
             url_list.append(
                 """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Document {nm} of {tot}</a>""".format(
                     trg=reverse(
-                        'app:admin_get_blob',
+                        'app:admin_view_blob',
                         kwargs={'blob_name': itm},
                     ),
                     nm=idx+1,
@@ -306,7 +306,7 @@ class HouseholdMembersInline(admin.TabularInline):
                 if 'identification_path' in itm and itm['identification_path'] is not None:
                     document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
                         trg=reverse(
-                            'app:admin_get_blob',
+                            'app:admin_view_blob',
                             kwargs={'blob_name': itm['identification_path']},
                         ),
                     )

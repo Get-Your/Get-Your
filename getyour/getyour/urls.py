@@ -36,33 +36,15 @@ from django.conf import settings
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 
-urlpatterns = []
-
-# Include supervisory URLs only if not BLOBVIEWER_ONLY
-if not settings.BLOBVIEWER_ONLY:
-    urlpatterns.extend([
-        path('admin/', admin.site.urls),
-        path('accounts/', include('django.contrib.auth.urls')),
-        path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(
-            template_name='authentication/password_reset_done.html'), name='password_reset_done'),
-        path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
-            template_name="authentication/password_reset_confirm.html"), name='password_reset_confirm'),
-        path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
-            template_name='authentication/password_reset_complete.html'), name='password_reset_complete'),
-    ])
-
-# Always include blobviewer. By including here regardless of whether it's
-# an installed app, we can reference the name to reverse-resolve it
-urlpatterns.extend([
-     path(
-        'viewer/',
-        include(('blobviewer.urls', 'blobviewer'), namespace='blobviewer'),
-        name='blobviewer',
-    ),
-])
-
-# Include app only if not BLOBVIEWER_ONLY (that this must be last in urlpatterns)
-if not settings.BLOBVIEWER_ONLY:
-    urlpatterns.extend([
-        path('', include(('app.urls', 'app'), namespace='app')),
-    ])
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(
+        template_name='authentication/password_reset_done.html'), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name="authentication/password_reset_confirm.html"), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='authentication/password_reset_complete.html'), name='password_reset_complete'),
+    # This must be last in urlpatterns because the name is ''
+    path('', include(('app.urls', 'app'), namespace='app')),
+]

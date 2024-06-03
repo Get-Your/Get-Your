@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import logging
+import re
 import base64
 import pendulum
 from pathlib import PurePosixPath
@@ -43,11 +44,11 @@ log = LoggerWrapper(logging.getLogger(__name__))
 
 
 @staff_member_required
-def get_blob(request, blob_name, **kwargs):
+def view_blob(request, blob_name, **kwargs):
     try:
         log.debug(
             "Entering function",
-            function='get_blob',
+            function='view_blob',
             user_id=request.user.id,
         )
 
@@ -60,7 +61,7 @@ def get_blob(request, blob_name, **kwargs):
         except ResourceNotFoundError as e:
             log.exception(
                 f"ResourceNotFoundError: {e}",
-                function='get_blob',
+                function='view_blob',
                 user_id=request.user.id,
             )
             raise ResourceNotFoundError(message=e)
@@ -71,20 +72,76 @@ def get_blob(request, blob_name, **kwargs):
         # supported_content_types dict
         content_type = supported_content_types[blob_name_path.suffix[1:].lower()]
 
-        # Save the blob data and content type to the session var
-        request.session['blob_data'] = base64.b64encode(
-            blob_data
-        ).decode(
-            'utf-8'
-        )
-        request.session['blob_type'] = content_type
+        # Load only the following content type regexes (regardless of
+        # constants.supported_content_types), for safety
+        content_type_regex_filter = {
+            'allow': [
+                # For 'application/*', allow only doc, docx, and pdf (respectively)
+                r'^application\/(msword$|vnd\.openxmlformats-officedocument\.wordprocessingml\.document$|pdf$)',
+                # Allow all 'image/*' (minus the exceptions below)
+                r'^image\/.*$',
+            ],
+            # This blocklist includes only subsets of the strict allowlist,
+            # since blocking anything outside of the allowlist would be redundant
+            'block': [
+                # Block subtypes containing 'xml' or vendor-specific subtypes
+                # (starting with 'vnd.') from 'image/*'
+                r'^image\/(.*?xml|vnd\.).*$',
+            ],
+        }
 
-        # Redirect to the file-viewing URL set up as a separate Web App
-        return redirect(
-            urljoin(
-                settings.BLOBVIEWER_ORIGIN,
-                reverse('blobviewer:view_blob'),
+        # Filter for content type (allowlist first, then block if applicable).
+        # Using all() instead of 'and' here to more-easily break apart the
+        # next() statements for readability
+        ok_to_view = all((
+            # Check each element of the allowlist (ok==True if a match is found)
+            next((
+                True for x in content_type_regex_filter['allow'] if re.match(
+                    x,
+                    content_type,
+                    flags=re.IGNORECASE,
+                )),
+                False
             ),
+            # Check each element of the blocklist (ok==False if a match is found)
+            next((
+                False for x in content_type_regex_filter['block'] if re.match(
+                    x,
+                    content_type,
+                    flags=re.IGNORECASE
+                )),
+                True
+            ),
+        ))
+
+        if not ok_to_view:
+            log.info(
+                f"Blob '{blob_name_path}' is NOT ok to view.",
+                function='view_blob',
+                user_id=request.user.id,
+            )
+            return render(
+                request,
+                'admin/405.html',
+                {
+                    'error_message': 'This file is not viewable on the portal. Contact your system administrator.',
+                },
+                status=405,
+            )
+
+        # Display the blob to the user
+        log.debug(
+            f"Blob '{blob_name_path}' is ok to view.",
+            function='view_blob',
+            user_id=request.user.id,
+        )
+        return render(
+            request,
+            'admin/view_blob.html',
+            {
+                'blob_data': base64.b64encode(blob_data).decode('utf-8'),
+                'content_type': content_type,
+            },
         )
 
     # General view-level exception catching
@@ -95,7 +152,7 @@ def get_blob(request, blob_name, **kwargs):
             user_id = None
         log.exception(
             'Uncaught view-level exception',
-            function='get_blob',
+            function='view_blob',
             user_id=user_id,
         )
         raise

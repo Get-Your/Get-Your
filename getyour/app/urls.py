@@ -210,9 +210,9 @@ urlpatterns = [
 
     # Custom admin URLs
     path(
-        'app_admin/get_blob/<path:blob_name>',
-        admin_views.get_blob,
-        name='admin_get_blob',
+        'app_admin/view_blob/<path:blob_name>',
+        admin_views.view_blob,
+        name='admin_view_blob',
         kwargs={'allow_direct_user': False},
     ),
     path(
