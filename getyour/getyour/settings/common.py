@@ -85,7 +85,6 @@ except Exception:
 max_upload_size_mib = 100
 DATA_UPLOAD_MAX_MEMORY_SIZE = max_upload_size_mib*1048576
 
-# Always include these INSTALLED_APPS
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -94,9 +93,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.postgres',
-    'logger',
     'app',
     'phonenumber_field',
+    'logger',
     'django_q',
 ]
 
@@ -122,7 +121,6 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 6*60*60
 
 ROOT_URLCONF = 'getyour.urls'
-
 AUTH_USER_MODEL = "app.User"
 LOGIN_URL = 'app:login'
 

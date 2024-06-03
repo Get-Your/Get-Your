@@ -21,10 +21,8 @@ import re
 import base64
 import pendulum
 from pathlib import PurePosixPath
-from urllib.parse import urljoin
 
-from django.shortcuts import render, redirect, reverse
-from django.conf import settings
+from django.shortcuts import render
 from django.core.files.storage import default_storage
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
