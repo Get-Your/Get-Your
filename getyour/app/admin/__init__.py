@@ -183,6 +183,10 @@ class AddressInline(admin.TabularInline):
         'eligibility_addr',
     ]
 
+    # Adding directly to this inline is always disabled (proper logic DNE)
+    def has_add_permission(self, request, obj=None):
+        return False
+
     @admin.display(description='mailing address')
     def mailing_addr(self, obj):
         addr = AddressRD.objects.get(id=obj.mailing_address_id)
@@ -234,6 +238,10 @@ class HouseholdInline(admin.TabularInline):
         
         """
 
+        # Store is_income_verified in session var, for use with
+        # has_delete_permission
+        request.session['is_income_verified'] = hasattr(obj, 'household') and obj.household.is_income_verified
+
         # Global readonly fields. Note that @property and calculated fields must
         # be read-only
         readonly_fields = self.fields
@@ -271,6 +279,22 @@ class HouseholdInline(admin.TabularInline):
         
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
+    
+    def has_delete_permission(self, request, obj=None):
+        if request.session.get('is_income_verified', True):
+            # If the user's income has been verified (or the session var DNE),
+            # nobody has delete permissions
+            return False
+        else:
+            # Otherwise, use the django.auth permissions for this admin user
+            return request.user.has_perm(
+                "{}.{}".format(
+                    ContentType.objects.get_for_model(
+                        Household
+                    ).app_label,
+                    'delete_household',
+                )
+            )
 
     @admin.display(description='income relative to AMI')
     def income_percent(self, obj):
@@ -292,6 +316,13 @@ class HouseholdMembersInline(admin.TabularInline):
         'modified_at',
         'household_info_parsed',
     ]
+
+    # Adding/deleting directly from this inline is always disabled since these
+    # data are currently stored as JSON
+    def has_add_permission(self, request, obj=None):
+        return False
+    def has_delete_permission(self, request, obj=None):
+        return False
 
     @admin.display(description='individuals in household')
     def household_info_parsed(self, obj):
