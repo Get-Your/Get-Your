@@ -251,7 +251,7 @@ class AddressRD(GenericTimeStampedModel):
         default=None,
         help_text=_(
             "Designates whether an address is eligible for benefits. " 
-            "This can be altered if the address is outside the GMA."
+            "This can be altered by administrators if the address is outside the GMA."
         ),
     )
     has_connexion = models.BooleanField(null=True, default=None)

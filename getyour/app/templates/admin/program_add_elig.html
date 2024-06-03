@@ -23,7 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <div style="color:green;">{{ success_message }}</div>
 {% else %}
 {% if error_message %}
-<div style="color:red; margin-bottom: 5%;">{{ message }}</div>
+<div style="color:red; margin-bottom: 5%;">{{ error_message }}</div>
 {% endif %}
 <form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}

@@ -42,11 +42,6 @@ RENEWAL_EMAIL_TEMPLATE = env("RENEWAL_EMAIL_TEMPLATE")
 # Add environment variables optionally set by Azure or in the Docker build.
 # These will use the environment var if exists, else the .env file or fallback
 # to the defined default
-if os.environ.get("BLOBVIEWER_ONLY") is None:
-    BLOBVIEWER_ONLY = env.bool("BLOBVIEWER_ONLY", False)
-else:
-    BLOBVIEWER_ONLY = str(os.environ.get("BLOBVIEWER_ONLY")).lower() == 'true'
-
 if os.environ.get("DEBUG") is None:
     DEBUG = env.bool("DEBUG", False)
 else:
@@ -90,7 +85,6 @@ except Exception:
 max_upload_size_mib = 100
 DATA_UPLOAD_MAX_MEMORY_SIZE = max_upload_size_mib*1048576
 
-# Always include these INSTALLED_APPS
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -99,20 +93,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.postgres',
+    'app',
+    'phonenumber_field',
     'logger',
+    'django_q',
 ]
-
-# Include the primary apps only if not BLOBVIEWER_ONLY; else just 'blobviewer'
-if not BLOBVIEWER_ONLY:
-    INSTALLED_APPS.extend([
-        'app',
-        'phonenumber_field',
-        'django_q',
-    ])
-else:
-    INSTALLED_APPS.extend([
-        'blobviewer',
-    ])
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -123,16 +108,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'getyour.middleware.FirstViewMiddleware',
+    'getyour.middleware.ValidRouteMiddleware',
+    'getyour.middleware.LoginRequiredMiddleware',
+    'getyour.middleware.RenewalModeMiddleware',
 ]
-
-# Include primary app middleware only if not BLOBVIEWER_ONLY
-if not BLOBVIEWER_ONLY:
-    MIDDLEWARE.extend([
-        'getyour.middleware.FirstViewMiddleware',
-        'getyour.middleware.ValidRouteMiddleware',
-        'getyour.middleware.LoginRequiredMiddleware',
-        'getyour.middleware.RenewalModeMiddleware',
-    ])
 
 # Session management
 # Log out on browser close
@@ -141,11 +121,8 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 6*60*60
 
 ROOT_URLCONF = 'getyour.urls'
-
-# No auth if BLOBVIEWER_ONLY; leave at Django defaults
-if not BLOBVIEWER_ONLY:
-    AUTH_USER_MODEL = "app.User"
-    LOGIN_URL = 'app:login'
+AUTH_USER_MODEL = "app.User"
+LOGIN_URL = 'app:login'
 
 TEMPLATES = [
     {
@@ -180,23 +157,22 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 WSGI_APPLICATION = 'getyour.wsgi.application'
 
-# Password validation (no auth for BLOBVIEWER_ONLY; leave at Django defaults)
+# Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
-if not BLOBVIEWER_ONLY:
-    AUTH_PASSWORD_VALIDATORS = [
-        {
-            'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-        },
-        {
-            'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-        },
-        {
-            'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-        },
-        {
-            'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-        },
-    ]
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
@@ -251,11 +227,6 @@ LOGGING = {
         # Keep this logger! Even though it's a duplicate of the root logger,
         # the environment-specific settings may reference it
         'app': {
-            'handlers': ['db_log'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'blobviewer': {
             'handlers': ['db_log'],
             'level': 'INFO',
             'propagate': False,

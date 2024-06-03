@@ -35,7 +35,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 // Create an array of byte values
                 const byteNumbers = new Array(slice.length);
                 for (let i = 0; i < slice.length; i++) {
-                byteNumbers[i] = slice.charCodeAt(i);
+                  byteNumbers[i] = slice.charCodeAt(i);
                 }
 
                 // Convert the slice into a real typed byte array and add to the byteArrays var
@@ -52,6 +52,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         const blob = b64toBlob('{{ blob_data }}', '{{ content_type }}');
         const blobUrl = URL.createObjectURL(blob);
         window.location = blobUrl;
+        
+        // After loading, release browser memory
+        URL.revokeObjectURL(blobUrl);
     </script>
 
   </body>
