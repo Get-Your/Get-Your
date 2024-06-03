@@ -1043,7 +1043,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class AddressAdmin(admin.ModelAdmin):
-    search_fields = ('address1__contains', 'address2__contains')
+    search_fields = ('address1__icontains', 'address2__icontains')
     list_display = ('address1', 'address2', 'is_in_gma', 'is_city_covered')
     ordering = list_display_links = ('address1', 'address2')
     list_filter = (GMAListFilter, CityCoveredListFilter)
