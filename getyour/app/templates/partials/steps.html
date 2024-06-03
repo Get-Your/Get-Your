@@ -1,0 +1,70 @@
+
+
+<div class="steps">
+
+    <!-- Step - Account Setup -->
+    <div class="step {% if active_step == 'account' %}active{% endif %}">
+        <div class="step-number">
+            <div class="step-number-inner fs-4">
+                <i class="gi-user"></i>
+            </div>
+        </div>
+        <div class="step-body">
+            <h5 class="pb-1 mb-2">Account Setup</h5>
+            <p class="mb-0">Get your information ready</p>
+        </div>
+    </div>
+
+    <!-- Step - Address -->
+    <div class="step {% if active_step == 'address' %}active{% endif %}">
+        <div class="step-number">
+            <div class="step-number-inner fs-4">
+                <i class="gi-home"></i>
+            </div>
+        </div>
+        <div class="step-body">
+            <h5 class="pb-1 mb-2">Address</h5>
+            <p class="mb-0">Provide your eligibility and mailing addresses
+            </p>
+        </div>
+    </div>
+
+    <!-- Step - Household -->
+    <div class="step {% if active_step == 'household' %}active{% endif %}">
+        <div class="step-number">
+            <div class="step-number-inner fs-4">
+                <i class="gi-user-group"></i>
+            </div>
+        </div>
+        <div class="step-body">
+            <h5 class="pb-1 mb-2">Household Information</h5>
+            <p class="mb-0">Share basic information about your household</p>
+        </div>
+    </div>
+
+    <!-- Step - Eligibility Programs -->
+    <div class="step {% if active_step == 'eligibility_programs' %}active{% endif %}">
+        <div class="step-number">
+            <div class="step-number-inner fs-4">
+                <i class="gi-note"></i>
+            </div>
+        </div>
+        <div class="step-body">
+            <h5 class="pb-1 mb-2">Eligibility Programs</h5>
+            <p class="mb-0">Select programs you are already a part of</p>
+        </div>
+    </div>
+
+    <!-- Step - File Upload -->
+    <div class="step {% if active_step == 'file_upload' %}active{% endif %}">
+        <div class="step-number">
+            <div class="step-number-inner fs-4">
+                <i class="gi-image"></i>
+            </div>
+        </div>
+        <div class="step-body">
+            <h5 class="pb-1 mb-2">File Upload</h5>
+            <p class="mb-0">Upload documents for eligibility verification</p>
+        </div>
+    </div>
+</div>

@@ -154,3 +154,6 @@ dmypy.json
 # junk that gets added to it
 /getyour/getyour/media/*
 !/getyour/getyour/media/.gitkeep
+
+# Don't exclude the dist folders under static/vendor
+!/getyour/app/static/vendor/**/*

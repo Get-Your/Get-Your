@@ -103,6 +103,14 @@ def account_programs(request, **kwargs):
         renewal_eligible = request.session.get("renewal_eligible", [])
         renewal_ineligible = request.session.get("renewal_ineligible", [])
 
+        quick_apply_result = kwargs.get("quick_apply_result", None)
+        if quick_apply_result:
+            quick_apply_result = {
+                "program_name": kwargs.get("program_name", None),
+                "title": kwargs.get("title", None),
+                "in_gma_with_no_service": kwargs.get("in_gma_with_no_service", None)
+            }
+
         app_renewed = False
         if request.session.get("renewal_mode", False) and request.session.get(
             "app_renewed", False
@@ -226,6 +234,7 @@ def account_programs(request, **kwargs):
                 "renewal_eligible": renewal_eligible_str,
                 "renewal_ineligible": renewal_ineligible_str,
                 "enable_renew_now": enable_renew_now(request.user.id),
+                "quick_apply_result": quick_apply_result,
             },
         )
     except:
@@ -393,14 +402,14 @@ def quick_apply(request, iq_program, **kwargs):
         # Get the IQProgramRD object for the iq_program
         iq_program = IQProgramRD.objects.get(
             program_name=iq_program)
-        
+
         log.debug(
             f"Entering function for {iq_program.program_name}",
             function='quick_apply',
             user_id=request.user.id,
         )
-        
-        # Get the user's get_users_iq_programs and check if 
+
+        # Get the user's get_users_iq_programs and check if
         # the IQProgramRD object is in the list. If it is not,
         # throw a 500 error, else continue
         eligibility_address = AddressRD.objects.filter(
@@ -415,7 +424,7 @@ def quick_apply(request, iq_program, **kwargs):
                 user_id=request.user.id,
             )
             raise Exception(msg)
-        
+
         # Check if the user and program already exist in the IQProgram table
         # If they do not, create a new IQProgram object
         if not IQProgram.objects.filter(user_id=request.user.id, program_id=iq_program.id).exists():
@@ -444,16 +453,15 @@ def quick_apply(request, iq_program, **kwargs):
             if is_in_gma and not has_isp_service:    # this covers both None and False
                 in_gma_with_no_service = True
 
-        return render(
-            request,
-            "dashboard/quick_apply.html",
-            {
-                'program_name': iq_program.program_name.title(),
-                'title': f"{iq_program.program_name.title()} Application Complete",
-                'in_gma_with_no_service': in_gma_with_no_service,
-            },
-        )
-    
+        quick_apply_result = {
+                "program_name": iq_program.program_name.title(),
+                "title": f"{iq_program.program_name.title()} Application Complete",
+                "in_gma_with_no_service": in_gma_with_no_service,
+        }
+
+        # Redirect to the account programs page with the quick_apply_result
+        return redirect(reverse('app:account_programs', kwargs=quick_apply_result))
+
     # General view-level exception catching
     except:
         try:

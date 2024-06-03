@@ -228,8 +228,7 @@
                                                         <label for="feedback-textarea" class="form-label">How can we do better? Don't worry, your feedback
                                                             is anonymous!</label>
                                                         <textarea class="form-control" id="feedback-textarea" placeholder="Tell us how we're doing!"
-                                                            name="feedback_comments" maxlength="500" required></textarea>
-                                                        <div class="invalid-feedback">Please tell us how we're doing</div>
+                                                            name="feedback_comments" maxlength="500"></textarea>
                                                     </div>
                                                 </div>
                                                 
@@ -316,6 +315,26 @@
                 </div>
             </div>
         </div>
+
+        <!-- Quick Apply Modal -->
+        {% if quick_apply_result %}
+        <div class="modal fade" id="quickApplyResultModal" tabindex="-1" aria-labelledby="quickApplyResultModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="quickApplyResultModalLabel">{{ quick_apply_result.program_name }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>{{ quick_apply_result.title }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     
     </main>
 
@@ -340,6 +359,15 @@
             appRenewedModal.show();
         }
 
+        // Check if the quick_apply_result is not None
+        var quick_apply_result = "{{ quick_apply_result }}" !== "None";
+        if (quick_apply_result) {
+            var quickApplyResultModal = new bootstrap.Modal(document.getElementById('quickApplyResultModal'), {
+                keyboard: false
+            });
+            quickApplyResultModal.show();
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
                 var clearButtons = document.querySelectorAll('clearButton');
                 // for each clearButton, add an event listener
@@ -362,6 +390,15 @@
 
                         var button = document.querySelector("button[name='star_rating']");
                         button.value = starValue;
+                    });
+                });
+
+                var applyNowButtons = document.querySelectorAll('a[href*="apply"]');
+                applyNowButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        var spinner = document.createElement('div');
+                        spinner.classList.add('spinner-border', 'spinner-border-sm', 'ms-2');
+                        button.appendChild(spinner);
                     });
                 });
             });
