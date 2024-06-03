@@ -709,7 +709,6 @@ class UserAdmin(admin.ModelAdmin):
                         instance.enrolled_at = pendulum.now()
                 else:
                     instance.enrolled_at = None
-            instance.user = request.user
             instance.save()
         formset.save_m2m()
 
