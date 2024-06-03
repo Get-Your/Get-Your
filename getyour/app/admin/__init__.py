@@ -467,7 +467,7 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ('last_name', 'first_name', 'email', 'last_completed_at')
     ordering = (Lower('last_name'), Lower('first_name'))    # case-insensitive
     list_display_links = ('email', )
-    list_filter = (NeedsVerificationListFilter, )
+    list_filter = (NeedsVerificationListFilter, 'last_completed_at', )
     date_hierarchy = 'last_completed_at'
     actions = ('export_users', 'mark_awaiting_response', 'mark_verified')
 
