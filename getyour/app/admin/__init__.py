@@ -403,7 +403,7 @@ class IQProgramInline(admin.TabularInline):
 
         readonly_remove = []
         # Enrollment status can only be altered if income has been verified
-        if obj.household.is_income_verified is True:
+        if hasattr(obj, 'household') and obj.household.is_income_verified is True:
             # Remove fields from readonly_fields based on permissions group
             if request.user.is_superuser:
             # # Stub of planned functionality
