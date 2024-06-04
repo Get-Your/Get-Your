@@ -358,7 +358,11 @@ class EligibilityProgramInline(admin.TabularInline):
     def get_queryset(self, request):
         """ Override ordering to use program friendly name instead. """
         qs = super().get_queryset(request)
-        qs = qs.order_by('program__friendly_name')
+        qs = qs.filter(
+            program__is_active=True,
+        ).order_by(
+            'program__friendly_name'
+        )
         return qs
     
     # Adding/deleting directly from this inline is always disabled since these
