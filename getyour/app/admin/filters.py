@@ -20,7 +20,7 @@ from django.db.models import Exists, OuterRef
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
-from app.models import EligibilityProgram
+from app.models import User, EligibilityProgram
 
 
 def needs_income_verification_filter(queryset):
@@ -28,7 +28,27 @@ def needs_income_verification_filter(queryset):
     Filter a queryset for users that need income verification.
     
     """
-    return queryset.filter(
+
+    # Gather EligibilityProgram objects for each user that are 'active'
+    selected_active_programs = EligibilityProgram.objects.filter(
+        user_id=OuterRef('id'),
+        program__is_active=True,
+    )
+
+    # Gather EligibilityProgram objects for each user that are 'active' and have
+    # an uploaded file 
+    active_incomplete_programs = EligibilityProgram.objects.filter(
+        user_id=OuterRef('id'),
+        program__is_active=True,
+        document_path='',
+    )
+
+    queryset = queryset.filter(
+        # User has at least one active eligibility program
+        Exists(selected_active_programs),
+        # User doesn't have any incomplete eligibility programs (e.g. file not
+        # uploaded)
+        ~Exists(active_incomplete_programs),
         # User has completed the application (non-null last_completed_at)
         last_completed_at__isnull=False,
         # User is not 'archived'
@@ -36,6 +56,17 @@ def needs_income_verification_filter(queryset):
         # User's household is not 'income verified'
         household__is_income_verified=False,
     )
+
+    # Ensure all identification is included
+    filter_ids = []
+    for usr in queryset:
+        if 'persons_in_household' in usr.householdmembers.household_info and all(
+            'identification_path' in x and x['identification_path'] is not None for x in usr.householdmembers.household_info['persons_in_household']
+        ):
+            filter_ids.append(usr.id)
+
+    # Recreate queryset with filter_ids and return
+    return User.objects.filter(id__in=filter_ids)
 
 
 class NeedsVerificationListFilter(admin.SimpleListFilter):
