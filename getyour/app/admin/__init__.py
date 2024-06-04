@@ -140,7 +140,7 @@ def document_path_parsed(obj):
             url_list.append(
                 """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Document {nm} of {tot}</a>""".format(
                     trg=reverse(
-                        'app:admin_get_blob',
+                        'app:admin_view_blob',
                         kwargs={'blob_name': itm},
                     ),
                     nm=idx+1,
@@ -182,6 +182,10 @@ class AddressInline(admin.TabularInline):
         'mailing_addr',
         'eligibility_addr',
     ]
+
+    # Adding directly to this inline is always disabled (proper logic DNE)
+    def has_add_permission(self, request, obj=None):
+        return False
 
     @admin.display(description='mailing address')
     def mailing_addr(self, obj):
@@ -234,6 +238,10 @@ class HouseholdInline(admin.TabularInline):
         
         """
 
+        # Store is_income_verified in session var, for use with
+        # has_delete_permission
+        request.session['is_income_verified'] = hasattr(obj, 'household') and obj.household.is_income_verified
+
         # Global readonly fields. Note that @property and calculated fields must
         # be read-only
         readonly_fields = self.fields
@@ -271,6 +279,22 @@ class HouseholdInline(admin.TabularInline):
         
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
+    
+    def has_delete_permission(self, request, obj=None):
+        if request.session.get('is_income_verified', True):
+            # If the user's income has been verified (or the session var DNE),
+            # nobody has delete permissions
+            return False
+        else:
+            # Otherwise, use the django.auth permissions for this admin user
+            return request.user.has_perm(
+                "{}.{}".format(
+                    ContentType.objects.get_for_model(
+                        Household
+                    ).app_label,
+                    'delete_household',
+                )
+            )
 
     @admin.display(description='income relative to AMI')
     def income_percent(self, obj):
@@ -293,6 +317,13 @@ class HouseholdMembersInline(admin.TabularInline):
         'household_info_parsed',
     ]
 
+    # Adding/deleting directly from this inline is always disabled since these
+    # data are currently stored as JSON
+    def has_add_permission(self, request, obj=None):
+        return False
+    def has_delete_permission(self, request, obj=None):
+        return False
+
     @admin.display(description='individuals in household')
     def household_info_parsed(self, obj):
         person_list = []
@@ -306,7 +337,7 @@ class HouseholdMembersInline(admin.TabularInline):
                 if 'identification_path' in itm and itm['identification_path'] is not None:
                     document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
                         trg=reverse(
-                            'app:admin_get_blob',
+                            'app:admin_view_blob',
                             kwargs={'blob_name': itm['identification_path']},
                         ),
                     )
@@ -403,7 +434,7 @@ class IQProgramInline(admin.TabularInline):
 
         readonly_remove = []
         # Enrollment status can only be altered if income has been verified
-        if obj.household.is_income_verified is True:
+        if hasattr(obj, 'household') and obj.household.is_income_verified is True:
             # Remove fields from readonly_fields based on permissions group
             if request.user.is_superuser:
             # # Stub of planned functionality
@@ -467,7 +498,7 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ('last_name', 'first_name', 'email', 'last_completed_at')
     ordering = (Lower('last_name'), Lower('first_name'))    # case-insensitive
     list_display_links = ('email', )
-    list_filter = (NeedsVerificationListFilter, )
+    list_filter = (NeedsVerificationListFilter, 'last_completed_at', )
     date_hierarchy = 'last_completed_at'
     actions = ('export_users', 'mark_awaiting_response', 'mark_verified')
 
@@ -678,7 +709,6 @@ class UserAdmin(admin.ModelAdmin):
                         instance.enrolled_at = pendulum.now()
                 else:
                     instance.enrolled_at = None
-            instance.user = request.user
             instance.save()
         formset.save_m2m()
 
@@ -900,9 +930,14 @@ class UserAdmin(admin.ModelAdmin):
 
         obj = User.objects.get(pk=object_id)
         extra_context['custom_buttons'] = []
+        # Only superusers and admins have access to custom buttons
         # IQ Programs can be added at any time after the user has completed the
         # application
-        if obj.last_completed_at is not None:
+        if obj.last_completed_at is not None and (
+            request.user.is_superuser or request.user.groups.filter(
+                name__istartswith='admin'
+            ).exists()
+        ):
             # ...but Eligibility Program addition is disallowed once income has
             # been verified
             if obj.household.is_income_verified is False:
@@ -1043,7 +1078,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class AddressAdmin(admin.ModelAdmin):
-    search_fields = ('address1__contains', 'address2__contains')
+    search_fields = ('address1__icontains', 'address2__icontains')
     list_display = ('address1', 'address2', 'is_in_gma', 'is_city_covered')
     ordering = list_display_links = ('address1', 'address2')
     list_filter = (GMAListFilter, CityCoveredListFilter)
@@ -1109,15 +1144,20 @@ class AddressAdmin(admin.ModelAdmin):
             return []
 
         # Global readonly fields
-        readonly_fields = [
-            'pretty_address',
-            'is_in_gma',
-        ]
-        # is_city_covered cannot be modified (from True) if is_in_gma==True
-        if obj.is_in_gma:
-            readonly_fields.append('is_city_covered')
-        # Ensure there are no duplicates
-        return readonly_fields
+        readonly_fields = self.fields
+
+        readonly_remove = []
+        # is_city_covered can be modified only if is_in_gma==False and user is
+        # either superuser or in 'admin' group
+        if not obj.is_in_gma and (
+            request.user.is_superuser or request.user.groups.filter(
+                name__istartswith='admin'
+            ).exists()
+        ):
+            readonly_remove.append('is_city_covered')
+        
+        # Remove the fields and re-listify
+        return list(set(readonly_fields) - set(readonly_remove))
 
     @admin.action(description='Update GMA for selected addresses')
     def update_gma(self, request, input_object):
