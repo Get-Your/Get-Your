@@ -20,7 +20,7 @@ from django.db.models import Exists, OuterRef
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
-from app.models import EligibilityProgram
+from app.models import User, EligibilityProgram
 
 
 def needs_income_verification_filter(queryset):
@@ -28,7 +28,27 @@ def needs_income_verification_filter(queryset):
     Filter a queryset for users that need income verification.
     
     """
-    return queryset.filter(
+
+    # Gather EligibilityProgram objects for each user that are 'active'
+    selected_active_programs = EligibilityProgram.objects.filter(
+        user_id=OuterRef('id'),
+        program__is_active=True,
+    )
+
+    # Gather EligibilityProgram objects for each user that are 'active' and have
+    # an uploaded file 
+    active_incomplete_programs = EligibilityProgram.objects.filter(
+        user_id=OuterRef('id'),
+        program__is_active=True,
+        document_path='',
+    )
+
+    queryset = queryset.filter(
+        # User has at least one active eligibility program
+        Exists(selected_active_programs),
+        # User doesn't have any incomplete eligibility programs (e.g. file not
+        # uploaded)
+        ~Exists(active_incomplete_programs),
         # User has completed the application (non-null last_completed_at)
         last_completed_at__isnull=False,
         # User is not 'archived'
@@ -36,6 +56,17 @@ def needs_income_verification_filter(queryset):
         # User's household is not 'income verified'
         household__is_income_verified=False,
     )
+
+    # Ensure all identification is included
+    filter_ids = []
+    for usr in queryset:
+        if 'persons_in_household' in usr.householdmembers.household_info and all(
+            'identification_path' in x and x['identification_path'] is not None for x in usr.householdmembers.household_info['persons_in_household']
+        ):
+            filter_ids.append(usr.id)
+
+    # Recreate queryset with filter_ids and return
+    return User.objects.filter(id__in=filter_ids)
 
 
 class NeedsVerificationListFilter(admin.SimpleListFilter):
@@ -124,12 +155,12 @@ class GMAListFilter(admin.SimpleListFilter):
             return queryset.filter(
                 is_in_gma=False,
             )
-        
+
 
 class CityCoveredListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
     # right admin sidebar just above the filter options
-    title = _('City Coverage')
+    title = _('City coverage')
 
     # Parameter for the filter that will be used in the URL query
     parameter_name = 'citycovered'
@@ -162,3 +193,54 @@ class CityCoveredListFilter(admin.SimpleListFilter):
             return queryset.filter(
                 is_city_covered=False,
             )
+
+
+class AccountDisabledListFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the
+    # right admin sidebar just above the filter options
+    title = _('account disabled')
+
+    # Parameter for the filter that will be used in the URL query
+    parameter_name = 'disabled'
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each tuple is the coded
+        value for the option that will appear in the URL query (and therefore
+        should be a string). The second element is the human-readable name for
+        the option that will appear in the right sidebar.
+        
+        """
+        return (
+            (None, _('Not disabled')),
+            ('true', _('Disabled')),
+            ('all', _('All')),
+        )
+    
+    def choices(self, cl):
+        for lookup, title in self.lookup_choices:
+            yield {
+                'selected': self.value() == lookup,
+                'query_string': cl.get_query_string({
+                    self.parameter_name: lookup,
+                }, []),
+                'display': title,
+            }
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value provided in the query
+        string and retrievable via `self.value()`.
+
+        """
+        # Compare the requested value to decide how to filter the queryset
+        if self.value() is None:
+            return queryset.filter(
+                is_archived=False,
+            )
+        if self.value() == 'true':
+            return queryset.filter(
+                is_archived=True,
+            )
+        if self.value() == 'all':
+            return queryset
