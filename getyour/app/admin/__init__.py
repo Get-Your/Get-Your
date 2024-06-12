@@ -61,6 +61,7 @@ from app.admin.filters import (
     CityCoveredListFilter,
     NeedsVerificationListFilter,
     needs_income_verification_filter,
+    AccountDisabledListFilter,
 )
 from app.admin.forms import (
     ProgramChangeForm,
@@ -504,7 +505,11 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ('last_name', 'first_name', 'email', 'last_completed_at')
     ordering = (Lower('last_name'), Lower('first_name'))    # case-insensitive
     list_display_links = ('email', )
-    list_filter = (NeedsVerificationListFilter, 'last_completed_at', )
+    list_filter = (
+        NeedsVerificationListFilter,
+        'last_completed_at',
+        AccountDisabledListFilter,
+    )
     date_hierarchy = 'last_completed_at'
     actions = ('export_users', 'mark_awaiting_response', 'mark_verified')
 
@@ -544,6 +549,11 @@ class UserAdmin(admin.ModelAdmin):
     @admin.display(description='message to user')
     def user_message(self, obj):
         msg = []
+
+        # Notify if the user is archived
+        if obj.is_archived:
+            msg.append("User account is disabled ('is archived').")
+
         # Get the user's eligibility address
         eligibility_address = AddressRD.objects.filter(
             id=obj.address.eligibility_address_id
@@ -565,10 +575,6 @@ class UserAdmin(admin.ModelAdmin):
                         # admin page
                         req.capitalize().replace('_', ' '),
                     )
-
-        # Notify if the user is archived
-        if obj.is_archived:
-            msg.append("User account is disabled ('is archived').")
 
         if len(msg) > 0:
             return "- {}".format('\n- '.join(msg))
