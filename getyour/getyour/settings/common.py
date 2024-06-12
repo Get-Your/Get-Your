@@ -21,6 +21,8 @@ import os
 from pathlib import Path
 import subprocess
 
+from django.core.files import File
+
 env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR.joinpath('subdir')
@@ -72,6 +74,12 @@ except Exception:
     CODE_VERSION = ''
 
 # Application definition
+
+# Verify that the file chunk size is greater than the python-magic recommended
+# minimum read of 2048 bytes
+# (https://github.com/ahupp/python-magic?tab=readme-ov-file#usage)
+if File.DEFAULT_CHUNK_SIZE < 2048:
+    raise AssertionError("The DEFAULT_CHUNK_SIZE for uploaded files is too small for python-magic to produce a correct identification")
 
 # As of 2023-08-01
     # the 99th percentile of file sizes was 8.33 MiB
