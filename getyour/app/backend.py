@@ -785,7 +785,8 @@ def get_eligible_iq_programs(
     # fraction
     income_eligible_iq_programs = IQProgramRD.objects.filter(
         is_active=True,
-        ami_threshold__gte=user.household.income_as_fraction_of_ami,
+        # If income_as_fraction_of_ami is None, set to 100% to exclude all programs
+        ami_threshold__gte=user.household.income_as_fraction_of_ami or 1,
     )
 
     # Gather all `requires_` fields in the IQProgramRD model along with their
