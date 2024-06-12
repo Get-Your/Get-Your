@@ -155,12 +155,12 @@ class GMAListFilter(admin.SimpleListFilter):
             return queryset.filter(
                 is_in_gma=False,
             )
-        
+
 
 class CityCoveredListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
     # right admin sidebar just above the filter options
-    title = _('City Coverage')
+    title = _('City coverage')
 
     # Parameter for the filter that will be used in the URL query
     parameter_name = 'citycovered'
@@ -193,3 +193,54 @@ class CityCoveredListFilter(admin.SimpleListFilter):
             return queryset.filter(
                 is_city_covered=False,
             )
+
+
+class AccountDisabledListFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the
+    # right admin sidebar just above the filter options
+    title = _('account disabled')
+
+    # Parameter for the filter that will be used in the URL query
+    parameter_name = 'disabled'
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each tuple is the coded
+        value for the option that will appear in the URL query (and therefore
+        should be a string). The second element is the human-readable name for
+        the option that will appear in the right sidebar.
+        
+        """
+        return (
+            (None, _('Not disabled')),
+            ('true', _('Disabled')),
+            ('all', _('All')),
+        )
+    
+    def choices(self, cl):
+        for lookup, title in self.lookup_choices:
+            yield {
+                'selected': self.value() == lookup,
+                'query_string': cl.get_query_string({
+                    self.parameter_name: lookup,
+                }, []),
+                'display': title,
+            }
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value provided in the query
+        string and retrievable via `self.value()`.
+
+        """
+        # Compare the requested value to decide how to filter the queryset
+        if self.value() is None:
+            return queryset.filter(
+                is_archived=False,
+            )
+        if self.value() == 'true':
+            return queryset.filter(
+                is_archived=True,
+            )
+        if self.value() == 'all':
+            return queryset

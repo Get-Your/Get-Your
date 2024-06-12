@@ -42,7 +42,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.core.serializers.json import DjangoJSONEncoder
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import UploadedFile
 from phonenumber_field.phonenumber import PhoneNumber
 from app.models import (
     HouseholdMembers,
@@ -785,7 +785,8 @@ def get_eligible_iq_programs(
     # fraction
     income_eligible_iq_programs = IQProgramRD.objects.filter(
         is_active=True,
-        ami_threshold__gte=user.household.income_as_fraction_of_ami,
+        # If income_as_fraction_of_ami is None, set to 100% to exclude all programs
+        ami_threshold__gte=user.household.income_as_fraction_of_ami or 1,
     )
 
     # Gather all `requires_` fields in the IQProgramRD model along with their
@@ -1113,15 +1114,21 @@ def file_validation(
         calling_function=None,
     ):
     """
-    Validate the uploaded file with ``magic``.
+    Validate the uploaded file with ``python-magic``.
     
     Returns a tuple of whether validation was successful and any error messages.
     
     """
 
-    # If obj is an uploaded file, use .read(); else, take directly from the buffer
-    if isinstance(obj, InMemoryUploadedFile):
-        filetype = magic.from_buffer(obj.read())
+    # If obj is an uploaded file, use the first chunk; else, take directly from
+    # the buffer
+    if isinstance(obj, UploadedFile):
+        # If chunk_size is set manually here, python-magic recommends a minimum
+        # size of 2048 bytes for proper filetype identification
+        # (https://github.com/ahupp/python-magic?tab=readme-ov-file#usage)
+        for itm in obj.chunks():
+            filetype = magic.from_buffer(itm)
+            break
     else:
         filetype = magic.from_buffer(obj)
 
