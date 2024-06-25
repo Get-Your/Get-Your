@@ -713,29 +713,41 @@ def get_users_iq_programs(
     returns:
         a list of users iq programs
     """
-    # Get the IQ programs that a user has already applied to
-    users_iq_programs = list(IQProgram.objects.select_related(
-        'program').filter(user_id=user_id))
+    # Get all (active) IQ programs that the user is eligible for (regardless of
+    # application status). This accounts for both income and geographical
+    # eligibility
+    eligible_iq_programs = get_eligible_iq_programs(
+        User.objects.get(id=user_id),
+        users_eligiblity_address,
+    )
 
-    # Filter only programs that are active
-    users_iq_programs = [x for x in users_iq_programs if x.program.is_active]
+    # Get the (active) IQ programs that a user has already applied to
+    users_iq_programs = list(
+        IQProgram.objects.select_related(
+            'program',
+        ).filter(
+            user_id=user_id,
+            program__is_active=True,
+        ).order_by(
+            'program__id'
+        )
+    )
 
-    # Get the IQ programs a user is eligible for
-    users_iq_programs_ids = [
-        program.program_id for program in users_iq_programs]
-    active_iq_programs = list(IQProgramRD.objects.filter(
-        (Q(is_active=True) & Q(ami_threshold__gte=users_income_as_fraction_of_ami) & ~Q(
-            id__in=users_iq_programs_ids))
-    ))
+    # Collapse any programs the user has already applied for into all programs
+    # they are eligible for. The starting point is 'eligible programs' as
+    # IQProgramRD objects, then any program the user is in gets converted to an
+    # IQProgram object for later identification
+    programs = []
+    for prg in eligible_iq_programs:
+        # Append the matching users_iq_programs element to programs if it
+        # exists; else append the eligible_iq_programs element
+        try:
+            iq_program = next(x for x in users_iq_programs if x.program_id==prg.id)
+        except StopIteration:
+            programs.append(prg)
+        else:
+            programs.append(iq_program)
 
-    # Filter out the active programs that the user is not geographically eligible for.
-    # If the IQ program's requires_is_city_covered is true, then check to make sure
-    # the user's eligibility address is_city_covered.
-    active_iq_programs = [
-        program for program in active_iq_programs if not (program.requires_is_city_covered and not users_eligiblity_address.is_city_covered)]
-
-    # Gather list of active programs
-    programs = list(chain(users_iq_programs, active_iq_programs))
     # Determine if the user needs renewal for *any* program, and set as a user-
     # level 'needs renewal'
     needs_renewal = check_if_user_needs_to_renew(user_id)
@@ -787,6 +799,8 @@ def get_eligible_iq_programs(
         is_active=True,
         # If income_as_fraction_of_ami is None, set to 100% to exclude all programs
         ami_threshold__gte=user.household.income_as_fraction_of_ami or 1,
+    ).order_by(
+        'id'
     )
 
     # Gather all `requires_` fields in the IQProgramRD model along with their
