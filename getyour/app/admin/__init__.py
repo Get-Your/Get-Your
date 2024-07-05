@@ -22,6 +22,7 @@ import pendulum
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q, Exists, OuterRef
 from django.shortcuts import render, reverse
 from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.html import format_html
@@ -70,7 +71,6 @@ from app.admin.forms import (
     EligibilityProgramRDForm,
     IQProgramRDForm,
 )
-from app.admin.views import add_elig_program
 
 from logger.wrappers import LoggerWrapper
 
@@ -1706,6 +1706,198 @@ class IQProgramRDAdmin(admin.ModelAdmin):
         return super().get_form(request, obj, **kwargs)
 
     list_per_page = 100
+
+    # Perform additional logic if any of the 'requires' fields are altered; save
+    # the model or perform a dry run based on the input to this function
+    def get_changes(self, request, obj, form, change, view_only=True):
+        # If this isn't a change (e.g. an addition), add a message and go
+        # directly to display
+        if not change:
+            user_message = "There are no tests for the specified action; proceed at will."
+            if not view_only:
+                self.message_user(
+                    request, 
+                    user_message,
+                    messages.SUCCESS,
+                )
+
+        req_fields = get_iqprogram_requires_fields()
+
+        # For each itm that is a 'requires' field, calculate how many
+        # active accounts may be affected and alert the user
+
+        # Gather all 'requires' fields that were updated
+        updated_fields = [x for x in req_fields if x[0] in form.changed_data]
+
+        # If none of the updated fields are in req_fields, add a message and
+        # go directly to display
+        if len(updated_fields) == 0:
+            user_message = "There are no tests for the specified changes; proceed at will."
+            affected_users = []
+            if not view_only:
+                self.message_user(
+                    request,
+                    user_message,
+                    messages.SUCCESS,
+                )
+        
+        else:
+            # If changing from True -> False (more permissive), no users
+            # will be affected. If changing from False -> True (less
+            # permissive), we need to look at the number of users that have
+            # applied for at least one program where the corresponding
+            # AddressRD field is False (and would therefore no longer be
+            # eligible)
+
+            # Build Q queries based on the corresponding field in
+            # updated_fields being False, if the requires field is changing
+            # to True
+            filter_criteria = {
+                f"eligibility_address__{cor}": False for req, cor in updated_fields if form.cleaned_data[req] is True
+            }
+
+            # # No filter criteria means the changes are more permissive; add a
+            # # message and go directly to display
+            # if len(filter_criteria) == 0:
+            #     user_message = "Changes are more permissive; no effect on current users."
+            #     if not view_only:
+            #         self.message_user(
+            #             request, 
+            #             user_message,
+            #             messages.SUCCESS,
+            #         )
+            
+            filter_q = Q(
+                **filter_criteria
+            )
+
+            # Gather any Address object for each user that would be affected
+            # by this change
+            affected_address = Address.objects.select_related(
+                'eligibility_address'
+            ).filter(
+                filter_q,
+                user_id=OuterRef('id'),
+            )
+
+            # Gather any IQProgram objects for each user for active programs
+            # (IQProgram objects exist once a user has applied for that IQ
+            # Program)
+            active_iq_objects = IQProgram.objects.select_related(
+                'program'
+            ).filter(
+                user_id=OuterRef('id'),
+                program__is_active=True,
+            )
+
+            # Gather all active users that include the affected addresses
+            affected_users = User.objects.select_related(
+                'address'
+            ).filter(
+                # User has an address affected by this change
+                Exists(affected_address),
+                # User has at least one applied-for IQ Program
+                Exists(active_iq_objects),
+                is_archived=False,
+            )
+
+            if not view_only:
+                self.message_user(request, ngettext(
+                    "%d user affected by the change to “{}”".format(
+                        '”, “'.join(
+                            [x[0] for x in updated_fields]
+                        )
+                    ),
+                    "%d users affected by the change to “{}”".format(
+                        '”, “'.join(
+                            [x[0] for x in updated_fields]
+                        )
+                    ),
+                    len(affected_users),
+                ) % len(affected_users), messages.SUCCESS)
+
+        return affected_users
+
+    # Add custom buttons to the save list in the admin template (from
+    # https://stackoverflow.com/a/34899874/5438550 and
+    # https://stackoverflow.com/a/69487616/5438550)
+    change_form_template = 'admin/custom_button_change_form.html'
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+
+        # Add any custom buttons. This must be a list/tuple of list/tuples, as
+        # (name, url). The 'url' portion must match the
+        # "if 'url' in request.POST:" section of response_change()
+        extra_context['custom_buttons'] = [
+            {
+                'title': 'View Changes',
+                'link': '_view_changes',
+            },
+        ]
+
+        opts = self.model._meta
+        pk_value = object_id
+        preserved_filters = self.get_preserved_filters(request)
+        if '_view_changes_complete' in request.POST:
+            # If 'View Changes' was selected, refresh the page via a redirect
+            redirect_url = reverse(
+                f"admin:{opts.app_label}_{opts.model_name}_change",
+                args=(pk_value,),
+                current_app=self.admin_site.name,
+            )
+            redirect_url = add_preserved_filters(
+                {
+                    'preserved_filters': preserved_filters,
+                    'opts': opts,
+                },
+                redirect_url,
+            )
+            return HttpResponseRedirect(redirect_url)
+        
+        return super().change_view(
+            request,
+            object_id,
+            form_url,
+            extra_context=extra_context,
+        )
+
+    def response_change(self, request, obj):
+        if "_view_changes" in request.POST:
+            # Set the current_app for the admin base template
+            request.current_app = self.admin_site.name
+            return render(
+                request,
+                'admin/open_view_changes.html',
+                {
+                    # Set some page-specific text
+                    'site_header': 'Get FoCo administration',
+                    'title': 'View Proposed Changes',
+                    'site_title': 'Get FoCo administration',
+                },
+            )
+
+        else:
+            return super().response_change(request, obj)
+
+    def save_model(self, request, obj, form, change):
+        if "_view_changes" in request.POST:
+            # Run the logic for changes
+            affected_users = self.get_changes(request, obj, form, change)
+
+            # Set a session var with the affected users, stringified as
+            # comma-delimited
+            request.session['affected_user_ids'] = [x.id for x in affected_users]
+
+            # Set a session var with the altered fields
+            request.session['altered_fields'] = [
+                (x, form.initial[x], form.cleaned_data[x]) for x in form.changed_data
+            ]
+
+        else:
+            # If 'View Changes' was not selected, save the model (with
+            # message(s) to the user)
+            _ = self.get_changes(request, obj, form, change, view_only=False)
+            super().save_model(request, obj, form, change)
 
 
 class FeedbackAdmin(admin.ModelAdmin):
