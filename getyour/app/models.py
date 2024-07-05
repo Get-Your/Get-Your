@@ -543,12 +543,12 @@ class IQProgramRD(GenericTimeStampedModel):
             "This will be visible to users on the platform."
         ),
     )
-    # Supplmental information about the program (recommend leaving blank
+    # Supplemental information about the program (recommend leaving blank
     # (``''``) unless further info is necessary)
     friendly_supplemental_info = models.CharField(
         max_length=5000,
         help_text=_(
-            "Any supplmental information to display to the user."
+            "Any supplemental information to display to the user."
         ),
     )
     # Hyperlink to learn more about the program
