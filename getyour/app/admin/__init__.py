@@ -512,6 +512,7 @@ class UserAdmin(admin.ModelAdmin):
     )
     date_hierarchy = 'last_completed_at'
     actions = ('export_users', 'mark_awaiting_response', 'mark_verified')
+    save_on_top = True
 
     user_fields = [
         'full_name',
@@ -966,7 +967,8 @@ class UserAdmin(admin.ModelAdmin):
                 ])
             extra_context['custom_buttons'].extend([
                 {
-                    'title': 'Add IQ Program',
+                    # Buttons that open in the same window save the model first
+                    'title': 'Save and add IQ Program',
                     'link': '_add_iq_program',
                 },
             ])
@@ -1292,7 +1294,8 @@ class AddressAdmin(admin.ModelAdmin):
         # "if 'url' in request.POST:" section of response_change()
         extra_context['custom_buttons'] = [
             {
-                'title': 'Update GMA',
+                # Buttons that open in the same window save the model first
+                'title': 'Save and update GMA',
                 'link': '_update_gma',
             },
         ]
@@ -1457,7 +1460,8 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         if obj.user.household.is_income_verified is False:
             extra_context['custom_buttons'] = [
                 {
-                    'title': 'Change Program',
+                    # Buttons that open in the same window save the model first
+                    'title': 'Save and change program',
                     'link': '_change_program',
                 },
             ]
