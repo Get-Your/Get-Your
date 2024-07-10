@@ -1714,107 +1714,177 @@ class IQProgramRDAdmin(admin.ModelAdmin):
         # directly to display
         if not change:
             user_message = "There are no tests for the specified action; proceed at will."
-            if not view_only:
-                self.message_user(
-                    request, 
-                    user_message,
-                    messages.SUCCESS,
-                )
-
-        req_fields = get_iqprogram_requires_fields()
-
-        # For each itm that is a 'requires' field, calculate how many
-        # active accounts may be affected and alert the user
-
-        # Gather all 'requires' fields that were updated
-        updated_fields = [x for x in req_fields if x[0] in form.changed_data]
-
-        # If none of the updated fields are in req_fields, add a message and
-        # go directly to display
-        if len(updated_fields) == 0:
-            user_message = "There are no tests for the specified changes; proceed at will."
-            affected_users = []
+            affected_users = {
+                'permissive': [],
+                'restrictive': [],
+            }
             if not view_only:
                 self.message_user(
                     request,
                     user_message,
                     messages.SUCCESS,
                 )
-        
+
         else:
-            # If changing from True -> False (more permissive), no users
-            # will be affected. If changing from False -> True (less
-            # permissive), we need to look at the number of users that have
-            # applied for at least one program where the corresponding
-            # AddressRD field is False (and would therefore no longer be
-            # eligible)
+            req_fields = get_iqprogram_requires_fields()
 
-            # Build Q queries based on the corresponding field in
-            # updated_fields being False, if the requires field is changing
-            # to True
-            filter_criteria = {
-                f"eligibility_address__{cor}": False for req, cor in updated_fields if form.cleaned_data[req] is True
-            }
+            # For each itm that is a 'requires' field, calculate how many
+            # active accounts may be affected and alert the user
 
-            # # No filter criteria means the changes are more permissive; add a
-            # # message and go directly to display
-            # if len(filter_criteria) == 0:
-            #     user_message = "Changes are more permissive; no effect on current users."
-            #     if not view_only:
-            #         self.message_user(
-            #             request, 
-            #             user_message,
-            #             messages.SUCCESS,
-            #         )
+            # Gather all 'requires' fields that were updated vs not
+            updated_fields = [x for x in req_fields if x[0] in form.changed_data]
+
+            # If none of the updated fields are in req_fields, add a message and
+            # go directly to display
+            if len(updated_fields) == 0:
+                affected_users = {
+                    'permissive': [],
+                    'restrictive': [],
+                }
+                user_message = "There is nothing to view for the specified changes; proceed at will."
+                if not view_only:
+                    self.message_user(
+                        request,
+                        user_message,
+                        messages.SUCCESS,
+                    )
             
-            filter_q = Q(
-                **filter_criteria
-            )
+            else:
+                # Determine affected users based on currently eligibility vs 
+                # proposed eligibility for the changes
 
-            # Gather any Address object for each user that would be affected
-            # by this change
-            affected_address = Address.objects.select_related(
-                'eligibility_address'
-            ).filter(
-                filter_q,
-                user_id=OuterRef('id'),
-            )
+                # Build Q queries to filter addresses that are ineligible (both
+                # currently and after the proposed changes)
+                filter_criteria = {
+                    f"eligibility_address__{cor}": False for req, cor in req_fields if form.initial[req] is True
+                }
+                # Use OR to match *any of* the fields
+                filter_currently_ineligible = Q(
+                    **filter_criteria,
+                    _connector='OR',
+                )
 
-            # Gather any IQProgram objects for each user for active programs
-            # (IQProgram objects exist once a user has applied for that IQ
-            # Program)
-            active_iq_objects = IQProgram.objects.select_related(
-                'program'
-            ).filter(
-                user_id=OuterRef('id'),
-                program__is_active=True,
-            )
+                filter_criteria = {
+                    f"eligibility_address__{cor}": False for req, cor in req_fields if form.cleaned_data[req] is True
+                }
+                # Use OR to match *any of* the fields
+                filter_proposed_ineligible = Q(
+                    **filter_criteria,
+                    _connector='OR',
+                )
 
-            # Gather all active users that include the affected addresses
-            affected_users = User.objects.select_related(
-                'address'
-            ).filter(
-                # User has an address affected by this change
-                Exists(affected_address),
-                # User has at least one applied-for IQ Program
-                Exists(active_iq_objects),
-                is_archived=False,
-            )
+                # Build Q queries to filter addresses that are eligible (both
+                # currently and after the proposed changes)
+                filter_criteria = {
+                    f"eligibility_address__{cor}": True for req, cor in req_fields if form.initial[req] is True
+                }
+                # Use the default AND to match *all* fields
+                filter_currently_eligible = Q(**filter_criteria)
 
-            if not view_only:
-                self.message_user(request, ngettext(
-                    "%d user affected by the change to “{}”".format(
-                        '”, “'.join(
-                            [x[0] for x in updated_fields]
+                filter_criteria = {
+                    f"eligibility_address__{cor}": True for req, cor in req_fields if form.cleaned_data[req] is True
+                }
+                # Use the default AND to match *all* fields
+                filter_proposed_eligible = Q(**filter_criteria)
+
+                # Gather any IQProgram objects for each user for the specified
+                # program (if this DNE for a user, they haven't applied to the
+                # program)
+                applied_iq_objects = IQProgram.objects.filter(
+                    user_id=OuterRef('id'),
+                    program_id=obj.id,
+                )
+
+                # Initialize the affected users dict, using empty lists as
+                # effective placeholders for querysets
+                affected_users = {
+                    'permissive': [],
+                    'restrictive': [],
+                }
+
+                # Gather any address for each user for the 'permissive' and
+                # 'restrictive' cases (an address that is currently ineligible
+                # but would be eligible with the proposed changes and vice
+                # versa, respectively)
+                permissive_address = Address.objects.select_related(
+                    'eligibility_address'
+                ).filter(
+                    filter_currently_ineligible,
+                    filter_proposed_eligible,
+                    user_id=OuterRef('id'),
+                )
+
+                restrictive_address = Address.objects.select_related(
+                    'eligibility_address'
+                ).filter(
+                    filter_currently_eligible,
+                    filter_proposed_ineligible,
+                    user_id=OuterRef('id'),
+                )
+
+                # Gather all active users with complete applications that
+                # include the affected addresses and have applied for the
+                # specified IQ program
+                affected_users['restrictive'] = User.objects.select_related(
+                    'address'
+                ).filter(
+                    # User has an address affected by this change
+                    Exists(restrictive_address),
+                    # User has applied for the specified IQ program
+                    Exists(applied_iq_objects),
+                    is_archived=False,
+                    last_completed_at__isnull=False,
+                )
+
+                affected_users['permissive'] = User.objects.select_related(
+                    'address'
+                ).filter(
+                    # User has an address affected by this change
+                    Exists(permissive_address),
+                    # User cannot have applied to the specific IQ program, since
+                    # they are currently ineligible
+                    is_archived=False,
+                    last_completed_at__isnull=False,
+                )
+
+                # Update affected users before saving the model (if applicable)
+                if not view_only:
+                    # Loop through all affected users and update their application
+                    affected_counts = {
+                        'removed_programs': 0,
+                        'ignored_programs': 0,
+                    }
+                    for usr in affected_users['permissive']:
+                        # Apply to any newly-eligible auto-apply programs
+                        _ = finalize_application(usr, update_user=False)
+
+                    for usr in affected_users['restrictive']:
+                        # Remove any no-longer-eligible programs
+                        removal_dict = remove_ineligible_programs(
+                            usr.id,
+                            ignore_enrolled=True,
                         )
-                    ),
-                    "%d users affected by the change to “{}”".format(
-                        '”, “'.join(
-                            [x[0] for x in updated_fields]
-                        )
-                    ),
-                    len(affected_users),
-                ) % len(affected_users), messages.SUCCESS)
+
+                        affected_counts['removed_programs'] += removal_dict['removed_programs_count']
+                        affected_counts['ignored_programs'] += removal_dict['ignored_programs_count']
+
+                    self.message_user(request, ngettext(
+                        "%d user affected by the change to “{}”: {} total unapplied program(s) and {} ignored program(s) (user already enrolled)".format(
+                            '”, “'.join(
+                                [x[0] for x in updated_fields]
+                            ),
+                            affected_counts['removed_programs'],
+                            affected_counts['ignored_programs'],
+                        ),
+                        "%d users affected by the change to “{}”: {} total unapplied program(s) and {} ignored program(s) (user already enrolled)".format(
+                            '”, “'.join(
+                                [x[0] for x in updated_fields]
+                            ),
+                            affected_counts['removed_programs'],
+                            affected_counts['ignored_programs'],
+                        ),
+                        len(affected_users['permissive'])+len(affected_users['restrictive']),
+                    ) % int(len(affected_users['permissive'])+len(affected_users['restrictive'])), messages.SUCCESS)
 
         return affected_users
 
@@ -1871,7 +1941,7 @@ class IQProgramRDAdmin(admin.ModelAdmin):
                 {
                     # Set some page-specific text
                     'site_header': 'Get FoCo administration',
-                    'title': 'View Proposed Changes',
+                    'title': 'Calculating proposed changes...',
                     'site_title': 'Get FoCo administration',
                 },
             )
@@ -1884,9 +1954,9 @@ class IQProgramRDAdmin(admin.ModelAdmin):
             # Run the logic for changes
             affected_users = self.get_changes(request, obj, form, change)
 
-            # Set a session var with the affected users, stringified as
-            # comma-delimited
-            request.session['affected_user_ids'] = [x.id for x in affected_users]
+            # Set a session var with the affected users
+            request.session['permissive_user_ids'] = [x.id for x in affected_users['permissive']]
+            request.session['restrictive_user_ids'] = [x.id for x in affected_users['restrictive']]
 
             # Set a session var with the altered fields
             request.session['altered_fields'] = [
@@ -1895,9 +1965,12 @@ class IQProgramRDAdmin(admin.ModelAdmin):
 
         else:
             # If 'View Changes' was not selected, save the model (with
-            # message(s) to the user)
-            _ = self.get_changes(request, obj, form, change, view_only=False)
+            # message(s) to the user). The model must be saved first in order
+            # to properly apply/remove programs
             super().save_model(request, obj, form, change)
+
+            # Make the changes after saving the model
+            _ = self.get_changes(request, obj, form, change, view_only=False)
 
 
 class FeedbackAdmin(admin.ModelAdmin):

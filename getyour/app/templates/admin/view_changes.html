@@ -26,11 +26,33 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         {% endfor %}
         <br />
         <p>{{ user_message }}</p>
+        {% for key in users %}
+
+        {% if key == "permissive" %}
+
+        {% if users.permissive %}
+        <p>Users with expanded eligibility:</p>
         <ul>
-            {% for usr in users %}
+            {% for usr in users.permissive %}
             <li><a href="{{ usr.admin_link }}">{{ usr.name }} ({{ usr.email }})</a></li>
             {% endfor %}
         </ul>
+        {% endif %}
+
+        {% elif key == "restrictive" %}
+
+        {% if users.restrictive %}
+        <p>Users with restricted eligibility:</p>
+        <ul>
+            {% for usr in users.restrictive %}
+            <li><a href="{{ usr.admin_link }}">{{ usr.name }} ({{ usr.email }})</a></li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% endif %}
+
+        {% endfor %}
     {% else %}
         <p>No changes detected</p>
     {% endif %}

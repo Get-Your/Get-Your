@@ -324,26 +324,33 @@ def view_changes(request, **kwargs):
         )
 
         # Parse the affected users, as applicable
-        affected_user_ids = request.session.get('affected_user_ids')
-        user_message = "{} user(s) would be affected by the following proposed changes.".format(
-            len(affected_user_ids),
+        user_ids = {
+            'permissive': request.session.get('permissive_user_ids'),
+            'restrictive': request.session.get('restrictive_user_ids'),
+        }
+
+        user_message = "{tot} user(s) would be affected by the proposed changes ({per} with expanded eligibility, {res} with restricted eligibility)".format(
+            tot=sum([len(x) for x in user_ids.values()]),
+            per=len(user_ids['permissive']),
+            res=len(user_ids['restrictive']),
         )
 
-        # Output a table of the users, with links that that user page
-        users = []
-        for user_id in affected_user_ids:
-            user = User.objects.get(id=user_id)
-            users.append({
-                'name': f"{user.first_name} {user.last_name}",
-                'email': user.email,
-                'admin_link': get_admin_url(user),
-            })
+        # Prepare a list of users in each category, with links to each user's page
+        users = {key: [] for key in user_ids.keys()}
+        for usrkey, usrset in user_ids.items():
+            for usrid in usrset:
+                user = User.objects.get(id=usrid)
+                users[usrkey].append({
+                    'name': f"{user.first_name} {user.last_name}",
+                    'email': user.email,
+                    'admin_link': get_admin_url(user),
+                })
 
-        log.debug(
-            f"{len(affected_user_ids)} affected user(s)",
-            function='view_changes',
-            user_id=request.user.id,
-        )
+            log.debug(
+                f"{len(users[usrkey])} affected user(s) in the {usrkey} category",
+                function='view_changes',
+                user_id=request.user.id,
+            )
 
         return render(
             request,
