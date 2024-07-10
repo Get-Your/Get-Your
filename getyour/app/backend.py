@@ -1184,13 +1184,29 @@ def finalize_address(instance, is_in_gma, has_connexion):
     instance.save()
 
 
-def remove_ineligible_programs(user_id):
+def remove_ineligible_programs(user_id: int, ignore_enrolled: bool = False):
     """
     Remove programs that a user no longer qualifies for, based on application
     updates made after the user selected their programs.
 
     A use-case for this is when a user's documentation is changed from a 30% AMI
     eligibility program to a 60% AMI program via the admin panel.
+
+    Parameters
+    ----------
+    user_id : int
+        The ID of the target user.
+    ignore_enrolled : bool
+        Designates what to do when a user is enrolled in a program that they're
+        no longer eligible for (and therefore can't be removed): False will
+        raise an exception, while True will continue with removing all
+        non-enrolled programs. The default is False.
+
+    Returns
+    -------
+    dict
+        Returns a dictionary of the output message, count of removed programs,
+        and count of ignored programs.
 
     """
 
@@ -1219,21 +1235,31 @@ def remove_ineligible_programs(user_id):
     # Remove the user from the ineligible program(s), but ONLY IF they're not
     # currently enrolled
 
-    # If a user is enrolled in any program, raise an exception
+    # Determine if the user is enrolled in a program to be removed
     enrolled_programs = [
         x for x in ineligible_current_programs if x.is_enrolled
     ]
-    if len(enrolled_programs) > 0:
-        raise AttributeError(
-            "User is enrolled in {} but would no longer be eligible with the proposed change".format(
-                ', '.join([x.program.program_name for x in enrolled_programs]),
+
+    # If ignore_enrolled==False, raise an exception if the user is enrolled in
+    # one or more programs
+    if not ignore_enrolled:
+        if len(enrolled_programs) > 0:
+            raise AttributeError(
+                "User is enrolled in {} but would no longer be eligible with the proposed change".format(
+                    ', '.join([x.program.program_name for x in enrolled_programs]),
+                )
             )
-        )
 
-    # Delete user from ineligible programs; return message describing the changes
+    # Delete user from ineligible (and non-enrolled) programs; return message
+    # describing the changes
     msg = []
-    for program in ineligible_current_programs:
-        program.delete()
-        msg.append(f"User was removed from {program.program.program_name}")
+    for prgrm in ineligible_current_programs:
+        if not prgrm.is_enrolled:
+            prgrm.delete()
+            msg.append(f"User was removed from {prgrm.program.program_name}")
 
-    return '; '.join(msg)
+    return {
+        'message': '; '.join(msg),
+        'removed_programs_count': len(ineligible_current_programs),
+        'ignored_programs_count': len(enrolled_programs),
+    }

@@ -1199,7 +1199,7 @@ class AddressAdmin(admin.ModelAdmin):
         else:
             queryset = [input_object]
 
-        # Loop through the queryset (or similated queryset)
+        # Loop through the queryset (or simulated queryset)
         updated_addr_count = 0
         for obj in queryset:
             # Format for address_check. All addresses in the database have been
@@ -1502,7 +1502,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                             _ = finalize_application(obj.user, update_user=False)
 
                         # Remove any no-longer-eligible programs
-                        msg = remove_ineligible_programs(obj.user.id)
+                        msg = remove_ineligible_programs(obj.user.id)['message']
 
                 except AttributeError as e:
                     # Undo the changes (automatic, since an exception was
@@ -1656,7 +1656,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                 # Remove any no-longer-eligible programs
                 request.session['remove_ineligible_message'] = remove_ineligible_programs(
                     obj.user.id,
-                )
+                )['message']
                 
     def response_delete(self, request, obj_display, obj_id):
         msg = request.session.pop('remove_ineligible_message', '')
