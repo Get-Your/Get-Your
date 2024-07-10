@@ -35,13 +35,13 @@ supported_content_types = {
 
 # Define the pages for the application/renewal, in order
 application_pages = {
-    'get_ready': 'app:get_ready',
-    'account': 'app:account',
-    'address': 'app:address',
-    'household': 'app:household',
-    'household_members': 'app:household_members',
-    'eligibility_programs': 'app:programs',
-    'files': 'app:files'
+    "get_ready": "app:get_ready",
+    "account": "app:account",
+    "address": "app:address",
+    "household": "app:household",
+    "household_members": "app:household_members",
+    "eligibility_programs": "app:eligibility_programs",
+    "files": "app:files",
 }
 
 # Define form choices for rent/own and duration at address

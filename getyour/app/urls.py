@@ -94,9 +94,9 @@ urlpatterns = [
         kwargs={"allow_direct_user": False},
     ),
     path(
-        "programs",
-        application.programs,
-        name="programs",
+        "eligibility_programs",
+        application.eligibility_programs,
+        name="eligibility_programs",
         kwargs={"allow_direct_user": False},
     ),
     path(
@@ -183,6 +183,12 @@ urlpatterns = [
         dashboard.account_programs,
         name="account_programs",
         kwargs={"allow_direct_user": True},
+    ),
+    path(
+        "account_programs/<str:program_name>/<str:title>/<str:in_gma_with_no_service>/",
+        dashboard.account_programs,
+        name="account_programs",
+        kwargs={"allow_direct_user": True, "quick_apply_result": True},
     ),
     path(
         "qualified_programs",

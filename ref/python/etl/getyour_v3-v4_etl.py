@@ -55,7 +55,7 @@ def what_page_clone(
     )
     if cursor.fetchone()[0] == 0:
         return "app:address"
-    
+
     # Check for record in app_household
     cursor.execute(
         """select count(*) from public.app_household where user_id=%s""",
@@ -79,8 +79,8 @@ def what_page_clone(
     )
     programCount = cursor.fetchone()[0]
     if programCount == 0:
-        return "app:programs"
-    
+        return "app:eligibility_programs"
+
     # Check to see if the user has uploaded all files
     # Django convention is to use 'blank' rather than 'null' for varchar
     # fields; check for both here, for completeness
@@ -267,8 +267,8 @@ def fill_last_completed(global_objects: dict) -> None:
     input(
         "\nPause here to manually revisit last_renewal_action values for users that are mid-renewal at this point. Follow instructions in the v4_cleanup_verification.sql script.\n\nPress Return to continue with the ETL script."
     )
-        
-        
+
+
 def fill_last_notification(global_objects: dict) -> None:
     """
     2) Fill all ``last_action_notification_at`` values.
@@ -477,7 +477,7 @@ def verify_transfer(global_objects: dict) -> None:
     finally:
         cursor.close()
 
-        
+
 if __name__=='__main__':
     
     # Define the database profile

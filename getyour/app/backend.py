@@ -590,7 +590,7 @@ def serialize_household_members(request, file_paths):
     household_info = json.loads(json.dumps(
         {'persons_in_household': household_members}, cls=DjangoJSONEncoder))
     return household_info
-    
+
 
 def login(request, user):
 
@@ -639,7 +639,7 @@ def what_page(user, request):
         if (request.user.eligibility_files.count()):
             pass
         else:
-            return "app:programs"
+            return "app:eligibility_programs"
 
         users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
             request)

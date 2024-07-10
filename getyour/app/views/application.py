@@ -1186,8 +1186,8 @@ def household_members(request, **kwargs):
 
             if update_mode:
                 return redirect(f"{reverse('app:user_settings')}?page_updated=household")
-            return redirect(reverse("app:programs"))
-        
+            return redirect(reverse("app:eligibility_programs"))
+
         else:
             log.debug(
                 "Entering function (GET)",
@@ -1216,7 +1216,7 @@ def household_members(request, **kwargs):
                 'renewal_mode': renewal_mode,
             },
         )
-    
+
     # General view-level exception catching
     except:
         try:
@@ -1232,7 +1232,7 @@ def household_members(request, **kwargs):
 
 
 @login_required(redirect_field_name='auth_next')
-def programs(request, **kwargs):
+def eligibility_programs(request, **kwargs):
 
     try:
         # Check the boolean value of update_mode session var
@@ -1304,13 +1304,13 @@ def programs(request, **kwargs):
 
         return render(
             request,
-            'application/programs.html',
+            "application/eligibility_programs.html",
             {
-                'programs': programs,
-                'step': 4,
-                'form_page_number': form_page_number,
-                'title': "Programs",
-                'renewal_mode': renewal_mode,
+                "programs": programs,
+                "step": 4,
+                "form_page_number": form_page_number,
+                "title": "Programs",
+                "renewal_mode": renewal_mode,
             },
         )
 
@@ -1326,6 +1326,7 @@ def programs(request, **kwargs):
             user_id=user_id,
         )
         raise
+
 
 @login_required(redirect_field_name='auth_next')
 @set_update_mode

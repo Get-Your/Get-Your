@@ -2,7 +2,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
-{% include "partials/static-imports.html" with title="Get FoCo | File Upload" %}
+{% include "partials/static-imports.html" with title="Get FoCo | Eligibility Programs" %}
 
 <body class="bg-secondary">
     <!-- Page container -->
@@ -13,28 +13,22 @@
 
                 <div class="card">
                     <div class="card-body">
-                        <form id="file-upload-form" method="post" action="{% url 'app:files' %}"
+                        <form id="eligibility-programs-form" method="post" action="{% url 'app:eligibility_programs' %}"
                             class="needs-validation" novalidate autocomplete="false">
                             {% csrf_token %}
                             <div class="row mb-4">
                                 <div class="col-5">
-                                    {% include "partials/steps.html" with active_step="file_upload"%}
+                                    {% include "partials/steps.html" with active_step="eligibility_programs"%}
                                 </div>
                                 <div class="col-7">
                                     <div class="row g-3">
                                         <div class="col-12">
                                             <p class="form-label">
-                                                To get verified, please upload your:
+                                                Are you currently enrolled in any of the following programs?
+                                                <i class="gi-circle-info" data-bs-toggle="tooltip"
+                                                    data-bs-placement="top" title="Choose all that apply">
+                                                </i>
                                             </p>
-
-                                            <ul id="document_upload_list">
-                                                {% for program in eligiblity_programs %}
-                                                <li class="form-label">{{program.program__friendly_name}}</li>
-                                                {% endfor %}
-                                            </ul>
-
-                                            <p class="form-label">Uploaded documents are secure &amp; not shared with anyone outside of Fort Collins' income eligible programs.</p>
-
                                             <!-- Element to show error for not selecting any eligibility programs -->
                                             <div class="alert alert-danger d-none" id="eligibility-programs-error">
                                                 Please select at least one program.
@@ -47,6 +41,14 @@
                                             </div>
                                             {% endfor %}
 
+                                            <!-- {% for program in programs %}
+                                            <div class="form-check">
+                                                <input class="form-check-input" id="{{ program.program_name }}" type="checkbox" name="{{ program.program_name }}" value="{{ program.id }}">
+                                                <label class="form-check-label" for="{{ program.program_name }}">
+                                                    {{ program.friendly_name }}
+                                                </label>
+                                            </div>
+                                            {% endfor %} -->
                                         </div>
 
                                     </div>
@@ -54,7 +56,7 @@
                             </div>
 
                             <div class="d-flex justify-content-between">
-                                <a href="{% url 'app:eligibility_programs' %}?app_status=in_progress"
+                                <a href="{% url 'app:household' %}?app_status=in_progress"
                                     class="btn btn-primary">Back</a>
                                 {% if update_mode or renewal_mode %}
                                 <button class="btn btn-primary" type="submit">Confirm</button>
@@ -71,25 +73,6 @@
         </div>
     </div>
 
-    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="successModalLabel">Application Submitted</h5>
-                    <a href="{% url 'app:account_programs' %}">
-                        <button type="button" class="btn-close" aria-label="Go to Dashboard"></button>
-                    </a>
-                </div>
-                <div class="modal-body">
-                    <p>Your application has been submitted successfully. You will be redirected to your account dashboard.</p>
-                </div>
-                <div class="modal-footer">
-                    <a href="{% url 'app:account_programs' %}" class="btn btn-primary">Go to Dashboard</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
     {% include "partials/footer.html" %}
 
     <script>
@@ -99,6 +82,42 @@
                 var spinner = document.createElement('div');
                 spinner.classList.add('spinner-border', 'spinner-border-sm', 'ms-2');
                 submitButton.appendChild(spinner);
+            });
+        });
+
+        // Listen for the form submission. If not eligibility programs are selected, prevent the form from submitting.
+        // Show the warning message.
+        document.getElementById('eligibility-programs-form').addEventListener('submit', function(event) {
+            var checkboxes = document.querySelectorAll('.btn-check');
+            var checked = Array.prototype.slice.call(checkboxes).some(function(checkbox) {
+                return checkbox.checked;
+            });
+
+            if (!checked) {
+                event.preventDefault();
+                document.getElementById('eligibility-programs-error').classList.remove('d-none');
+
+                // Stop the spinner
+                var spinner = document.querySelector('.spinner-border');
+                if (spinner) {
+                    spinner.remove();
+                }
+            }
+        });
+
+        // When the class="btn-check" inputs are click add the btn-success class to the label
+        var checkboxes = document.querySelectorAll('.btn-check');
+        checkboxes.forEach(function(checkbox) {
+            checkbox.addEventListener('click', function() {
+                var label = document.querySelector('label[for="' + checkbox.id + '"]');
+                if (checkbox.checked) {
+                    label.classList.add('btn-success');
+
+                    // Remove the error message
+                    document.getElementById('eligibility-programs-error').classList.add('d-none');
+                } else {
+                    label.classList.remove('btn-success');
+                }
             });
         });
     </script>
