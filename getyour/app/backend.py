@@ -1293,6 +1293,11 @@ def update_users_for_program(
         'ignored_users': 0,
     }
 
+    log.debug(
+        f"{len(users)} user(s) to update for program '{program.program_name}'",
+        function='update_users_for_program',
+    )
+
     # Loop through all User objects
     for usr in users:
         try:

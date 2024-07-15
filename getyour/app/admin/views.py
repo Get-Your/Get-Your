@@ -329,6 +329,16 @@ def view_changes(request, **kwargs):
             'restrictive': request.session.get('restrictive_user_ids'),
         }
 
+        log.debug(
+            "Affected users: {}".format(
+                ", ".join(
+                    [f"{len(user_ids[key])} in {key} category" for key in user_ids.keys()]
+                ),
+            ),
+            function='view_changes',
+            user_id=request.user.id,
+        )
+
         user_message = "{tot} user(s) would be affected by the proposed changes ({per} with expanded eligibility, {res} with restricted eligibility)".format(
             tot=sum([len(x) for x in user_ids.values()]),
             per=len(user_ids['permissive']),
@@ -345,12 +355,6 @@ def view_changes(request, **kwargs):
                     'email': user.email,
                     'admin_link': get_admin_url(user),
                 })
-
-            log.debug(
-                f"{len(users[usrkey])} affected user(s) in the {usrkey} category",
-                function='view_changes',
-                user_id=request.user.id,
-            )
 
         return render(
             request,

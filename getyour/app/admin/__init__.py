@@ -1192,7 +1192,7 @@ class AddressAdmin(admin.ModelAdmin):
             "Entering admin action",
             function='update_gma',
             user_id=request.user.id,
-        )        
+        )
 
         # If the input_object is not a QuerySet, coerce it into a list so for
         # similar operation
@@ -1712,20 +1712,28 @@ class IQProgramRDAdmin(admin.ModelAdmin):
     # Perform additional logic if any of the 'requires' fields are altered; save
     # the model or perform a dry run based on the input to this function
     def get_changes(self, request, obj, form, change, view_only=True):
-        # If this isn't a change (e.g. an addition), add a message and go
-        # directly to display
-        if not change:
-            user_message = "There are no tests for the specified action; proceed at will."
+        # If this is an addition (not change) or the changed_data is empty (not
+        # form.changed_data), add a message and go directly to display
+        if not change or not form.changed_data:
             affected_users = {
                 'permissive': [],
                 'restrictive': [],
             }
-            if not view_only:
-                self.message_user(
-                    request,
-                    user_message,
-                    messages.SUCCESS,
-                )
+            log.info(
+                f"No changes detected (view_only=={view_only})",
+                function='get_changes',
+                user_id=request.user.id,
+            )
+
+            if view_only:
+                user_message = "There are no tests for the specified action; proceed at will."
+            else:
+                user_message = "No changes detected."
+            self.message_user(
+                request,
+                user_message,
+                messages.SUCCESS,
+            )
 
         else:
             req_fields = get_iqprogram_requires_fields()
@@ -1743,9 +1751,23 @@ class IQProgramRDAdmin(admin.ModelAdmin):
                     'permissive': [],
                     'restrictive': [],
                 }
+                log.debug(
+                    f"'Requires' field update not detected (view_only=={view_only})",
+                    function='get_changes',
+                    user_id=request.user.id,
+                )
 
             else:
-                # Determine affected users based on currently eligibility vs 
+                log.info(
+                    "'Requires' field update detected ({}) (view_only=={})".format(
+                        ', '.join([x[0] for x in updated_fields]),
+                        view_only,
+                    ),
+                    function='get_changes',
+                    user_id=request.user.id,
+                )
+
+                # Determine affected users based on currently eligibility vs
                 # proposed eligibility for the changes
 
                 # Build Q queries to filter addresses that are ineligible (both
@@ -1856,16 +1878,26 @@ class IQProgramRDAdmin(admin.ModelAdmin):
                         users=users,
                     )
 
+                    user_message = "Users affected by the change to “{}”: {} auto-applied user(s), {} unapplied user(s), and {} enrolled user(s) (could not be altered)".format(
+                        '”, “'.join(
+                            [x[0] for x in updated_fields]
+                        ),
+                        affected_counts['applied_users'],
+                        affected_counts['removed_users'],
+                        affected_counts['ignored_users'],
+                    )
+                    log.info(
+                        "{} (view_only={})".format(
+                            # Remove the unicode quotes when logging
+                            user_message.replace('“', '"').replace('”', '"'),
+                            view_only,
+                        ),
+                        function='get_changes',
+                        user_id=request.user.id,
+                    )
                     self.message_user(
                         request,
-                        "Users affected by the change to “{}”: {} auto-applied user(s), {} unapplied user(s), and {} enrolled user(s) (could not be altered)".format(
-                            '”, “'.join(
-                                [x[0] for x in updated_fields]
-                            ),
-                            affected_counts['applied_users'],
-                            affected_counts['removed_users'],
-                            affected_counts['ignored_users'],
-                        ),
+                        user_message,
                         messages.SUCCESS,
                     )
 
