@@ -21,6 +21,7 @@ import datetime
 import requests
 import pendulum
 from enum import Enum
+from typing import Union
 from itertools import chain
 import logging
 import httpagentparser
@@ -40,7 +41,9 @@ from django.contrib.auth.backends import UserModel
 from django.contrib.auth import login as django_auth_login
 from django.conf import settings
 from django.db.models import Q
+from django.db.models.query import QuerySet
 from django.db.models.fields.files import FieldFile
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.files.uploadedfile import UploadedFile
 from phonenumber_field.phonenumber import PhoneNumber
@@ -1184,10 +1187,13 @@ def finalize_address(instance, is_in_gma, has_connexion):
     instance.save()
 
 
-def remove_ineligible_programs(user_id: int, ignore_enrolled: bool = False):
+def remove_ineligible_programs_for_user(user_id):
     """
     Remove programs that a user no longer qualifies for, based on application
     updates made after the user selected their programs.
+
+    Note that this will throw an exception if any of the programs to be removed
+    are currently-enrolled for the user, and no changes will be made.
 
     A use-case for this is when a user's documentation is changed from a 30% AMI
     eligibility program to a 60% AMI program via the admin panel.
@@ -1196,27 +1202,20 @@ def remove_ineligible_programs(user_id: int, ignore_enrolled: bool = False):
     ----------
     user_id : int
         The ID of the target user.
-    ignore_enrolled : bool
-        Designates what to do when a user is enrolled in a program that they're
-        no longer eligible for (and therefore can't be removed): False will
-        raise an exception, while True will continue with removing all
-        non-enrolled programs. The default is False.
 
     Returns
     -------
-    dict
-        Returns a dictionary of the output message, count of removed programs,
-        and count of ignored programs.
+    str
+        Returns the output message, with any compound messages joined by a
+        semicolon.
 
     """
 
     # Get the user object (with updates that were presumably made just prior)
-    user = User.objects.get(id=user_id)
+    user = User.objects.get(id=user_id).select_related('address')
 
     # Get the user's eligibility address
-    eligibility_address = AddressRD.objects.filter(
-        id=user.address.eligibility_address_id
-    ).first()
+    eligibility_address = user.address.eligibility_address
 
     # Get the user's current programs
     users_iq_programs = IQProgram.objects.filter(user_id=user.id)
@@ -1235,31 +1234,115 @@ def remove_ineligible_programs(user_id: int, ignore_enrolled: bool = False):
     # Remove the user from the ineligible program(s), but ONLY IF they're not
     # currently enrolled
 
-    # Determine if the user is enrolled in a program to be removed
+    # If a user is enrolled in any program, raise an exception
     enrolled_programs = [
         x for x in ineligible_current_programs if x.is_enrolled
     ]
-
-    # If ignore_enrolled==False, raise an exception if the user is enrolled in
-    # one or more programs
-    if not ignore_enrolled:
-        if len(enrolled_programs) > 0:
-            raise AttributeError(
-                "User is enrolled in {} but would no longer be eligible with the proposed change".format(
-                    ', '.join([x.program.program_name for x in enrolled_programs]),
-                )
+    if len(enrolled_programs) > 0:
+        raise AttributeError(
+            "User is enrolled in {} but would no longer be eligible with the proposed change".format(
+                ', '.join([x.program.program_name for x in enrolled_programs]),
             )
+        )
 
-    # Delete user from ineligible (and non-enrolled) programs; return message
-    # describing the changes
+    # Delete user from ineligible programs; return message describing the changes
     msg = []
     for prgrm in ineligible_current_programs:
-        if not prgrm.is_enrolled:
-            prgrm.delete()
-            msg.append(f"User was removed from {prgrm.program.program_name}")
+        prgrm.delete()
+        msg.append(f"User was removed from {prgrm.program.program_name}")
 
-    return {
-        'message': '; '.join(msg),
-        'removed_programs_count': len(ineligible_current_programs),
-        'ignored_programs_count': len(enrolled_programs),
+    return '; '.join(msg)
+
+
+def update_users_for_program(
+        *,  # force the following to be keyword-only parameters
+        program: IQProgramRD,
+        users: Union[list, tuple, QuerySet],
+    ):
+    """
+    Update users' applicabilitiy for for the specified IQ Program, based on
+    updates made after the user selected their programs. This will remove
+    users from no-longer-eligible programs or auto-apply users to newly-eligible
+    programs, where applicable.
+
+    Note that this will ignore all users that are currently enrolled in the
+    specified program. Any such users will be included in the function output.
+
+    A use-case for this is when an IQ Program's requirements change and all
+    active users must be modified for that program.
+
+    Parameters
+    ----------
+    program : IQProgramRD
+        The ID of the specified program.
+    users : Union[list, tuple, QuerySet]
+        A list, tuple, or queryset of User objects to be updated for the
+        specified program. This can be a queryset of all users, but will slow
+        the updates.
+
+    Returns
+    -------
+    dict
+        Returns a dictionary of counts of removed users and ignored users.
+
+    """
+    # Initialize output counts
+    update_counts = {
+        'applied_users': 0,
+        'removed_users': 0,
+        'ignored_users': 0,
     }
+
+    # Loop through all User objects
+    for usr in users:
+        try:
+            # Determine if the user is eligible (i.e. whether they should be
+            # checked for auto-apply or for removal). ObjectDoesNotExist will be
+            # thrown if the necessary information DNE for eligibility.
+            user_eligible = program in get_eligible_iq_programs(
+                usr,
+                usr.address.eligibility_address,
+            )
+
+        except ObjectDoesNotExist:
+            # Not all necessary information was found for eligibility, so there
+            # is nothing further to do
+            continue
+
+        else:
+            # Get the program if the user has applied for it (an
+            # ObjectDoesNotExist exception will be thrown if the user hasn't
+            # applied)
+            try:
+                applied_program = usr.iq_programs.get(program_id=program.id)
+
+            except ObjectDoesNotExist:
+                # User has not applied for it, so apply them if they're eligible
+                # and the program has auto-apply enabled
+                if user_eligible and program.enable_autoapply:
+                    IQProgram.objects.create(
+                        user_id=usr.id,
+                        program_id=program.id,
+                    )
+                    update_counts['applied_users'] += 1
+                    # log.debug(
+                    #     f"User auto-applied for '{program.program_name}' IQ program",
+                    #     function='finalize_application',
+                    #     user_id=user.id,
+                    # )
+
+            else:
+                # User has applied, so determine new eligibility
+
+                # If user is enrolled, ignore the user regardless of eligibility
+                if applied_program.is_enrolled:
+                    update_counts['ignored_users'] += 1
+                    continue
+
+                # User isn't enrolled, so remove the programs if the user isn't
+                # eligible
+                if not user_eligible:
+                    applied_program.delete()
+                    update_counts['removed_users'] += 1
+
+    return update_counts
