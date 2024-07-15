@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import logging
+from itertools import chain
 from django.http.response import HttpResponse
 import pendulum
 
@@ -53,7 +54,8 @@ from app.backend import (
     get_iqprogram_requires_fields,
     finalize_address,
     finalize_application,
-    remove_ineligible_programs,
+    remove_ineligible_programs_for_user,
+    update_users_for_program,
     address_check,
 )
 from app.constants import application_pages
@@ -1243,7 +1245,7 @@ class AddressAdmin(admin.ModelAdmin):
                         _ = finalize_application(addr.user, update_user=False)
 
                         # Remove any no-longer-eligible programs
-                        remove_ineligible_programs(addr.user.id)
+                        remove_ineligible_programs_for_user(addr.user.id)
 
         log.info(
             f"{len(queryset)} addresses checked; updates applied to {updated_addr_count}.",
@@ -1502,7 +1504,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                             _ = finalize_application(obj.user, update_user=False)
 
                         # Remove any no-longer-eligible programs
-                        msg = remove_ineligible_programs(obj.user.id)['message']
+                        msg = remove_ineligible_programs_for_user(obj.user.id)
 
                 except AttributeError as e:
                     # Undo the changes (automatic, since an exception was
@@ -1654,9 +1656,9 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                 _ = finalize_application(obj.user, update_user=False)
 
                 # Remove any no-longer-eligible programs
-                request.session['remove_ineligible_message'] = remove_ineligible_programs(
+                request.session['remove_ineligible_message'] = remove_ineligible_programs_for_user(
                     obj.user.id,
-                )['message']
+                )
                 
     def response_delete(self, request, obj_display, obj_id):
         msg = request.session.pop('remove_ineligible_message', '')
@@ -1734,21 +1736,14 @@ class IQProgramRDAdmin(admin.ModelAdmin):
             # Gather all 'requires' fields that were updated vs not
             updated_fields = [x for x in req_fields if x[0] in form.changed_data]
 
-            # If none of the updated fields are in req_fields, add a message and
-            # go directly to display
+            # If none of the updated fields are in req_fields, go directly to
+            # display
             if len(updated_fields) == 0:
                 affected_users = {
                     'permissive': [],
                     'restrictive': [],
                 }
-                user_message = "There is nothing to view for the specified changes; proceed at will."
-                if not view_only:
-                    self.message_user(
-                        request,
-                        user_message,
-                        messages.SUCCESS,
-                    )
-            
+
             else:
                 # Determine affected users based on currently eligibility vs 
                 # proposed eligibility for the changes
@@ -1847,44 +1842,32 @@ class IQProgramRDAdmin(admin.ModelAdmin):
                     last_completed_at__isnull=False,
                 )
 
-                # Update affected users before saving the model (if applicable)
+                # Update affected users after the model was saved (if applicable)
                 if not view_only:
-                    # Loop through all affected users and update their application
-                    affected_counts = {
-                        'removed_programs': 0,
-                        'ignored_programs': 0,
-                    }
-                    for usr in affected_users['permissive']:
-                        # Apply to any newly-eligible auto-apply programs
-                        _ = finalize_application(usr, update_user=False)
+                    # Update each user for the specified program and collect the
+                    # counts of changes
+                    users = list(chain(
+                        affected_users['permissive'],
+                        affected_users['restrictive'],
+                    ))
 
-                    for usr in affected_users['restrictive']:
-                        # Remove any no-longer-eligible programs
-                        removal_dict = remove_ineligible_programs(
-                            usr.id,
-                            ignore_enrolled=True,
-                        )
+                    affected_counts = update_users_for_program(
+                        program=obj,
+                        users=users,
+                    )
 
-                        affected_counts['removed_programs'] += removal_dict['removed_programs_count']
-                        affected_counts['ignored_programs'] += removal_dict['ignored_programs_count']
-
-                    self.message_user(request, ngettext(
-                        "%d user affected by the change to “{}”: {} total unapplied program(s) and {} ignored program(s) (user already enrolled)".format(
+                    self.message_user(
+                        request,
+                        "Users affected by the change to “{}”: {} auto-applied user(s), {} unapplied user(s), and {} enrolled user(s) (could not be altered)".format(
                             '”, “'.join(
                                 [x[0] for x in updated_fields]
                             ),
-                            affected_counts['removed_programs'],
-                            affected_counts['ignored_programs'],
+                            affected_counts['applied_users'],
+                            affected_counts['removed_users'],
+                            affected_counts['ignored_users'],
                         ),
-                        "%d users affected by the change to “{}”: {} total unapplied program(s) and {} ignored program(s) (user already enrolled)".format(
-                            '”, “'.join(
-                                [x[0] for x in updated_fields]
-                            ),
-                            affected_counts['removed_programs'],
-                            affected_counts['ignored_programs'],
-                        ),
-                        len(affected_users['permissive'])+len(affected_users['restrictive']),
-                    ) % int(len(affected_users['permissive'])+len(affected_users['restrictive'])), messages.SUCCESS)
+                        messages.SUCCESS,
+                    )
 
         return affected_users
 
@@ -1941,7 +1924,7 @@ class IQProgramRDAdmin(admin.ModelAdmin):
                 {
                     # Set some page-specific text
                     'site_header': 'Get FoCo administration',
-                    'title': 'Calculating proposed changes...',
+                    'title': 'Calculating proposed changes in new window...',
                     'site_title': 'Get FoCo administration',
                 },
             )
