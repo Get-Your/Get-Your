@@ -17,11 +17,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import logging
+from itertools import chain
 from django.http.response import HttpResponse
 import pendulum
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q, Exists, OuterRef
 from django.shortcuts import render, reverse
 from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.html import format_html
@@ -52,7 +54,8 @@ from app.backend import (
     get_iqprogram_requires_fields,
     finalize_address,
     finalize_application,
-    remove_ineligible_programs,
+    remove_ineligible_programs_for_user,
+    update_users_for_program,
     address_check,
 )
 from app.constants import application_pages
@@ -70,7 +73,6 @@ from app.admin.forms import (
     EligibilityProgramRDForm,
     IQProgramRDForm,
 )
-from app.admin.views import add_elig_program
 
 from logger.wrappers import LoggerWrapper
 
@@ -512,6 +514,7 @@ class UserAdmin(admin.ModelAdmin):
     )
     date_hierarchy = 'last_completed_at'
     actions = ('export_users', 'mark_awaiting_response', 'mark_verified')
+    save_on_top = True
 
     user_fields = [
         'full_name',
@@ -966,7 +969,8 @@ class UserAdmin(admin.ModelAdmin):
                 ])
             extra_context['custom_buttons'].extend([
                 {
-                    'title': 'Add IQ Program',
+                    # Buttons that open in the same window save the model first
+                    'title': 'Save and add IQ Program',
                     'link': '_add_iq_program',
                 },
             ])
@@ -1188,7 +1192,7 @@ class AddressAdmin(admin.ModelAdmin):
             "Entering admin action",
             function='update_gma',
             user_id=request.user.id,
-        )        
+        )
 
         # If the input_object is not a QuerySet, coerce it into a list so for
         # similar operation
@@ -1197,7 +1201,7 @@ class AddressAdmin(admin.ModelAdmin):
         else:
             queryset = [input_object]
 
-        # Loop through the queryset (or similated queryset)
+        # Loop through the queryset (or simulated queryset)
         updated_addr_count = 0
         for obj in queryset:
             # Format for address_check. All addresses in the database have been
@@ -1241,7 +1245,7 @@ class AddressAdmin(admin.ModelAdmin):
                         _ = finalize_application(addr.user, update_user=False)
 
                         # Remove any no-longer-eligible programs
-                        remove_ineligible_programs(addr.user.id)
+                        remove_ineligible_programs_for_user(addr.user.id)
 
         log.info(
             f"{len(queryset)} addresses checked; updates applied to {updated_addr_count}.",
@@ -1292,7 +1296,8 @@ class AddressAdmin(admin.ModelAdmin):
         # "if 'url' in request.POST:" section of response_change()
         extra_context['custom_buttons'] = [
             {
-                'title': 'Update GMA',
+                # Buttons that open in the same window save the model first
+                'title': 'Save and update GMA',
                 'link': '_update_gma',
             },
         ]
@@ -1457,7 +1462,8 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         if obj.user.household.is_income_verified is False:
             extra_context['custom_buttons'] = [
                 {
-                    'title': 'Change Program',
+                    # Buttons that open in the same window save the model first
+                    'title': 'Save and change program',
                     'link': '_change_program',
                 },
             ]
@@ -1498,7 +1504,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                             _ = finalize_application(obj.user, update_user=False)
 
                         # Remove any no-longer-eligible programs
-                        msg = remove_ineligible_programs(obj.user.id)
+                        msg = remove_ineligible_programs_for_user(obj.user.id)
 
                 except AttributeError as e:
                     # Undo the changes (automatic, since an exception was
@@ -1650,7 +1656,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                 _ = finalize_application(obj.user, update_user=False)
 
                 # Remove any no-longer-eligible programs
-                request.session['remove_ineligible_message'] = remove_ineligible_programs(
+                request.session['remove_ineligible_message'] = remove_ineligible_programs_for_user(
                     obj.user.id,
                 )
                 
@@ -1702,6 +1708,284 @@ class IQProgramRDAdmin(admin.ModelAdmin):
         return super().get_form(request, obj, **kwargs)
 
     list_per_page = 100
+
+    # Perform additional logic if any of the 'requires' fields are altered; save
+    # the model or perform a dry run based on the input to this function
+    def get_changes(self, request, obj, form, change, view_only=True):
+        # If this is an addition (not change) or the changed_data is empty (not
+        # form.changed_data), add a message and go directly to display
+        if not change or not form.changed_data:
+            affected_users = {
+                'permissive': [],
+                'restrictive': [],
+            }
+            log.info(
+                f"No changes detected (view_only=={view_only})",
+                function='get_changes',
+                user_id=request.user.id,
+            )
+
+            if view_only:
+                user_message = "There are no tests for the specified action; proceed at will."
+            else:
+                user_message = "No changes detected."
+            self.message_user(
+                request,
+                user_message,
+                messages.SUCCESS,
+            )
+
+        else:
+            req_fields = get_iqprogram_requires_fields()
+
+            # For each itm that is a 'requires' field, calculate how many
+            # active accounts may be affected and alert the user
+
+            # Gather all 'requires' fields that were updated vs not
+            updated_fields = [x for x in req_fields if x[0] in form.changed_data]
+
+            # If none of the updated fields are in req_fields, go directly to
+            # display
+            if len(updated_fields) == 0:
+                affected_users = {
+                    'permissive': [],
+                    'restrictive': [],
+                }
+                log.debug(
+                    f"'Requires' field update not detected (view_only=={view_only})",
+                    function='get_changes',
+                    user_id=request.user.id,
+                )
+
+            else:
+                log.info(
+                    "'Requires' field update detected ({}) (view_only=={})".format(
+                        ', '.join([x[0] for x in updated_fields]),
+                        view_only,
+                    ),
+                    function='get_changes',
+                    user_id=request.user.id,
+                )
+
+                # Determine affected users based on currently eligibility vs
+                # proposed eligibility for the changes
+
+                # Build Q queries to filter addresses that are ineligible (both
+                # currently and after the proposed changes)
+                filter_criteria = {
+                    f"eligibility_address__{cor}": False for req, cor in req_fields if form.initial[req] is True
+                }
+                # Use OR to match *any of* the fields
+                filter_currently_ineligible = Q(
+                    **filter_criteria,
+                    _connector='OR',
+                )
+
+                filter_criteria = {
+                    f"eligibility_address__{cor}": False for req, cor in req_fields if form.cleaned_data[req] is True
+                }
+                # Use OR to match *any of* the fields
+                filter_proposed_ineligible = Q(
+                    **filter_criteria,
+                    _connector='OR',
+                )
+
+                # Build Q queries to filter addresses that are eligible (both
+                # currently and after the proposed changes)
+                filter_criteria = {
+                    f"eligibility_address__{cor}": True for req, cor in req_fields if form.initial[req] is True
+                }
+                # Use the default AND to match *all* fields
+                filter_currently_eligible = Q(**filter_criteria)
+
+                filter_criteria = {
+                    f"eligibility_address__{cor}": True for req, cor in req_fields if form.cleaned_data[req] is True
+                }
+                # Use the default AND to match *all* fields
+                filter_proposed_eligible = Q(**filter_criteria)
+
+                # Gather any IQProgram objects for each user for the specified
+                # program (if this DNE for a user, they haven't applied to the
+                # program)
+                applied_iq_objects = IQProgram.objects.filter(
+                    user_id=OuterRef('id'),
+                    program_id=obj.id,
+                )
+
+                # Initialize the affected users dict, using empty lists as
+                # effective placeholders for querysets
+                affected_users = {
+                    'permissive': [],
+                    'restrictive': [],
+                }
+
+                # Gather any address for each user for the 'permissive' and
+                # 'restrictive' cases (an address that is currently ineligible
+                # but would be eligible with the proposed changes and vice
+                # versa, respectively)
+                permissive_address = Address.objects.select_related(
+                    'eligibility_address'
+                ).filter(
+                    filter_currently_ineligible,
+                    filter_proposed_eligible,
+                    user_id=OuterRef('id'),
+                )
+
+                restrictive_address = Address.objects.select_related(
+                    'eligibility_address'
+                ).filter(
+                    filter_currently_eligible,
+                    filter_proposed_ineligible,
+                    user_id=OuterRef('id'),
+                )
+
+                # Gather all active users with complete applications that
+                # include the affected addresses and have applied for the
+                # specified IQ program
+                affected_users['restrictive'] = User.objects.select_related(
+                    'address'
+                ).filter(
+                    # User has an address affected by this change
+                    Exists(restrictive_address),
+                    # User has applied for the specified IQ program
+                    Exists(applied_iq_objects),
+                    is_archived=False,
+                    last_completed_at__isnull=False,
+                )
+
+                affected_users['permissive'] = User.objects.select_related(
+                    'address'
+                ).filter(
+                    # User has an address affected by this change
+                    Exists(permissive_address),
+                    # User cannot have applied to the specific IQ program, since
+                    # they are currently ineligible
+                    is_archived=False,
+                    last_completed_at__isnull=False,
+                )
+
+                # Update affected users after the model was saved (if applicable)
+                if not view_only:
+                    # Update each user for the specified program and collect the
+                    # counts of changes
+                    users = list(chain(
+                        affected_users['permissive'],
+                        affected_users['restrictive'],
+                    ))
+
+                    affected_counts = update_users_for_program(
+                        program=obj,
+                        users=users,
+                    )
+
+                    user_message = "Users affected by the change to “{}”: {} auto-applied user(s), {} unapplied user(s), and {} enrolled user(s) (could not be altered)".format(
+                        '”, “'.join(
+                            [x[0] for x in updated_fields]
+                        ),
+                        affected_counts['applied_users'],
+                        affected_counts['removed_users'],
+                        affected_counts['ignored_users'],
+                    )
+                    log.info(
+                        "{} (view_only={})".format(
+                            # Remove the unicode quotes when logging
+                            user_message.replace('“', '"').replace('”', '"'),
+                            view_only,
+                        ),
+                        function='get_changes',
+                        user_id=request.user.id,
+                    )
+                    self.message_user(
+                        request,
+                        user_message,
+                        messages.SUCCESS,
+                    )
+
+        return affected_users
+
+    # Add custom buttons to the save list in the admin template (from
+    # https://stackoverflow.com/a/34899874/5438550 and
+    # https://stackoverflow.com/a/69487616/5438550)
+    change_form_template = 'admin/custom_button_change_form.html'
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+
+        # Add any custom buttons. This must be a list/tuple of list/tuples, as
+        # (name, url). The 'url' portion must match the
+        # "if 'url' in request.POST:" section of response_change()
+        extra_context['custom_buttons'] = [
+            {
+                'title': 'View Changes',
+                'link': '_view_changes',
+            },
+        ]
+
+        opts = self.model._meta
+        pk_value = object_id
+        preserved_filters = self.get_preserved_filters(request)
+        if '_view_changes_complete' in request.POST:
+            # If 'View Changes' was selected, refresh the page via a redirect
+            redirect_url = reverse(
+                f"admin:{opts.app_label}_{opts.model_name}_change",
+                args=(pk_value,),
+                current_app=self.admin_site.name,
+            )
+            redirect_url = add_preserved_filters(
+                {
+                    'preserved_filters': preserved_filters,
+                    'opts': opts,
+                },
+                redirect_url,
+            )
+            return HttpResponseRedirect(redirect_url)
+        
+        return super().change_view(
+            request,
+            object_id,
+            form_url,
+            extra_context=extra_context,
+        )
+
+    def response_change(self, request, obj):
+        if "_view_changes" in request.POST:
+            # Set the current_app for the admin base template
+            request.current_app = self.admin_site.name
+            return render(
+                request,
+                'admin/open_view_changes.html',
+                {
+                    # Set some page-specific text
+                    'site_header': 'Get FoCo administration',
+                    'title': 'Calculating proposed changes in new window...',
+                    'site_title': 'Get FoCo administration',
+                },
+            )
+
+        else:
+            return super().response_change(request, obj)
+
+    def save_model(self, request, obj, form, change):
+        if "_view_changes" in request.POST:
+            # Run the logic for changes
+            affected_users = self.get_changes(request, obj, form, change)
+
+            # Set a session var with the affected users
+            request.session['permissive_user_ids'] = [x.id for x in affected_users['permissive']]
+            request.session['restrictive_user_ids'] = [x.id for x in affected_users['restrictive']]
+
+            # Set a session var with the altered fields
+            request.session['altered_fields'] = [
+                (x, form.initial[x], form.cleaned_data[x]) for x in form.changed_data
+            ]
+
+        else:
+            # If 'View Changes' was not selected, save the model (with
+            # message(s) to the user). The model must be saved first in order
+            # to properly apply/remove programs
+            super().save_model(request, obj, form, change)
+
+            # Make the changes after saving the model
+            _ = self.get_changes(request, obj, form, change, view_only=False)
 
 
 class FeedbackAdmin(admin.ModelAdmin):

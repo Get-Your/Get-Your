@@ -21,6 +21,7 @@ import datetime
 import requests
 import pendulum
 from enum import Enum
+from typing import Union
 from itertools import chain
 import logging
 import httpagentparser
@@ -40,7 +41,9 @@ from django.contrib.auth.backends import UserModel
 from django.contrib.auth import login as django_auth_login
 from django.conf import settings
 from django.db.models import Q
+from django.db.models.query import QuerySet
 from django.db.models.fields.files import FieldFile
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.files.uploadedfile import UploadedFile
 from phonenumber_field.phonenumber import PhoneNumber
@@ -713,29 +716,41 @@ def get_users_iq_programs(
     returns:
         a list of users iq programs
     """
-    # Get the IQ programs that a user has already applied to
-    users_iq_programs = list(IQProgram.objects.select_related(
-        'program').filter(user_id=user_id))
+    # Get all (active) IQ programs that the user is eligible for (regardless of
+    # application status). This accounts for both income and geographical
+    # eligibility
+    eligible_iq_programs = get_eligible_iq_programs(
+        User.objects.get(id=user_id),
+        users_eligiblity_address,
+    )
 
-    # Filter only programs that are active
-    users_iq_programs = [x for x in users_iq_programs if x.program.is_active]
+    # Get the (active) IQ programs that a user has already applied to
+    users_iq_programs = list(
+        IQProgram.objects.select_related(
+            'program',
+        ).filter(
+            user_id=user_id,
+            program__is_active=True,
+        ).order_by(
+            'program__id'
+        )
+    )
 
-    # Get the IQ programs a user is eligible for
-    users_iq_programs_ids = [
-        program.program_id for program in users_iq_programs]
-    active_iq_programs = list(IQProgramRD.objects.filter(
-        (Q(is_active=True) & Q(ami_threshold__gte=users_income_as_fraction_of_ami) & ~Q(
-            id__in=users_iq_programs_ids))
-    ))
+    # Collapse any programs the user has already applied for into all programs
+    # they are eligible for. The starting point is 'eligible programs' as
+    # IQProgramRD objects, then any program the user is in gets converted to an
+    # IQProgram object for later identification
+    programs = []
+    for prg in eligible_iq_programs:
+        # Append the matching users_iq_programs element to programs if it
+        # exists; else append the eligible_iq_programs element
+        try:
+            iq_program = next(x for x in users_iq_programs if x.program_id==prg.id)
+        except StopIteration:
+            programs.append(prg)
+        else:
+            programs.append(iq_program)
 
-    # Filter out the active programs that the user is not geographically eligible for.
-    # If the IQ program's requires_is_city_covered is true, then check to make sure
-    # the user's eligibility address is_city_covered.
-    active_iq_programs = [
-        program for program in active_iq_programs if not (program.requires_is_city_covered and not users_eligiblity_address.is_city_covered)]
-
-    # Gather list of active programs
-    programs = list(chain(users_iq_programs, active_iq_programs))
     # Determine if the user needs renewal for *any* program, and set as a user-
     # level 'needs renewal'
     needs_renewal = check_if_user_needs_to_renew(user_id)
@@ -787,6 +802,8 @@ def get_eligible_iq_programs(
         is_active=True,
         # If income_as_fraction_of_ami is None, set to 100% to exclude all programs
         ami_threshold__gte=user.household.income_as_fraction_of_ami or 1,
+    ).order_by(
+        'id'
     )
 
     # Gather all `requires_` fields in the IQProgramRD model along with their
@@ -1170,23 +1187,35 @@ def finalize_address(instance, is_in_gma, has_connexion):
     instance.save()
 
 
-def remove_ineligible_programs(user_id):
+def remove_ineligible_programs_for_user(user_id):
     """
     Remove programs that a user no longer qualifies for, based on application
     updates made after the user selected their programs.
 
+    Note that this will throw an exception if any of the programs to be removed
+    are currently-enrolled for the user, and no changes will be made.
+
     A use-case for this is when a user's documentation is changed from a 30% AMI
     eligibility program to a 60% AMI program via the admin panel.
+
+    Parameters
+    ----------
+    user_id : int
+        The ID of the target user.
+
+    Returns
+    -------
+    str
+        Returns the output message, with any compound messages joined by a
+        semicolon.
 
     """
 
     # Get the user object (with updates that were presumably made just prior)
-    user = User.objects.get(id=user_id)
+    user = User.objects.get(id=user_id).select_related('address')
 
     # Get the user's eligibility address
-    eligibility_address = AddressRD.objects.filter(
-        id=user.address.eligibility_address_id
-    ).first()
+    eligibility_address = user.address.eligibility_address
 
     # Get the user's current programs
     users_iq_programs = IQProgram.objects.filter(user_id=user.id)
@@ -1218,8 +1247,107 @@ def remove_ineligible_programs(user_id):
 
     # Delete user from ineligible programs; return message describing the changes
     msg = []
-    for program in ineligible_current_programs:
-        program.delete()
-        msg.append(f"User was removed from {program.program.program_name}")
+    for prgrm in ineligible_current_programs:
+        prgrm.delete()
+        msg.append(f"User was removed from {prgrm.program.program_name}")
 
     return '; '.join(msg)
+
+
+def update_users_for_program(
+        *,  # force the following to be keyword-only parameters
+        program: IQProgramRD,
+        users: Union[list, tuple, QuerySet],
+    ):
+    """
+    Update users' applicabilitiy for for the specified IQ Program, based on
+    updates made after the user selected their programs. This will remove
+    users from no-longer-eligible programs or auto-apply users to newly-eligible
+    programs, where applicable.
+
+    Note that this will ignore all users that are currently enrolled in the
+    specified program. Any such users will be included in the function output.
+
+    A use-case for this is when an IQ Program's requirements change and all
+    active users must be modified for that program.
+
+    Parameters
+    ----------
+    program : IQProgramRD
+        The ID of the specified program.
+    users : Union[list, tuple, QuerySet]
+        A list, tuple, or queryset of User objects to be updated for the
+        specified program. This can be a queryset of all users, but will slow
+        the updates.
+
+    Returns
+    -------
+    dict
+        Returns a dictionary of counts of removed users and ignored users.
+
+    """
+    # Initialize output counts
+    update_counts = {
+        'applied_users': 0,
+        'removed_users': 0,
+        'ignored_users': 0,
+    }
+
+    log.debug(
+        f"{len(users)} user(s) to update for program '{program.program_name}'",
+        function='update_users_for_program',
+    )
+
+    # Loop through all User objects
+    for usr in users:
+        try:
+            # Determine if the user is eligible (i.e. whether they should be
+            # checked for auto-apply or for removal). ObjectDoesNotExist will be
+            # thrown if the necessary information DNE for eligibility.
+            user_eligible = program in get_eligible_iq_programs(
+                usr,
+                usr.address.eligibility_address,
+            )
+
+        except ObjectDoesNotExist:
+            # Not all necessary information was found for eligibility, so there
+            # is nothing further to do
+            continue
+
+        else:
+            # Get the program if the user has applied for it (an
+            # ObjectDoesNotExist exception will be thrown if the user hasn't
+            # applied)
+            try:
+                applied_program = usr.iq_programs.get(program_id=program.id)
+
+            except ObjectDoesNotExist:
+                # User has not applied for it, so apply them if they're eligible
+                # and the program has auto-apply enabled
+                if user_eligible and program.enable_autoapply:
+                    IQProgram.objects.create(
+                        user_id=usr.id,
+                        program_id=program.id,
+                    )
+                    update_counts['applied_users'] += 1
+                    # log.debug(
+                    #     f"User auto-applied for '{program.program_name}' IQ program",
+                    #     function='finalize_application',
+                    #     user_id=user.id,
+                    # )
+
+            else:
+                # User has applied, so determine new eligibility
+
+                # If user is enrolled, ignore the user regardless of eligibility
+                if applied_program.is_enrolled:
+                    update_counts['ignored_users'] += 1
+                    continue
+
+                # User isn't enrolled, so remove the programs if the user isn't
+                # eligible
+                if not user_eligible:
+                    applied_program.delete()
+                    update_counts['removed_users'] += 1
+
+    return update_counts
