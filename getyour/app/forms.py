@@ -16,13 +16,29 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import pendulum
+
 from django import forms
+from django.forms.models import ModelForm
 from django.contrib.auth.password_validation import validate_password
-from app.models import HouseholdMembers, User, Household, AddressRD, EligibilityProgram, Feedback
+from formset.upload import FileUploadMixin
+from formset.widgets import UploadedFileInput
+from formset.collection import FormCollection
+from formset.renderers.bootstrap import FormRenderer
+from formset.utils import FormMixin
+
+from app.models import (
+    HouseholdMembersNew,
+    User,
+    HouseholdNew,
+    AddressRD,
+    EligibilityProgram,
+    Feedback,
+)
 from app.constants import rent_own_choices, duration_at_address_choices
 
 
-class UserForm(forms.ModelForm):
+class UserForm(ModelForm):
     password2 = forms.CharField(label='Enter Password Again',
                                 widget=forms.PasswordInput())
 
@@ -60,7 +76,7 @@ class UserForm(forms.ModelForm):
 
 
 # form for user account creation
-class UserUpdateForm(forms.ModelForm):
+class UserUpdateForm(ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'phone_number']
@@ -80,7 +96,7 @@ class UserUpdateForm(forms.ModelForm):
         return user
 
 
-class AddressForm(forms.ModelForm):
+class AddressForm(ModelForm):
     class Meta:
         model = AddressRD
         fields = ['address1', 'address2', 'city', 'state', 'zip_code']
@@ -93,45 +109,107 @@ class AddressForm(forms.ModelForm):
         }
 
 
-class HouseholdForm(forms.ModelForm):
-    
-    rent_own = forms.ChoiceField(
-        choices=rent_own_choices, widget=forms.RadioSelect())
-
-    duration_at_address = forms.ChoiceField(
-        choices=duration_at_address_choices, widget=forms.RadioSelect())
-
-    class Meta:
-        model = Household
-        fields = ['rent_own', 'duration_at_address',
-                  'number_persons_in_household',]
-        labels = {
-            'rent_own': 'Do you rent or own your current residence?',
-            'duration_at_address': 'How long have you lived at this address?',
-            'number_persons_in_household': 'How many individuals are in your household?',
-        }
-
-
 class DateInput(forms.DateInput):
     input_type = 'date'
 
 
-class HouseholdMembersForm(forms.ModelForm):
-    name = forms.CharField(label='First & Last Name of Individual')
-    birthdate = forms.DateField(
-        label="Their Birthdate", widget=forms.widgets.DateInput(attrs={'type': 'date'}))
-    identification_path = forms.CharField(widget=forms.HiddenInput())
+class HouseholdForm(ModelForm):
+    """ Form for user-defined 'household' data. """
+    rent_own = forms.ChoiceField(
+        label="Do you rent or own your current residence?",
+        choices=rent_own_choices,
+        widget=forms.RadioSelect,
+    )
+
+    duration_at_address = forms.ChoiceField(
+        label="How long have you lived at this address?",
+        choices=duration_at_address_choices,
+        widget=forms.RadioSelect,
+    )
 
     class Meta:
-        model = HouseholdMembers
-        fields = ['name', 'birthdate', 'identification_path', ]
+        model = HouseholdNew
+        fields = (
+            'rent_own',
+            'duration_at_address',
+        )
+
+
+class HouseholdMembersForm(ModelForm, FileUploadMixin):
+    """ Form for user-defined 'individuals in household' data. """
+    # Create (hidden) fields to track objects in this form
+    id = forms.IntegerField(required=False, widget=forms.widgets.HiddenInput)
+
+    class Meta:
+        model = HouseholdMembersNew
+        fields = (
+            'id',
+            'full_name',
+            'birthdate',
+            'identification_path',
+        )
+        labels = {
+            'full_name': "First & Last Name of Individual",
+            'birthdate': "Their Birthdate",
+            'identification_path': "Upload ID",
+        }
+        widgets = {
+            'birthdate': DateInput(attrs={'type': 'date'}),
+            'identification_path': UploadedFileInput,
+        }
+
+
+class HouseholdMembersFormCollection(FormCollection):
+    """
+    Form Collection to allow users to add/remove 'siblings' to define each
+    individuals in their household.
+    
+    """
+    default_renderer = FormRenderer(
+        field_css_classes='mb-0',
+        collection_css_classes='mb-0 col-12',
+    )
+
+    person = HouseholdMembersForm()
+    legend = "Tell us about the individuals in your household"
+    min_siblings = 1  # minimum number that are required
+    # max_siblings = 3  # maximum number the user can submit
+    add_label = "Add another person"
+    related_field = 'household'
+    is_sortable = True
+
+    def retrieve_instance(self, data):
+        if data := data.get('person'):
+            try:
+                return self.instance.members.get(id=data.get('id') or 0)
+            except (AttributeError, HouseholdMembersNew.DoesNotExist, ValueError):
+                return HouseholdMembersNew(
+                    household=self.instance,
+                    full_name=data.get('full_name'),
+                    birthdate=pendulum.parse(data.get('birthdate')).date(),
+                    identification_path=data.get('identification_path'),
+                )
+
+
+class HouseholdFormCollection(FormCollection, FormMixin):
+    """
+    Form Collection to render the 'household' and 'individuals in household' on
+    a single page.
+    
+    """
+    default_renderer = FormRenderer(
+        field_css_classes='col-12',
+        fieldset_css_classes='col-12',
+    )
+    household = HouseholdForm()
+    members = HouseholdMembersFormCollection()
 
 
 class AddressLookupForm(forms.Form):
     address = forms.CharField(label='Address')
 
 
-class FileUploadForm(forms.ModelForm):
+class FileUploadForm(ModelForm):
     class Meta:
         model = EligibilityProgram
         fields = ['id', 'document_path',]
@@ -140,7 +218,7 @@ class FileUploadForm(forms.ModelForm):
         }
 
 
-class FeedbackForm(forms.ModelForm):
+class FeedbackForm(ModelForm):
     feedback_comments = forms.CharField(max_length=500, required=False)
     star_rating = forms.CharField(max_length=1, required=False)
 
