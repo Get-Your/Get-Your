@@ -100,6 +100,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.postgres',
     'logger',
+    'formset',
 ]
 
 # Include the primary apps only if not BLOBVIEWER_ONLY; else just 'blobviewer'
