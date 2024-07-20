@@ -439,6 +439,107 @@ class HouseholdHist(models.Model):
     historical_values = models.JSONField(null=True, blank=True)
 
 
+# Eligibility model class attached to user (will delete as user account is deleted too)
+class HouseholdNew(GenericTimeStampedModel):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        # related_name='household',
+        primary_key=True,   # set this to the primary key of this model
+    )
+    is_updated = models.BooleanField(default=False)
+    is_income_verified = models.BooleanField(
+        default=False,
+        verbose_name="income has been verified",
+        help_text=_(
+            "Designates whether an applicant has had their income verified."
+        ),
+    )
+    duration_at_address = models.CharField(
+        max_length=200,
+        choices=duration_at_address_choices,
+    )
+
+    # Define the min and max Gross Annual Household Income as a fraction of
+    # AMI (which is a function of number of individuals in household)
+    income_as_fraction_of_ami = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+        default=None,
+    )
+    rent_own = models.CharField(
+        max_length=200,
+        choices=rent_own_choices,
+        verbose_name="rent or own",
+        help_text=_(
+            "Designates whether the applicant rents or owns their primary residence."
+        ),
+    )
+
+    class Meta:
+        verbose_name = 'household'
+        verbose_name_plural = 'household'
+
+    # Define non-database attributes
+    @property
+    def update_mode(self):
+        # Return update_mode for use in saving historical values
+        return getattr(self, '_update_mode', False)
+
+    @update_mode.setter
+    def update_mode(self, val):
+        # Setter for update_mode
+        self._update_mode = val
+
+    @property
+    def renewal_mode(self):
+        # Return renewal_mode for use in saving historical values
+        return getattr(self, '_renewal_mode', False)
+
+    @renewal_mode.setter
+    def renewal_mode(self, val):
+        # Setter for renewal_mode
+        self._renewal_mode = val
+
+
+class HouseholdMembersNew(GenericTimeStampedModel):
+    household = models.ForeignKey(
+        HouseholdNew,
+        on_delete=models.CASCADE,
+        related_name='members',
+    )
+
+    full_name = models.CharField(max_length=200)
+    birthdate = models.DateField()
+    identification_path = models.FileField()
+
+    class Meta:
+        verbose_name = 'household member'
+        verbose_name_plural = 'household members'
+
+    # Define non-database attributes
+    @property
+    def update_mode(self):
+        # Return update_mode for use in saving historical values
+        return getattr(self, '_update_mode', False)
+
+    @update_mode.setter
+    def update_mode(self, val):
+        # Setter for update_mode
+        self._update_mode = val
+
+    @property
+    def renewal_mode(self):
+        # Return renewal_mode for use in saving historical values
+        return getattr(self, '_renewal_mode', False)
+
+    @renewal_mode.setter
+    def renewal_mode(self, val):
+        # Setter for renewal_mode
+        self._renewal_mode = val
+
+
 class HouseholdMembers(GenericTimeStampedModel):
     user = models.OneToOneField(
         User,
