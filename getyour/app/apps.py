@@ -27,8 +27,8 @@ class AppConfig(AppConfig):
     name = "app"
 
     def ready(self):
+        from app import signals
+
         # Only execute the code if we're running the server
         if len(sys.argv) > 1 and sys.argv[1] == "runserver" and not settings.DEBUG:
-            from app.signals import populate_cache
-
-            populate_cache.send(sender=self.__class__)
+            signals.populate_cache.send(sender=self.__class__)
