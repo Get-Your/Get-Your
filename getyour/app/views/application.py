@@ -935,7 +935,7 @@ def take_usps_address(request, **kwargs):
         raise
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator([login_required, set_update_mode], name="dispatch")
 class HouseholdFormView(LoginRequiredMixin, EditCollectionView):
     # Use this redirect field name with LoginRequiredMixin
     redirect_field_name = 'auth_next'
