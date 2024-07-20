@@ -21,13 +21,13 @@ from django.db.models.signals import pre_save, pre_delete
 from django.core.serializers.json import DjangoJSONEncoder
 from django.dispatch import receiver
 from app.models import (
-    Household,
+    HouseholdNew,
     HouseholdHist,
     User,
     UserHist,
     Address,
     AddressHist,
-    HouseholdMembers,
+    HouseholdMembersNew,
     HouseholdMembersHist,
     EligibilityProgram,
     EligibilityProgramHist,
@@ -43,7 +43,7 @@ from django.dispatch import Signal
 populate_cache = Signal()
 
 
-@receiver(pre_save, sender=Household)
+@receiver(pre_save, sender=HouseholdNew)
 def household_pre_save(sender, instance, **kwargs):
     # Run historical save if update or renewal mode
     if instance.update_mode or instance.renewal_mode:
@@ -64,7 +64,7 @@ def household_pre_save(sender, instance, **kwargs):
                 )
             )
 
-        except Household.DoesNotExist:
+        except HouseholdNew.DoesNotExist:
             # No historical data to use for the update
             pass
 
@@ -77,7 +77,7 @@ def household_pre_save(sender, instance, **kwargs):
                 instance.is_updated = True
 
 
-@receiver(pre_save, sender=HouseholdMembers)
+@receiver(pre_save, sender=HouseholdMembersNew)
 def householdmembers_pre_save(sender, instance, **kwargs):
     # Run historical save if update or renewal mode
     if instance.update_mode or instance.renewal_mode:
@@ -86,7 +86,7 @@ def householdmembers_pre_save(sender, instance, **kwargs):
             # user's householdmembers data to the database in the
             # householdmembershist table
             householdmembers_history = HouseholdMembersHist(
-                user=instance.user,
+                user=instance.household.user,
                 # Convert the updated household objects to a dictionary and then to
                 # a JSON string and set it to the historical_values field
                 historical_values=json.loads(
@@ -99,7 +99,7 @@ def householdmembers_pre_save(sender, instance, **kwargs):
                 )
             )
 
-        except HouseholdMembers.DoesNotExist:
+        except HouseholdMembersNew.DoesNotExist:
             # No historical data to use for the update
             pass
 
@@ -111,6 +111,40 @@ def householdmembers_pre_save(sender, instance, **kwargs):
                 # Set is_updated if any values have changed
                 instance.is_updated = True
 
+@receiver(pre_delete, sender=HouseholdMembersNew)
+def householdmembers_pre_delete(sender, instance, **kwargs):
+    # Run historical save if update or renewal mode
+    if instance.update_mode or instance.renewal_mode:
+        try:
+            # Save the previous values of the fields that have been updated in the
+            # user's householdmembers data to the database in the
+            # householdmembershist table
+            householdmembers_history = HouseholdMembersHist(
+                user=instance.household.user,
+                # Convert the updated household objects to a dictionary and then to
+                # a JSON string and set it to the historical_values field
+                historical_values=json.loads(
+                    json.dumps(
+                        changed_modelfields_to_dict(
+                            sender.objects.get(pk=instance.pk),
+                            instance,
+                            pre_delete=True,
+                        ), cls=DjangoJSONEncoder
+                    )
+                )
+            )
+
+        except HouseholdMembersNew.DoesNotExist:
+            # No historical data to use for the update
+            pass
+
+        else:
+            # Save or perform operations with the original instance if any field
+            # has changed
+            if householdmembers_history.historical_values != {}:
+                householdmembers_history.save()
+                # Set is_updated if any values have changed
+                instance.is_updated = True
 
 @receiver(pre_save, sender=User)
 def user_pre_save(sender, instance, **kwargs):
