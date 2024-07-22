@@ -1234,22 +1234,15 @@ def remove_ineligible_programs_for_user(user_id):
     # Remove the user from the ineligible program(s), but ONLY IF they're not
     # currently enrolled
 
-    # If a user is enrolled in any program, raise an exception
-    enrolled_programs = [
-        x for x in ineligible_current_programs if x.is_enrolled
-    ]
-    if len(enrolled_programs) > 0:
-        raise AttributeError(
-            "User is enrolled in {} but would no longer be eligible with the proposed change".format(
-                ', '.join([x.program.program_name for x in enrolled_programs]),
-            )
-        )
-
     # Delete user from ineligible programs; return message describing the changes
     msg = []
     for prgrm in ineligible_current_programs:
-        prgrm.delete()
-        msg.append(f"User was removed from {prgrm.program.program_name}")
+        # Delete only if the user isn't enrolled
+        if prgrm.is_enrolled:
+            msg.append(f"{prgrm.program.program_name} not changed (user already enrolled)")
+        else:
+            prgrm.delete()
+            msg.append(f"User was removed from {prgrm.program.program_name}")
 
     return '; '.join(msg)
 
