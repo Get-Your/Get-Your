@@ -703,11 +703,25 @@ class UserAdmin(admin.ModelAdmin):
         IQProgramInline,
     ]
 
+    def save_model(self, request, obj, form, change):
+        """ Save the primary model (User). """
+        # Set admin_mode for proper signals functionality
+        obj.admin_mode = True
+        # Set is_updated so any changes will be reflected to the business users
+        if form.changed_data:
+            obj.is_updated = True
+
+        super().save_model(request, obj, form, change)
+
     def save_formset(self, request, form, formset, change):
+        """ Save the additional models (Inlines). """
         instances = formset.save(commit=False)
 
         enrolled_iq_programs = []
         for obj in formset.deleted_objects:
+            # Set admin_mode for proper signals functionality
+            obj.admin_mode = True
+
             # IQProgram objects cannot be deleted if the user is enrolled;
             # add to list to notify the user
             if isinstance(obj, IQProgram) and obj.is_enrolled:
@@ -716,6 +730,9 @@ class UserAdmin(admin.ModelAdmin):
                 obj.delete()
 
         for instance in instances:
+            # Set admin_mode for proper signals functionality
+            instance.admin_mode = True
+
             # Add logic to alterations of IQProgramInline
             if isinstance(instance, IQProgram):
                 if instance.is_enrolled:
@@ -1245,7 +1262,10 @@ class AddressAdmin(admin.ModelAdmin):
                         _ = finalize_application(addr.user, update_user=False)
 
                         # Remove any no-longer-eligible programs
-                        remove_ineligible_programs_for_user(addr.user.id)
+                        remove_ineligible_programs_for_user(
+                            addr.user.id,
+                            admin_mode=True,
+                        )
 
         log.info(
             f"{len(queryset)} addresses checked; updates applied to {updated_addr_count}.",
@@ -1331,6 +1351,12 @@ class AddressAdmin(admin.ModelAdmin):
 
         else:
             return super().response_change(request, obj)
+
+    def save_model(self, request, obj, form, change):
+        # Set admin_mode for proper signals functionality
+        obj.admin_mode = True
+
+        super().save_model(request, obj, form, change)
 
 
 class EligibilityProgramAdmin(admin.ModelAdmin):
@@ -1504,7 +1530,10 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                             _ = finalize_application(obj.user, update_user=False)
 
                         # Remove any no-longer-eligible programs
-                        msg = remove_ineligible_programs_for_user(obj.user.id)
+                        msg = remove_ineligible_programs_for_user(
+                            obj.user.id,
+                            admin_mode=True,
+                        )
 
                 except AttributeError as e:
                     # Undo the changes (automatic, since an exception was
@@ -1644,11 +1673,14 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         )
 
     # Add logic to update the user's info after the object is deleted. Note that
-    # the is only database deletion; blobs are retained for posterity
+    # this is only database deletion; blobs are retained for posterity
     def delete_model(self, request, obj):
         # If there is an exception with finalize_application, the deletion will
         # automatically be rolled back due to this transaction.atomic() block
         with transaction.atomic():
+            # Set admin_mode for proper signals functionality
+            obj.admin_mode = True
+
             super().delete_model(request, obj)
 
             # Although the object itself is deleted, the relations still exist
@@ -1658,6 +1690,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                 # Remove any no-longer-eligible programs
                 request.session['remove_ineligible_message'] = remove_ineligible_programs_for_user(
                     obj.user.id,
+                    admin_mode=True,
                 )
                 
     def response_delete(self, request, obj_display, obj_id):
