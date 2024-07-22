@@ -1212,7 +1212,7 @@ def remove_ineligible_programs_for_user(user_id):
     """
 
     # Get the user object (with updates that were presumably made just prior)
-    user = User.objects.get(id=user_id).select_related('address')
+    user = User.objects.select_related('address').get(id=user_id)
 
     # Get the user's eligibility address
     eligibility_address = user.address.eligibility_address
