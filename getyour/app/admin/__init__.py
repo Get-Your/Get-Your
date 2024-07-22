@@ -1113,7 +1113,7 @@ class UserAdmin(admin.ModelAdmin):
             return super().response_change(request, obj)
 
 
-class AddressAdmin(admin.ModelAdmin):
+class AddressRDAdmin(admin.ModelAdmin):
     search_fields = ('address1__icontains', 'address2__icontains')
     list_display = ('address1', 'address2', 'is_in_gma', 'is_city_covered')
     ordering = list_display_links = ('address1', 'address2')
@@ -1170,7 +1170,7 @@ class AddressAdmin(admin.ModelAdmin):
         # functions
         log.info(
             "Entering admin changelist",
-            function='AddressAdmin',
+            function='AddressRDAdmin',
             user_id=request.user.id,
         )
 
@@ -2052,7 +2052,7 @@ class FeedbackAdmin(admin.ModelAdmin):
 # )
 
 admin.site.register(User, UserAdmin)
-admin.site.register(AddressRD, AddressAdmin)
+admin.site.register(AddressRD, AddressRDAdmin)
 admin.site.register(EligibilityProgram, EligibilityProgramAdmin)
 admin.site.register(EligibilityProgramRD, EligibilityProgramRDAdmin)
 admin.site.register(IQProgramRD, IQProgramRDAdmin)
