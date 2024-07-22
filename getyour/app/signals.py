@@ -46,7 +46,7 @@ populate_cache = Signal()
 @receiver(pre_save, sender=Household)
 def household_pre_save(sender, instance, **kwargs):
     # Run historical save if update or renewal mode
-    if instance.update_mode or instance.renewal_mode:
+    if instance.update_mode or instance.renewal_mode or instance.admin_mode:
         try:
             # Save the previous values of the fields that have been updated in the
             # user's household data to the database in the householdhist table
@@ -80,7 +80,7 @@ def household_pre_save(sender, instance, **kwargs):
 @receiver(pre_save, sender=HouseholdMembers)
 def householdmembers_pre_save(sender, instance, **kwargs):
     # Run historical save if update or renewal mode
-    if instance.update_mode or instance.renewal_mode:
+    if instance.update_mode or instance.renewal_mode or instance.admin_mode:
         try:
             # Save the previous values of the fields that have been updated in the
             # user's householdmembers data to the database in the
@@ -116,7 +116,7 @@ def householdmembers_pre_save(sender, instance, **kwargs):
 def user_pre_save(sender, instance, **kwargs):
     # The user object gets saved at times other than update_mode (such as
     # login), so check for the appropriate var before attempting history save
-    if instance.update_mode or instance.renewal_mode:
+    if instance.update_mode or instance.renewal_mode or instance.admin_mode:
         try:
             # Save the previous values of the fields that have been updated in the
             # user's account data to the database in the userhist table
@@ -150,7 +150,7 @@ def user_pre_save(sender, instance, **kwargs):
 @receiver(pre_save, sender=Address)
 def address_pre_save(sender, instance, **kwargs):
     # Run historical save if update or renewal mode
-    if instance.update_mode or instance.renewal_mode:
+    if instance.update_mode or instance.renewal_mode or instance.admin_mode:
         try:
             # Save the previous values of the fields that have been updated in the
             # user's address data to the database in the addresshist table. Since
@@ -191,7 +191,7 @@ def address_pre_save(sender, instance, **kwargs):
 def iqprogram_pre_delete(sender, instance, **kwargs):
     # Run historical save if update or renewal mode (although update_mode
     # shouldn't trigger this function)
-    if instance.update_mode or instance.renewal_mode:
+    if instance.update_mode or instance.renewal_mode or instance.admin_mode:
         try:
             # Save the previous values of the fields to be deleted from the
             # user's iq program data to the database in the
@@ -230,7 +230,7 @@ def iqprogram_pre_delete(sender, instance, **kwargs):
 def eligiblity_program_pre_delete(sender, instance, **kwargs):
     # Run historical save if update or renewal mode (although update_mode
     # shouldn't trigger this function)
-    if instance.update_mode or instance.renewal_mode:
+    if instance.update_mode or instance.renewal_mode or instance.admin_mode:
         try:
             # Save the previous values of the fields to be deleted from the
             # user's eligibility program data to the database in the
