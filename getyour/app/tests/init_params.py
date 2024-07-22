@@ -416,6 +416,20 @@ class TestView:
                 'login_required': False,
                 'direct_access_allowed': False,
             },
+            'admin_view_blob': {
+                'login_required': True,
+                'direct_access_allowed': False,
+                'kwargs': {'blob_name': 'some_test_name'},
+            },
+            'admin_add_elig_program': {
+                'login_required': True,
+                'direct_access_allowed': False,
+                'kwargs': {'user_id': '0'},
+            },
+            'admin_view_changes': {
+                'login_required': True,
+                'direct_access_allowed': False,
+            },
         }
 
         self.process_values()
