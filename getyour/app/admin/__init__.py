@@ -707,6 +707,9 @@ class UserAdmin(admin.ModelAdmin):
         """ Save the primary model (User). """
         # Set admin_mode for proper signals functionality
         obj.admin_mode = True
+        # Set is_updated so any changes will be reflected to the business users
+        if form.changed_data:
+            obj.is_updated = True
 
         super().save_model(request, obj, form, change)
 
@@ -729,6 +732,9 @@ class UserAdmin(admin.ModelAdmin):
         for instance in instances:
             # Set admin_mode for proper signals functionality
             instance.admin_mode = True
+            # Set is_updated so any changes will be reflected to the business users
+            if formset.changed_objects:
+                instance.is_updated = True
 
             # Add logic to alterations of IQProgramInline
             if isinstance(instance, IQProgram):
