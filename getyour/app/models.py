@@ -207,6 +207,16 @@ class User(AbstractUser):
         # Setter for renewal_mode
         self._renewal_mode = val
 
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
+
 
 class UserHist(models.Model):
     id = models.AutoField(primary_key=True)
@@ -344,6 +354,16 @@ class Address(GenericTimeStampedModel):
         # Setter for renewal_mode
         self._renewal_mode = val
 
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
+
 
 class AddressHist(models.Model):
     id = models.AutoField(primary_key=True)
@@ -426,6 +446,16 @@ class Household(GenericTimeStampedModel):
         # Setter for renewal_mode
         self._renewal_mode = val
 
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
+
 
 class HouseholdHist(models.Model):
     id = models.AutoField(primary_key=True)
@@ -475,6 +505,16 @@ class HouseholdMembers(GenericTimeStampedModel):
     def renewal_mode(self, val):
         # Setter for renewal_mode
         self._renewal_mode = val
+
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
 
 
 class HouseholdMembersHist(models.Model):
@@ -612,6 +652,16 @@ class IQProgramRD(GenericTimeStampedModel):
         ),
     )
 
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
+
     class Meta:
         verbose_name = 'IQ program'
         verbose_name_plural = 'IQ programs'
@@ -668,6 +718,16 @@ class IQProgram(IQProgramTimeStampedModel):
     def renewal_mode(self, val):
         # Setter for renewal_mode
         self._renewal_mode = val
+
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
 
 
 class IQProgramHist(models.Model):
@@ -737,6 +797,16 @@ class EligibilityProgramRD(GenericTimeStampedModel):
         ),
     )
 
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
+
     class Meta:
         verbose_name = 'eligibility program'
         verbose_name_plural = 'eligibility programs'
@@ -790,6 +860,16 @@ class EligibilityProgram(GenericTimeStampedModel):
     def renewal_mode(self, val):
         # Setter for renewal_mode
         self._renewal_mode = val
+
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
 
 
 class EligibilityProgramHist(models.Model):
