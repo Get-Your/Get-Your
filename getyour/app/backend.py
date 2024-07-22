@@ -1187,7 +1187,7 @@ def finalize_address(instance, is_in_gma, has_connexion):
     instance.save()
 
 
-def remove_ineligible_programs_for_user(user_id):
+def remove_ineligible_programs_for_user(user_id, admin_mode=False):
     """
     Remove programs that a user no longer qualifies for, based on application
     updates made after the user selected their programs.
@@ -1202,6 +1202,9 @@ def remove_ineligible_programs_for_user(user_id):
     ----------
     user_id : int
         The ID of the target user.
+    admin_mode : bool
+        Whether this is being run in 'admin mode', in which the pre_delete
+        signal is called.
 
     Returns
     -------
@@ -1237,6 +1240,9 @@ def remove_ineligible_programs_for_user(user_id):
     # Delete user from ineligible programs; return message describing the changes
     msg = []
     for prgrm in ineligible_current_programs:
+        # Set admin_mode (where applicable) for proper signals functionality
+        prgrm.admin_mode = admin_mode
+
         # Delete only if the user isn't enrolled
         if prgrm.is_enrolled:
             msg.append(f"{prgrm.program.program_name} not changed (user already enrolled)")
@@ -1251,6 +1257,7 @@ def update_users_for_program(
         *,  # force the following to be keyword-only parameters
         program: IQProgramRD,
         users: Union[list, tuple, QuerySet],
+        admin_mode: bool = False,
     ):
     """
     Update users' applicabilitiy for for the specified IQ Program, based on
@@ -1272,6 +1279,9 @@ def update_users_for_program(
         A list, tuple, or queryset of User objects to be updated for the
         specified program. This can be a queryset of all users, but will slow
         the updates.
+    admin_mode : bool
+        Whether this is being run in 'admin mode', in which the pre_delete
+        signal is called.
 
     Returns
     -------
@@ -1323,11 +1333,6 @@ def update_users_for_program(
                         program_id=program.id,
                     )
                     update_counts['applied_users'] += 1
-                    # log.debug(
-                    #     f"User auto-applied for '{program.program_name}' IQ program",
-                    #     function='finalize_application',
-                    #     user_id=user.id,
-                    # )
 
             else:
                 # User has applied, so determine new eligibility
@@ -1340,6 +1345,9 @@ def update_users_for_program(
                 # User isn't enrolled, so remove the programs if the user isn't
                 # eligible
                 if not user_eligible:
+                    # Set admin_mode for proper signals functionality
+                    applied_program.admin_mode = admin_mode
+
                     applied_program.delete()
                     update_counts['removed_users'] += 1
 
