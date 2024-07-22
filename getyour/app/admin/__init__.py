@@ -387,6 +387,38 @@ class EligibilityProgramInline(admin.TabularInline):
         'display_document_link',
     ]
 
+    def get_fields(self, request, obj):
+        """
+        Return fields based on staff user permissions.
+        
+        """
+
+        # Default fields does not contain the link to edit the record
+        fields = [
+            'created_at',
+            'modified_at',
+            'program_name',
+            # 'record_edit' will be in index 3 if permissions allow (below)
+            'display_document_link',
+        ]
+
+        # Determine if 'record_edit' is available based on permissions group
+        if request.user.is_superuser or request.user.groups.filter(
+            name__istartswith='admin'
+        ).exists():
+            fields.insert(3, 'record_edit')
+
+        return fields
+
+    def get_readonly_fields(self, request, obj):
+        """
+        Return readonly fields based on 'fields'.
+        
+        """
+
+        # All fields are read-only
+        return self.fields
+
     @admin.display(description='program name')
     def program_name(self, obj):
         return obj.program.friendly_name
@@ -1483,16 +1515,20 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         # (name, url). The 'url' portion must match the
         # "if 'url' in request.POST:" section of response_change()
 
-        # Editing is disallowed once income has been verified
-        obj = EligibilityProgram.objects.get(pk=object_id)
-        if obj.user.household.is_income_verified is False:
-            extra_context['custom_buttons'] = [
-                {
-                    # Buttons that open in the same window save the model first
-                    'title': 'Save and change program',
-                    'link': '_change_program',
-                },
-            ]
+        # Only show the 'change program button if superuser or 'admin'
+        if request.user.is_superuser or request.user.groups.filter(
+            name__istartswith='admin'
+        ).exists():
+            # Editing is disallowed once income has been verified
+            obj = EligibilityProgram.objects.get(pk=object_id)
+            if obj.user.household.is_income_verified is False:
+                extra_context['custom_buttons'] = [
+                    {
+                        # Buttons that open in the same window save the model first
+                        'title': 'Save and change program',
+                        'link': '_change_program',
+                    },
+                ]
 
         # Intercept any POSTs from the custom button intermediate pages before
         # calling super() (so that super() only handles the following GET)
