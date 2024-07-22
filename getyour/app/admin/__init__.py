@@ -104,7 +104,7 @@ def create_modeladmin(
     the same model.
     
     """
-    
+
     class Meta:
         proxy = True
         app_label = model._meta.app_label
@@ -178,7 +178,7 @@ def get_admin_url(obj, urltype='change'):
 
 class AddressInline(admin.TabularInline):
     model = Address
-    
+
     fk_name = "user"
 
     fields = readonly_fields = [
@@ -222,7 +222,7 @@ class AddressInline(admin.TabularInline):
 
 class HouseholdInline(admin.TabularInline):
     model = Household
-    
+
     fk_name = "user"
 
     fields = [
@@ -281,10 +281,10 @@ class HouseholdInline(admin.TabularInline):
             # Remove these fields from read-only if the user is in the
             # 'admin...' group
             readonly_remove.extend(admin_remove)
-        
+
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
-    
+
     def has_delete_permission(self, request, obj=None):
         if request.session.get('is_income_verified', True):
             # If the user's income has been verified (or the session var DNE),
@@ -367,7 +367,7 @@ class EligibilityProgramInline(admin.TabularInline):
             'program__friendly_name'
         )
         return qs
-    
+
     # Adding/deleting directly from this inline is always disabled since these
     # wouldn't be governed by the same logic as via EligibilityProgramAdmin
     def has_add_permission(self, request, obj=None):
@@ -390,7 +390,7 @@ class EligibilityProgramInline(admin.TabularInline):
     @admin.display(description='program name')
     def program_name(self, obj):
         return obj.program.friendly_name
-    
+
     @admin.display(description='edit record')
     def record_edit(self, obj):
         # Record can only be edited if is_income_verified is False
@@ -416,19 +416,19 @@ class IQProgramInline(admin.TabularInline):
         qs = super().get_queryset(request)
         qs = qs.order_by('program__friendly_name')
         return qs
-    
+
     def has_add_permission(self, request, obj=None):
         # Adding directly from this inline is always disabled since it wouldn't
         # be governed by the same logic as via IQProgramAdmin
         return False
-    
+
     fields = [
         'program_name',
         'applied_at',
         'is_enrolled',
         'enrollment_status',
     ]
-    
+
     def get_readonly_fields(self, request, obj):
         """
         Return readonly fields based on user type and groups. Note that this
@@ -454,7 +454,7 @@ class IQProgramInline(admin.TabularInline):
                 readonly_remove.extend([
                     'is_enrolled',
                 ])
-        
+
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
 
@@ -481,7 +481,7 @@ class IQProgramInline(admin.TabularInline):
                 '.'.join(ts.format('A').lower()),
             )
             return ts_formatted
-        
+
         return self.get_empty_value_display()
 
     # Show zero extra (unfilled) options
@@ -490,7 +490,7 @@ class IQProgramInline(admin.TabularInline):
 
 class AppAdminInline(admin.StackedInline):
     model = AppAdmin
-    
+
     fk_name = "user"
 
     fields = [
@@ -546,9 +546,9 @@ class UserAdmin(admin.ModelAdmin):
             ])
 
             return '\n'.join(status_list)
-        
+
         return self.get_empty_value_display()
-        
+
     @admin.display(description='message to user')
     def user_message(self, obj):
         msg = []
@@ -582,11 +582,11 @@ class UserAdmin(admin.ModelAdmin):
         if len(msg) > 0:
             return "- {}".format('\n- '.join(msg))
         return self.get_empty_value_display()
-        
+
     def has_add_permission(self, request, obj=None):
         # Adding directly from the admin panel is disallowed for everyone
         return False
-        
+
     def has_income_verification_permission(self, request, obj=None):
         # Define income_verification permissions
         if request.user.is_superuser or request.user.groups.filter(
@@ -690,7 +690,7 @@ class UserAdmin(admin.ModelAdmin):
                 'phone_number',
                 'is_archived',
             ])
-        
+
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
 
@@ -707,9 +707,6 @@ class UserAdmin(admin.ModelAdmin):
         """ Save the primary model (User). """
         # Set admin_mode for proper signals functionality
         obj.admin_mode = True
-        # Set is_updated so any changes will be reflected to the business users
-        if form.changed_data:
-            obj.is_updated = True
 
         super().save_model(request, obj, form, change)
 
@@ -810,7 +807,7 @@ class UserAdmin(admin.ModelAdmin):
                 function='mark_verified',
                 user_id=request.user.id,
             )
-            
+
             # Add a message to the user when complete
             self.message_user(request, ngettext(
                 'Income was verified for %d user.',
@@ -1086,7 +1083,7 @@ class UserAdmin(admin.ModelAdmin):
             form_url,
             extra_context=extra_context,
         )
-    
+
     def response_change(self, request, obj):
         if "_add_iq_program" in request.POST:
             # Handle 'Add Program': load the page to select the program name
@@ -1188,7 +1185,7 @@ class AddressAdmin(admin.ModelAdmin):
             ).exists()
         ):
             readonly_remove.append('is_city_covered')
-        
+
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
 
@@ -1202,7 +1199,7 @@ class AddressAdmin(admin.ModelAdmin):
         or a queryset from the changelist actions.
         
         """
-        
+
         # Log entrance to this action. This attempts to track called
         # functions
         log.info(
@@ -1324,7 +1321,7 @@ class AddressAdmin(admin.ModelAdmin):
         return super().change_view(
             request, object_id, form_url, extra_context=extra_context,
         )
-    
+
     def response_change(self, request, obj):
         opts = self.model._meta
         pk_value = obj._get_pk_val()
@@ -1373,9 +1370,6 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
     )
     list_display_links = ('program_name', )
     ordering = (Lower('user__last_name'), Lower('user__first_name'))    # case-insensitive
-
-    # def get_list_display(self, request):
-    #     return None
 
     eligibility_fields = [
         'created_at',
@@ -1428,15 +1422,15 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         ]
 
         return fieldsets
-    
+
     @admin.display
     def full_name(self, obj):
         return obj.user.full_name
-    
+
     @admin.display
     def user_last_name(self, obj):
         return obj.user.last_name
-    
+
     @admin.display
     def user_first_name(self, obj):
         return obj.user.first_name
@@ -1448,7 +1442,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
     @admin.display(description='program name')
     def program_name(self, obj):
         return obj.program.friendly_name
-    
+
     @admin.display(description='document')
     def display_document_link(self, obj):
         """ Display a link to each document. """
@@ -1573,7 +1567,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                 redirect_url,
             )
             return HttpResponseRedirect(redirect_url)
-        
+
         elif '_change_program_cancel' in request.POST:
             # User selected 'cancel'
             self.message_user(
@@ -1602,7 +1596,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             form_url,
             extra_context=extra_context,
         )
-    
+
     def response_change(self, request, obj):
         if "_change_program" in request.POST:
             # Handle 'Update Program': load the page to select the program name
@@ -1692,7 +1686,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                     obj.user.id,
                     admin_mode=True,
                 )
-                
+
     def response_delete(self, request, obj_display, obj_id):
         msg = request.session.pop('remove_ineligible_message', '')
 
@@ -1971,7 +1965,7 @@ class IQProgramRDAdmin(admin.ModelAdmin):
                 redirect_url,
             )
             return HttpResponseRedirect(redirect_url)
-        
+
         return super().change_view(
             request,
             object_id,
