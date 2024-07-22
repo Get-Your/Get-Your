@@ -2040,6 +2040,9 @@ class FeedbackAdmin(admin.ModelAdmin):
         # Adding directly from the admin panel is disallowed for everyone
         return False
 
+    def has_delete_permission(self, request, obj=None):
+        # Deleting is disallowed for everyone
+        return False
 
 # Register the models
 
