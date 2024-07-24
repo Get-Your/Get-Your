@@ -46,7 +46,7 @@ from app.models import (
     EligibilityProgramRD,
     IQProgram,
     IQProgramRD,
-    Admin as AppAdmin,
+    AppAdmin,
     Feedback,
 )
 from app.backend import (

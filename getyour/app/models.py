@@ -900,7 +900,7 @@ class Feedback(TimeStampedModel):
     class Meta:
         verbose_name = verbose_name_plural = 'feedback'
 
-class Admin(models.Model):
+class AppAdmin(models.Model):
     """ A model for admin-related user data. """
     user = models.OneToOneField(
         User,

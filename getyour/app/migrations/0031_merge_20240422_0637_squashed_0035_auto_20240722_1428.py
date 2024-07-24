@@ -19,7 +19,7 @@ from app.models import (
     IQProgram,
     IQProgramRD,
     Feedback,
-    Admin as AppAdmin,
+    AppAdmin,
 )
 
 
@@ -224,9 +224,5 @@ class Migration(migrations.Migration):
             model_name='iqprogramrd',
             name='friendly_supplemental_info',
             field=models.CharField(help_text='Any supplemental information to display to the user.', max_length=5000),
-        ),
-        migrations.RunPython(
-            code=app.migrations.0035_auto_20240722_1428.apply_income_group,
-            reverse_code=django.db.migrations.operations.special.RunPython.noop,
         ),
     ]

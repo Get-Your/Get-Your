@@ -18,7 +18,7 @@ from app.models import (
     IQProgram,
     IQProgramRD,
     Feedback,
-    Admin as AppAdmin,
+    AppAdmin,
 )
 
 
