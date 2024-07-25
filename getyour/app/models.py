@@ -629,13 +629,15 @@ class IQProgramRD(GenericTimeStampedModel):
     # matching field in AddressRD is a filter for the program. See
     # backend.get_eligible_iq_programs() for more detail
     requires_is_in_gma = models.BooleanField(
-        default=False,
+        # Default to True for safety
+        default=True,
         help_text=_(
             "Designates whether the user's eligibility address is required to be in the GMA to be eligible."
         ),
     )
     requires_is_city_covered = models.BooleanField(
-        default=False,
+        # Default to True for safety
+        default=True,
         help_text=_(
             "Designates whether the user's eligibility address is required to be 'covered by the City' to be eligible. "
             "'City coverage' is always True for addresses within the GMA, otherwise it's determined by the Get FoCo administrators."
