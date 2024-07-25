@@ -114,20 +114,22 @@ class Migration(migrations.Migration):
             name='admin',
             options={'verbose_name': 'administration'},
         ),
-        migrations.RemoveField(
+        migrations.RenameField(
             model_name='iqprogramrd',
-            name='req_is_city_covered',
+            old_name='req_is_city_covered',
+            new_name='requires_is_city_covered',
         ),
-        migrations.RemoveField(
+        migrations.RenameField(
             model_name='iqprogramrd',
-            name='req_is_in_gma',
+            old_name='req_is_in_gma',
+            new_name='requires_is_in_gma',
         ),
-        migrations.AddField(
+        migrations.AlterField(
             model_name='iqprogramrd',
             name='requires_is_city_covered',
             field=models.BooleanField(default=False, help_text="Designates whether the user's eligibility address is required to be 'covered by the City' to be eligible. 'City coverage' is always True for addresses within the GMA, otherwise it's determined by the Get FoCo administrators."),
         ),
-        migrations.AddField(
+        migrations.AlterField(
             model_name='iqprogramrd',
             name='requires_is_in_gma',
             field=models.BooleanField(default=False, help_text="Designates whether the user's eligibility address is required to be in the GMA to be eligible."),
