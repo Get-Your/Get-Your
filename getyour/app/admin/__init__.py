@@ -379,7 +379,8 @@ class EligibilityProgramInline(admin.TabularInline):
 
     fk_name = "user"
 
-    fields = readonly_fields = [
+    # Define all possible fields and set them as readonly
+    all_possible_fields = readonly_fields = [
         'created_at',
         'modified_at',
         'program_name',
@@ -393,31 +394,17 @@ class EligibilityProgramInline(admin.TabularInline):
         
         """
 
-        # Default fields does not contain the link to edit the record
-        fields = [
-            'created_at',
-            'modified_at',
-            'program_name',
-            # 'record_edit' will be in index 3 if permissions allow (below)
-            'display_document_link',
-        ]
+        # Default fields is all_available_fields *except* the 'edit record' link
+        fields = [x for x in self.all_possible_fields if x!='record_edit']
 
         # Determine if 'record_edit' is available based on permissions group
         if request.user.is_superuser or request.user.groups.filter(
             name__istartswith='admin'
         ).exists():
+            # Insert 'record_edit' into index 3
             fields.insert(3, 'record_edit')
 
         return fields
-
-    def get_readonly_fields(self, request, obj):
-        """
-        Return readonly fields based on 'fields'.
-        
-        """
-
-        # All fields are read-only
-        return self.fields
 
     @admin.display(description='program name')
     def program_name(self, obj):
@@ -627,6 +614,17 @@ class UserAdmin(admin.ModelAdmin):
             return True
         return False
 
+    def get_changelist(self, request, **kwargs):
+        # Log entrance to this changelist. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin changelist",
+            function='UserAdmin',
+            user_id=request.user.id,
+        )
+
+        return super().get_changelist(request, **kwargs)
+
     def get_fieldsets(self, request, obj):
         """
         Return fieldsets based on user type. All users get the default fieldset,
@@ -634,18 +632,9 @@ class UserAdmin(admin.ModelAdmin):
         
         """
 
-        # Log entrance to this changelist. This attempts to track called
-        # functions
-        log.info(
-            "Entering admin changelist",
-            function='UserAdmin',
-            user_id=request.user.id,
-        )
-
         # Create an AppAdmin object for the current user, if DNE
         if AppAdmin.objects.filter(user=obj).count() == 0:
             AppAdmin.objects.create(user=obj)
-
 
         fieldsets = [
             (
@@ -795,7 +784,7 @@ class UserAdmin(admin.ModelAdmin):
         # Mark the selected users as 'awaiting response', which will hide them
         # from the 'new' needs verification filter
 
-        log.info(
+        log.debug(
             "Entering admin action",
             function='mark_awaiting_response',
             user_id=request.user.id,
@@ -819,7 +808,7 @@ class UserAdmin(admin.ModelAdmin):
 
         # Log entrance to this action. This attempts to track called
         # functions
-        log.info(
+        log.debug(
             "Entering admin action",
             function='mark_verified',
             user_id=request.user.id,
@@ -1152,7 +1141,7 @@ class AddressRDAdmin(admin.ModelAdmin):
     list_filter = (GMAListFilter, CityCoveredListFilter)
     actions = ['update_gma']
 
-    fields = [
+    all_possible_change_fields = [
         'pretty_address',
         'is_in_gma',
         'is_city_covered',
@@ -1167,6 +1156,17 @@ class AddressRDAdmin(admin.ModelAdmin):
 
     list_per_page = 100
 
+    def get_changelist(self, request, **kwargs):
+        # Log entrance to this changelist. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin changelist",
+            function='AddressRDAdmin',
+            user_id=request.user.id,
+        )
+
+        return super().get_changelist(request, **kwargs)
+
     def get_fields(self, request, obj):
         """
         Return fields based on whether object exists (new or existing).
@@ -1176,6 +1176,14 @@ class AddressRDAdmin(admin.ModelAdmin):
         
         """
 
+        # Log entrance to this change page. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin change page",
+            function='AddressRDAdmin',
+            user_id=request.user.id,
+        )
+
         if obj is None:
             fields = [
                 'address1',
@@ -1184,11 +1192,7 @@ class AddressRDAdmin(admin.ModelAdmin):
                 'zip_code',
             ]
         else:
-            fields = [
-                'pretty_address',
-                'is_in_gma',
-                'is_city_covered',
-            ]
+            fields = self.all_possible_change_fields
 
         return fields
 
@@ -1198,21 +1202,13 @@ class AddressRDAdmin(admin.ModelAdmin):
         
         """
 
-        # Log entrance to this changelist. This attempts to track called
-        # functions
-        log.info(
-            "Entering admin changelist",
-            function='AddressRDAdmin',
-            user_id=request.user.id,
-        )
-
         # If obj is None (as in, adding a new address), there are no readonly
         # fields
         if obj is None:
             return []
 
         # Global readonly fields
-        readonly_fields = self.fields
+        readonly_fields = self.all_possible_change_fields
 
         readonly_remove = []
         # is_city_covered can be modified only if is_in_gma==False and user is
@@ -1240,7 +1236,7 @@ class AddressRDAdmin(admin.ModelAdmin):
 
         # Log entrance to this action. This attempts to track called
         # functions
-        log.info(
+        log.debug(
             "Entering admin action",
             function='update_gma',
             user_id=request.user.id,
@@ -1421,6 +1417,17 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         # Adding directly from the admin panel is disallowed for everyone
         return False
 
+    def get_changelist(self, request, **kwargs):
+        # Log entrance to this changelist. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin changelist",
+            function='EligibilityProgramAdmin',
+            user_id=request.user.id,
+        )
+
+        return super().get_changelist(request, **kwargs)
+
     def get_fieldsets(self, request, obj):
         """
         Return fieldsets based on user type. All users get the default fieldset,
@@ -1428,10 +1435,10 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         
         """
 
-        # Log entrance to this changelist. This attempts to track called
+        # Log entrance to this change page. This attempts to track called
         # functions
-        log.info(
-            "Entering admin changelist",
+        log.debug(
+            "Entering admin change page",
             function='EligibilityProgramAdmin',
             user_id=request.user.id,
         )
@@ -1753,7 +1760,26 @@ class EligibilityProgramRDAdmin(admin.ModelAdmin):
     list_filter = ('is_active', )
     list_display_links = ('friendly_name', )
 
+    def get_changelist(self, request, **kwargs):
+        # Log entrance to this changelist. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin changelist",
+            function='EligibilityProgramRDAdmin',
+            user_id=request.user.id,
+        )
+
+        return super().get_changelist(request, **kwargs)
+
     def get_form(self, request, obj=None, **kwargs):
+        # Log entrance to this change page. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin change page",
+            function='EligibilityProgramRDAdmin',
+            user_id=request.user.id,
+        )
+
         kwargs["form"] = EligibilityProgramRDForm
         return super().get_form(request, obj, **kwargs)
 
@@ -1790,7 +1816,7 @@ class IQProgramRDAdmin(admin.ModelAdmin):
             }
             log.info(
                 f"No changes detected (view_only=={view_only})",
-                function='get_changes',
+                function='IQProgramRDAdmin.get_changes',
                 user_id=request.user.id,
             )
 
@@ -1822,7 +1848,7 @@ class IQProgramRDAdmin(admin.ModelAdmin):
                 }
                 log.debug(
                     f"'Requires' field update not detected (view_only=={view_only})",
-                    function='get_changes',
+                    function='IQProgramRDAdmin.get_changes',
                     user_id=request.user.id,
                 )
 
@@ -1832,7 +1858,7 @@ class IQProgramRDAdmin(admin.ModelAdmin):
                         ', '.join([x[0] for x in updated_fields]),
                         view_only,
                     ),
-                    function='get_changes',
+                    function='IQProgramRDAdmin.get_changes',
                     user_id=request.user.id,
                 )
 
@@ -1961,7 +1987,7 @@ class IQProgramRDAdmin(admin.ModelAdmin):
                             user_message.replace('“', '"').replace('”', '"'),
                             view_only,
                         ),
-                        function='get_changes',
+                        function='IQProgramRDAdmin.get_changes',
                         user_id=request.user.id,
                     )
                     self.message_user(
@@ -2064,13 +2090,14 @@ class FeedbackAdmin(admin.ModelAdmin):
     ordering = ('-created', )
     date_hierarchy = 'created'
 
-    fields = readonly_fields = [
+    list_per_page = 100
+
+    # Define all possible fields and set them as readonly
+    all_possible_fields = readonly_fields = [
         'created',
         'star_rating',
         'feedback_comments',
     ]
-
-    list_per_page = 100
 
     def has_add_permission(self, request, obj=None):
         # Adding directly from the admin panel is disallowed for everyone
@@ -2079,6 +2106,37 @@ class FeedbackAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # Deleting is disallowed for everyone
         return False
+
+    def get_changelist(self, request, **kwargs):
+        # Log entrance to this changelist. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin changelist",
+            function='FeedbackAdmin',
+            user_id=request.user.id,
+        )
+
+        return super().get_changelist(request, **kwargs)
+
+    def get_fields(self, request, obj):
+        """
+        Return fields based on whether object exists (new or existing).
+
+        Existing addresses can only update is_city_covered, when applicable.
+        New addresses can only enter the address information itself.
+        
+        """
+
+        # Log entrance to this change page. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin change page",
+            function='FeedbackAdmin',
+            user_id=request.user.id,
+        )
+
+        return self.all_possible_fields
+
 
 # Register the models
 
