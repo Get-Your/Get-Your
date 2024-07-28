@@ -235,7 +235,7 @@ class HouseholdInline(admin.TabularInline):
         'is_income_verified',
     ]
 
-    def get_readonly_fields(self, request, obj):
+    def get_readonly_fields(self, request, obj=None):
         """
         Return readonly fields based on user type and groups. Note that this
         follows zero-trust; it starts with all fields read-only and removes them
@@ -388,7 +388,7 @@ class EligibilityProgramInline(admin.TabularInline):
         'display_document_link',
     ]
 
-    def get_fields(self, request, obj):
+    def get_fields(self, request, obj=None):
         """
         Return fields based on staff user permissions.
         
@@ -448,7 +448,7 @@ class IQProgramInline(admin.TabularInline):
         'enrollment_status',
     ]
 
-    def get_readonly_fields(self, request, obj):
+    def get_readonly_fields(self, request, obj=None):
         """
         Return readonly fields based on user type and groups. Note that this
         follows zero-trust; it starts with all fields read-only and removes them
@@ -625,7 +625,7 @@ class UserAdmin(admin.ModelAdmin):
 
         return super().get_changelist(request, **kwargs)
 
-    def get_fieldsets(self, request, obj):
+    def get_fieldsets(self, request, obj=None):
         """
         Return fieldsets based on user type. All users get the default fieldset,
         then additional fields are added for superusers.
@@ -671,16 +671,16 @@ class UserAdmin(admin.ModelAdmin):
 
         return fieldsets
 
-    def get_form(self, *args, **kwargs):
+    def get_form(self, request, obj=None, change=False, **kwargs):
         # Use this function to add help_text to the display-only fields
         help_texts = {
             'renewal_action_parsed': "The uncompleted steps in a user's renewal flow. An empty value indicates the user is not mid-renewal.",
             'user_message': "Message to the user regarding their application or account. Aspects shown here may not yet be available to the user.",
         }
         kwargs.update({'help_texts': help_texts})
-        return super().get_form(*args, **kwargs)
+        return super().get_form(request, obj=obj, change=change, **kwargs)
 
-    def get_readonly_fields(self, request, obj):
+    def get_readonly_fields(self, request, obj=None):
         """
         Return readonly fields based on user type and groups. Note that this
         follows zero-trust; it starts with all fields read-only and removes them
@@ -1107,7 +1107,7 @@ class UserAdmin(admin.ModelAdmin):
         return super().change_view(
             request,
             object_id,
-            form_url,
+            form_url=form_url,
             extra_context=extra_context,
         )
 
@@ -1167,7 +1167,7 @@ class AddressRDAdmin(admin.ModelAdmin):
 
         return super().get_changelist(request, **kwargs)
 
-    def get_fields(self, request, obj):
+    def get_fields(self, request, obj=None):
         """
         Return fields based on whether object exists (new or existing).
 
@@ -1196,7 +1196,7 @@ class AddressRDAdmin(admin.ModelAdmin):
 
         return fields
 
-    def get_readonly_fields(self, request, obj):
+    def get_readonly_fields(self, request, obj=None):
         """
         Return readonly fields based on GMA status.
         
@@ -1353,7 +1353,10 @@ class AddressRDAdmin(admin.ModelAdmin):
             },
         ]
         return super().change_view(
-            request, object_id, form_url, extra_context=extra_context,
+            request,
+            object_id,
+            form_url=form_url,
+            extra_context=extra_context,
         )
 
     def response_change(self, request, obj):
@@ -1428,7 +1431,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
 
         return super().get_changelist(request, **kwargs)
 
-    def get_fieldsets(self, request, obj):
+    def get_fieldsets(self, request, obj=None):
         """
         Return fieldsets based on user type. All users get the default fieldset,
         then additional fields are added for superusers.
@@ -1642,7 +1645,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         return super().change_view(
             request,
             object_id,
-            form_url,
+            form_url=form_url,
             extra_context=extra_context,
         )
 
@@ -1771,7 +1774,7 @@ class EligibilityProgramRDAdmin(admin.ModelAdmin):
 
         return super().get_changelist(request, **kwargs)
 
-    def get_form(self, request, obj=None, **kwargs):
+    def get_form(self, request, obj=None, change=False, **kwargs):
         # Log entrance to this change page. This attempts to track called
         # functions
         log.debug(
@@ -1781,7 +1784,7 @@ class EligibilityProgramRDAdmin(admin.ModelAdmin):
         )
 
         kwargs["form"] = EligibilityProgramRDForm
-        return super().get_form(request, obj, **kwargs)
+        return super().get_form(request, obj=obj, change=change, **kwargs)
 
     list_per_page = 100
 
@@ -1798,9 +1801,9 @@ class IQProgramRDAdmin(admin.ModelAdmin):
     list_filter = ('is_active', )
     list_display_links = ('friendly_name', )
 
-    def get_form(self, request, obj=None, **kwargs):
+    def get_form(self, request, obj=None, change=False, **kwargs):
         kwargs["form"] = IQProgramRDForm
-        return super().get_form(request, obj, **kwargs)
+        return super().get_form(request, obj=obj, change=change, **kwargs)
 
     list_per_page = 100
 
@@ -2037,7 +2040,7 @@ class IQProgramRDAdmin(admin.ModelAdmin):
         return super().change_view(
             request,
             object_id,
-            form_url,
+            form_url=form_url,
             extra_context=extra_context,
         )
 
@@ -2118,7 +2121,7 @@ class FeedbackAdmin(admin.ModelAdmin):
 
         return super().get_changelist(request, **kwargs)
 
-    def get_fields(self, request, obj):
+    def get_fields(self, request, obj=None):
         """
         Return fields based on whether object exists (new or existing).
 
