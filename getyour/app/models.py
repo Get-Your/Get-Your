@@ -647,6 +647,7 @@ class IQProgramRD(GenericTimeStampedModel):
     # IQ program is considered to be a lifetime enrollment. Measured in years
     renewal_interval_year = models.IntegerField(
         null=True,
+        blank=True,
         verbose_name="renewal interval in years",
         help_text=_(
             "The frequency at which a user needs to renew their application for this IQ program. "
