@@ -59,6 +59,7 @@ from app.backend import (
     address_check,
 )
 from app.constants import application_pages
+from app.admin.models import StaffPermissions
 from app.admin.filters import (
     GMAListFilter,
     CityCoveredListFilter,
@@ -242,6 +243,11 @@ class HouseholdInline(admin.TabularInline):
         based on permissions.
         
         """
+        # Parse the available permissions and those of the request user
+        request.user.staff_permissions = StaffPermissions(request.user)
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
 
         # Store is_income_verified in session var, for use with
         # has_delete_permission
@@ -266,18 +272,20 @@ class HouseholdInline(admin.TabularInline):
         ]
 
         readonly_remove = []
-        if request.user.is_superuser:
+        if request.user.staff_permissions.contains(
+            permission_groups.SUPERUSER
+        ):
             # Remove the following readonly fields for superusers
             readonly_remove.extend(superuser_remove)
-        if request.user.groups.filter(
-            name__istartswith='income'
-        ).exists():
+        if request.user.staff_permissions.contains(
+            permission_groups.INCOME_VERIFICATION
+        ):
             # Remove these fields from read-only if the user is in the
             # 'income...' group
             readonly_remove.extend(income_remove)
-        if request.user.groups.filter(
-            name__istartswith='admin'
-        ).exists():
+        if request.user.staff_permissions.contains(
+            permission_groups.PROGRAM_ADMIN
+        ):
             # Remove these fields from read-only if the user is in the
             # 'admin...' group
             readonly_remove.extend(admin_remove)
@@ -393,14 +401,20 @@ class EligibilityProgramInline(admin.TabularInline):
         Return fields based on staff user permissions.
         
         """
+        # Parse the available permissions and those of the request user
+        request.user.staff_permissions = StaffPermissions(request.user)
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
 
         # Default fields is all_available_fields *except* the 'edit record' link
         fields = [x for x in self.all_possible_fields if x!='record_edit']
 
         # Determine if 'record_edit' is available based on permissions group
-        if request.user.is_superuser or request.user.groups.filter(
-            name__istartswith='admin'
-        ).exists():
+        if request.user.staff_permissions.contains(
+            permission_groups.SUPERUSER,
+            permission_groups.PROGRAM_ADMIN,
+        ):
             # Insert 'record_edit' into index 3
             fields.insert(3, 'record_edit')
 
@@ -455,6 +469,11 @@ class IQProgramInline(admin.TabularInline):
         based on permissions.
         
         """
+        # Parse the available permissions and those of the request user
+        request.user.staff_permissions = StaffPermissions(request.user)
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
 
         # Global readonly fields. Note that @property and calculated fields must
         # be read-only
@@ -464,11 +483,11 @@ class IQProgramInline(admin.TabularInline):
         # Enrollment status can only be altered if income has been verified
         if hasattr(obj, 'household') and obj.household.is_income_verified is True:
             # Remove fields from readonly_fields based on permissions group
-            if request.user.is_superuser:
-            # # Stub of planned functionality
-            # if request.user.is_superuser or request.user.groups.filter(
-            #     name__istartswith='program'
-            # ).exists():
+            if request.user.staff_permissions.contains(
+                permission_groups.SUPERUSER,
+                # # Stub of planned functionality
+                # permission_groups.PROGRAM_COORDINATOR,
+            ):
                 # Remove is_enrolled
                 readonly_remove.extend([
                     'is_enrolled',
@@ -607,10 +626,18 @@ class UserAdmin(admin.ModelAdmin):
         return False
 
     def has_income_verification_permission(self, request, obj=None):
+        # Parse the available permissions and those of the request user; this
+        # is defined here for use in the changelist
+        request.user.staff_permissions = StaffPermissions(request.user)
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
+
         # Define income_verification permissions
-        if request.user.is_superuser or request.user.groups.filter(
-            name__istartswith='income'
-        ).exists():
+        if request.user.staff_permissions.contains(
+            permission_groups.SUPERUSER,
+            permission_groups.INCOME_VERIFICATION,
+        ):
             return True
         return False
 
@@ -631,6 +658,9 @@ class UserAdmin(admin.ModelAdmin):
         then additional fields are added for superusers.
         
         """
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
 
         # Create an AppAdmin object for the current user, if DNE
         if AppAdmin.objects.filter(user=obj).count() == 0:
@@ -653,7 +683,9 @@ class UserAdmin(admin.ModelAdmin):
             ),
         ]
 
-        if request.user.is_superuser:
+        if request.user.staff_permissions.contains(
+            permission_groups.SUPERUSER,
+        ):
             for idx, elem in enumerate(fieldsets):
                 if elem[0] == 'USER':
                     fieldsets[idx][1]['fields'].extend([
@@ -687,6 +719,9 @@ class UserAdmin(admin.ModelAdmin):
         based on permissions.
         
         """
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
 
         # Global readonly fields. Note that @property and calculated fields must
         # be read-only
@@ -694,7 +729,9 @@ class UserAdmin(admin.ModelAdmin):
 
         # Remove fields from readonly_fields based on permissions group
         readonly_remove = []
-        if request.user.is_superuser:
+        if request.user.staff_permissions.contains(
+            permission_groups.SUPERUSER,
+        ):
             # Remove all readonly fields except the calculated fields
             readonly_remove.extend([
                 'email',
@@ -702,9 +739,9 @@ class UserAdmin(admin.ModelAdmin):
                 'is_archived',
                 'last_completed_at',
             ])
-        if request.user.groups.filter(
-            name__istartswith='admin'
-        ).exists():
+        if request.user.staff_permissions.contains(
+            permission_groups.PROGRAM_ADMIN
+        ):
             # Remove these fields from read-only if the user is in the
             # 'income...' group
             readonly_remove.extend([
@@ -980,6 +1017,14 @@ class UserAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
 
+        # Parse the available permissions and those of the request user; this
+        # is defined here as the first request-based function to be called for a
+        # change page
+        request.user.staff_permissions = StaffPermissions(request.user)
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
+
         # Add any custom buttons. This must be a list/tuple of list/tuples, as
         # (name, url). The 'url' portion must match the
         # "if 'url' in request.POST:" section of response_change()
@@ -990,9 +1035,10 @@ class UserAdmin(admin.ModelAdmin):
         # IQ Programs can be added at any time after the user has completed the
         # application
         if obj.last_completed_at is not None and (
-            request.user.is_superuser or request.user.groups.filter(
-                name__istartswith='admin'
-            ).exists()
+            request.user.staff_permissions.contains(
+                permission_groups.SUPERUSER,
+                permission_groups.PROGRAM_ADMIN,
+            )
         ):
             # ...but Eligibility Program addition is disallowed once income has
             # been verified
@@ -1184,6 +1230,10 @@ class AddressRDAdmin(admin.ModelAdmin):
             user_id=request.user.id,
         )
 
+        # Parse the available permissions and those of the request user. This is
+        # defined here because it runs before get_readonly_fields()
+        request.user.staff_permissions = StaffPermissions(request.user)
+
         if obj is None:
             fields = [
                 'address1',
@@ -1201,6 +1251,9 @@ class AddressRDAdmin(admin.ModelAdmin):
         Return readonly fields based on GMA status.
         
         """
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
 
         # If obj is None (as in, adding a new address), there are no readonly
         # fields
@@ -1214,9 +1267,10 @@ class AddressRDAdmin(admin.ModelAdmin):
         # is_city_covered can be modified only if is_in_gma==False and user is
         # either superuser or in 'admin' group
         if not obj.is_in_gma and (
-            request.user.is_superuser or request.user.groups.filter(
-                name__istartswith='admin'
-            ).exists()
+            request.user.staff_permissions.contains(
+                permission_groups.SUPERUSER,
+                permission_groups.PROGRAM_ADMIN,
+            )
         ):
             readonly_remove.append('is_city_covered')
 
@@ -1314,6 +1368,11 @@ class AddressRDAdmin(admin.ModelAdmin):
     # Temporarily redirect the user to an error message if trying to add new
     def add_view(self, request, form_url='', extra_context=None):
 
+        # Parse the available permissions and those of the request user; this
+        # is defined here as the first request-based function to be called for
+        # an 'add' page
+        request.user.staff_permissions = StaffPermissions(request.user)
+
         self.message_user(
             request,
             "Sorry, that isn't available yet.",
@@ -1341,6 +1400,11 @@ class AddressRDAdmin(admin.ModelAdmin):
     change_form_template = 'admin/custom_button_change_form.html'
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
+
+        # Parse the available permissions and those of the request user; this
+        # is defined here as the first request-based function to be called for a
+        # change page
+        request.user.staff_permissions = StaffPermissions(request.user)
 
         # Add any custom buttons. This must be a list/tuple of list/tuples, as
         # (name, url). The 'url' portion must match the
@@ -1521,14 +1585,23 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
 
+        # Parse the available permissions and those of the request user; this
+        # is defined here as the first request-based function to be called for a
+        # change page
+        request.user.staff_permissions = StaffPermissions(request.user)
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
+
         # Add any custom buttons. This must be a list/tuple of list/tuples, as
         # (name, url). The 'url' portion must match the
         # "if 'url' in request.POST:" section of response_change()
 
         # Only show the 'change program button if superuser or 'admin'
-        if request.user.is_superuser or request.user.groups.filter(
-            name__istartswith='admin'
-        ).exists():
+        if request.user.staff_permissions.contains(
+            permission_groups.SUPERUSER,
+            permission_groups.PROGRAM_ADMIN,
+        ):
             # Editing is disallowed once income has been verified
             obj = EligibilityProgram.objects.get(pk=object_id)
             if obj.user.household.is_income_verified is False:
