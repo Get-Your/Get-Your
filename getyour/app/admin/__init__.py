@@ -618,7 +618,7 @@ class UserAdmin(admin.ModelAdmin):
                     )
 
         if len(msg) > 0:
-            return "- {}".format('\n- '.join(msg))
+            return "\u2023 {}".format('\n\u2023 '.join(msg))
         return self.get_empty_value_display()
 
     def has_add_permission(self, request, obj=None):
