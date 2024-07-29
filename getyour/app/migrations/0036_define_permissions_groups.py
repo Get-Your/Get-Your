@@ -187,7 +187,7 @@ def apply_income_group(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("app", "0036_rename_admin_appadmin"),
+        ("app", "0035_rename_admin_appadmin"),
     ]
 
     operations = [

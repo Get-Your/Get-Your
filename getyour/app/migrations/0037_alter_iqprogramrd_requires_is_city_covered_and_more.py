@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("app", "0037_define_permissions_groups"),
+        ("app", "0036_define_permissions_groups"),
     ]
 
     operations = [
