@@ -49,6 +49,15 @@ def needs_income_verification_filter(queryset):
         # User doesn't have any incomplete eligibility programs (e.g. file not
         # uploaded)
         ~Exists(active_incomplete_programs),
+
+        # When enabled, this will (should) supersede the previous Exists() cases:
+        # (even though it won't guarantee an *active* eligibility program, any users still need to show up in this filter)
+
+        # # Ensure the user isn't in the middle of the initial application
+        # last_application_action__isnull=True,
+
+        # Ensure the user isn't in the middle of a renewal
+        last_renewal_action__isnull=True,
         # User has completed the application (non-null last_completed_at)
         last_completed_at__isnull=False,
         # User is not 'archived'
@@ -117,7 +126,7 @@ class NeedsVerificationListFilter(admin.SimpleListFilter):
             return queryset.filter(
                 household__is_income_verified=True,
             )
-    
+
 
 class GMAListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
