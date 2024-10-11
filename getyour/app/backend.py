@@ -902,10 +902,11 @@ def check_if_user_needs_to_renew(user_id):
     """
     user_profile = User.objects.get(id=user_id)
 
-    # Get the highest frequency renewal_interval_year from the IQProgramRD
-    # table and filter out any null renewal_interval_year
+    # Get the highest frequency renewal_interval_year from active IQProgramRD
+    # values and filter out any null renewal_interval_year
     highest_freq_program = IQProgramRD.objects.filter(
-        renewal_interval_year__isnull=False
+        is_active=True,
+        renewal_interval_year__isnull=False,
     ).order_by('renewal_interval_year').first()
     
     # If there are no programs without lifetime enrollment (e.g. without
