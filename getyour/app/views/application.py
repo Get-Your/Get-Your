@@ -51,7 +51,6 @@ from app.models import (
     Household,
     User,
     EligibilityProgramRD,
-    Admin as AppAdmin,
 )
 from app.backend import (
     login,

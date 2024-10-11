@@ -32,6 +32,7 @@ from azure.core.exceptions import ResourceNotFoundError
 from app.models import User, EligibilityProgram, EligibilityProgramRD
 from app.constants import supported_content_types
 from app.backend import file_validation, finalize_application
+from app.admin import get_admin_url
 from app.admin.forms import EligProgramAddForm
 
 from logger.wrappers import LoggerWrapper
@@ -308,6 +309,76 @@ def add_elig_program(request, **kwargs):
         log.exception(
             'Uncaught view-level exception',
             function='add_elig_program',
+            user_id=user_id,
+        )
+        raise
+
+
+@staff_member_required
+def view_changes(request, **kwargs):
+    try:
+        log.debug(
+            "Entering function (GET)",
+            function='view_changes',
+            user_id=request.user.id,
+        )
+
+        # Parse the affected users, as applicable
+        user_ids = {
+            'permissive': request.session.get('permissive_user_ids'),
+            'restrictive': request.session.get('restrictive_user_ids'),
+        }
+
+        log.debug(
+            "Affected users: {}".format(
+                ", ".join(
+                    [f"{len(user_ids[key])} in {key} category" for key in user_ids.keys()]
+                ),
+            ),
+            function='view_changes',
+            user_id=request.user.id,
+        )
+
+        user_message = "{tot} user(s) would be affected by the proposed changes ({per} with expanded eligibility, {res} with restricted eligibility)".format(
+            tot=sum([len(x) for x in user_ids.values()]),
+            per=len(user_ids['permissive']),
+            res=len(user_ids['restrictive']),
+        )
+
+        # Prepare a list of users in each category, with links to each user's page
+        users = {key: [] for key in user_ids.keys()}
+        for usrkey, usrset in user_ids.items():
+            for usrid in usrset:
+                user = User.objects.get(id=usrid)
+                users[usrkey].append({
+                    'name': f"{user.first_name} {user.last_name}",
+                    'email': user.email,
+                    'admin_link': get_admin_url(user),
+                })
+
+        return render(
+            request,
+            "admin/view_changes.html",
+            {
+                # Set some page-specific text
+                'site_header': 'Get FoCo administration',
+                'title': 'View changes',
+                'site_title': 'Get FoCo administration',
+                'altered_fields': request.session.get('altered_fields'),
+                'user_message': user_message,
+                'users': users,
+            },
+        )
+    
+    # General view-level exception catching
+    except:
+        try:
+            user_id = request.user.id
+        except Exception:
+            user_id = None
+        log.exception(
+            'Uncaught view-level exception',
+            function='view_changes',
             user_id=user_id,
         )
         raise

@@ -207,6 +207,16 @@ class User(AbstractUser):
         # Setter for renewal_mode
         self._renewal_mode = val
 
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
+
 
 class UserHist(models.Model):
     id = models.AutoField(primary_key=True)
@@ -344,6 +354,16 @@ class Address(GenericTimeStampedModel):
         # Setter for renewal_mode
         self._renewal_mode = val
 
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
+
 
 class AddressHist(models.Model):
     id = models.AutoField(primary_key=True)
@@ -426,6 +446,16 @@ class Household(GenericTimeStampedModel):
         # Setter for renewal_mode
         self._renewal_mode = val
 
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
+
 
 class HouseholdHist(models.Model):
     id = models.AutoField(primary_key=True)
@@ -475,6 +505,16 @@ class HouseholdMembers(GenericTimeStampedModel):
     def renewal_mode(self, val):
         # Setter for renewal_mode
         self._renewal_mode = val
+
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
 
 
 class HouseholdMembersHist(models.Model):
@@ -543,12 +583,12 @@ class IQProgramRD(GenericTimeStampedModel):
             "This will be visible to users on the platform."
         ),
     )
-    # Supplmental information about the program (recommend leaving blank
+    # Supplemental information about the program (recommend leaving blank
     # (``''``) unless further info is necessary)
     friendly_supplemental_info = models.CharField(
         max_length=5000,
         help_text=_(
-            "Any supplmental information to display to the user."
+            "Any supplemental information to display to the user."
         ),
     )
     # Hyperlink to learn more about the program
@@ -589,13 +629,15 @@ class IQProgramRD(GenericTimeStampedModel):
     # matching field in AddressRD is a filter for the program. See
     # backend.get_eligible_iq_programs() for more detail
     requires_is_in_gma = models.BooleanField(
-        default=False,
+        # Default to True for safety
+        default=True,
         help_text=_(
             "Designates whether the user's eligibility address is required to be in the GMA to be eligible."
         ),
     )
     requires_is_city_covered = models.BooleanField(
-        default=False,
+        # Default to True for safety
+        default=True,
         help_text=_(
             "Designates whether the user's eligibility address is required to be 'covered by the City' to be eligible. "
             "'City coverage' is always True for addresses within the GMA, otherwise it's determined by the Get FoCo administrators."
@@ -605,12 +647,23 @@ class IQProgramRD(GenericTimeStampedModel):
     # IQ program is considered to be a lifetime enrollment. Measured in years
     renewal_interval_year = models.IntegerField(
         null=True,
+        blank=True,
         verbose_name="renewal interval in years",
         help_text=_(
             "The frequency at which a user needs to renew their application for this IQ program. "
             "Leave blank for a non-renewing (lifetime-enrollment) program."
         ),
     )
+
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
 
     class Meta:
         verbose_name = 'IQ program'
@@ -668,6 +721,16 @@ class IQProgram(IQProgramTimeStampedModel):
     def renewal_mode(self, val):
         # Setter for renewal_mode
         self._renewal_mode = val
+
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
 
 
 class IQProgramHist(models.Model):
@@ -737,6 +800,16 @@ class EligibilityProgramRD(GenericTimeStampedModel):
         ),
     )
 
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
+
     class Meta:
         verbose_name = 'eligibility program'
         verbose_name_plural = 'eligibility programs'
@@ -791,6 +864,16 @@ class EligibilityProgram(GenericTimeStampedModel):
         # Setter for renewal_mode
         self._renewal_mode = val
 
+    @property
+    def admin_mode(self):
+        # Return admin_mode for use in saving historical values
+        return getattr(self, '_admin_mode', False)
+
+    @admin_mode.setter
+    def admin_mode(self, val):
+        # Setter for admin_mode
+        self._admin_mode = val
+
 
 class EligibilityProgramHist(models.Model):
     id = models.AutoField(primary_key=True)
@@ -820,7 +903,7 @@ class Feedback(TimeStampedModel):
     class Meta:
         verbose_name = verbose_name_plural = 'feedback'
 
-class Admin(models.Model):
+class AppAdmin(models.Model):
     """ A model for admin-related user data. """
     user = models.OneToOneField(
         User,
