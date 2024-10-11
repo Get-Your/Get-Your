@@ -114,9 +114,11 @@ def send_renewal_email(user):
         # where `in_months()` (used here) specifies overall number of months
         # (e.g. period.months + period.years*12 = period.in_months())
         last_notified = cache.get(cache_key)
+
+        # .in_months()==1 at the one-month mark, so '>=' is used here
         should_notify = (
-            last_notified is None or 
-            (pendulum.now() - pendulum.parse(last_notified)).in_months() > notification_buffer_month
+            last_notified is None or
+            (pendulum.now() - pendulum.parse(last_notified)).in_months() >= notification_buffer_month
         )
         if should_notify:
             log.info(
