@@ -1,0 +1,7 @@
+[project]
+name = "get-your"
+version = "7.0.0"
+description = "Platform for the universal online application for income-qualified programs"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
