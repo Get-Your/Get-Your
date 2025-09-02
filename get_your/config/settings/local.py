@@ -32,7 +32,7 @@ DATABASES = {
     "monitor": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": str(BASE_DIR / "db_monitor.sqlite3"),
-    }
+    },
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
@@ -135,13 +135,13 @@ INSTALLED_APPS += ["django_extensions"]
 # Django-Q
 # ------------------------------------------------------------------------------
 Q_CLUSTER = {
-    'name': 'DJRedis',
-    'workers': 4,
-    'timeout': 30,
-    'bulk': 10,
-    'django_redis': 'default',
-    'catch_up': False,
-    'sync': True,   # this is required for Windows
+    "name": "DJRedis",
+    "workers": 4,
+    "timeout": 30,
+    "bulk": 10,
+    "django_redis": "default",
+    "catch_up": False,
+    "sync": True,  # this is required for Windows
 }
 
 
@@ -149,13 +149,15 @@ Q_CLUSTER = {
 # ------------------------------------------------------------------------------
 # Add environment-specific loggers (I don't know if this is the correct
 # way to do this)
-LOGGING["loggers"].update({
-    "django.db.backends": {
-        "handlers": ["db_log"],
-        "level": "ERROR",
-        "propagate": False,
-    },
-})
+LOGGING["loggers"].update(
+    {
+        "django.db.backends": {
+            "handlers": ["db_log"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    }
+)
 
 # Set logging level to DEBUG
 LOGGING["loggers"]["app"]["level"] = "DEBUG"

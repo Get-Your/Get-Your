@@ -1,4 +1,3 @@
-# ruff: noqa: E501
 from .base import *  # noqa: F403
 from .base import INSTALLED_APPS
 from .base import MIDDLEWARE
@@ -35,7 +34,7 @@ DATABASES = {
             hst=env("POSTGRES_HOST"),
             prt=env("POSTGRES_PORT"),
             dbn=env("POSTGRES_DB"),
-        )
+        ),
     ),
     "monitor": env.db(
         "postgres://{usr}:{pwd}@{hst}:{prt}/{dbn}".format(
@@ -44,7 +43,7 @@ DATABASES = {
             hst=env("POSTGRES_HOST"),
             prt=env("POSTGRES_PORT"),
             dbn=env("MONITOR_DB"),
-        )
+        ),
     ),
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
@@ -148,26 +147,28 @@ INSTALLED_APPS += ["django_extensions"]
 # Django-Q
 # ------------------------------------------------------------------------------
 Q_CLUSTER = {
-    'name': 'DJRedis',
-    'workers': 4,
-    'timeout': 30,
-    'bulk': 10,
-    'django_redis': 'default',
-    'catch_up': False,
-    'sync': True,   # this is required for Windows
+    "name": "DJRedis",
+    "workers": 4,
+    "timeout": 30,
+    "bulk": 10,
+    "django_redis": "default",
+    "catch_up": False,
+    "sync": True,  # this is required for Windows
 }
 
 # LOGGING MODIFICATIONS
 # ------------------------------------------------------------------------------
 # Add environment-specific loggers (I don't know if this is the correct
 # way to do this)
-LOGGING["loggers"].update({
-    "django.db.backends": {
-        "handlers": ["db_log"],
-        "level": "ERROR",
-        "propagate": False,
-    },
-})
+LOGGING["loggers"].update(
+    {
+        "django.db.backends": {
+            "handlers": ["db_log"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    }
+)
 
 # Set logging level to DEBUG
 LOGGING["loggers"]["app"]["level"] = "DEBUG"
