@@ -28,14 +28,24 @@ ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]  # noqa: S104
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 # Create the Postgres URI from individual parameters in secrets file
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("POSTGRES_DB"),
-        "USER": env("POSTGRES_USER"),
-        "PASSWORD": env("POSTGRES_PASSWORD"),
-        "HOST": env("POSTGRES_HOST"),
-        "PORT": env("POSTGRES_PORT"),
-    }
+    "default": env.db(
+        "postgres://{usr}:{pwd}@{hst}:{prt}/{dbn}".format(
+            usr=env("POSTGRES_USER"),
+            pwd=env("POSTGRES_PASSWORD"),
+            hst=env("POSTGRES_HOST"),
+            prt=env("POSTGRES_PORT"),
+            dbn=env("POSTGRES_DB"),
+        )
+    ),
+    "monitor": env.db(
+        "postgres://{usr}:{pwd}@{hst}:{prt}/{dbn}".format(
+            usr=env("POSTGRES_USER"),
+            pwd=env("POSTGRES_PASSWORD"),
+            hst=env("POSTGRES_HOST"),
+            prt=env("POSTGRES_PORT"),
+            dbn=env("MONITOR_DB"),
+        )
+    ),
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
@@ -49,39 +59,39 @@ CACHES = {
     },
 }
 
-# # USE WHITENOISE UNTIL AZURE IS SET UP
-# AZURE_ACCOUNT_KEY = env("DJANGO_AZURE_ACCOUNT_KEY")
-# AZURE_ACCOUNT_NAME = env("DJANGO_AZURE_ACCOUNT_NAME")
-# AZURE_CONTAINER = env("DJANGO_AZURE_CONTAINER_NAME")
-# # STATIC & MEDIA
-# # ------------------------
-# STORAGES = {
-#     "default": {
-#         "BACKEND": "storages.backends.azure_storage.AzureStorage",
-#         "OPTIONS": {
-#             "location": "media",
-#             "overwrite_files": False,
-#         },
-#     },
-#     "staticfiles": {
-#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-#     },
-# }
-# MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/media/"
+AZURE_ACCOUNT_KEY = env("DJANGO_AZURE_ACCOUNT_KEY")
+AZURE_ACCOUNT_NAME = env("DJANGO_AZURE_ACCOUNT_NAME")
+AZURE_CONTAINER = env("DJANGO_AZURE_CONTAINER_NAME")
+AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
+# STATIC & MEDIA
+# ------------------------
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.azure_storage.AzureStorage",
+        "OPTIONS": {
+            "location": "media",
+            "overwrite_files": False,
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/media/"
 
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
 DEFAULT_FROM_EMAIL = env(
     "DJANGO_DEFAULT_FROM_EMAIL",
-    default="BART <noreply@fcgov.com>",
+    default="Get FoCo <getfoco@fcgov.com>",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#server-email
 SERVER_EMAIL = env("DJANGO_SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
 EMAIL_SUBJECT_PREFIX = env(
     "DJANGO_EMAIL_SUBJECT_PREFIX",
-    default="[BART] ",
+    default="[Get FoCo] ",
 )
 ACCOUNT_EMAIL_SUBJECT_PREFIX = EMAIL_SUBJECT_PREFIX
 
@@ -135,32 +145,34 @@ if env("USE_DOCKER") == "yes":
 # https://django-extensions.readthedocs.io/en/latest/installation_instructions.html#configuration
 INSTALLED_APPS += ["django_extensions"]
 
-# LOGGING
+# Django-Q
 # ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#logging
-# See https://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
-# # LOGGING MODIFICATIONS
-# # ------------------------------------------------------------------------------
-# # Add environment-specific loggers (I don't know if this is the correct
-# # way to do this)
-# LOGGING["loggers"].update({
-#     "django.db.backends": {
-#         "handlers": ["db_log"],
-#         "level": "ERROR",
-#         "propagate": False,
-#     },
-#     # Errors logged by the SDK itself
-#     "sentry_sdk": {
-#         "handlers": ["db_log"],
-#         "level": "ERROR",
-#         "propagate": False,
-#     },
-# })
+Q_CLUSTER = {
+    'name': 'DJRedis',
+    'workers': 4,
+    'timeout': 30,
+    'bulk': 10,
+    'django_redis': 'default',
+    'catch_up': False,
+    'sync': True,   # this is required for Windows
+}
 
-# # Set logging level to DEBUG
-# LOGGING["loggers"]["app"]["level"] = "DEBUG"
-
-# Your stuff...
+# LOGGING MODIFICATIONS
 # ------------------------------------------------------------------------------
+# Add environment-specific loggers (I don't know if this is the correct
+# way to do this)
+LOGGING["loggers"].update({
+    "django.db.backends": {
+        "handlers": ["db_log"],
+        "level": "ERROR",
+        "propagate": False,
+    },
+})
 
+# Set logging level to DEBUG
+LOGGING["loggers"]["app"]["level"] = "DEBUG"
+LOGGING_LEVEL = "DEBUG"
+
+# Get-Your-specific
+# ------------------------------------------------------------------------------
+IS_PROD = False

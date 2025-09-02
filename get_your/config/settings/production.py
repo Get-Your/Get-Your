@@ -1,3 +1,22 @@
+"""
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2024
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
 # ruff: noqa: E501
 from .base import *  # noqa: F403
 from .base import INSTALLED_APPS
@@ -36,7 +55,16 @@ DATABASES = {
             prt=env("POSTGRES_PORT"),
             dbn=env("POSTGRES_DB"),
         )
-    )
+    ),
+    "monitor": env.db(
+        "postgres://{usr}:{pwd}@{hst}:{prt}/{dbn}".format(
+            usr=env("POSTGRES_USER"),
+            pwd=env("POSTGRES_PASSWORD"),
+            hst=env("POSTGRES_HOST"),
+            prt=env("POSTGRES_PORT"),
+            dbn=env("MONITOR_DB"),
+        )
+    ),
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)
@@ -57,25 +85,25 @@ CACHES = {
     },
 }
 
-# # IGNORE THIS SECTION: USE WHITENOISE UNTIL AZURE IS SET UP
-# AZURE_ACCOUNT_KEY = env("DJANGO_AZURE_ACCOUNT_KEY")
-# AZURE_ACCOUNT_NAME = env("DJANGO_AZURE_ACCOUNT_NAME")
-# AZURE_CONTAINER = env("DJANGO_AZURE_CONTAINER_NAME")
-# # STATIC & MEDIA
-# # ------------------------
-# STORAGES = {
-#     "default": {
-#         "BACKEND": "storages.backends.azure_storage.AzureStorage",
-#         "OPTIONS": {
-#             "location": "media",
-#             "overwrite_files": False,
-#         },
-#     },
-#     "staticfiles": {
-#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-#     },
-# }
-# MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/media/"
+AZURE_ACCOUNT_KEY = env("DJANGO_AZURE_ACCOUNT_KEY")
+AZURE_ACCOUNT_NAME = env("DJANGO_AZURE_ACCOUNT_NAME")
+AZURE_CONTAINER = env("DJANGO_AZURE_CONTAINER_NAME")
+AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
+# STATIC & MEDIA
+# ------------------------
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.azure_storage.AzureStorage",
+        "OPTIONS": {
+            "location": "media",
+            "overwrite_files": False,
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/media/"
 
 # EMAIL
 # ------------------------------------------------------------------------------
@@ -105,37 +133,29 @@ INSTALLED_APPS += ["anymail"]
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
 # https://anymail.readthedocs.io/en/stable/installation/#anymail-settings-reference
 # https://anymail.readthedocs.io/en/stable/esps/sendgrid/
-EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
-ANYMAIL = {
-    "SENDGRID_API_KEY": env("SENDGRID_API_KEY"),
-    "SENDGRID_API_URL": env("SENDGRID_API_URL", default="https://api.sendgrid.com/v3/"),
-}
 
-# LOGGING
+# # Use the base.py email backend until SendGrid (or whatever) is set up
+# EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
+# ANYMAIL = {
+#     "SENDGRID_API_KEY": env("SENDGRID_API_KEY"),
+#     "SENDGRID_API_URL": env("SENDGRID_API_URL", default="https://api.sendgrid.com/v3/"),
+# }
+
+# LOGGING MODIFICATIONS
 # ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#logging
-# See https://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
-# # LOGGING MODIFICATIONS
-# # ------------------------------------------------------------------------------
-# # Add environment-specific loggers (I don't know if this is the correct
-# # way to do this)
-# LOGGING["loggers"].update({
-#     "django.db.backends": {
-#         "handlers": ["db_log"],
-#         "level": "ERROR",
-#         "propagate": False,
-#     },
-#     # Errors logged by the SDK itself
-#     "sentry_sdk": {
-#         "handlers": ["db_log"],
-#         "level": "ERROR",
-#         "propagate": False,
-#     },
-# })
+# Add environment-specific loggers (I don't know if this is the correct
+# way to do this)
+LOGGING["loggers"].update({
+    "django.db.backends": {
+        "handlers": ["db_log"],
+        "level": "ERROR",
+        "propagate": False,
+    },
+})
 
-# # Set logging level to DEBUG
-# LOGGING["loggers"]["app"]["level"] = "DEBUG"
+# Set logging level to DEBUG
+LOGGING["loggers"]["app"]["level"] = "DEBUG"
 
-# Your stuff...
+# Get-Your-specific
 # ------------------------------------------------------------------------------
+IS_PROD = True

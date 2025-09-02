@@ -16,3 +16,20 @@ crispy-bootstrap5==2025.6  # https://github.com/django-crispy-forms/crispy-boots
 django-redis==6.0.0  # https://github.com/jazzband/django-redis
 # Soft-delete functionality
 django-softdelete==0.11.5  # https://github.com/scoursen/django-softdelete
+# Phone number display
+django-phonenumber-field[phonenumbers]==8.1.0   # https://github.com/stefanfoulis/django-phonenumber-field
+# Django-Q task queue
+django-q2==1.8.0    # https://github.com/django-q2/django-q2
+
+# Get-Your-specific
+# ------------------------------------------------------------------------------
+# Timezone-aware date calculations
+pendulum==3.1.0     # https://github.com/python-pendulum/pendulum
+# Filetype identification
+python-magic==0.4.27    # https://github.com/ahupp/python-magic
+# Twilio SMS integration
+twilio==9.7.2   # https://github.com/twilio/twilio-python/
+# US address cleaning/normalizing
+usaddress-scourgify==0.6.0   # https://github.com/GreenBuildingRegistry/usaddress-scourgify (built off of the prior library used by Get-Your, https://github.com/datamade/usaddress)
+# Extract browser information
+httpagentparser==1.9.5      # https://github.com/shon/httpagentparser

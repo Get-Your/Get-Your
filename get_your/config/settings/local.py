@@ -28,6 +28,10 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": str(BASE_DIR / "db.sqlite3"),
+    },
+    "monitor": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": str(BASE_DIR / "db_monitor.sqlite3"),
     }
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
@@ -42,25 +46,25 @@ CACHES = {
     },
 }
 
-# # IGNORE THIS SECTION: USE WHITENOISE UNTIL AZURE IS SET UP
-# AZURE_ACCOUNT_KEY = env("DJANGO_AZURE_ACCOUNT_KEY")
-# AZURE_ACCOUNT_NAME = env("DJANGO_AZURE_ACCOUNT_NAME")
-# AZURE_CONTAINER = env("DJANGO_AZURE_CONTAINER_NAME")
-# # STATIC & MEDIA
-# # ------------------------
-# STORAGES = {
-#     "default": {
-#         "BACKEND": "storages.backends.azure_storage.AzureStorage",
-#         "OPTIONS": {
-#             "location": "media",
-#             "overwrite_files": False,
-#         },
-#     },
-#     "staticfiles": {
-#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-#     },
-# }
-# MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/media/"
+AZURE_ACCOUNT_KEY = env("DJANGO_AZURE_ACCOUNT_KEY")
+AZURE_ACCOUNT_NAME = env("DJANGO_AZURE_ACCOUNT_NAME")
+AZURE_CONTAINER = env("DJANGO_AZURE_CONTAINER_NAME")
+AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
+# STATIC & MEDIA
+# ------------------------
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.azure_storage.AzureStorage",
+        "OPTIONS": {
+            "location": "media",
+            "overwrite_files": False,
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/media/"
 
 # EMAIL
 # ------------------------------------------------------------------------------
@@ -76,6 +80,7 @@ EMAIL_SUBJECT_PREFIX = env(
     "DJANGO_EMAIL_SUBJECT_PREFIX",
     default="[Get FoCo] ",
 )
+ACCOUNT_EMAIL_SUBJECT_PREFIX = EMAIL_SUBJECT_PREFIX
 
 # ADMIN
 # ------------------------------------------------------------------------------
@@ -120,32 +125,42 @@ if env("USE_DOCKER") == "yes":
     import socket
 
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS += [".".join([*ip.split(".")[:-1], "1"]) for ip in ips]
+    INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
 
 # django-extensions
 # ------------------------------------------------------------------------------
 # https://django-extensions.readthedocs.io/en/latest/installation_instructions.html#configuration
 INSTALLED_APPS += ["django_extensions"]
 
-# LOGGING
+# Django-Q
 # ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#logging
-# See https://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
-# # LOGGING MODIFICATIONS
-# # ------------------------------------------------------------------------------
-# # Add environment-specific loggers (I don't know if this is the correct
-# # way to do this)
-# LOGGING["loggers"].update({
-#     "django.db.backends": {
-#         "handlers": ["db_log"],
-#         "level": "ERROR",
-#         "propagate": False,
-#     },
-# })
+Q_CLUSTER = {
+    'name': 'DJRedis',
+    'workers': 4,
+    'timeout': 30,
+    'bulk': 10,
+    'django_redis': 'default',
+    'catch_up': False,
+    'sync': True,   # this is required for Windows
+}
 
-# # Set logging level to DEBUG
-# LOGGING["loggers"]["app"]["level"] = "DEBUG"
 
-# Your stuff...
+# LOGGING MODIFICATIONS
 # ------------------------------------------------------------------------------
+# Add environment-specific loggers (I don't know if this is the correct
+# way to do this)
+LOGGING["loggers"].update({
+    "django.db.backends": {
+        "handlers": ["db_log"],
+        "level": "ERROR",
+        "propagate": False,
+    },
+})
+
+# Set logging level to DEBUG
+LOGGING["loggers"]["app"]["level"] = "DEBUG"
+LOGGING_LEVEL = "DEBUG"
+
+# Get-Your-specific
+# ------------------------------------------------------------------------------
+IS_PROD = False

@@ -1,10 +1,11 @@
 # ruff: noqa: ERA001, E501
 """Base settings to build other settings files upon."""
 
-
+import os
 from pathlib import Path
-
 import environ
+
+from django.core.files import File
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # get_your/
@@ -19,7 +20,24 @@ if READ_DOT_ENV_FILE:
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = env.bool("DJANGO_DEBUG", False)
+# Add environment variables optionally set by Azure or in the Docker build.
+# These will use the environment var if exists, else the .env file or fallback
+# to the defined default
+if os.environ.get("DJANGO_DEBUG"):
+    # Compare this explicitly to 'true'; all else will result in False
+    DEBUG = str(os.environ.get("DJANGO_DEBUG")).lower() == 'true'
+else:
+    # The default is False
+    DEBUG = env.bool("DJANGO_DEBUG", False)
+
+# Uses Python logging levels
+# (https://docs.python.org/3.12/library/logging.html#levels)
+if os.environ.get("DJANGO_LOGGING_LEVEL"):
+    LOGGING_LEVEL = str(os.environ.get("DJANGO_DEBUG_LOGGING")).upper()
+else:
+    # The default is 'NOTSET'
+    LOGGING_LEVEL = env.str("DJANGO_LOGGING_LEVEL", "NOTSET")
+
 # Code version, for display on the site.
 try:
     # Try to load the code version from environment vars. Note that the
@@ -40,11 +58,12 @@ try:
 except Exception:
     # Cannot be found; use blank
     CODE_VERSION = ""
+
 # Local time zone. Choices are
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # though not all of them may be available with every OS.
 # In Windows, this must be set to your system time zone.
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/Denver"
 # https://docs.djangoproject.com/en/dev/ref/settings/#language-code
 LANGUAGE_CODE = "en-us"
 # https://docs.djangoproject.com/en/dev/ref/settings/#languages
@@ -62,6 +81,9 @@ USE_I18N = True
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(BASE_DIR / "locale")]
+
+# For phone number default region setting:
+PHONENUMBER_DEFAULT_REGION = 'US'
 
 # DATABASES
 # ------------------------------------------------------------------------------
@@ -154,7 +176,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # MIDDLEWARE
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
-MIDDLEWARE = [
+BUILTIN_MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -246,6 +268,10 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#x-frame-options
 X_FRAME_OPTIONS = "DENY"
+# Log out on browser close
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# Expire the session cookie (force re-login) at 6 hours (in seconds)
+SESSION_COOKIE_AGE = 6*60*60
 
 # EMAIL
 # ------------------------------------------------------------------------------
@@ -275,52 +301,44 @@ DJANGO_ADMIN_FORCE_ALLAUTH = env.bool("DJANGO_ADMIN_FORCE_ALLAUTH", default=Fals
 # See https://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
 
-# # Define database routing other than the default
-# DATABASE_ROUTERS = ["bart.routers.LogRouter"]
+# Define database routing other than the default
+DATABASE_ROUTERS = ['config.routers.LogRouter']
 
-# # Get-Your custom database logging
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "formatters": {
-#         "verbose": {
-#             "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s",
-#         },
-#         "simple": {
-#             "format": "%(message)s",
-#             # datefmt is autocreated by Django; it would be ignored here
-#         },
-#     },
-#     "handlers": {
-#         "console": {
-#             "level": "DEBUG",
-#             "class": "logging.StreamHandler",
-#             "formatter": "verbose",
-#         },
-#         "db_log": {
-#             "class": "log.handlers.DatabaseLogHandler",
-#             "formatter": "simple",
-#         },
-#     },
-#     "loggers": {
-#         "": {
-#             "handlers": ["db_log"],
-#             "level": "INFO",
-#         },
-#         # Keep this logger! Even though it's a duplicate of the root logger,
-#         # the environment-specific settings may reference it
-#         "app": {
-#             "handlers": ["db_log"],
-#             "level": "INFO",
-#             "propagate": False,
-#         },
-#         "django.request": {
-#             "handlers": ["db_log"],
-#             "level": "ERROR",
-#             "propagate": False,
-#         },
-#     },
-# }
+# Get-Your custom database logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': "%(message)s",
+            # datefmt is autocreated by Django; it would be ignored here
+        },
+    },
+    'handlers': {
+        'db_log': {
+            'class': 'logger.handlers.DatabaseLogHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['db_log'],
+            'level': 'INFO',
+        },
+        # Keep this logger! Even though it's a duplicate of the root logger,
+        # the environment-specific settings may reference it
+        'app': {
+            'handlers': ['db_log'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['db_log'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
 
 REDIS_URL = env("REDIS_URL", default="redis://redis:6379/0")
 REDIS_SSL = REDIS_URL.startswith("rediss://")
@@ -347,5 +365,22 @@ SOCIALACCOUNT_ADAPTER = "get_your.users.adapters.SocialAccountAdapter"
 SOCIALACCOUNT_FORMS = {"signup": "get_your.users.forms.UserSocialSignupForm"}
 
 
-# Your stuff...
+# Get-Your-specific
 # ------------------------------------------------------------------------------
+TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN")
+TWILIO_AUTOMATED_SMS_NUMBER = env("TWILIO_AUTOMATED_SMS_NUMBER")
+CONTACT_EMAIL = env("CONTACT_EMAIL")
+USPS_SID = env("USPS_SID")
+SENDGRID_API_KEY = env("SENDGRID_API_KEY")
+WELCOME_EMAIL_TEMPLATE = env("WELCOME_EMAIL_TEMPLATE")
+PW_RESET_EMAIL_TEMPLATE = env("PW_RESET_EMAIL_TEMPLATE")
+RENEWAL_EMAIL_TEMPLATE = env("RENEWAL_EMAIL_TEMPLATE")
+
+# Verify that the file chunk size is greater than the python-magic recommended
+# minimum read of 2048 bytes
+# (https://github.com/ahupp/python-magic?tab=readme-ov-file#usage)
+if File.DEFAULT_CHUNK_SIZE < 2048:
+    raise AssertionError(
+        "The DEFAULT_CHUNK_SIZE for uploaded files is too small for python-magic to produce a correct identification"
+    )

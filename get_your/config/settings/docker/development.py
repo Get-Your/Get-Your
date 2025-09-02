@@ -1,11 +1,6 @@
 # ruff: noqa: E501
 import logging
 
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
-from sentry_sdk.integrations.redis import RedisIntegration
-
 from .base import *  # noqa: F403
 from .base import INSTALLED_APPS
 from .base import REDIS_URL
@@ -42,7 +37,16 @@ DATABASES = {
             prt=env("POSTGRES_PORT"),
             dbn=env("POSTGRES_DB"),
         )
+    ),
+    "monitor": env.db(
+        "postgres://{usr}:{pwd}@{hst}:{prt}/{dbn}".format(
+            usr=env("POSTGRES_USER"),
+            pwd=env("POSTGRES_PASSWORD"),
+            hst=env("POSTGRES_HOST"),
+            prt=env("POSTGRES_PORT"),
+            dbn=env("MONITOR_DB"),
     )
+    ),
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)
@@ -94,39 +98,39 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
     default=True,
 )
 
-# # USE WHITENOISE UNTIL AZURE IS SET UP
-# AZURE_ACCOUNT_KEY = env("DJANGO_AZURE_ACCOUNT_KEY")
-# AZURE_ACCOUNT_NAME = env("DJANGO_AZURE_ACCOUNT_NAME")
-# AZURE_CONTAINER = env("DJANGO_AZURE_CONTAINER_NAME")
-# # STATIC & MEDIA
-# # ------------------------
-# STORAGES = {
-#     "default": {
-#         "BACKEND": "storages.backends.azure_storage.AzureStorage",
-#         "OPTIONS": {
-#             "location": "media",
-#             "overwrite_files": False,
-#         },
-#     },
-#     "staticfiles": {
-#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-#     },
-# }
-# MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/media/"
+AZURE_ACCOUNT_KEY = env("DJANGO_AZURE_ACCOUNT_KEY")
+AZURE_ACCOUNT_NAME = env("DJANGO_AZURE_ACCOUNT_NAME")
+AZURE_CONTAINER = env("DJANGO_AZURE_CONTAINER_NAME")
+AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
+# STATIC & MEDIA
+# ------------------------
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.azure_storage.AzureStorage",
+        "OPTIONS": {
+            "location": "media",
+            "overwrite_files": False,
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/media/"
 
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
 DEFAULT_FROM_EMAIL = env(
     "DJANGO_DEFAULT_FROM_EMAIL",
-    default="BART <noreply@fcgov.com>",
+    default="Get FoCo <getfoco@fcgov.com>",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#server-email
 SERVER_EMAIL = env("DJANGO_SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
 EMAIL_SUBJECT_PREFIX = env(
     "DJANGO_EMAIL_SUBJECT_PREFIX",
-    default="[BART] ",
+    default="[Get FoCo] ",
 )
 ACCOUNT_EMAIL_SUBJECT_PREFIX = EMAIL_SUBJECT_PREFIX
 
@@ -148,66 +152,27 @@ ANYMAIL = {
     "SENDGRID_API_URL": env("SENDGRID_API_URL", default="https://api.sendgrid.com/v3/"),
 }
 
-# LOGGING
+# LOGGING MODIFICATIONS
 # ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#logging
-# See https://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
-# # LOGGING MODIFICATIONS
-# # ------------------------------------------------------------------------------
-# # Add environment-specific loggers (I don't know if this is the correct
-# # way to do this)
-# LOGGING["loggers"].update({
-#     "django.db.backends": {
-#         "handlers": ["db_log"],
-#         "level": "ERROR",
-#         "propagate": False,
-#     },
-#     # Errors logged by the SDK itself
-#     "sentry_sdk": {
-#         "handlers": ["db_log"],
-#         "level": "ERROR",
-#         "propagate": False,
-#     },
-#     "django.security.DisallowedHost": {
-#         "handlers": ["db_log"],
-#         "level": "ERROR",
-#         "propagate": False,
-#     },
-# })
+# Add environment-specific loggers (I don't know if this is the correct
+# way to do this)
+LOGGING["loggers"].update({
+    "django.db.backends": {
+        "handlers": ["db_log"],
+        "level": "ERROR",
+        "propagate": False,
+    },
+    "django.security.DisallowedHost": {
+        "handlers": ["db_log"],
+        "level": "ERROR",
+        "propagate": False,
+    },
+})
 
-# # Set logging level to DEBUG
-# LOGGING["loggers"]["app"]["level"] = "DEBUG"
+# Set logging level to DEBUG
+LOGGING["loggers"]["app"]["level"] = "DEBUG"
+LOGGING_LEVEL = "DEBUG"
 
-# Sentry
+# Get-Your-specific
 # ------------------------------------------------------------------------------
-SENTRY_DSN = env("SENTRY_DSN")
-SENTRY_LOG_LEVEL = env.int("DJANGO_SENTRY_LOG_LEVEL", logging.INFO)
-
-sentry_logging = LoggingIntegration(
-    level=SENTRY_LOG_LEVEL,  # Capture info and above as breadcrumbs
-    event_level=logging.ERROR,  # Send errors as events
-)
-integrations = [sentry_logging, DjangoIntegration(), RedisIntegration()]
-sentry_sdk.init(
-    dsn=SENTRY_DSN,
-    integrations=integrations,
-    environment=env("SENTRY_ENVIRONMENT", default="production"),
-    traces_sample_rate=env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.0),
-)
-
-# django-rest-framework
-# -------------------------------------------------------------------------------
-# Tools that generate code samples can use SERVERS to point to the correct domain
-SPECTACULAR_SETTINGS["SERVERS"] = [
-    {"url": "https://fcgov.com", "description": "Development server"},
-]
-
-# Your stuff...
-# ------------------------------------------------------------------------------
-
-# Get-Your-SPECIFIC
-# ------------------------------------------------------------------------------
-ENV_STR = env("BART_ENV_STR")
-ENV_HEX_COLOR = f'#{env("BART_ENV_HEX_COLOR")}'
 IS_PROD = False
