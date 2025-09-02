@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 APPS_DIR = BASE_DIR / "get_your"
 env = environ.Env()
 
-READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
+READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=True)
 if READ_DOT_ENV_FILE:
     # OS environment variables take precedence over variables from .env
     env.read_env(str(BASE_DIR / ".env"))
@@ -20,6 +20,26 @@ if READ_DOT_ENV_FILE:
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = env.bool("DJANGO_DEBUG", False)
+# Code version, for display on the site.
+try:
+    # Try to load the code version from environment vars. Note that the
+    # Dockerfile defaults to "", so False is only returned if CODE_VERSION env
+    # var DNE
+    CODE_VERSION = env.str("CODE_VERSION", False)
+    if CODE_VERSION is False:
+        # Otherwise, try to find the current Git version directly from the repo.
+        # The assumption is that this is part of a Git repo if not built by
+        # Docker
+        import subprocess
+
+        # Run `git describe --tags`
+        CODE_VERSION = subprocess.check_output(
+            ["git", "describe", "--tags", "--always"]
+        ).decode("ascii").strip()
+
+except Exception:
+    # Cannot be found; use blank
+    CODE_VERSION = ""
 # Local time zone. Choices are
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # though not all of them may be available with every OS.
@@ -30,9 +50,9 @@ LANGUAGE_CODE = "en-us"
 # https://docs.djangoproject.com/en/dev/ref/settings/#languages
 # from django.utils.translation import gettext_lazy as _
 # LANGUAGES = [
-#     ('en', _('English')),
-#     ('fr-fr', _('French')),
-#     ('pt-br', _('Portuguese')),
+#     ("en", _("English")),
+#     ("fr-fr", _("French")),
+#     ("pt-br", _("Portuguese")),
 # ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
@@ -45,9 +65,6 @@ LOCALE_PATHS = [str(BASE_DIR / "locale")]
 
 # DATABASES
 # ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#databases
-DATABASES = {"default": env.db("DATABASE_URL")}
-DATABASES["default"]["ATOMIC_REQUESTS"] = True
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -70,14 +87,20 @@ DJANGO_APPS = [
     # "django.contrib.humanize", # Handy template tags
     "django.contrib.admin",
     "django.forms",
+    "django.contrib.postgres", # Postgres-extension functionality
 ]
 THIRD_PARTY_APPS = [
+    "whitenoise.runserver_nostatic",
     "crispy_forms",
     "crispy_bootstrap5",
     "allauth",
     "allauth.account",
     "allauth.mfa",
     "allauth.socialaccount",
+    "phonenumber_field",
+    "django_q",
+    "formset",
+    "softdelete",
 ]
 
 LOCAL_APPS = [
@@ -105,6 +128,8 @@ AUTH_USER_MODEL = "users.User"
 LOGIN_REDIRECT_URL = "users:redirect"
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = "account_login"
+# # https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
+# LOGOUT_REDIRECT_URL = "users:redirect"
 
 # PASSWORDS
 # ------------------------------------------------------------------------------
@@ -141,6 +166,15 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
 ]
+
+# Your stuff: custom middleware goes here
+LOCAL_MIDDLEWARE = [
+#     "config.middleware.ValidRouteMiddleware",
+#     "config.middleware.ParsePermissionsMiddleware",
+]
+
+# https://docs.djangoproject.com/en/dev/ref/settings/#middleware
+MIDDLEWARE = BUILTIN_MIDDLEWARE + LOCAL_MIDDLEWARE
 
 # STATIC
 # ------------------------------------------------------------------------------
@@ -186,6 +220,7 @@ TEMPLATES = [
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
                 "get_your.users.context_processors.allauth_settings",
+#                 "global_settings.context_processors.global_template_variables",
             ],
         },
     },
@@ -239,23 +274,53 @@ DJANGO_ADMIN_FORCE_ALLAUTH = env.bool("DJANGO_ADMIN_FORCE_ALLAUTH", default=Fals
 # https://docs.djangoproject.com/en/dev/ref/settings/#logging
 # See https://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s",
-        },
-    },
-    "handlers": {
-        "console": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        },
-    },
-    "root": {"level": "INFO", "handlers": ["console"]},
-}
+
+# # Define database routing other than the default
+# DATABASE_ROUTERS = ["bart.routers.LogRouter"]
+
+# # Get-Your custom database logging
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "verbose": {
+#             "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s",
+#         },
+#         "simple": {
+#             "format": "%(message)s",
+#             # datefmt is autocreated by Django; it would be ignored here
+#         },
+#     },
+#     "handlers": {
+#         "console": {
+#             "level": "DEBUG",
+#             "class": "logging.StreamHandler",
+#             "formatter": "verbose",
+#         },
+#         "db_log": {
+#             "class": "log.handlers.DatabaseLogHandler",
+#             "formatter": "simple",
+#         },
+#     },
+#     "loggers": {
+#         "": {
+#             "handlers": ["db_log"],
+#             "level": "INFO",
+#         },
+#         # Keep this logger! Even though it's a duplicate of the root logger,
+#         # the environment-specific settings may reference it
+#         "app": {
+#             "handlers": ["db_log"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "django.request": {
+#             "handlers": ["db_log"],
+#             "level": "ERROR",
+#             "propagate": False,
+#         },
+#     },
+# }
 
 REDIS_URL = env("REDIS_URL", default="redis://redis:6379/0")
 REDIS_SSL = REDIS_URL.startswith("rediss://")

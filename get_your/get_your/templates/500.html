@@ -1,10 +1,10 @@
-{% extends "base.html" %}
+{% extends "base_cookiecutter.html" %}
 
-{% block title %}Server Error{% endblock title %}
-{% block content %}
-  <h1>Ooops!!! 500</h1>
-  <h3>Looks like something went wrong!</h3>
-  <p>
-    We track these errors automatically, but if the problem persists feel free to contact us. In the meantime, try refreshing.
-  </p>
-{% endblock content %}
+{% block mainbody %}
+<div class="row">
+    <h2 class="text-dark mt-5">Server Error</h2>
+    {% if message != '' %}
+    <h5 class="text-dark">{{ message }}</h2>
+    {% endif %}
+</div>
+{% endblock %}

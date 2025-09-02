@@ -29,7 +29,7 @@ django.setup()
 # -- Project information -----------------------------------------------------
 
 project = "Get-Your"
-copyright = """2025, Tim Campbell"""  # noqa: A001
+copyright = """2022-2025"""  # noqa: A001
 author = "Tim Campbell"
 
 

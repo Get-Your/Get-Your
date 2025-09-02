@@ -1,6 +1,6 @@
 # Translations for the Get-Your project
-# Copyright (C) 2025 Tim Campbell
-# Tim Campbell <ticampbell@fcgov.com>, 2025.
+# Copyright (C) 2022-2025
+# Tim Campbell <ticampbell@fcgov.com>.
 #
 #, fuzzy
 msgid ""

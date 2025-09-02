@@ -23,7 +23,10 @@ def _update_or_create_site_with_sequence(site_model, connection, domain, name):
         # site is created.
         # To avoid this, we need to manually update DB sequence and make sure it's
         # greater than the maximum value.
+
         max_id = site_model.objects.order_by("-id").first().id
+        # For Postgres:
+        if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
         with connection.cursor() as cursor:
             cursor.execute("SELECT last_value from django_site_id_seq")
             (current_id,) = cursor.fetchone()
@@ -33,6 +36,24 @@ def _update_or_create_site_with_sequence(site_model, connection, domain, name):
                     [max_id + 1],
                 )
 
+        # For SQLite:
+        elif settings.DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT seq from SQLITE_SEQUENCE where name='django_site'")
+                (current_id,) = cursor.fetchone()
+                if current_id <= max_id:
+                    cursor.execute(
+                        "UPDATE SQLITE_SEQUENCE set seq=%s where name='django_site'",
+                        [max_id + 1],
+                    )
+
+        # Other databases aren't supported for this manual update
+        else:
+            print(
+                "\nThe selected database isn't supported for the manual auto-increment update.\n"
+                f"To avoid future errors, update the next auto-increment value of the 'django_site' table to start at {max_id+1}.\n"
+            )
+
 
 def update_site_forward(apps, schema_editor):
     """Set site domain and name."""
@@ -40,7 +61,7 @@ def update_site_forward(apps, schema_editor):
     _update_or_create_site_with_sequence(
         Site,
         schema_editor.connection,
-        "example.com",
+        "fcgov.com",
         "Get-Your",
     )
 
@@ -51,8 +72,8 @@ def update_site_backward(apps, schema_editor):
     _update_or_create_site_with_sequence(
         Site,
         schema_editor.connection,
-        "example.com",
-        "example.com",
+        "fcgov.com",
+        "fcgov.com",
     )
 
 

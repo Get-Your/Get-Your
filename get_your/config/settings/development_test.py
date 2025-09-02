@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 from .base import *  # noqa: F403
 from .base import INSTALLED_APPS
 from .base import MIDDLEWARE
@@ -10,7 +11,8 @@ from .base import env
 # environment-specific overwrites).
 # Because this is a local environment, some settings are unused and set
 # explicity in this file
-env.read_env(str(BASE_DIR / ".dev.env"), overwrite=True)
+if READ_DOT_ENV_FILE:
+    env.read_env(str(BASE_DIR / ".dev.test.env"), overwrite=True)
 
 # GENERAL
 # ------------------------------------------------------------------------------
@@ -24,10 +26,15 @@ ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]  # noqa: S104
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
+# Create the Postgres URI from individual parameters in secrets file
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": str(BASE_DIR / "db.sqlite3"),
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env("POSTGRES_DB"),
+        "USER": env("POSTGRES_USER"),
+        "PASSWORD": env("POSTGRES_PASSWORD"),
+        "HOST": env("POSTGRES_HOST"),
+        "PORT": env("POSTGRES_PORT"),
     }
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
@@ -42,7 +49,7 @@ CACHES = {
     },
 }
 
-# # IGNORE THIS SECTION: USE WHITENOISE UNTIL AZURE IS SET UP
+# # USE WHITENOISE UNTIL AZURE IS SET UP
 # AZURE_ACCOUNT_KEY = env("DJANGO_AZURE_ACCOUNT_KEY")
 # AZURE_ACCOUNT_NAME = env("DJANGO_AZURE_ACCOUNT_NAME")
 # AZURE_CONTAINER = env("DJANGO_AZURE_CONTAINER_NAME")
@@ -67,15 +74,16 @@ CACHES = {
 # https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
 DEFAULT_FROM_EMAIL = env(
     "DJANGO_DEFAULT_FROM_EMAIL",
-    default="Get FoCo <getfoco@fcgov.com>",
+    default="BART <noreply@fcgov.com>",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#server-email
 SERVER_EMAIL = env("DJANGO_SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
 EMAIL_SUBJECT_PREFIX = env(
     "DJANGO_EMAIL_SUBJECT_PREFIX",
-    default="[Get FoCo] ",
+    default="[BART] ",
 )
+ACCOUNT_EMAIL_SUBJECT_PREFIX = EMAIL_SUBJECT_PREFIX
 
 # ADMIN
 # ------------------------------------------------------------------------------
@@ -120,7 +128,7 @@ if env("USE_DOCKER") == "yes":
     import socket
 
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS += [".".join([*ip.split(".")[:-1], "1"]) for ip in ips]
+    INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
 
 # django-extensions
 # ------------------------------------------------------------------------------
@@ -142,6 +150,12 @@ INSTALLED_APPS += ["django_extensions"]
 #         "level": "ERROR",
 #         "propagate": False,
 #     },
+#     # Errors logged by the SDK itself
+#     "sentry_sdk": {
+#         "handlers": ["db_log"],
+#         "level": "ERROR",
+#         "propagate": False,
+#     },
 # })
 
 # # Set logging level to DEBUG
@@ -149,3 +163,4 @@ INSTALLED_APPS += ["django_extensions"]
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+
