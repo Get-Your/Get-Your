@@ -20,6 +20,8 @@ django-softdelete==0.11.5  # https://github.com/scoursen/django-softdelete
 django-phonenumber-field[phonenumbers]==8.1.0   # https://github.com/stefanfoulis/django-phonenumber-field
 # Django-Q task queue
 django-q2==1.8.0    # https://github.com/django-q2/django-q2
+# Case-insensitive fields
+django-case-insensitive-field==1.0.7    # https://github.com/iamoracle/django_case_insensitive_field
 
 # Get-Your-specific
 # ------------------------------------------------------------------------------

@@ -553,6 +553,15 @@ wheels = [
 ]
 
 [[package]]
+name = "django-case-insensitive-field"
+version = "1.0.7"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/96/18/d77815f85a2ac0f0188a0a80da344e0e2d4eca4eadc73afface0f9320f1f/django_case_insensitive_field-1.0.7.tar.gz", hash = "sha256:8e2502a932cf50a727abecc73a141edb75f740933ebbf5ae8745bcfadd9c3029", size = 3554, upload-time = "2022-09-25T21:24:45.545Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d0/8f/db3db9b65da0876af3f5fdb659d8d30ceb7eddde4740118c6ccd18c75b7c/django_case_insensitive_field-1.0.7-py3-none-any.whl", hash = "sha256:9415a2ad80168e3f115a8edce0484fa6ee11a58eb3b8d41c282ea61abad80d93", size = 3629, upload-time = "2022-09-25T21:24:43.863Z" },
+]
+
+[[package]]
 name = "django-coverage-plugin"
 version = "3.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -933,6 +942,7 @@ dependencies = [
     { name = "django" },
     { name = "django-allauth", extra = ["mfa"] },
     { name = "django-anymail" },
+    { name = "django-case-insensitive-field" },
     { name = "django-coverage-plugin" },
     { name = "django-crispy-forms" },
     { name = "django-debug-toolbar" },
@@ -979,6 +989,7 @@ requires-dist = [
     { name = "django", specifier = "==4.2.23" },
     { name = "django-allauth", extras = ["mfa"], specifier = "==65.11.1" },
     { name = "django-anymail", extras = ["sendgrid"], specifier = "==13.0.1" },
+    { name = "django-case-insensitive-field", specifier = "==1.0.7" },
     { name = "django-coverage-plugin", specifier = "==3.1.1" },
     { name = "django-crispy-forms", specifier = "==2.4" },
     { name = "django-debug-toolbar", specifier = "==6.0.0" },
