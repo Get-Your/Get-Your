@@ -20,8 +20,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import random
 
 import pendulum
+from django.contrib.auth import get_user_model
 
-from app import models
+from app.models import Address
+from app.models import EligibilityProgram
+from app.models import Household
+from app.models import HouseholdMembers
+from app.models import IQProgram
+from ref.models import Address as AddressRef
+from ref.models import EligibilityProgram as EligibilityProgramRef
+from ref.models import IQProgram as IQProgramRef
+
+# Get the user model
+User = get_user_model()
 
 
 class CreateEligibilityPrograms:
@@ -50,18 +61,18 @@ class CreateEligibilityPrograms:
 
     def create_programs(self):
         """
-        Create EligibilityProgramRD records, if they don't already exist.
+        Create EligibilityProgramRef records, if they don't already exist.
 
         """
 
         for prgname, prgvals in self.program_info.items():
-            exist_count = models.EligibilityProgramRD.objects.filter(
+            exist_count = EligibilityProgramRef.objects.filter(
                 program_name=prgname,
             ).count()
 
             # If a record DNE, create one
             if exist_count == 0:
-                models.EligibilityProgramRD.objects.create(
+                EligibilityProgramRef.objects.create(
                     program_name=prgname,
                     **prgvals,
                 )
@@ -102,18 +113,18 @@ class CreateIqPrograms:
 
     def create_programs(self):
         """
-        Create IQProgramRD records, if they don't already exist.
+        Create IQProgramRef records, if they don't already exist.
 
         """
 
         for prgname, prgvals in self.program_info.items():
-            exist_count = models.IQProgramRD.objects.filter(
+            exist_count = IQProgramRef.objects.filter(
                 program_name=prgname,
             ).count()
 
             # If a record DNE, create it
             if exist_count == 0:
-                models.IQProgramRD.objects.create(
+                IQProgramRef.objects.create(
                     program_name=prgname,
                     **prgvals,
                 )
@@ -146,7 +157,7 @@ class TestUser:
 
         pword = "Something top secret"
 
-        self.user = models.User.objects.create_user(
+        self.user = User.objects.create_user(
             email=f"test_user_{random.randint(1, 100000)}@ae.ae",
             first_name="Test",
             last_name="User",
@@ -164,7 +175,7 @@ class TestUser:
     def create_address(self):
         """Create address record (in each table, if applicable)."""
 
-        # Create AddressRD record
+        # Create AddressRef record
 
         if self.use_gma_address:
             # For a GMA address, use Fort Collins City Hall
@@ -195,35 +206,35 @@ class TestUser:
 
         # Since these are in already-cleaned format, search based on unique
         # address
-        exist_count = models.AddressRD.objects.filter(
+        exist_count = AddressRef.objects.filter(
             **address_info,
         ).count()
 
         # If a record exists, get it; else, create one
         if exist_count > 0:
-            self.addressrd = models.AddressRD.objects.get(
+            self.AddressRef = AddressRef.objects.get(
                 **address_info,
             )
         else:
-            self.addressrd = models.AddressRD(
+            self.AddressRef = AddressRef(
                 **address_info,
             )
             # Clean the field values (which adds the hash as well), then save
-            self.addressrd.clean()
-            self.addressrd.save()
+            self.AddressRef.clean()
+            self.AddressRef.save()
 
         # Create Address record
 
-        self.address = models.Address.objects.create(
+        self.address = Address.objects.create(
             user=self.user,
-            mailing_address=self.addressrd,
-            eligibility_address=self.addressrd,
+            mailing_address=self.AddressRef,
+            eligibility_address=self.AddressRef,
         )
 
     def create_household(self):
         """Create all household information."""
 
-        self.household = models.Household.objects.create(
+        self.household = Household.objects.create(
             user=self.user,
             duration_at_address="Less than a year",
             number_persons_in_household=1,
@@ -232,7 +243,7 @@ class TestUser:
             rent_own="rent",
         )
 
-        self.householdmembers = models.HouseholdMembers.objects.create(
+        self.householdmembers = HouseholdMembers.objects.create(
             user=self.user,
             household_info={
                 "this": "some fake JSON, for now",
@@ -248,10 +259,10 @@ class TestUser:
         for prgname in program_rd.program_info.keys():
             # Note that these will have blank document_path values
             self.eligibility.append(
-                models.EligibilityProgram.objects.create(
+                EligibilityProgram.objects.create(
                     user=self.user,
-                    program=models.EligibilityProgramRD.objects.get(
-                        program_name=prgname
+                    program=EligibilityProgramRef.objects.get(
+                        program_name=prgname,
                     ),
                     document_path=[],
                 ),
@@ -265,9 +276,9 @@ class TestUser:
         self.iq = []
         for prgname in program_rd.program_info.keys():
             self.iq.append(
-                models.IQProgram.objects.create(
+                IQProgram.objects.create(
                     user=self.user,
-                    program=models.IQProgramRD.objects.get(program_name=prgname),
+                    program=IQProgramRef.objects.get(program_name=prgname),
                     is_enrolled=False,
                 ),
             )
@@ -275,7 +286,7 @@ class TestUser:
     def destroy(self):
         """Destroy the user (e.g. once the test is complete)."""
 
-        models.User.objects.filter(id=self.user.id).delete()
+        User.objects.filter(id=self.user.id).delete()
 
 
 class TestView:

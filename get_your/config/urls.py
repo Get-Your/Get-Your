@@ -35,7 +35,6 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.contrib.auth import views as auth_views
 from django.urls import include
 from django.urls import path
 from django.views import defaults as default_views
@@ -43,7 +42,7 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path(
-        "",
+        "index/",
         TemplateView.as_view(template_name="pages/home.html"),
         name="home",
     ),
@@ -67,30 +66,27 @@ urlpatterns = [
         include("allauth.urls"),
     ),
     # Your stuff: custom urls includes go here
-    path("admin/", admin.site.urls),
-    path("accounts/", include("django.contrib.auth.urls")),
-    path(
-        "password_reset/done/",
-        auth_views.PasswordResetDoneView.as_view(
-            template_name="authentication/password_reset_done.html",
-        ),
-        name="password_reset_done",
-    ),
-    path(
-        "reset/<uidb64>/<token>/",
-        auth_views.PasswordResetConfirmView.as_view(
-            template_name="authentication/password_reset_confirm.html",
-        ),
-        name="password_reset_confirm",
-    ),
-    path(
-        "reset/done/",
-        auth_views.PasswordResetCompleteView.as_view(
-            template_name="authentication/password_reset_complete.html",
-        ),
-        name="password_reset_complete",
-    ),
-    # This must be last in urlpatterns because the name is ''
+    # path(
+    #     "password_reset/done/",
+    #     auth_views.PasswordResetDoneView.as_view(
+    #         template_name="authentication/password_reset_done.html",
+    #     ),
+    #     name="password_reset_done",
+    # ),
+    # path(
+    #     "reset/<uidb64>/<token>/",
+    #     auth_views.PasswordResetConfirmView.as_view(
+    #         template_name="authentication/password_reset_confirm.html",
+    #     ),
+    #     name="password_reset_confirm",
+    # ),
+    # path(
+    #     "reset/done/",
+    #     auth_views.PasswordResetCompleteView.as_view(
+    #         template_name="authentication/password_reset_complete.html",
+    #     ),
+    #     name="password_reset_complete",
+    # ),
     path("", include(("app.urls", "app"), namespace="app")),
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),

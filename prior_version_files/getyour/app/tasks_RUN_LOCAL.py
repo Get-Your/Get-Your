@@ -1,11 +1,14 @@
-from app.backend import broadcast_renewal_email, check_if_user_needs_to_renew
-from app.models import User
-from app.constants import notification_buffer_month
-from logger.wrappers import LoggerWrapper
-
-from django_q.tasks import async_task
 import logging
+
 import pendulum
+from django.contrib.auth import get_user_model
+from monitor.wrappers import LoggerWrapper
+
+from app.backend import broadcast_renewal_email, check_if_user_needs_to_renew
+from app.constants import notification_buffer_month
+
+# Get the user model
+User = get_user_model()
 
 
 def send_renewal_email(user):
@@ -13,12 +16,12 @@ def send_renewal_email(user):
     Determine if the user
     a) needs to renew and
     b) hasn't been notified within the buffer period
-    
+
     and kick off the 'renewal required' email.
 
     """
     # Initialize logger (needs to be done within the async task)
-    log = LoggerWrapper(logging.getLogger('app.tasks.manual_run'))
+    log = LoggerWrapper(logging.getLogger("app.tasks.manual_run"))
     # Check if user needs to renew their application
     needs_renewal = check_if_user_needs_to_renew(user.id)
     # If they need to renew and if they have been notified within the
@@ -36,7 +39,7 @@ def send_renewal_email(user):
         if months_since_last_notification >= notification_buffer_month:
             log.info(
                 "User needs renewal; sending notification",
-                function='send_renewal_email',
+                function="send_renewal_email",
                 user_id=user.id,
             )
             # Note that SendGrid doesn't have rate limits for 'send' operations
@@ -49,7 +52,7 @@ def send_renewal_email(user):
             if status_code == 202:
                 log.debug(
                     f"SendGrid call successful. last_action_notification_at updating from '{user.last_action_notification_at}'",
-                    function='send_renewal_email',
+                    function="send_renewal_email",
                     user_id=user.id,
                 )
                 user.last_action_notification_at = pendulum.now()
@@ -57,13 +60,13 @@ def send_renewal_email(user):
         else:
             log.debug(
                 "User needs renewal but has recently been notified",
-                function='send_renewal_email',
+                function="send_renewal_email",
                 user_id=user.id,
             )
     else:
         log.debug(
             "User does not need renewal",
-            function='send_renewal_email',
+            function="send_renewal_email",
             user_id=user.id,
         )
 
@@ -71,15 +74,15 @@ def send_renewal_email(user):
 # Run the task to send an automated 'renewal required' email to each affected
 # user.
 # Initialize logger
-log = LoggerWrapper(logging.getLogger('app.tasks.manual_run'))
+log = LoggerWrapper(logging.getLogger("app.tasks.manual_run"))
 log.debug(
     "Entering function",
-    function='run_renewal_task',
+    function="run_renewal_task",
 )
 # For every user in the database that isn't archived or has a NULL
 # last_completed_at, run the send_renewal_email task (asynchronously)
 for user in User.objects.filter(
     is_archived=False,
     last_completed_at__isnull=False,
-).order_by('id'):
+).order_by("id"):
     send_renewal_email(user)

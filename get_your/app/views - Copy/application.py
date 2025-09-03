@@ -19,13 +19,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
 
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.utils import ErrorList
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.shortcuts import reverse
-from logger.wrappers import LoggerWrapper
 
 from app.backend import form_page_number
 from app.backend import login
@@ -33,10 +33,13 @@ from app.backend import save_renewal_action
 from app.decorators import set_update_mode
 from app.forms import UserForm
 from app.forms import UserUpdateForm
-from app.models import User
+from monitor.wrappers import LoggerWrapper
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
+
+# Get the user model
+User = get_user_model()
 
 
 @set_update_mode
@@ -108,7 +111,7 @@ def account(request, **kwargs):
                     return JsonResponse({"redirect": f"{reverse('app:address')}"})
                 return JsonResponse(
                     {
-                        "redirect": f"{reverse('app:user_settings')}?page_updated=account"
+                        "redirect": f"{reverse('app:user_settings')}?page_updated=account",
                     },
                 )
             if form.is_valid():

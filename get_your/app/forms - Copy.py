@@ -18,9 +18,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from django import forms
+from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 
-from app.models import User
+# Get the user model
+User = get_user_model()
 
 
 class UserForm(forms.ModelForm):

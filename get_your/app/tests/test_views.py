@@ -20,7 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from django.test import TestCase
 
 from app import urls
-from app.tests.init_params import TestView
+
+from .init_params import TestView
 
 
 class URLconfViewsAccountedFor(TestCase):

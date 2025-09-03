@@ -24,7 +24,7 @@ notification_buffer_month = 1
 enable_calendar_year_renewal = True
 
 # Set the specified app label(s) for use in the logging db router
-logger_app_labels = {"logger"}
+logger_app_labels = {"monitor"}
 
 # Define the content types supported by this app
 supported_content_types = {

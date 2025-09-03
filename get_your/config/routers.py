@@ -22,7 +22,7 @@ from app import constants
 
 class LogRouter:
     """
-    A router to control all database operations on models for the logger.
+    A router to control all database operations on models for the monitor.
 
     """
 

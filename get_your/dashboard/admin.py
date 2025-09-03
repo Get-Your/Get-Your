@@ -20,7 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import logging
 
 from django.contrib import admin
-from logger.wrappers import LoggerWrapper
+
+from monitor.wrappers import LoggerWrapper
 
 from .models import Feedback
 
@@ -28,6 +29,7 @@ from .models import Feedback
 log = LoggerWrapper(logging.getLogger(__name__))
 
 
+@admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
     search_fields = ("feedback_comments",)
     list_display = list_display_links = ("created", "star_rating")
@@ -81,7 +83,3 @@ class FeedbackAdmin(admin.ModelAdmin):
         )
 
         return self.all_possible_fields
-
-
-# Register the models
-admin.site.register(Feedback, FeedbackAdmin)

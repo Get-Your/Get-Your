@@ -24,21 +24,30 @@ from pathlib import PurePosixPath
 
 import pendulum
 from azure.core.exceptions import ResourceNotFoundError
-from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
+from django.contrib.admin.models import ADDITION
+from django.contrib.admin.models import CHANGE
+from django.contrib.admin.models import LogEntry
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.storage import default_storage
 from django.shortcuts import render
-from logger.wrappers import LoggerWrapper
 
 from app.admin import get_admin_url
-from app.admin.forms import EligProgramAddForm
-from app.backend import file_validation, finalize_application
+from app.backend import file_validation
+from app.backend import finalize_application
 from app.constants import supported_content_types
-from app.models import EligibilityProgram, EligibilityProgramRD, User
+from app.models import EligibilityProgram
+from monitor.wrappers import LoggerWrapper
+from ref.models import EligibilityProgram as EligibilityProgramRef
+
+from .forms import EligProgramAddForm
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
+
+# Get the user model
+User = get_user_model()
 
 
 @staff_member_required
@@ -115,7 +124,7 @@ def view_blob(request, blob_name, **kwargs):
                     ),
                     True,
                 ),
-            )
+            ),
         )
 
         if not ok_to_view:
@@ -206,8 +215,8 @@ def add_elig_program(request, **kwargs):
                 # Create the program object
                 instance = EligibilityProgram.objects.create(
                     user=user,
-                    program=EligibilityProgramRD.objects.get(
-                        id=int(form.cleaned_data["program_name"])
+                    program=EligibilityProgramRef.objects.get(
+                        id=int(form.cleaned_data["program_name"]),
                     ),
                 )
                 fileNames = []
@@ -232,7 +241,7 @@ def add_elig_program(request, **kwargs):
                     object_id=user.id,
                     object_repr=str(user),
                     action_flag=CHANGE,
-                    change_message=f'Added User eligibility program "{str(instance)}".',
+                    change_message=f'Added User eligibility program "{instance!s}".',
                 )
 
                 # Add a log entry to EligibilityProgram admin that the program
@@ -244,7 +253,7 @@ def add_elig_program(request, **kwargs):
                     object_id=instance.id,
                     object_repr=str(instance),
                     action_flag=ADDITION,
-                    change_message=f'Added User eligibility program "{str(instance)}".',
+                    change_message=f'Added User eligibility program "{instance!s}".',
                 )
 
                 # Finalize the application with the new program, if applicable
@@ -336,10 +345,7 @@ def view_changes(request, **kwargs):
         log.debug(
             "Affected users: {}".format(
                 ", ".join(
-                    [
-                        f"{len(user_ids[key])} in {key} category"
-                        for key in user_ids.keys()
-                    ]
+                    [f"{len(user_ids[key])} in {key} category" for key in user_ids],
                 ),
             ),
             function="view_changes",
@@ -353,7 +359,7 @@ def view_changes(request, **kwargs):
         )
 
         # Prepare a list of users in each category, with links to each user's page
-        users = {key: [] for key in user_ids.keys()}
+        users = {key: [] for key in user_ids}
         for usrkey, usrset in user_ids.items():
             for usrid in usrset:
                 user = User.objects.get(id=usrid)
@@ -362,7 +368,7 @@ def view_changes(request, **kwargs):
                         "name": f"{user.first_name} {user.last_name}",
                         "email": user.email,
                         "admin_link": get_admin_url(user),
-                    }
+                    },
                 )
 
         return render(

@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import logging
 from itertools import chain
 
+from django import forms
 from django.contrib import admin
 from django.contrib import messages
 from django.contrib.admin.models import CHANGE
@@ -27,20 +28,22 @@ from django.contrib.admin.models import LogEntry
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db.models import Exists
 from django.db.models import OuterRef
 from django.db.models import Q
 from django.db.models.query import QuerySet
+from django.forms.widgets import Textarea
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.shortcuts import reverse
+from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
-from logger.wrappers import LoggerWrapper
 
-from app.admin import CityCoveredListFilter
-from app.admin import EligibilityProgramRefForm
-from app.admin import GMAListFilter
-from app.admin import IQProgramRefForm
+from app.admin.filters import CityCoveredListFilter
+from app.admin.filters import GMAListFilter
+from app.admin.forms import EligibilityProgramRefForm
+from app.admin.forms import IQProgramRefForm
 from app.admin.models import StaffPermissions
 from app.backend import address_check
 from app.backend import finalize_address
@@ -50,6 +53,7 @@ from app.backend import remove_ineligible_programs_for_user
 from app.backend import update_users_for_program
 from app.models import Address
 from app.models import IQProgram
+from monitor.wrappers import LoggerWrapper
 
 from .models import Address as AddressRef
 from .models import EligibilityProgram as EligibilityProgramRef
@@ -63,6 +67,7 @@ log = LoggerWrapper(logging.getLogger(__name__))
 User = get_user_model()
 
 
+@admin.register(AddressRef)
 class AddressRDAdmin(admin.ModelAdmin):
     search_fields = ("address1", "address2")
     list_display = ("address1", "address2", "is_in_gma", "is_city_covered")
@@ -343,6 +348,7 @@ class AddressRDAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+@admin.register(EligibilityProgramRef)
 class EligibilityProgramRefAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         """Override ordering to use friendly name instead."""
@@ -381,6 +387,7 @@ class EligibilityProgramRefAdmin(admin.ModelAdmin):
     list_per_page = 100
 
 
+@admin.register(IQProgramRef)
 class IQProgramRefAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         """Override ordering to use friendly name instead."""
@@ -768,9 +775,3 @@ class IQProgramRefForm(forms.ModelForm):
             label_list[-1] = f"{label_list[-1]}'"
 
             labels[req] = " ".join(label_list)
-
-
-# Register the models
-admin.site.register(AddressRef, AddressRDAdmin)
-admin.site.register(EligibilityProgramRef, EligibilityProgramRefAdmin)
-admin.site.register(IQProgramRef, IQProgramRefAdmin)

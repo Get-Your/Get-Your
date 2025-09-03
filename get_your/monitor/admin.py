@@ -7,7 +7,7 @@ from django.utils.html import format_html
 from .models import LogDetail
 
 
-class DetailAdmin_ext(admin.ModelAdmin):
+class DetailAdmin(admin.ModelAdmin):
     list_display = ("colored_msg", "traceback", "created_at_format")
     list_display_links = ("colored_msg",)
     list_filter = ("log_level",)
@@ -40,4 +40,4 @@ class DetailAdmin_ext(admin.ModelAdmin):
     created_at_format.short_description = "Created at"
 
 
-admin.site.register(LogDetail, DetailAdmin_ext)
+admin.site.register(LogDetail, DetailAdmin)

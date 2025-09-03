@@ -21,7 +21,6 @@ import datetime
 import json
 import logging
 from enum import Enum
-from typing import Union
 
 import httpagentparser
 import magic
@@ -29,6 +28,7 @@ import pendulum
 import requests
 from django import http
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth import login as django_auth_login
 from django.contrib.auth.backends import UserModel
 from django.core.exceptions import ObjectDoesNotExist
@@ -38,32 +38,32 @@ from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.db.models.query import QuerySet
 from django.shortcuts import reverse
-from logger.wrappers import LoggerWrapper
 from phonenumber_field.phonenumber import PhoneNumber
 from python_http_client.exceptions import HTTPError as SendGridHTTPError
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
-from usps import Address, USPSApi
+from usps import Address
+from usps import USPSApi
 
-from app.constants import (
-    application_pages,
-    enable_calendar_year_renewal,
-    supported_content_types,
-)
-from app.models import (
-    AddressRD,
-    EligibilityProgram,
-    Household,
-    HouseholdMembers,
-    IQProgram,
-    IQProgramRD,
-    User,
-)
+from monitor.wrappers import LoggerWrapper
+from ref.models import Address as AddressRef
+from ref.models import IQProgram as IQProgramRef
+
+from .constants import application_pages
+from .constants import enable_calendar_year_renewal
+from .constants import supported_content_types
+from .models import EligibilityProgram
+from .models import Household
+from .models import HouseholdMembers
+from .models import IQProgram
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
+
+# Get the user model
+User = get_user_model()
 
 
 form_page_number = 6
@@ -327,14 +327,7 @@ def connexion_lookup(coord_string):
 
         # If we made it to this point, Connexion will be or is currently
         # available
-        if statusInput in (
-            "released",
-            "out of warranty",
-        ):  # this is the 'available' case
-            return True
-
-        else:
-            return False
+        return statusInput in ("released", "out of warranty")
 
 
 def gma_lookup(coord_string):
@@ -401,8 +394,7 @@ def gma_lookup(coord_string):
 
         if len(outVal["features"]) > 0:
             return True
-        else:
-            return False
+        return False
 
     except requests.exceptions.HTTPError:
         return False
@@ -549,7 +541,8 @@ def changed_modelfields_to_dict(
         for field in current_instance._meta.fields:
             field_name = field.name
             if getattr(current_instance, field_name) != getattr(
-                previous_instance, field_name
+                previous_instance,
+                field_name,
             ):
                 try:
                     value = getattr(previous_instance, field_name)
@@ -598,7 +591,7 @@ def serialize_household_members(request, file_paths):
     ]
 
     household_info = json.loads(
-        json.dumps({"persons_in_household": household_members}, cls=DjangoJSONEncoder)
+        json.dumps({"persons_in_household": household_members}, cls=DjangoJSONEncoder),
     )
     return household_info
 
@@ -610,7 +603,7 @@ def login(request, user):
     try:
         log.info(
             "User logged in; agent is {}".format(
-                httpagentparser.simple_detect(request.META["HTTP_USER_AGENT"])
+                httpagentparser.simple_detect(request.META["HTTP_USER_AGENT"]),
             ),
             function="login",
             user_id=request.user.id,
@@ -652,14 +645,13 @@ def what_page(user, request):
             return "app:programs"
 
         users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
-            request
+            request,
         )
         if users_programs_without_uploads.count():
             return "app:files"
 
         return "app:dashboard"
-    else:
-        return "app:account"
+    return "app:account"
 
 
 def build_qualification_button(users_enrollment_status):
@@ -681,13 +673,13 @@ def map_iq_enrollment_status(program, needs_renewal=False):
         # If the user is enrolled in a "lifetime" program (i.e. a program that
         # does not have a renewal_interval_year), don't set the status to
         # renewal
-        elif (
+        if (
             program.is_enrolled
             and needs_renewal
             and program.renewal_interval_year is not None
         ):
             return "RENEWAL"
-        elif program.is_enrolled:
+        if program.is_enrolled:
             return "ACTIVE"
 
     except Exception:
@@ -729,12 +721,12 @@ def get_users_iq_programs(
             user_id=user_id,
             program__is_active=True,
         )
-        .order_by("program__id")
+        .order_by("program__id"),
     )
 
     # Collapse any programs the user has already applied for into all programs
     # they are eligible for. The starting point is 'eligible programs' as
-    # IQProgramRD objects, then any program the user is in gets converted to an
+    # IQProgramRef objects, then any program the user is in gets converted to an
     # IQProgram object for later identification
     programs = []
     for prg in eligible_iq_programs:
@@ -765,7 +757,7 @@ def get_users_iq_programs(
             kwargs={
                 "iq_program": program.program.program_name
                 if hasattr(program, "program")
-                else program.program_name
+                else program.program_name,
             },
         )
         program.title = (
@@ -829,19 +821,19 @@ def get_eligible_iq_programs(
 
     # Get all active IQ Programs with an AMI Threshold >= the user's income
     # fraction
-    income_eligible_iq_programs = IQProgramRD.objects.filter(
+    income_eligible_iq_programs = IQProgramRef.objects.filter(
         is_active=True,
         # If income_as_fraction_of_ami is None, set to 100% to exclude all programs
         ami_threshold__gte=user.household.income_as_fraction_of_ami or 1,
     ).order_by("id")
 
-    # Gather all `requires_` fields in the IQProgramRD model along with their
-    # corresponding AddressRD Boolean
+    # Gather all `requires_` fields in the IQProgramRef model along with their
+    # corresponding AddressRef Boolean
     req_fields = get_iqprogram_requires_fields()
 
     # Filter programs further based on address requirements. Fields beginning
     # with `requires_` permissively specify whether the matching field in
-    # AddressRD is a filter for the program, so a True value in the `requires_`
+    # AddressRef is a filter for the program, so a True value in the `requires_`
     # field requires the corresponding address Boolean to also be True to be
     # eligible, but because it's permissive, a False value in the `requires_`
     # field means that all addresses are eligible, regardless of the value of
@@ -886,7 +878,7 @@ def get_in_progress_eligiblity_file_uploads(request):
     """
     users_in_progress_file_uploads = (
         EligibilityProgram.objects.filter(
-            Q(user_id=request.user.id) & Q(document_path="")
+            Q(user_id=request.user.id) & Q(document_path=""),
         )
         .select_related("program")
         .values("id", "program__id", "program__friendly_name")
@@ -913,7 +905,7 @@ def save_renewal_action(request, action, status="completed", data={}):
             last_renewal_action[action] = {"status": status, "data": data}
 
         user.last_renewal_action = json.loads(
-            json.dumps(last_renewal_action, cls=DjangoJSONEncoder)
+            json.dumps(last_renewal_action, cls=DjangoJSONEncoder),
         )
         user.save()
 
@@ -941,10 +933,10 @@ def check_if_user_needs_to_renew(user_id):
     """
     user_profile = User.objects.get(id=user_id)
 
-    # Get the highest frequency renewal_interval_year from active IQProgramRD
+    # Get the highest frequency renewal_interval_year from active IQProgramRef
     # values and filter out any null renewal_interval_year
     highest_freq_program = (
-        IQProgramRD.objects.filter(
+        IQProgramRef.objects.filter(
             is_active=True,
             renewal_interval_year__isnull=False,
         )
@@ -964,7 +956,7 @@ def check_if_user_needs_to_renew(user_id):
     # date.
     needs_renewal = (
         pendulum.instance(user_profile.last_completed_at).add(
-            years=highest_freq_renewal_interval
+            years=highest_freq_renewal_interval,
         )
         <= pendulum.now()
     )
@@ -1018,7 +1010,7 @@ def finalize_application(user, renewal_mode=False, update_user=True):
             user.save()
 
         # Get every IQ program for the user that have a renewal_interval_year
-        # in the IQProgramRD table that is not null
+        # in the IQProgramRef table that is not null
         users_current_iq_programs = (
             IQProgram.objects.filter(Q(user_id=user.id))
             .select_related("program")
@@ -1033,8 +1025,8 @@ def finalize_application(user, renewal_mode=False, update_user=True):
             program.delete()
 
         # Get the user's eligibility address
-        eligibility_address = AddressRD.objects.filter(
-            id=user.address.eligibility_address_id
+        eligibility_address = AddressRef.objects.filter(
+            id=user.address.eligibility_address_id,
         ).first()
 
         # Now get all of the IQ Programs for which the user is eligible
@@ -1073,7 +1065,7 @@ def finalize_application(user, renewal_mode=False, update_user=True):
             elif program.enable_autoapply:
                 # Check if the user already has the program in the IQProgram table
                 if not IQProgram.objects.filter(
-                    Q(user_id=user.id) & Q(program_id=program.id)
+                    Q(user_id=user.id) & Q(program_id=program.id),
                 ).exists():
                     # If the user doesn't have the program in the IQProgram
                     # table, then create it
@@ -1092,41 +1084,40 @@ def finalize_application(user, renewal_mode=False, update_user=True):
             },
         )
 
-    else:
-        household.save()
+    household.save()
 
-        if update_user:
-            user.last_completed_at = pendulum.now()
-            user.save()
+    if update_user:
+        user.last_completed_at = pendulum.now()
+        user.save()
 
-        # Get the user's eligibility address
-        eligibility_address = AddressRD.objects.filter(
-            id=user.address.eligibility_address_id
-        ).first()
+    # Get the user's eligibility address
+    eligibility_address = AddressRef.objects.filter(
+        id=user.address.eligibility_address_id,
+    ).first()
 
-        # Now get all of the IQ Programs for which the user is eligible
-        users_iq_programs = get_users_iq_programs(
-            user.id,
-            lowest_ami["program__ami_threshold"],
-            eligibility_address,
-        )
-        # For every IQ program, check if the user should be automatically
-        # enrolled in it if the program has enable_autoapply set to True
-        for program in users_iq_programs:
-            # program is an IQProgramRD object only if the user has not applied
-            if isinstance(program, IQProgramRD) and program.enable_autoapply:
-                IQProgram.objects.create(
-                    user_id=user.id,
-                    program_id=program.id,
-                )
-                log.debug(
-                    f"User auto-applied for '{program.program_name}' IQ program",
-                    function="finalize_application",
-                    user_id=user.id,
-                )
+    # Now get all of the IQ Programs for which the user is eligible
+    users_iq_programs = get_users_iq_programs(
+        user.id,
+        lowest_ami["program__ami_threshold"],
+        eligibility_address,
+    )
+    # For every IQ program, check if the user should be automatically
+    # enrolled in it if the program has enable_autoapply set to True
+    for program in users_iq_programs:
+        # program is an IQProgramRef object only if the user has not applied
+        if isinstance(program, IQProgramRef) and program.enable_autoapply:
+            IQProgram.objects.create(
+                user_id=user.id,
+                program_id=program.id,
+            )
+            log.debug(
+                f"User auto-applied for '{program.program_name}' IQ program",
+                function="finalize_application",
+                user_id=user.id,
+            )
 
-        # Return the target page and an (empty) dictionary of <session var>: <value>
-        return ("app:broadcast", {})
+    # Return the target page and an (empty) dictionary of <session var>: <value>
+    return ("app:broadcast", {})
 
 
 def enable_renew_now(user_id):
@@ -1137,10 +1128,10 @@ def enable_renew_now(user_id):
     user_profile = User.objects.get(id=user_id)
     last_completed_at = user_profile.last_completed_at.year
 
-    # Get the highest frequency renewal_interval_year from the IQProgramRD
+    # Get the highest frequency renewal_interval_year from the IQProgramRef
     # table and filter out any null renewal_interval_year
     highest_freq_program = (
-        IQProgramRD.objects.filter(renewal_interval_year__isnull=False)
+        IQProgramRef.objects.filter(renewal_interval_year__isnull=False)
         .order_by("renewal_interval_year")
         .first()
     )
@@ -1156,20 +1147,19 @@ def enable_renew_now(user_id):
         == last_completed_at + highest_freq_program.renewal_interval_year
     ):
         return True
-    else:
-        return False
+    return False
 
 
 def get_iqprogram_requires_fields():
     """
-    Gather all `requires_` fields in the IQProgramRD model along with their
-    corresponding AddressRD Boolean.
+    Gather all `requires_` fields in the IQProgramRef model along with their
+    corresponding AddressRef Boolean.
 
     """
     field_prefix = "requires_"
     req_fields = [
         (x.name, x.name.replace(field_prefix, ""))
-        for x in IQProgramRD._meta.fields
+        for x in IQProgramRef._meta.fields
         if x.name.startswith(field_prefix)
     ]
 
@@ -1202,7 +1192,8 @@ def file_validation(
 
     # Check if the filetype is in the supported_content_types
     matched_file_extension = next(
-        (x for x in supported_content_types if x in filetype.lower()), None
+        (x for x in supported_content_types if x in filetype.lower()),
+        None,
     )
     # If a match is found, return 'success' and the file extension
     if matched_file_extension:
@@ -1220,7 +1211,7 @@ def file_validation(
     return (
         False,
         "File is not a valid type. Only these file types are supported: {}".format(
-            ", ".join(supported_content_types)
+            ", ".join(supported_content_types),
         ),
     )
 
@@ -1297,7 +1288,7 @@ def remove_ineligible_programs_for_user(user_id, admin_mode=False):
         # Delete only if the user isn't enrolled
         if prgrm.is_enrolled:
             msg.append(
-                f"{prgrm.program.program_name} not changed (user already enrolled)"
+                f"{prgrm.program.program_name} not changed (user already enrolled)",
             )
         else:
             prgrm.delete()
@@ -1308,8 +1299,8 @@ def remove_ineligible_programs_for_user(user_id, admin_mode=False):
 
 def update_users_for_program(
     *,  # force the following to be keyword-only parameters
-    program: IQProgramRD,
-    users: Union[list, tuple, QuerySet],
+    program: IQProgramRef,
+    users: list | tuple | QuerySet,
     admin_mode: bool = False,
 ):
     """
@@ -1326,7 +1317,7 @@ def update_users_for_program(
 
     Parameters
     ----------
-    program : IQProgramRD
+    program : IQProgramRef
         The ID of the specified program.
     users : Union[list, tuple, QuerySet]
         A list, tuple, or queryset of User objects to be updated for the

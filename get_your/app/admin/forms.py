@@ -18,18 +18,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from django import forms
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.forms.widgets import Textarea
 from django.utils.translation import gettext_lazy as _
 
-from app.backend import get_iqprogram_requires_fields, get_users_iq_programs
-from app.models import (
-    AddressRD,
-    EligibilityProgramRD,
-    Household,
-    IQProgramRD,
-    User,
-)
+from app.backend import get_iqprogram_requires_fields
+from app.backend import get_users_iq_programs
+from app.models import Household
+from ref.models import Address as AddressRef
+from ref.models import EligibilityProgram as EligibilityProgramRef
+from ref.models import IQProgram as IQProgramRef
+
+# Get the user model
+User = get_user_model()
 
 
 class ProgramChangeForm(forms.Form):
@@ -41,10 +43,10 @@ class ProgramChangeForm(forms.Form):
         self.fields["program_name"].choices = list(
             map(
                 lambda x: (str(x.id), x.friendly_name),
-                EligibilityProgramRD.objects.filter(is_active=True).order_by(
-                    "friendly_name"
+                EligibilityProgramRef.objects.filter(is_active=True).order_by(
+                    "friendly_name",
                 ),
-            )
+            ),
         )
 
     program_name = forms.ChoiceField(
@@ -62,8 +64,8 @@ class IQProgramAddForm(forms.Form):
         # Pull user data
         user = User.objects.get(id=user_id)
         household = Household.objects.get(user_id=user.id)
-        eligibility_address = AddressRD.objects.filter(
-            id=user.address.eligibility_address_id
+        eligibility_address = AddressRef.objects.filter(
+            id=user.address.eligibility_address_id,
         ).first()
 
         # Get all of the IQ Programs for which the user is eligible
@@ -74,13 +76,13 @@ class IQProgramAddForm(forms.Form):
         )
 
         # Return the available IQ Programs the user is not currently applied
-        # (IQProgramRD objects are those that the user qualifies for but is not
+        # (IQProgramRef objects are those that the user qualifies for but is not
         # enrolled in). Sort by friendly_name
         self.fields["program_name"].choices = sorted(
             [
                 (str(x.id), x.friendly_name)
                 for x in users_iq_programs
-                if isinstance(x, IQProgramRD)
+                if isinstance(x, IQProgramRef)
             ],
             key=lambda x: x[1],
         )
@@ -101,10 +103,10 @@ class EligProgramAddForm(forms.Form):
         self.fields["program_name"].choices = [("", "")] + list(
             map(
                 lambda x: (str(x.id), x.friendly_name),
-                EligibilityProgramRD.objects.filter(is_active=True).order_by(
-                    "friendly_name"
+                EligibilityProgramRef.objects.filter(is_active=True).order_by(
+                    "friendly_name",
                 ),
-            )
+            ),
         )
 
     program_name = forms.ChoiceField(
@@ -115,9 +117,9 @@ class EligProgramAddForm(forms.Form):
     document_path = forms.FileField(label="Select a file")
 
 
-class EligibilityProgramRDForm(forms.ModelForm):
+class EligibilityProgramRefForm(forms.ModelForm):
     class Meta:
-        model = EligibilityProgramRD
+        model = EligibilityProgramRef
 
         fields = [
             "program_name",
@@ -133,7 +135,7 @@ class EligibilityProgramRDForm(forms.ModelForm):
         }
 
 
-class IQProgramRDForm(forms.ModelForm):
+class IQProgramRefForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
@@ -142,7 +144,7 @@ class IQProgramRDForm(forms.ModelForm):
         if not any(cleaned_data.get(x[0]) for x in get_iqprogram_requires_fields()):
             msg = ValidationError(
                 _(
-                    "At least one 'Requires' box must be checked (otherwise any address anywhere is eligible)."
+                    "At least one 'Requires' box must be checked (otherwise any address anywhere is eligible).",
                 ),
                 code="invalid",
             )
@@ -150,7 +152,7 @@ class IQProgramRDForm(forms.ModelForm):
                 self.add_error(fd, msg)
 
     class Meta:
-        model = IQProgramRD
+        model = IQProgramRef
 
         req_fields = get_iqprogram_requires_fields()
 

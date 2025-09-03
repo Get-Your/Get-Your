@@ -21,21 +21,21 @@ import logging
 
 import pendulum
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django_q.tasks import async_task
-from logger.wrappers import LoggerWrapper
-from python_http_client.exceptions import (
-    BadRequestsError as SendGridBadRequest,
-)
-from python_http_client.exceptions import (
-    HTTPError as SendGridHTTPError,
-)
+from python_http_client.exceptions import BadRequestsError as SendGridBadRequest
+from python_http_client.exceptions import HTTPError as SendGridHTTPError
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-from app.backend import broadcast_renewal_email, check_if_user_needs_to_renew
+from app.backend import broadcast_renewal_email
+from app.backend import check_if_user_needs_to_renew
 from app.constants import notification_buffer_month
-from app.models import User
+from monitor.wrappers import LoggerWrapper
+
+# Get the user model
+User = get_user_model()
 
 
 def populate_cache_task():
@@ -53,7 +53,9 @@ def populate_redis_cache():
 
         if needs_renewal and user.last_action_notification_at:
             cache.set(
-                cache_key, str(user.last_action_notification_at), timeout=3600 * 24 * 30
+                cache_key,
+                str(user.last_action_notification_at),
+                timeout=3600 * 24 * 30,
             )
 
 

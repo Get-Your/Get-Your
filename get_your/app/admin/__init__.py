@@ -42,7 +42,6 @@ from django.shortcuts import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
-from logger.wrappers import LoggerWrapper
 
 from app.backend import finalize_application
 from app.backend import get_eligible_iq_programs
@@ -56,10 +55,16 @@ from app.models import Household
 from app.models import HouseholdMembers
 from app.models import IQProgram
 from get_your.users.models import UserNote
+from monitor.wrappers import LoggerWrapper
 from ref.models import Address as AddressRef
 from ref.models import EligibilityProgram as EligibilityProgramRef
 from ref.models import IQProgram as IQProgramRef
 
+from .filters import AccountDisabledListFilter
+from .filters import NeedsVerificationListFilter
+from .filters import needs_income_verification_filter
+from .forms import IQProgramAddForm
+from .forms import ProgramChangeForm
 from .models import StaffPermissions
 
 # Initialize logger
@@ -147,7 +152,7 @@ class AddressInline(admin.TabularInline):
 
     @admin.display(description="mailing address")
     def mailing_addr(self, obj):
-        addr = AddressRD.objects.get(id=obj.mailing_address_id)
+        addr = AddressRef.objects.get(id=obj.mailing_address_id)
         if addr.address2 == "":
             return format_html(
                 f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.city}, {addr.state} {addr.zip_code}</a>',
@@ -158,7 +163,7 @@ class AddressInline(admin.TabularInline):
 
     @admin.display(description="eligibility address")
     def eligibility_addr(self, obj):
-        addr = AddressRD.objects.get(id=obj.eligibility_address_id)
+        addr = AddressRef.objects.get(id=obj.eligibility_address_id)
         if addr.address2 == "":
             return format_html(
                 f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.city}, {addr.state} {addr.zip_code}</a>',
@@ -469,8 +474,8 @@ class IQProgramInline(admin.TabularInline):
     extra = 0
 
 
-class AppAdminInline(admin.StackedInline):
-    model = AppAdmin
+class UserNoteInline(admin.StackedInline):
+    model = UserNote
 
     fk_name = "user"
 
@@ -483,6 +488,7 @@ class AppAdminInline(admin.StackedInline):
     extra = 0
 
 
+@admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     search_fields = ("last_name", "first_name", "email")
     list_display = ("last_name", "first_name", "email", "last_completed_at")
@@ -542,7 +548,7 @@ class UserAdmin(admin.ModelAdmin):
             msg.append("User account is disabled ('is archived').")
 
         # Get the user's eligibility address
-        eligibility_address = AddressRD.objects.filter(
+        eligibility_address = AddressRef.objects.filter(
             id=obj.address.eligibility_address_id,
         ).first()
 
@@ -553,7 +559,7 @@ class UserAdmin(admin.ModelAdmin):
             # If the user doesn't qualify for any programs, check if the user's
             # address doesn't have a required component
             req_fields = get_iqprogram_requires_fields()
-            # The second element holds the field requirements in AddressRD
+            # The second element holds the field requirements in AddressRef
             for req, fd in req_fields:
                 if not getattr(eligibility_address, fd):
                     msg[-1] += (
@@ -610,9 +616,9 @@ class UserAdmin(admin.ModelAdmin):
         # comparable (they must originate in the same module)
         permission_groups = request.user.staff_permissions._available_groups
 
-        # Create an AppAdmin object for the current user, if DNE
-        if AppAdmin.objects.filter(user=obj).count() == 0:
-            AppAdmin.objects.create(user=obj)
+        # Create an UserNote object for the current user, if DNE
+        if UserNote.objects.filter(user=obj).count() == 0:
+            UserNote.objects.create(user=obj)
 
         fieldsets = [
             (
@@ -634,7 +640,7 @@ class UserAdmin(admin.ModelAdmin):
         if request.user.staff_permissions.contains(
             permission_groups.SUPERUSER,
         ):
-            for idx, elem in enumerate(fieldsets):
+            for elem in fieldsets:
                 if elem[0] == "USER":
                     elem[1]["fields"].extend(
                         [
@@ -707,7 +713,7 @@ class UserAdmin(admin.ModelAdmin):
         return list(set(readonly_fields) - set(readonly_remove))
 
     inlines = [
-        AppAdminInline,
+        UserNoteInline,
         AddressInline,
         HouseholdInline,
         HouseholdMembersInline,
@@ -787,7 +793,7 @@ class UserAdmin(admin.ModelAdmin):
         )
 
         # Create Admin queryset of the same users and update the field
-        AppAdmin.objects.filter(user__in=[usr for usr in queryset]).update(
+        UserNote.objects.filter(user__in=[usr for usr in queryset]).update(
             awaiting_user_response=True,
         )
 
@@ -1146,6 +1152,7 @@ class UserAdmin(admin.ModelAdmin):
         return super().response_change(request, obj)
 
 
+@admin.register(EligibilityProgram)
 class EligibilityProgramAdmin(admin.ModelAdmin):
     search_fields = (
         "user__last_name",
@@ -1167,7 +1174,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         "program_name",
         "display_document_link",
     ]
-    readonly_fields = eligibility_fields + ["user_email", "full_name"]
+    readonly_fields = [*eligibility_fields, "user_email", "full_name"]
 
     def has_add_permission(self, request, obj=None):
         # Adding directly from the admin panel is disallowed for everyone
@@ -1315,7 +1322,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                     with transaction.atomic():
                         # Extract the program ID (in the 'program_name' form field) and
                         # update the current model with the new program
-                        obj.program = EligibilityProgramRD.objects.get(
+                        obj.program = EligibilityProgramRef.objects.get(
                             id=int(form.cleaned_data["program_name"]),
                         )
                         obj.save()
@@ -1510,8 +1517,3 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             messages.SUCCESS,
         )
         return super().response_delete(request, obj_display, obj_id)
-
-
-# Register the models
-admin.site.register(User, UserAdmin)
-admin.site.register(EligibilityProgram, EligibilityProgramAdmin)

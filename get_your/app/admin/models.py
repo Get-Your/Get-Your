@@ -93,9 +93,8 @@ class StaffPermissions:
                         and user.is_superuser
                     ):
                         is_member = True
-                else:
-                    if user.groups.filter(name=auth_group).exists():
-                        is_member = True
+                elif user.groups.filter(name=auth_group).exists():
+                    is_member = True
 
                 # Process the helper vars
                 if is_member:

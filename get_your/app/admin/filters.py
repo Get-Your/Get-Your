@@ -18,10 +18,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from django.contrib import admin
-from django.db.models import Exists, OuterRef
+from django.contrib.auth import get_user_model
+from django.db.models import Exists
+from django.db.models import OuterRef
 from django.utils.translation import gettext_lazy as _
 
-from app.models import EligibilityProgram, User
+from app.models import EligibilityProgram
+
+# Get the user model
+User = get_user_model()
 
 
 def needs_income_verification_filter(queryset):

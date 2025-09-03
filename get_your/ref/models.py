@@ -233,16 +233,6 @@ class IQProgram(TimeStampedModel):
         ),
     )
 
-    @property
-    def admin_mode(self):
-        # Return admin_mode for use in saving historical values
-        return getattr(self, "_admin_mode", False)
-
-    @admin_mode.setter
-    def admin_mode(self, val):
-        # Setter for admin_mode
-        self._admin_mode = val
-
     class Meta:
         verbose_name = "IQ program"
         verbose_name_plural = "IQ programs"
@@ -306,16 +296,6 @@ class EligibilityProgram(TimeStampedModel):
             "Unselect this instead of deleting programs.",
         ),
     )
-
-    @property
-    def admin_mode(self):
-        # Return admin_mode for use in saving historical values
-        return getattr(self, "_admin_mode", False)
-
-    @admin_mode.setter
-    def admin_mode(self, val):
-        # Setter for admin_mode
-        self._admin_mode = val
 
     class Meta:
         verbose_name = "eligibility program"

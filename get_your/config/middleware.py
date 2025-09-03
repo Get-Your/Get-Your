@@ -22,7 +22,8 @@ import logging
 from django.conf import settings
 from django.shortcuts import render
 from django.urls import resolve
-from logger.wrappers import LoggerWrapper
+
+from monitor.wrappers import LoggerWrapper
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))

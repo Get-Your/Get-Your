@@ -20,11 +20,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import logging
 
 from app.backend import what_page_renewal
-from django.conf import settings
 from django.core.exceptions import MiddlewareNotUsed
-from django.shortcuts import redirect, render
-from django.urls import resolve, reverse
-from logger.wrappers import LoggerWrapper
+from django.shortcuts import redirect
+from django.urls import reverse
+from monitor.wrappers import LoggerWrapper
 
 log = LoggerWrapper(logging.getLogger(__name__))
 

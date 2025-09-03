@@ -17,11 +17,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from get_your.files.backend import userfiles_path
+
 from .constants import duration_at_address_choices
 from .constants import rent_own_choices
+
+# Get the user model
+User = get_user_model()
 
 
 class TimeStampedModel(models.Model):
@@ -58,12 +64,12 @@ class Address(TimeStampedModel):
         primary_key=True,  # set this to the primary key of this model
     )
     mailing_address = models.ForeignKey(
-        AddressRD,
+        "ref.Address",
         on_delete=models.DO_NOTHING,  # don't remove this value if address is deleted
-        related_name="+",  # don't relate AddressRD with this field
+        related_name="+",  # don't relate "ref.Address" with this field
     )
     eligibility_address = models.ForeignKey(
-        AddressRD,
+        "ref.Address",
         on_delete=models.DO_NOTHING,  # don't remove this value if address is deleted
         related_name="eligibility_user",
     )
@@ -74,37 +80,6 @@ class Address(TimeStampedModel):
     class Meta:
         verbose_name = "address"
         verbose_name_plural = "addresses"
-
-    # Define non-database attributes
-    @property
-    def update_mode(self):
-        # Return update_mode for use in saving historical values
-        return getattr(self, "_update_mode", False)
-
-    @update_mode.setter
-    def update_mode(self, val):
-        # Setter for update_mode
-        self._update_mode = val
-
-    @property
-    def renewal_mode(self):
-        # Return renewal_mode for use in saving historical values
-        return getattr(self, "_renewal_mode", False)
-
-    @renewal_mode.setter
-    def renewal_mode(self, val):
-        # Setter for renewal_mode
-        self._renewal_mode = val
-
-    @property
-    def admin_mode(self):
-        # Return admin_mode for use in saving historical values
-        return getattr(self, "_admin_mode", False)
-
-    @admin_mode.setter
-    def admin_mode(self, val):
-        # Setter for admin_mode
-        self._admin_mode = val
 
 
 class Household(TimeStampedModel):
@@ -154,37 +129,6 @@ class Household(TimeStampedModel):
         verbose_name = "household"
         verbose_name_plural = "household"
 
-    # Define non-database attributes
-    @property
-    def update_mode(self):
-        # Return update_mode for use in saving historical values
-        return getattr(self, "_update_mode", False)
-
-    @update_mode.setter
-    def update_mode(self, val):
-        # Setter for update_mode
-        self._update_mode = val
-
-    @property
-    def renewal_mode(self):
-        # Return renewal_mode for use in saving historical values
-        return getattr(self, "_renewal_mode", False)
-
-    @renewal_mode.setter
-    def renewal_mode(self, val):
-        # Setter for renewal_mode
-        self._renewal_mode = val
-
-    @property
-    def admin_mode(self):
-        # Return admin_mode for use in saving historical values
-        return getattr(self, "_admin_mode", False)
-
-    @admin_mode.setter
-    def admin_mode(self, val):
-        # Setter for admin_mode
-        self._admin_mode = val
-
 
 class HouseholdMembers(TimeStampedModel):
     user = models.OneToOneField(
@@ -201,37 +145,6 @@ class HouseholdMembers(TimeStampedModel):
     class Meta:
         verbose_name = "household member"
         verbose_name_plural = "household members"
-
-    # Define non-database attributes
-    @property
-    def update_mode(self):
-        # Return update_mode for use in saving historical values
-        return getattr(self, "_update_mode", False)
-
-    @update_mode.setter
-    def update_mode(self, val):
-        # Setter for update_mode
-        self._update_mode = val
-
-    @property
-    def renewal_mode(self):
-        # Return renewal_mode for use in saving historical values
-        return getattr(self, "_renewal_mode", False)
-
-    @renewal_mode.setter
-    def renewal_mode(self, val):
-        # Setter for renewal_mode
-        self._renewal_mode = val
-
-    @property
-    def admin_mode(self):
-        # Return admin_mode for use in saving historical values
-        return getattr(self, "_admin_mode", False)
-
-    @admin_mode.setter
-    def admin_mode(self, val):
-        # Setter for admin_mode
-        self._admin_mode = val
 
 
 class IQProgram(IQProgramModel):
@@ -251,7 +164,7 @@ class IQProgram(IQProgramModel):
     )
 
     program = models.ForeignKey(
-        IQProgramRD,
+        "ref.IQProgram",
         related_name="iq_programs",
         on_delete=models.DO_NOTHING,  # don't update these values if the program is deleted
     )
@@ -261,37 +174,6 @@ class IQProgram(IQProgramModel):
     class Meta:
         verbose_name = "user IQ program"
         verbose_name_plural = "user IQ programs"
-
-    # Define non-database attributes
-    @property
-    def update_mode(self):
-        # Return update_mode for use in saving historical values
-        return getattr(self, "_update_mode", False)
-
-    @update_mode.setter
-    def update_mode(self, val):
-        # Setter for update_mode
-        self._update_mode = val
-
-    @property
-    def renewal_mode(self):
-        # Return renewal_mode for use in saving historical values
-        return getattr(self, "_renewal_mode", False)
-
-    @renewal_mode.setter
-    def renewal_mode(self, val):
-        # Setter for renewal_mode
-        self._renewal_mode = val
-
-    @property
-    def admin_mode(self):
-        # Return admin_mode for use in saving historical values
-        return getattr(self, "_admin_mode", False)
-
-    @admin_mode.setter
-    def admin_mode(self, val):
-        # Setter for admin_mode
-        self._admin_mode = val
 
 
 class EligibilityProgram(TimeStampedModel):
@@ -307,8 +189,10 @@ class EligibilityProgram(TimeStampedModel):
     )
 
     program = models.ForeignKey(
-        EligibilityProgramRD,
-        on_delete=models.DO_NOTHING,  # don't remove the program ID if the program is deleted
+        "ref.EligibilityProgram",
+        # Prevent deletion of the referenced object (under restricted conditions)
+        # (ref https://docs.djangoproject.com/en/4.2/ref/models/fields/#django.db.models.ForeignKey.on_delete)
+        on_delete=models.RESTRICT,
     )
 
     # Upload the file(?) to the proper directory in Azure Blob Storage and store
@@ -323,34 +207,3 @@ class EligibilityProgram(TimeStampedModel):
     class Meta:
         verbose_name = "user eligibility program"
         verbose_name_plural = "user eligibility programs"
-
-    # Define non-database attributes
-    @property
-    def update_mode(self):
-        # Return update_mode for use in saving historical values
-        return getattr(self, "_update_mode", False)
-
-    @update_mode.setter
-    def update_mode(self, val):
-        # Setter for update_mode
-        self._update_mode = val
-
-    @property
-    def renewal_mode(self):
-        # Return renewal_mode for use in saving historical values
-        return getattr(self, "_renewal_mode", False)
-
-    @renewal_mode.setter
-    def renewal_mode(self, val):
-        # Setter for renewal_mode
-        self._renewal_mode = val
-
-    @property
-    def admin_mode(self):
-        # Return admin_mode for use in saving historical values
-        return getattr(self, "_admin_mode", False)
-
-    @admin_mode.setter
-    def admin_mode(self, val):
-        # Setter for admin_mode
-        self._admin_mode = val

@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import json
 import logging
+import re
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -31,7 +32,9 @@ from django.shortcuts import reverse
 from app.backend import address_check
 from app.backend import enable_renew_now
 from app.backend import get_users_iq_programs
+from app.constants import platform_settings_render_variables
 from app.models import IQProgram
+from app.models import PlatformSettings
 from monitor.wrappers import LoggerWrapper
 from ref.models import AddressRD
 from ref.models import IQProgramRD
@@ -159,6 +162,42 @@ def dashboard(request, **kwargs):
         else:
             renewal_ineligible_str = ""
 
+        # TODO: Move this dashboard_welcome_text replacement to a specific
+        # function to cache the rendered value
+        # Gather platform-level settings and parse the generic welcome popup text
+        platform_settings = PlatformSettings.objects.first()
+        welcome_text = platform_settings.dashboard_welcome_text
+
+        # Replace the specified variables with the specific values
+
+        # Gather all variables to replace
+        vars_to_replace = re.findall(r"(\<\s?\w*\s?\>)", welcome_text)
+        # Compile the regex to obtain the specific variable name within the 'var
+        # to replace'
+        var_name_regex = re.compile(r"\<\s?(\w*)\s?\>")
+
+        for itm in vars_to_replace:
+            # Get the info from platform_settings_render_variables
+            var_name = var_name_regex.match(itm).group(1)
+            relative_model = platform_settings_render_variables[var_name][
+                "relative_model"
+            ]
+
+            # Determine the data to replace itm
+            if relative_model == "base":
+                # Use the PlatformSettings data pulled earlier
+                replacement_data = getattr(platform_settings, var_name)
+            else:
+                raise AttributeError(
+                    f"relative_model value of '{relative_model}' is not recognized",
+                )
+
+            # Replace itm within welcome_text
+            welcome_text = welcome_text.replace(
+                itm,
+                replacement_data,
+            )
+
         return render(
             request,
             "dashboard/dashboard.html",
@@ -176,6 +215,13 @@ def dashboard(request, **kwargs):
                 "proxy_viewed_dashboard": proxy_viewed_dashboard,
                 "badge_visible": request.user.household.is_income_verified,
                 "app_renewed": app_renewed,
+                # TODO: Cache this PlatformSettings value (set on start and
+                # when updated in the model)
+                "required_renewal_text": PlatformSettings.objects.first().required_renewal_text,
+                # TODO: Cache this PlatformSettings value (set on start and
+                # when updated in the model)
+                "renew_now_text": PlatformSettings.objects.first().renew_now_text,
+                "welcome_popup_text": welcome_text,
                 "renewal_eligible": renewal_eligible_str,
                 "renewal_ineligible": renewal_ineligible_str,
                 "enable_renew_now": enable_renew_now(request.user.id),
@@ -573,11 +619,49 @@ def apply_now_modal(request, **kwargs):
                 ),
             },
         )
+    # TODO: Move this privacy_policy_text replacement to a specific function
+    # to cache the rendered value (then add just the vendor information here)
+    # Gather platform-level settings and parse the generic privacy policy
+    # text
+    platform_settings = PlatformSettings.objects.first()
+    privacy_policy_text = platform_settings.vendor_privacy_policy
+
+    # Replace the specified variables with the specific values
+
+    # Gather all variables to replace
+    vars_to_replace = re.findall(r"(\<\s?\w*\s?\>)", privacy_policy_text)
+    # Compile the regex to obtain the specific variable name within the 'var
+    # to replace'
+    var_name_regex = re.compile(r"\<\s?(\w*)\s?\>")
+
+    for itm in vars_to_replace:
+        # Get the info from platform_settings_render_variables
+        var_name = var_name_regex.match(itm).group(1)
+        relative_model = platform_settings_render_variables[var_name]["relative_model"]
+
+        # Determine the data to replace itm
+        if relative_model == "base":
+            # Use the PlatformSettings data pulled earlier
+            replacement_data = getattr(platform_settings, var_name)
+        elif relative_model == "current":
+            # Assume the variable is in the current model
+            # TODO
+            replacement_data = itm
+        else:
+            raise AttributeError(
+                f"relative_model value of '{relative_model}' is not recognized",
+            )
+
+        # Replace itm within privacy_policy_text
+        privacy_policy_text = privacy_policy_text.replace(
+            itm,
+            replacement_data,
+        )
 
     return render(
         request,
         "dashboard/vendor_privacy_policy.html",
         {
-            "policy_text": "Lorem ipsum...",
+            "policy_text": privacy_policy_text,
         },
     )

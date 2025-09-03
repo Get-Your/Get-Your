@@ -23,14 +23,14 @@ from inspect import getmembers
 from django.db.models.query_utils import DeferredAttribute
 from django.test import TestCase
 
-from app.models import AddressRD
-from app.models import IQProgramRD
+from ref.models import Address as AddressRef
+from ref.models import IQProgram as IQProgramRef
 
 
 class RequiresFieldsHaveCorrespondingAddressField(TestCase):
     """
-    Test whether all 'requires_' fields in IQProgramRD have a corresponding
-    field in AddressRD. These fields are expected to be in the format
+    Test whether all 'requires_' fields in IQProgramRef have a corresponding
+    field in AddressRef. These fields are expected to be in the format
     `<address field name>` and `requires_<address field name>`.
 
     """
@@ -46,20 +46,20 @@ class RequiresFieldsHaveCorrespondingAddressField(TestCase):
             """
             return isinstance(obj, DeferredAttribute)
 
-        # Gather all user-defined fields in the IQProgramRD model
-        iqprogramrd_fields = [x[0] for x in getmembers(IQProgramRD, is_data_field)]
+        # Gather all user-defined fields in the IQProgramRef model
+        IQProgramRef_fields = [x[0] for x in getmembers(IQProgramRef, is_data_field)]
 
         # Use all 'requires_' fields for this test, but let's try to
         # Murphy-proof a bit - search instead for fields that start with 'req'
-        self.requires_fields = [x for x in iqprogramrd_fields if x.startswith("req")]
+        self.requires_fields = [x for x in IQProgramRef_fields if x.startswith("req")]
 
-        # Gather all user-defined fields in the AddressRD model
-        self.address_fields = [x[0] for x in getmembers(AddressRD, is_data_field)]
+        # Gather all user-defined fields in the AddressRef model
+        self.address_fields = [x[0] for x in getmembers(AddressRef, is_data_field)]
 
     def test_corresponding_fields(self):
         """
         Tests that each elements of self.requires_fields has a corresponding
-        field in AddressRD (following the naming convention described in the
+        field in AddressRef (following the naming convention described in the
         class docstring).
 
         """
@@ -73,7 +73,7 @@ class RequiresFieldsHaveCorrespondingAddressField(TestCase):
                 # of 'requires_'
                 expected_corresponding_field = re.sub(r"^req\w*?_", "", fd)
 
-                # Confirm that the field exists in AddressRD
+                # Confirm that the field exists in AddressRef
                 self.assertTrue(
                     expected_corresponding_field in self.address_fields,
                 )

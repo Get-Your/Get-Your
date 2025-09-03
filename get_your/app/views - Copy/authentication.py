@@ -32,11 +32,11 @@ from django.shortcuts import reverse
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from logger.wrappers import LoggerWrapper
 
 from app.backend import broadcast_email_pw_reset
 from app.backend import login
 from app.backend import what_page
+from monitor.wrappers import LoggerWrapper
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))

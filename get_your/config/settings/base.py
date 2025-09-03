@@ -320,7 +320,7 @@ LOGGING = {
     },
     "handlers": {
         "db_log": {
-            "class": "logger.handlers.DatabaseLogHandler",
+            "class": "monitor.handlers.DatabaseLogHandler",
             "formatter": "simple",
         },
     },

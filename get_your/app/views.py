@@ -36,35 +36,35 @@ from django.http import QueryDict
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.shortcuts import reverse
-from logger.wrappers import LoggerWrapper
 
-from app.backend import address_check
-from app.backend import broadcast_email
-from app.backend import broadcast_sms
-from app.backend import file_validation
-from app.backend import finalize_address
-from app.backend import finalize_application
-from app.backend import form_page_number
-from app.backend import get_in_progress_eligiblity_file_uploads
-from app.backend import save_renewal_action
-from app.backend import serialize_household_members
-from app.backend import tag_mapping
-from app.backend import validate_usps
-from app.backend import what_page
-from app.constants import supported_content_types
-from app.decorators import set_update_mode
-from app.forms import AddressForm
-from app.forms import AddressLookupForm
-from app.forms import FileUploadForm
-from app.forms import HouseholdForm
-from app.forms import HouseholdMembersForm
-from app.models import Address
-from app.models import AddressRD
-from app.models import EligibilityProgram
-from app.models import EligibilityProgramRD
-from app.models import Household
-from app.models import IQProgramRD
-from app.models import userfiles_path
+from files.forms import FileUploadForm
+from get_your.files.backend import userfiles_path
+from monitor.wrappers import LoggerWrapper
+from ref.models import Address as AddressRef
+from ref.models import EligibilityProgram as EligibilityProgramRef
+from ref.models import IQProgram as IQProgramRef
+
+from .backend import address_check
+from .backend import broadcast_email
+from .backend import broadcast_sms
+from .backend import file_validation
+from .backend import finalize_address
+from .backend import finalize_application
+from .backend import form_page_number
+from .backend import get_in_progress_eligiblity_file_uploads
+from .backend import save_renewal_action
+from .backend import serialize_household_members
+from .backend import tag_mapping
+from .backend import validate_usps
+from .backend import what_page
+from .constants import supported_content_types
+from .forms import AddressForm
+from .forms import AddressLookupForm
+from .forms import HouseholdForm
+from .forms import HouseholdMembersForm
+from .models import Address
+from .models import EligibilityProgram
+from .models import Household
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -209,7 +209,7 @@ def index(request, **kwargs):
                 {
                     "form": AddressLookupForm(),
                     "in_progress_app_saved": in_progress_app_saved,
-                    "iq_programs": IQProgramRD.objects.filter(is_active=True),
+                    "iq_programs": IQProgramRef.objects.filter(is_active=True),
                 },
             )
 
@@ -275,7 +275,7 @@ def programs_info(request, **kwargs):
             "landing/programs_info.html",
             {
                 "title": "Programs List",
-                "iq_programs": IQProgramRD.objects.all(),
+                "iq_programs": IQProgramRef.objects.all(),
             },
         )
 
@@ -486,7 +486,7 @@ def get_ready(request, **kwargs):
             if request.session.get("renewal_mode")
             else False
         )
-        eligiblity_programs = EligibilityProgramRD.objects.filter(
+        eligiblity_programs = EligibilityProgramRef.objects.filter(
             is_active=True,
         ).order_by("friendly_name")
 
@@ -527,7 +527,6 @@ def get_ready(request, **kwargs):
 
 
 @login_required(redirect_field_name="auth_next")
-@set_update_mode
 def address(request, **kwargs):
     try:
         if request.session.get("application_addresses"):
@@ -612,7 +611,7 @@ def address(request, **kwargs):
         same_address = True
         if update_mode:
             existing = Address.objects.get(user=request.user)
-            mailing_address = AddressRD.objects.get(id=existing.mailing_address_id)
+            mailing_address = AddressRef.objects.get(id=existing.mailing_address_id)
             mailing_address = AddressForm(instance=mailing_address)
             # Will be unused if the user is in update mode
             eligibility_address = AddressForm()
@@ -620,15 +619,13 @@ def address(request, **kwargs):
             try:
                 existing = Address.objects.get(user=request.user)
                 same_address = (
-                    True
-                    if existing.mailing_address_id == existing.eligibility_address_id
-                    else False
+                    existing.mailing_address_id == existing.eligibility_address_id
                 )
                 eligibility_address = AddressForm(
-                    instance=AddressRD.objects.get(id=existing.eligibility_address_id),
+                    instance=AddressRef.objects.get(id=existing.eligibility_address_id),
                 )
                 mailing_address = AddressForm(
-                    instance=AddressRD.objects.get(id=existing.mailing_address_id),
+                    instance=AddressRef.objects.get(id=existing.mailing_address_id),
                 )
             except Address.DoesNotExist:
                 eligibility_address = AddressForm()
@@ -995,7 +992,7 @@ def take_usps_address(request, **kwargs):
             # Check for and store GMA and Connexion status
             is_in_gma, has_connexion = address_check(dict_address)
 
-            # Check if an AddressRD object exists by using the
+            # Check if an AddressRef object exists by using the
             # dict_address. If the address is not found, create a new one.
             try:
                 dict_ref = dict_address["AddressValidateResponse"]["Address"]
@@ -1006,13 +1003,13 @@ def take_usps_address(request, **kwargs):
                     ("State", "state"),
                     ("Zip5", "zip_code"),
                 ]
-                instance = AddressRD.objects.get(
-                    address_sha1=AddressRD.hash_address(
+                instance = AddressRef.objects.get(
+                    address_sha1=AddressRef.hash_address(
                         {key: dict_ref[ref_key] for ref_key, key in field_map},
                     ),
                 )
-            except AddressRD.DoesNotExist:
-                instance = AddressRD(
+            except AddressRef.DoesNotExist:
+                instance = AddressRef(
                     address1=dict_address["AddressValidateResponse"]["Address"][
                         "Address2"
                     ],
@@ -1062,20 +1059,20 @@ def take_usps_address(request, **kwargs):
                     if mailing_addresses:
                         Address.objects.create(
                             user=request.user,
-                            eligibility_address=AddressRD.objects.get(
+                            eligibility_address=AddressRef.objects.get(
                                 id=eligibility_addresses[0]["instance"],
                             ),
-                            mailing_address=AddressRD.objects.get(
+                            mailing_address=AddressRef.objects.get(
                                 id=mailing_addresses[0]["instance"],
                             ),
                         )
                     else:
                         Address.objects.create(
                             user=request.user,
-                            eligibility_address=AddressRD.objects.get(
+                            eligibility_address=AddressRef.objects.get(
                                 id=eligibility_addresses[0]["instance"],
                             ),
-                            mailing_address=AddressRD.objects.get(
+                            mailing_address=AddressRef.objects.get(
                                 id=eligibility_addresses[0]["instance"],
                             ),
                         )
@@ -1084,18 +1081,18 @@ def take_usps_address(request, **kwargs):
                     # (e.g. if the user is updating their address)
                     if mailing_addresses:
                         address = Address.objects.get(user=request.user)
-                        address.eligibility_address = AddressRD.objects.get(
+                        address.eligibility_address = AddressRef.objects.get(
                             id=eligibility_addresses[0]["instance"],
                         )
-                        address.mailing_address = AddressRD.objects.get(
+                        address.mailing_address = AddressRef.objects.get(
                             id=mailing_addresses[0]["instance"],
                         )
                     else:
                         address = Address.objects.get(user=request.user)
-                        address.eligibility_address = AddressRD.objects.get(
+                        address.eligibility_address = AddressRef.objects.get(
                             id=eligibility_addresses[0]["instance"],
                         )
-                        address.mailing_address = AddressRD.objects.get(
+                        address.mailing_address = AddressRef.objects.get(
                             id=eligibility_addresses[0]["instance"],
                         )
 
@@ -1114,7 +1111,7 @@ def take_usps_address(request, **kwargs):
             # We're in update_mode here, so we're only updating the users
             # mailing address. Then redirecting them to their settings page.
             address = Address.objects.get(user=request.user)
-            address.mailing_address = AddressRD.objects.get(
+            address.mailing_address = AddressRef.objects.get(
                 id=mailing_addresses[0]["instance"],
             )
 
@@ -1149,7 +1146,6 @@ def take_usps_address(request, **kwargs):
 
 
 @login_required(redirect_field_name="auth_next")
-@set_update_mode
 def household(request, **kwargs):
     try:
         if request.session.get("application_addresses"):
@@ -1244,7 +1240,6 @@ def household(request, **kwargs):
 
 
 @login_required(redirect_field_name="auth_next")
-@set_update_mode
 def household_members(request, **kwargs):
     try:
         # Check the boolean value of update_mode session var
@@ -1544,9 +1539,9 @@ def programs(request, **kwargs):
             user_id=request.user.id,
         )
 
-        # Get all of the programs (except the one with identification and where is_active is False) from the application_EligibilityProgramRD table
+        # Get all of the programs (except the one with identification and where is_active is False) from the application_EligibilityProgramRef table
         # ordered by the friendly_name field acending
-        programs = EligibilityProgramRD.objects.filter(
+        programs = EligibilityProgramRef.objects.filter(
             is_active=True,
         ).order_by(
             "friendly_name",
@@ -1579,7 +1574,6 @@ def programs(request, **kwargs):
 
 
 @login_required(redirect_field_name="auth_next")
-@set_update_mode
 def files(request, **kwargs):
     """
     Variables:
