@@ -17,10 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import sys
-
 from django.apps import AppConfig
-from django.conf import settings
 
 
 class AppConfig(AppConfig):
@@ -29,8 +26,5 @@ class AppConfig(AppConfig):
 
     def ready(self):
         # Ensure signals are always imported when the app is ready
-        import app.signals
-
-        # Only execute the populate_cache code if we're running the server
-        if len(sys.argv) > 1 and sys.argv[1] == "runserver" and not settings.DEBUG:
-            app.signals.populate_cache.send(sender=self.__class__)
+        # import app.signals
+        pass

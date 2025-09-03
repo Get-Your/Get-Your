@@ -22,17 +22,17 @@ from allauth.socialaccount.forms import SignupForm as SocialSignupForm
 from django.contrib.auth import forms as admin_forms
 from django.utils.translation import gettext_lazy as _
 
-from .models import CIEmailField
+from .fields import LowerEmailFormField
 from .models import User
 
 
 class UserAdminChangeForm(admin_forms.UserChangeForm):
     class Meta(admin_forms.UserChangeForm.Meta):  # type: ignore[name-defined]
         model = User
-        field_classes = {"email": CIEmailField}
+        field_classes = {"email": LowerEmailFormField}
 
 
-class UserAdminCreationForm(admin_forms.AdminUserCreationForm):
+class UserAdminCreationForm(admin_forms.BaseUserCreationForm):
     """
     Form for User Creation in the Admin Area.
     To change user signup, see UserSignupForm and UserSocialSignupForm.
@@ -41,7 +41,7 @@ class UserAdminCreationForm(admin_forms.AdminUserCreationForm):
     class Meta(admin_forms.UserCreationForm.Meta):  # type: ignore[name-defined]
         model = User
         fields = ("email",)
-        field_classes = {"email": CIEmailField}
+        field_classes = {"email": LowerEmailFormField}
         error_messages = {
             "email": {"unique": _("This email has already been taken.")},
         }

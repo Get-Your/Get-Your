@@ -27,6 +27,7 @@ from django.utils.translation import gettext_lazy as _
 from django_case_insensitive_field import CaseInsensitiveFieldMixin
 from phonenumber_field.modelfields import PhoneNumberField
 
+from .fields import LowerEmailModelField
 from .managers import UserManager
 
 
@@ -48,7 +49,7 @@ class User(AbstractUser):
     # name = CharField(_("Name of User"), blank=True, max_length=255)
     first_name = models.CharField(_("first name"), max_length=255)
     last_name = models.CharField(_("last name"), max_length=255)
-    email = CIEmailField(_("email address"), unique=True)
+    email = LowerEmailModelField(_("email address"), unique=True)
     username = None  # type: ignore[assignment]
 
     phone_number = PhoneNumberField()

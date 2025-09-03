@@ -21,7 +21,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from get_your.files.backend import userfiles_path
+from files.backend import userfiles_path
 
 from .constants import duration_at_address_choices
 from .constants import rent_own_choices

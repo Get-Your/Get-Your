@@ -32,16 +32,16 @@ log = LoggerWrapper(logging.getLogger(__name__))
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
     search_fields = ("feedback_comments",)
-    list_display = list_display_links = ("created", "star_rating")
+    list_display = list_display_links = ("created_at", "star_rating")
     list_filter = ("star_rating",)
-    ordering = ("-created",)
-    date_hierarchy = "created"
+    ordering = ("-created_at",)
+    date_hierarchy = "created_at"
 
     list_per_page = 100
 
     # Define all possible fields and set them as readonly
     all_possible_fields = readonly_fields = [
-        "created",
+        "created_at",
         "star_rating",
         "feedback_comments",
     ]
