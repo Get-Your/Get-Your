@@ -22,6 +22,8 @@ django-phonenumber-field[phonenumbers]==8.1.0   # https://github.com/stefanfouli
 django-q2==1.8.0    # https://github.com/django-q2/django-q2
 # Case-insensitive fields
 django-case-insensitive-field==1.0.7    # https://github.com/iamoracle/django_case_insensitive_field
+# Advanced formset capabilities
+django-formset==1.7.8   # https://github.com/jrief/django-formset
 
 # Get-Your-specific
 # ------------------------------------------------------------------------------
