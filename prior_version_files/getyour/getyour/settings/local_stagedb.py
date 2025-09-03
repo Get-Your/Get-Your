@@ -1,7 +1,7 @@
 """
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
-Copyright (C) 2022-2024
+Copyright (C) 2022-2025
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ from getyour.settings.common import *
 from getyour.settings.common import env
 
 # Read the environment-specific secrets
-env.read_env(BASE_DIR.joinpath('.prod.env'))
+env.read_env(BASE_DIR.joinpath(".prod.env"))
 
 SECRET_KEY = env("SECRET_KEY")
 AZURE_ACCOUNT_NAME = env("AZURE_ACCOUNT_NAME")
@@ -42,23 +42,23 @@ ALLOWED_HOSTS = []
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'getyour_stage',
-        'USER': env("DB_USER"),
-        'PASSWORD': env("DB_PASS"),
-        'HOST': env("DB_HOST"),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "getyour_stage",
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASS"),
+        "HOST": env("DB_HOST"),
     },
-    'analytics': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'getyour_stage_analytics',
-        'USER': env("DB_USER"),
-        'PASSWORD': env("DB_PASS"),
-        'HOST': env("DB_HOST"),
-    }
+    "analytics": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "getyour_stage_analytics",
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASS"),
+        "HOST": env("DB_HOST"),
+    },
 }
 
 # Logging modifications - set logging level to DEBUG and overwrite DEBUG_LOGGER
 # env var for clarity
-LOGGING['loggers']['app']['level'] = 'DEBUG'
+LOGGING["loggers"]["app"]["level"] = "DEBUG"
 DEBUG_LOGGING = True

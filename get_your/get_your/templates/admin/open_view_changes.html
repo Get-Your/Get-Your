@@ -1,0 +1,31 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<form action="" method="post">
+    {% csrf_token %}
+    <input id='complete_button' type="submit" name="_view_changes_complete" value="Complete">
+</form>
+<script>
+    // Open a new windows for the changes to be viewed, then 'click' the Complete button to refresh the previous page
+    window.open("{% url 'app:admin_view_changes' %}", 'newwindow', 'width=600, height=600');
+    document.getElementById('complete_button').click();
+</script>
+{% endblock %}

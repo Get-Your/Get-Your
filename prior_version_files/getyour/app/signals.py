@@ -1,7 +1,7 @@
 """
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
-Copyright (C) 2022-2024
+Copyright (C) 2022-2025
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,28 +16,29 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 import json
-from django.db.models.signals import pre_save, pre_delete
+
 from django.core.serializers.json import DjangoJSONEncoder
-from django.dispatch import receiver
+from django.db.models.signals import pre_delete, pre_save
+from django.dispatch import Signal, receiver
+
+from app.backend import changed_modelfields_to_dict
 from app.models import (
-    Household,
-    HouseholdHist,
-    User,
-    UserHist,
     Address,
     AddressHist,
-    HouseholdMembers,
-    HouseholdMembersHist,
     EligibilityProgram,
     EligibilityProgramHist,
+    Household,
+    HouseholdHist,
+    HouseholdMembers,
+    HouseholdMembersHist,
     IQProgram,
     IQProgramHist,
+    User,
+    UserHist,
 )
-from app.backend import changed_modelfields_to_dict
 from app.tasks import populate_cache_task
-from django.dispatch import Signal
-
 
 # Defines a custom signal for us to listen for
 populate_cache = Signal()
@@ -59,9 +60,10 @@ def household_pre_save(sender, instance, **kwargs):
                         changed_modelfields_to_dict(
                             sender.objects.get(pk=instance.pk),
                             instance,
-                        ), cls=DjangoJSONEncoder
+                        ),
+                        cls=DjangoJSONEncoder,
                     )
-                )
+                ),
             )
 
         except Household.DoesNotExist:
@@ -94,9 +96,10 @@ def householdmembers_pre_save(sender, instance, **kwargs):
                         changed_modelfields_to_dict(
                             sender.objects.get(pk=instance.pk),
                             instance,
-                        ), cls=DjangoJSONEncoder
+                        ),
+                        cls=DjangoJSONEncoder,
                     )
-                )
+                ),
             )
 
         except HouseholdMembers.DoesNotExist:
@@ -129,9 +132,10 @@ def user_pre_save(sender, instance, **kwargs):
                         changed_modelfields_to_dict(
                             sender.objects.get(pk=instance.pk),
                             instance,
-                        ), cls=DjangoJSONEncoder
+                        ),
+                        cls=DjangoJSONEncoder,
                     )
-                )
+                ),
             )
 
         except User.DoesNotExist:
@@ -165,9 +169,10 @@ def address_pre_save(sender, instance, **kwargs):
                         changed_modelfields_to_dict(
                             sender.objects.get(pk=instance.pk),
                             instance,
-                        ), cls=DjangoJSONEncoder
+                        ),
+                        cls=DjangoJSONEncoder,
                     )
-                )
+                ),
             )
 
         except Address.DoesNotExist:
@@ -181,7 +186,7 @@ def address_pre_save(sender, instance, **kwargs):
                 address_history.save()
                 # Set is_updated *only if mailing address is included* in the
                 # updated values
-                if 'mailing_address_id' in address_history.historical_values.keys():
+                if "mailing_address_id" in address_history.historical_values.keys():
                     instance.is_updated = True
 
 
@@ -205,10 +210,11 @@ def iqprogram_pre_delete(sender, instance, **kwargs):
                         changed_modelfields_to_dict(
                             sender.objects.get(pk=instance.pk),
                             instance,
-                            pre_delete=True
-                        ), cls=DjangoJSONEncoder
+                            pre_delete=True,
+                        ),
+                        cls=DjangoJSONEncoder,
                     )
-                )
+                ),
             )
 
         except IQProgram.DoesNotExist:
@@ -240,12 +246,15 @@ def eligiblity_program_pre_delete(sender, instance, **kwargs):
                 # Convert the eligibilityprogram objects to a dictionary and
                 # then to a JSON string and set it to the historical_values field
                 historical_values=json.loads(
-                    json.dumps(changed_modelfields_to_dict(
-                        sender.objects.get(pk=instance.pk),
-                        instance,
-                        pre_delete=True
-                    ), cls=DjangoJSONEncoder)
-                )
+                    json.dumps(
+                        changed_modelfields_to_dict(
+                            sender.objects.get(pk=instance.pk),
+                            instance,
+                            pre_delete=True,
+                        ),
+                        cls=DjangoJSONEncoder,
+                    )
+                ),
             )
 
         except EligibilityProgram.DoesNotExist:

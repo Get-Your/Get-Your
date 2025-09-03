@@ -1,0 +1,368 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% extends "bases/dashboard_base.html" %}
+{% load static %}
+
+{% block body %}
+<!-- Placeholder for the HTMX modal -->
+<div id="modal" class="modal fade">
+    <div id="dialog" class="modal-dialog" hx-target="this"></div>
+</div>
+
+<!-- Empty toast to show the HTMX modal output message -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="toast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive"
+        aria-atomic="true">
+        <div class="d-flex">
+            <div id="toast-body" class="toast-body">'Apply Now' cancelled</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<!-- The Modal -->
+<div id="modalDashboard" class="modal Dashboard">
+    <!-- Modal content -->
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        {% if qualified_programs == 0 and pending_programs == 0 and active_programs == 0 %}
+        <p>We're sorry, currently you do not qualify for any programs. If you think this is an error please <a
+                href="mailto: {{ contact_email }}?subject=Income Qualification Question - Get FoCo&body=Hello Get FoCo team, I seem to be having an issue with qualification. Can you help clarify the qualifications for the available programs?"
+                style="font-style: none;">contact us</a>. <br> <br> In addition, please visit <a
+                style="display: inline;" href="/#Available%20Programs" target="_blank">Available Programs</a> to view
+            each program's qualifications. </p>
+        {% else %}
+        <p>{{ welcome_popup_text }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="content">
+    <div class="fadeLarge">
+        <!--Program number blocks - information section-->
+        {% if renewal_programs != 0 %}
+        <div class="row">
+            <a style="color:var(--white); font-weight: 800; text-decoration: none; width: 100%"
+                href="{% url 'app:qualified_programs' %}?order_by=renewal">
+                <div class="module" style="margin-left: 1.5vw; margin-right:0; padding: 1vw; text-align: center;">
+                    <hprogram style="color: orange; font-size: max(0.8vh, 40px)"> Renewal Required </hprogram>
+                </div>
+            </a>
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <a style="color:var(--white); font-weight: 800; text-decoration: none;"
+                href="{% url 'app:qualified_programs' %}?order_by=active">
+                <div class="module" style="margin-left: 0;margin-right:1.5vw;padding: 1vw;">
+                    <hprogram style="color: var(--darkblue)"> {{active_programs}} </hprogram>
+                    <h3 style="font-weight: 400; margin: 0; ">Active Program(s)</h3>
+                </div>
+            </a>
+            <a style="color:var(--white); font-weight: 800; text-decoration: none;"
+                href="{% url 'app:qualified_programs' %}?order_by=pending">
+                <div class="module" style="margin-left: 1.5vw;margin-right:0;padding: 1vw;">
+                    <hprogram style="color: var(--darkblue)"> {{pending_programs}} </hprogram>
+                    <h3 style="font-weight: 400; margin: 0;">Pending Approval </h3>
+                </div>
+            </a>
+        </div>
+
+        <div class="row">
+            <a style="color:var(--white); font-weight: 800; text-decoration: none;"
+                href="{% url 'app:qualified_programs' %}?order_by=eligible">
+                <div class="module" style="margin-left: 0;margin-right:1.5vw;padding: 1vw;">
+                    <hprogram style="color: #4CAD00"> {{qualified_programs}} </hprogram>
+                    <h3 style="font-weight: 400; margin: 0; ">Active Program(s)</h3>
+                </div>
+            </a>
+        </div>
+
+        <!-- Mobile news section -->
+        <div class="module">
+            {% include "partials/news_feed.html" %}
+        </div>
+
+        <div class="module">
+            {% include "partials/feedback_form.html" %}
+        </div>
+    </div>
+
+    <!-- content for desktop!-->
+    <div class="fadeSmall">
+        <div class="container">
+            <!-- START: RENEWAL IQ PROGRAMS -->
+            {% if renewal_programs != 0 %}
+            <div class="item thin">
+                <a style="color:var(--white); font-weight: 800; text-decoration: none;"
+                    href="{% url 'app:qualified_programs' %}">
+                </a>
+                <p style="font-weight: 400; padding-left: 15px;">
+                    Renewal Required
+                </p>
+
+                <a href="#" onclick="return false;" class="renewalModal"
+                    style="text-decoration: none; text-align: center; margin-top: auto; margin-bottom: auto; padding: 2px">
+                    <div class="quickapply linkQA" style="border-color: orange; color: orange">
+                        Renew</div>
+                </a>
+
+                <button class="button button2" id="toggle-button3"><img src="{% static 'images/downArrow.svg' %}"
+                        style="position: absolute; bottom: 10px;right: 10px;"> </button>
+
+            </div>
+
+            <div class="item collapsible renewal">
+                {% for program in iq_programs %}
+                {% if program.status_for_user != 'PENDING' and program.status_for_user != 'ACTIVE' and
+                program.status_for_user != '' %}
+                <div class="divider"></div>
+                <div class="row" style="margin:0; width:100%">
+                    <div style="margin:0">
+                        <p style="font-weight: 400; margin: 0">{{ program.title }}</p>
+                    </div>
+
+                </div>
+                <div class="row" style="margin:0;width:100%">
+                    <a class="row" href="{{ program.learn_more_link }}" target="_blank"
+                        style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                        <p style="margin: 0;color:var(--lightblue); font-size: 15px;"> Learn More </p>
+                        <img src="{% static 'images/Arrow 1.svg' %}" alt="back"
+                            style="height: 1vw; margin-left: 5px;color:black">
+                    </a>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            <!-- END: RENEWAL IQ PROGRAMS -->
+
+            <!-- START: QUALIFIED IQ PROGRAMS -->
+            <div class="item thin">
+                <a style="color:var(--white); font-weight: 800; text-decoration: none;"
+                    href="{% url 'app:qualified_programs' %}">
+                    <!--CSV HERE-->
+                    <hprogram style="color: #4CAD00;margin:0"> {{qualified_programs}} </hprogram>
+                </a>
+                {% if pending_programs|add:active_programs > 0 %}
+                <p style="font-weight: 400; padding-left: 15px;">Additional Program(s) Available</p>
+                {% else %}
+                <p style="font-weight: 400; padding-left: 15px;">Program(s) Available for You</p>
+                {% endif %}
+                <button class="button button2" id="toggle-button1"><img src="{% static 'images/downArrow.svg' %}"
+                        style="position: absolute; bottom: 10px;right: 10px;"> </button>
+            </div>
+
+            <div class="item collapsible qualifyfor">
+                {% for program in iq_programs %}
+                {% if program.status_for_user != 'PENDING' and program.status_for_user != 'ACTIVE' and
+                program.status_for_user != 'RENEWAL' %}
+                <div class="divider"></div>
+                <div class="row" style="margin:0; width:100%">
+                    <div style="margin:0">
+                        <p style="font-weight: 400; margin: 0">{{ program.title }}</p>
+                    </div>
+                    {% if program.program_name == 'spin'%}
+                    <a href="#" onclick="return false;" id="spinPrivacyAcknowledgement"
+                        style="text-decoration: none; text-align: center;">
+                        <div class="quickapply linkQA"
+                            style="background-color: {{ program.button.color }}; color: {{ program.button.textColor }}">
+                            {{ program.button.text }}</div>
+                    </a>
+                    {% else %}
+                    <a href="{{ program.quick_apply_link }}" style="text-decoration: none; text-align: center;">
+                        <div class="quickapply linkQA">
+                            {{ program.button.text }}</div>
+                    </a>
+                    <button hx-get="{% url 'app:apply_now_modal' %}" hx-target="#dialog" class="btn btn-primary">
+                        {{ program.button.text }}
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="row" style="margin:0;width:100%">
+                    <a class="row" href="{{ program.learn_more_link }}" target="_blank"
+                        style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                        <p style="margin: 0;color:var(--lightblue); font-size: 15px;"> Learn More </p>
+                        <img src="{% static 'images/Arrow 1.svg' %}" alt="back"
+                            style="height: 1vw; margin-left: 5px;color:black">
+                    </a>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <!-- END: QUALIFIED IQ PROGRAMS -->
+
+            <!-- START: PENDING IQ PROGRAMS -->
+            <div class="item thin">
+                <!--CSV HERE-->
+                <hprogram style="color: var(--darkblue)"> {{pending_programs}} </hprogram>
+                <p style="font-weight: 400; padding-left: 20px;  ">Pending Approval</p>
+                <button class="button button2" id="toggle-button"><img src="{% static 'images/downArrow.svg' %}"
+                        style="position: absolute; bottom: 10px;right: 10px;"> </button>
+            </div>
+
+            <div class="item collapsible pending">
+                {% for program in iq_programs %}
+                {% if program.status_for_user == 'PENDING' %}
+
+                <div class="divider"></div>
+                <div class="row" style="margin:0; width:100%">
+                    <div style="margin:0">
+                        <p style="font-weight: 400; margin: 0">{{ program.title }}</p>
+                    </div>
+                </div>
+                <div class="row" style="margin:0;width:100%">
+                    <p style="margin: 0;color:var(--lightblue); font-size: 15px;">
+                        {{program.eligibility_review_time_period}}</p>
+                </div>
+
+                {% endif %}
+                {% endfor %}
+            </div>
+            <!-- END: PENDING IQ PROGRAMS -->
+
+            <!-- START: ACTIVE IQ PROGRAMS -->
+            <div class="item thin">
+                <!--CSV HERE-->
+                <hprogram style="color: var(--darkblue)"> {{active_programs}} </hprogram>
+                <p style="font-weight: 400; padding-left: 20px; ">Active Program(s)</p>
+                <button id="active_programs_tooltip" class="button button2">
+                    <img src="{% static 'images/clipart249308.png' %}" alt="back" style="width:min(4.5vw,20px);">
+                </button>
+                <button class="button button2" id="toggle-button2">
+                    <img src="{% static 'images/downArrow.svg' %}"
+                        style="position: absolute; bottom: 10px;right: 10px;">
+                </button>
+            </div>
+
+            <div class="item collapsible active">
+                <div id="active_programs_info">
+                    <p style="font-size: 15px;">Once your information is reviewed by the Get FoCo team, you will find
+                        the programs you are approved for here! Checkback as it gets closer to your application's
+                        estimated date and be sure to check your email for communication from us.
+                    </p>
+                </div>
+                {% for program in iq_programs %}
+                {% if program.status_for_user == 'ACTIVE' %}
+
+                <div class="divider"></div>
+                <div class="row" style="margin:0; width:100%">
+                    <div style="margin:0">
+                        <p style="font-weight: 400; margin: 0">{{ program.title }}</p>
+                    </div>
+                </div>
+                <div class="row" style="margin: 5px;width:100%">
+                </div>
+
+                {% endif %}
+                {% endfor %}
+            </div>
+            <!-- END: ACTIVE IQ PROGRAMS -->
+
+            <!-- Desktop News Section -->
+            <div class="item large">
+                {% include "partials/news_feed.html" %}
+            </div>
+
+            <!-- Feedback section -->
+            <div class="item extraLarge" style="padding-left: 3%;">
+                {% include "partials/feedback_form.html" %}
+            </div>
+        </div>
+
+        <div class="item" style="border: white;"></div>
+    </div>
+</div>
+
+{% include "partials/privacy_acknowledgement.html" %}
+
+<script src="{% static 'js/dialog.js' %}"></script>
+<script src="{% static 'js/toast.js' %}"></script>
+
+<script>
+    $(document).ready(function () {
+        $("#toggle-button").click(function () {
+            $(".item.collapsible.pending").toggleClass("collapsed");
+        });
+
+        $("#toggle-button2").click(function () {
+            $(".item.collapsible.active").toggleClass("collapsed");
+        });
+
+        $("#toggle-button1").click(function () {
+            $(".item.collapsible.qualifyfor").toggleClass("collapsed");
+        });
+
+        $("#toggle-button3").click(function () {
+            $(".item.collapsible.renewal").toggleClass("collapsed");
+        });
+
+        $(".close").click(function () {
+            $("#modalDashboard").css("display", "none");
+        });
+
+        $("#active_programs_tooltip").click(function () {
+            $("#active_programs_info").toggle();
+        });
+
+        $(window).click(function (event) {
+            if (event.target.id === "modalDashboard") {
+                $("#modalDashboard").css("display", "none");
+            }
+        });
+
+        // Get the has_viewed_dashboard value of the user
+        var has_viewed_dashboard = "{{ proxy_viewed_dashboard }}" === "True";
+        // If the user has viewed the dashboard, do not show the modal
+        if (has_viewed_dashboard) {
+            $("#modalDashboard").css("display", "none");
+        } else {
+            $("#modalDashboard").css("display", "block");
+        }
+
+        // Display a sweet alert for when a user clicks on an anchor tag
+        // that has the renewalModal class.
+        $(".renewalModal").click(function (event) {
+            event.preventDefault();
+            Swal.fire({
+                title: "Application Renewal",
+                text: "{{ required_renewal_text }}",
+                confirmButtonText: "Renew",
+                confirmButtonColor: "orange",
+                showCancelButton: true,
+                preConfirm: () => {
+                    window.location.href = "{% url 'app:get_ready' %}?renewal_mode=1";
+                },
+            });
+        });
+
+        var app_renewed = "{{ app_renewed }}" === "True";
+        if (app_renewed) {
+            Swal.fire({
+                title: "Renewal Complete",
+                text: "{{ renewal_eligible }}" + "\n\n" + "{{ renewal_ineligible }}",
+                icon: "success",
+                confirmButtonText: "OK",
+                confirmButtonColor: "orange",
+            });
+        }
+    });
+</script>
+{% endblock %}

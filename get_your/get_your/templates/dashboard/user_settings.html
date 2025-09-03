@@ -1,0 +1,124 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% extends "bases/dashboard_base.html" %}
+{% load static %}
+
+{% include "partials/head.html" with title="Settings" css="application" %}
+
+{% block body %}
+
+<div class="settings_container container">
+    <div class="username">
+        <h1>{{name}}</h1>
+        <h1 class="mb-3">{{lastName}}</h1>
+    </div>
+
+    <!-- Create a div that centers the content nested inside of it-->
+    <p class="pb-15">Manage your account information, including updating your account, address, and household
+        information.
+    </p>
+    <div class="w-100">
+        <a href="{{routes.account}}?update_mode=1" class="simple-and-cool-button">Account</a>
+        <a href="{{routes.address}}?update_mode=1" class="simple-and-cool-button">Address</a>
+        <a href="{{routes.household}}?update_mode=1" class="simple-and-cool-button">Household</a>
+    </div>
+</div>
+
+<style>
+    .w-100 {
+        width: 100%;
+    }
+
+    .mb-3 {
+        margin-bottom: 3%;
+    }
+
+    .pb-15 {
+        padding-bottom: 15px;
+    }
+
+    .container {
+        margin-bottom: 5vw;
+        margin-left: auto;
+        margin-right: auto;
+        height: 100vh;
+    }
+
+    .simple-and-cool-button {
+        border: 0.1em solid;
+        cursor: pointer;
+        display: block;
+        font-family: 'Montserrat', sans-serif;
+        text-decoration: none;
+        font-size: 1.0em;
+        margin: 0.5em 0.0em 1.0em 0.0em;
+        padding: 1.9em;
+        padding-top: 0.5em;
+        padding-bottom: 0.5em;
+        text-align: center;
+        -moz-border-radius: 0.5em;
+        -webkit-border-radius: 0.5em;
+        border-radius: 0.5em;
+        -moz-transition: all 0.3s ease-in-out;
+        -o-transition: all 0.3s ease-in-out;
+        -webkit-transition: all 0.3s ease-in-out;
+        transition: all 0.3s ease-in-out;
+        background-color: var(--lightblue);
+        color: white;
+        border-color: var(--lightblue);
+        border-radius: 3vh;
+    }
+
+    .username {
+        color: var(--darkblue);
+    }
+
+    @media screen and (min-width : 768px) {
+        .settings_container {
+            padding-left: 300px;
+        }
+    }
+
+    @media screen and (max-width : 767px) {
+        .settings_container {
+            padding-left: 0px;
+        }
+
+        .container {
+            margin: 6vw;
+            height: 50vh;
+        }
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        var page_updated = JSON.parse('{{ page_updated | escapejs }}');
+
+        if (page_updated['page_updated']) {
+            Swal.fire({
+                title: 'Success!',
+                text: `Your ${page_updated['page_updated']} information was saved!`,
+                icon: 'success',
+                confirmButtonColor: '#13467D',
+            });
+        }
+    });
+</script>
+{% endblock %}

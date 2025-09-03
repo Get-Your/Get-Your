@@ -1,0 +1,49 @@
+{% load static %}
+<form action="{% url 'app:feedback' %}" method="post">
+    {% csrf_token %}
+    <p>Feedback</p>
+    <div class="column" style="margin:0; width:100%;">
+        <p style="font-weight: 800;">How would you rate your experience so far using the Get FoCo
+            portal? </p>
+        <div class="column" style="margin:0; width:100%;">
+            <clearButton> <img src="{% static 'images/reviewStarUnfilled.svg' %}" style="width:min(10vw, 50px);"
+                    data-star-value="1"> </clearButton>
+            <clearButton> <img src="{% static 'images/reviewStarUnfilled.svg' %}" style="width:min(10vw, 50px);"
+                    data-star-value="2"> </clearButton>
+            <clearButton> <img src="{% static 'images/reviewStarUnfilled.svg' %}" style="width:min(10vw, 50px);"
+                    data-star-value="3"> </clearButton>
+            <clearButton> <img src="{% static 'images/reviewStarUnfilled.svg' %}" style="width:min(10vw, 50px);"
+                    data-star-value="4"> </clearButton>
+            <clearButton> <img src="{% static 'images/reviewStarUnfilled.svg' %}" style="width:min(10vw, 50px);"
+                    data-star-value="5"> </clearButton>
+        </div>
+    </div>
+    <div class="column" style="width:100%; margin:0; justify-content: flex-start;">
+        <p style="font-weight: 800; margin-top: 25px;">How can we do better? Don't worry, your feedback
+            is anonymous!</p>
+        <textarea class="feedback" placeholder="Tell us how we're doing!" name="feedback_comments" maxlength="500"
+            style="border-radius: 2vh;"></textarea>
+        <button name="star_rating" style="width:100%"> <b>Share Feedback</b>
+        </button>
+        <br>
+        <br>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        $("clearButton").click(function (event) {
+            var starValue = $(event.target).data("starValue");
+
+            $("clearButton > img").each(function () {
+                if ($(this).data("starValue") <= starValue) {
+                    $(this).attr("src", "{% static 'images/reviewStarFilled.svg' %}");
+                } else {
+                    $(this).attr("src", "{% static 'images/reviewStarUnfilled.svg' %}");
+                }
+            });
+
+            $("button[name='star_rating']").val(starValue);
+        });
+    });
+</script>

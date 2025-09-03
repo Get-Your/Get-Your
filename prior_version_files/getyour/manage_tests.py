@@ -2,7 +2,7 @@
 """
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
-Copyright (C) 2022-2024
+Copyright (C) 2022-2025
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'getyour.settings.local')
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "getyour.settings.local")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
@@ -37,5 +37,5 @@ def main():
     execute_from_command_line(sys.argv)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

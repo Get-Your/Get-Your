@@ -3,8 +3,8 @@
 
 import os
 from pathlib import Path
-import environ
 
+import environ
 from django.core.files import File
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
@@ -25,7 +25,7 @@ if READ_DOT_ENV_FILE:
 # to the defined default
 if os.environ.get("DJANGO_DEBUG"):
     # Compare this explicitly to 'true'; all else will result in False
-    DEBUG = str(os.environ.get("DJANGO_DEBUG")).lower() == 'true'
+    DEBUG = str(os.environ.get("DJANGO_DEBUG")).lower() == "true"
 else:
     # The default is False
     DEBUG = env.bool("DJANGO_DEBUG", False)
@@ -51,9 +51,13 @@ try:
         import subprocess
 
         # Run `git describe --tags`
-        CODE_VERSION = subprocess.check_output(
-            ["git", "describe", "--tags", "--always"]
-        ).decode("ascii").strip()
+        CODE_VERSION = (
+            subprocess.check_output(
+                ["git", "describe", "--tags", "--always"],
+            )
+            .decode("ascii")
+            .strip()
+        )
 
 except Exception:
     # Cannot be found; use blank
@@ -83,7 +87,7 @@ USE_TZ = True
 LOCALE_PATHS = [str(BASE_DIR / "locale")]
 
 # For phone number default region setting:
-PHONENUMBER_DEFAULT_REGION = 'US'
+PHONENUMBER_DEFAULT_REGION = "US"
 
 # DATABASES
 # ------------------------------------------------------------------------------
@@ -109,7 +113,7 @@ DJANGO_APPS = [
     # "django.contrib.humanize", # Handy template tags
     "django.contrib.admin",
     "django.forms",
-    "django.contrib.postgres", # Postgres-extension functionality
+    "django.contrib.postgres",  # Postgres-extension functionality
 ]
 THIRD_PARTY_APPS = [
     "whitenoise.runserver_nostatic",
@@ -191,8 +195,8 @@ BUILTIN_MIDDLEWARE = [
 
 # Your stuff: custom middleware goes here
 LOCAL_MIDDLEWARE = [
-#     "config.middleware.ValidRouteMiddleware",
-#     "config.middleware.ParsePermissionsMiddleware",
+    "config.middleware.FirstViewMiddleware",
+    "config.middleware.ValidRouteMiddleware",
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
@@ -242,7 +246,7 @@ TEMPLATES = [
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
                 "get_your.users.context_processors.allauth_settings",
-#                 "global_settings.context_processors.global_template_variables",
+                #                 "global_settings.context_processors.global_template_variables",
             ],
         },
     },
@@ -271,7 +275,7 @@ X_FRAME_OPTIONS = "DENY"
 # Log out on browser close
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # Expire the session cookie (force re-login) at 6 hours (in seconds)
-SESSION_COOKIE_AGE = 6*60*60
+SESSION_COOKIE_AGE = 6 * 60 * 60
 
 # EMAIL
 # ------------------------------------------------------------------------------
@@ -302,40 +306,40 @@ DJANGO_ADMIN_FORCE_ALLAUTH = env.bool("DJANGO_ADMIN_FORCE_ALLAUTH", default=Fals
 # more details on how to customize your logging configuration.
 
 # Define database routing other than the default
-DATABASE_ROUTERS = ['config.routers.LogRouter']
+DATABASE_ROUTERS = ["config.routers.LogRouter"]
 
 # Get-Your custom database logging
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'simple': {
-            'format': "%(message)s",
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {
+            "format": "%(message)s",
             # datefmt is autocreated by Django; it would be ignored here
         },
     },
-    'handlers': {
-        'db_log': {
-            'class': 'logger.handlers.DatabaseLogHandler',
-            'formatter': 'simple',
+    "handlers": {
+        "db_log": {
+            "class": "logger.handlers.DatabaseLogHandler",
+            "formatter": "simple",
         },
     },
-    'loggers': {
-        '': {
-            'handlers': ['db_log'],
-            'level': 'INFO',
+    "loggers": {
+        "": {
+            "handlers": ["db_log"],
+            "level": "INFO",
         },
         # Keep this logger! Even though it's a duplicate of the root logger,
         # the environment-specific settings may reference it
-        'app': {
-            'handlers': ['db_log'],
-            'level': 'INFO',
-            'propagate': False,
+        "app": {
+            "handlers": ["db_log"],
+            "level": "INFO",
+            "propagate": False,
         },
-        'django.request': {
-            'handlers': ['db_log'],
-            'level': 'ERROR',
-            'propagate': False,
+        "django.request": {
+            "handlers": ["db_log"],
+            "level": "ERROR",
+            "propagate": False,
         },
     },
 }
@@ -382,5 +386,5 @@ RENEWAL_EMAIL_TEMPLATE = env("RENEWAL_EMAIL_TEMPLATE")
 # (https://github.com/ahupp/python-magic?tab=readme-ov-file#usage)
 if File.DEFAULT_CHUNK_SIZE < 2048:
     raise AssertionError(
-        "The DEFAULT_CHUNK_SIZE for uploaded files is too small for python-magic to produce a correct identification"
+        "The DEFAULT_CHUNK_SIZE for uploaded files is too small for python-magic to produce a correct identification",
     )

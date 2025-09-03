@@ -1,0 +1,174 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+{% include "partials/head.html" with title=title css="dashboard" %}
+
+<body>
+    {% include "partials/environment_banner.html" with is_prod=is_prod db_env_str=db_env_str %}
+
+    <div style="display: flex; justify-content: flex-end;padding: 10px; " id="google_translate_element"></div>
+
+    <div class="topNavRow" style="text-align: center; position:fixed; background-color: white;z-index: 99;">
+        <nav role="navigation" style="width: 3vh;">
+            <div class="fadeLarge">
+                <div id="menuToggle" class="icon" style="position: fixed;">
+                    <input type="checkbox" />
+
+                    <!--Some spans to act as a hamburger.-->
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                    <ul id="menu">
+                        <a style="color: {{ dashboard_color }} ; " href="{% url 'app:dashboard' %}">
+                            <li>Dashboard</li>
+                        </a>
+                        <a style="color:{{ program_list_color }}; " href="{% url 'app:programs_list' %}">
+                            <li>Program List</li>
+                        </a>
+                        <a style="color:{{ Settings_color }};" href="{% url 'app:user_settings' %}">
+                            <li>Settings</li>
+                        </a>
+                        {% if enable_renew_now %}
+                        <a class="renew_now" style="color:white; " href="javascript:void(0)">
+                            <li>Renew Now</li>
+                        </a>
+                        {% endif %}
+                        {% if badge_visible %}
+                        <a class="badge" style="color:{{ Settings_color }}; " href="#">
+                            <li>Badge</li>
+                        </a>
+                        {% endif %}
+                        <a style="color:{{ Privacy_Policy_color }}; " href="{% url 'app:privacy' %}">
+                            <li>Privacy Policy</li>
+                        </a>
+                        <a style="color:white; " href="{% url 'app:index' %}">
+                            <li>Log Out</li>
+                        </a>
+
+                    </ul>
+                </div>
+            </div>
+            <!--Side Navigation Column, for desktops and larger than phone devices-->
+            <div class="fadeSmall">
+                <div class="sideNav" style="padding-left: 0;">
+
+                    <ul>
+                        <p style="color: var(--yellow); font-weight: 700; font-size: 25px;">Get <span
+                                style="color: white"></span>
+                            FoCo</p>
+                        </p>
+                        <p> <img src="{% static 'images/Dashboard.svg' %}"> <a
+                                style="color: {{ dashboard_color }}; text-decoration:none; "
+                                href="{% url 'app:dashboard' %}">Dashboard</a></p>
+                        <p> <img src="{% static 'images/ProgramList.svg' %}"> <a
+                                style="color:{{ program_list_color }}; text-decoration:none;"
+                                href="{% url 'app:programs_list' %}">Programs</a></p>
+                        <p> <img src="{% static 'images/Settings.svg' %}"> <a
+                                style="color:{{ Settings_color }};text-decoration:none; "
+                                href="{% url 'app:user_settings' %}">Settings</a></p>
+                        {% if enable_renew_now %}
+                        <p><i class="fa-solid fa-rotate-right"></i>
+                            <a class="renew_now" style="color:white;text-decoration:none; "
+                                href="javascript:void(0)">Renew Now</a>
+                        </p>
+                        {% endif %}
+                        {% if badge_visible %}
+                        <p class="badge"> <i class="fa-solid fa-certificate"></i><a
+                                style="color:white;text-decoration:none;padding-left:10px;" href="#">Badge</a></p>
+                        {% endif %}
+                        <p> <img src="{% static 'images/PrivacyPolicy.svg' %}"> <a
+                                style="color:{{ Privacy_Policy_color }};text-decoration:none; "
+                                href="{% url 'app:privacy' %}">Privacy Policy</a></p>
+                        <p> <img src="{% static 'images/LogOut.svg' %}"> <a style="color:white;text-decoration:none; "
+                                href="{% url 'app:index' %}">Log Out</a></p>
+                        <p
+                            style="position: absolute; bottom: 22px; font-size: 15px; left: 0px; right: 0px; display: block; margin-left: auto; margin-right: auto;">
+                            Service brought to you by the City of Fort Collins.</p>
+                        <img style="align-items:center; position:absolute; bottom: 80px; left: 0px; right: 0px; display: block; margin-left: auto; margin-right: auto; width: 50%;"
+                            src="{% static 'images/CityLogoWhite-01.png' %}">
+                        <span
+                            style="position: absolute; bottom: 10px; font-size: 12px; left: 0px; right: 0px; display: block; margin-left: auto; margin-right: auto; color: #bdccdb;">Get
+                            FoCo {{ code_version }}</span>
+                    </ul>
+                    <div>
+
+                    </div>
+
+                </div>
+            </div>
+        </nav>
+        <p style="font-weight: 400; color:var(--darkblue);">{{ page_title }}</p>
+        {% if enable_renew_now %}
+        <button type="button" class="renew_now">Renew Now</button>
+        {% endif %}
+    </div>
+
+    <div class="extraspace">
+    </div>
+    {% block body %}
+    {% endblock %}
+    <script>
+        var now = moment();
+        var formattedDateTime = now.format('MMMM D, YYYY');
+        // Show the sweet alert when the Badge anchor tage is clicked.
+        // with a customer colored confirm button using jQuery
+        $('.badge').click(function () {
+            Swal.fire({
+                imageUrl: "{% static 'images/GetFOCObadge.png' %}",
+                imageWidth: 250,
+                imageHeight: 250,
+                imageAlt: "Get FoCo Badge",
+                text: formattedDateTime,
+                confirmButtonColor: "#13467D",
+                confirmButtonText: "Close"
+            });
+        });
+
+        $('.renew_now').click(function () {
+            Swal.fire({
+                title: "Renew Now",
+                text: "{{ renew_now_text }}",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#13467D",
+                confirmButtonText: "Yes, Renew Now",
+                cancelButtonText: "Cancel",
+                cancelButtonColor: "#d33",
+                preConfirm: () => {
+                    window.location.href = "{% url 'app:get_ready' %}?renewal_mode=1";
+                },
+            });
+        });
+    </script>
+
+    <style>
+        @media screen and (min-width: 768px) {
+            .sideNav {
+                width: 320px;
+                float: left;
+            }
+        }
+    </style>
+</body>
+
+</html>

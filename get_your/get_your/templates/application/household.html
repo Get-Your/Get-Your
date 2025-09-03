@@ -1,0 +1,92 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% extends "bases/application_base.html" %}
+{% load static %}
+
+{% block navigation %}
+{% if renewal_mode %}
+{% url 'app:address' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True
+back_link=back_link %}
+{% elif update_mode %}
+{% url 'app:user_settings' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
+{% else %}
+{% url 'app:address' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=True
+back_link=back_link|add:"?app_status=in_progress" %}
+{% endif %}
+{% endblock %}
+
+{% block body %}
+<p id="application_step" class="application-step">STEP {{ step }} OF {{ form_page_number }}</p>
+
+{% with header="Share basic information about your income" description="Your information will not be shared with anyone
+outside of the departments of City of Fort Collins' income eligible programs. They are meant to determine potential
+assistance programs you may qualify for." %}
+{% include "partials/side_content.html" with header=header description=description%}
+{% endwith %}
+
+<form action="{% url 'app:household' %}" method="post" autocomplete="false" id="eligibilityForm">
+    {% csrf_token %}
+
+    <div class="input" style="padding-top:0">
+        <label class="labelword">Do you rent or own your current residence?</label>
+        <div class="row" style="justify-content:left; padding-top:5%">
+            {% for choice in form.rent_own %}
+            <label for="{{choice.id_for_label}}" class="row" style="padding-right: 5%;" required>
+                <span class="radio">{{ choice.tag }}</span>
+                <p>{{ choice.choice_label }}</p>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="input" style="padding-top:0">
+        <label class="labelword">How long have you lived at this address?</label>
+        <div class="row" style="justify-content:left; padding-top:5%">
+            {% for choice in form.duration_at_address %}
+            <label for="{{choice.id_for_label}}" class="row" style="padding-right: 5%;" required>
+                <span class="radio">{{ choice.tag }}</span>
+                <p>{{ choice.choice_label }}</p>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="input">
+        <label class="labelword" style="position:relative">{{ form.number_persons_in_household.label }}</label> <a
+            href="{% url 'app:household_definition' %}"><img src="{% static 'images/clipart249308.png' %}" alt="info"
+                style="width:min(4.5vw,20px);"></a>
+        <input class="fill" type="text" name="{{ form.number_persons_in_household.name }}"
+            value="{{ form.number_persons_in_household.value|default:'' }}"
+            id="{{ form.number_persons_in_household.id_for_label}}" style="height: 3vh;" pattern="[1-9]\d*"
+            title="Number of household members must be a positive whole number" required>
+    </div>
+
+    <div class="footer">
+        {% if update_mode %}
+        <input type="hidden" name="update_mode" value="true">
+        <button type="submit">CONFIRM</button>
+        {% else %}
+        <button type="submit"> CONTINUE </button>
+        {% endif %}
+    </div>
+</form>
+{% endblock %}

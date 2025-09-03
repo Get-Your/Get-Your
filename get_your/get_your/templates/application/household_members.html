@@ -1,0 +1,241 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% extends "bases/application_base.html" %}
+{% load static %}
+
+{% block navigation %}
+{% if renewal_mode %}
+{% url 'app:household' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True
+back_link=back_link %}
+{% elif update_mode %}
+{% url 'app:household' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
+{% else %}
+{% url 'app:household' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=True
+back_link=back_link|add:"?app_status=in_progress" %}
+{% endif %}
+{% endblock %}
+
+{% block body %}
+<p id="application_step" class="application-step">STEP {{ step }} OF {{ form_page_number }}</p>
+
+{% with header="Share basic information about your income" description="Your information will not be shared with anyone
+outside of the departments of City of Fort Collins' income eligible programs. They are meant to determine potential
+assistance programs you may qualify for." %}
+{% include "partials/side_content.html" with header=header description=description%}
+{% endwith %}
+
+<form action="{% url 'app:household_members' %}" enctype="multipart/form-data" method="post" autocomplete="false">
+    {% csrf_token %}
+
+    <div>
+        <label class="labelword">You indicated you had {{ dependent }} individual(s) in your household, what are their
+            names and birthdates?</label>
+    </div>
+
+    {% if message %}
+    <div style="color:red; margin-bottom: 5%;">{{ message }} </div>
+    {% endif %}
+
+    {% for number in list %}
+    <div id="household_member_{{ number }}" class="household_member">
+        {{ form }}
+        <button id="fileupload_{{ number }}" type="button" class="file-upload-btn"
+            data-household-member="{{number}}">Upload ID</button>
+    </div>
+    {% endfor %}
+
+    <div class="footer">
+        {% if update_mode %}
+        <input type="hidden" name="update_mode" value="true">
+        <button type="submit"> CONFIRM </button>
+        {% else %}
+        <button type="submit"> CONTINUE </button>
+        {% endif %}
+    </div>
+</form>
+
+<style>
+    label[for="id_name"] {
+        margin-top: 35px;
+    }
+
+    .file-upload-btn {
+        margin-top: 15px;
+        background-color: var(--yellow);
+    }
+
+    .hidden-file-input {
+        position: absolute;
+        left: -9999px;
+    }
+</style>
+
+<script>
+    var update_mode = "{{ update_mode }}" === "True";
+    var renewal_mode = "{{ renewal_mode }}" === "True";
+    var formData = JSON.parse('{{ form_data | escapejs }}');
+
+    // Hide the id_identification_path inputs and labels using jQuery
+    $(document).ready(function () {
+        // When the document loads make sure all of the id_identification_path inputs values
+        // are empty. This is to prevent data getting "stuck" in the input and creating
+        // a weird state where there's data, but the screen doesn't show it.
+        $("input[id='id_identification_path']").val("");
+
+        $("label[for='id_identification_path']").hide();
+        $("input[id='id_identification_path']").hide();
+        // hide all of the file-upload-btns
+        $(".file-upload-btn").hide();
+
+        // For all of the .household_member divs, check to see if their inputs have values
+        // If they do then show the cooresponding file-upload-btn
+        $(".household_member").each(function () {
+            var household_member = $(this).attr("id");
+            showFileUploadBtn(household_member);
+        });
+
+        // Listen to all of the household_member_{{ number }} class child inputs
+        // If the inputs have values then show the cooresponding file-upload-btn
+        $("form").on('input', '.household_member :input', function () {
+            var household_member = $(this).parent().attr("id");
+            showFileUploadBtn(household_member);
+        });
+
+        $(".file-upload-btn").click(async function () {
+            // Get the nearest id_identification_path
+            var identification_path = $(this).siblings("input[id='id_identification_path']");
+            // Get the birthdate of the household member
+            var birthdate = $(this).siblings("input[id='id_birthdate']").val();
+            // Check if the birthdate is >= 18 years ago
+            var is_eighteen_or_older = moment().subtract(18, 'years').isAfter(birthdate);
+            var html = "";
+            if (is_eighteen_or_older) {
+                html = `<img src=\"{% static 'images/co_drivers_license_sample.png' %}\" alt=\"Sample Documents\" style=\"margin-bottom:15px\">
+                    <p style=\"color:#13467D\">For accepted proof of identification, <a
+                    href="https://drive.google.com/file/d/1eyJ4sMmoEw2_lLJFVFlAzQcNFk8oF2Lj/view"
+                    style="color:var(--yellow)" target="_blank">please click here</a>
+                    </p>`;
+            } else {
+                html = `<img src=\"{% static 'images/co_drivers_license_sample.png' %}\" alt=\"Sample Documents\" style=\"margin-bottom:15px\">
+                    <p style=\"color:#13467D\">Child ID can include things like Free and Reduced Lunch, medical ID, student ID, or birth certificate. Please make sure the names are clear.
+                    </p>`;
+            }
+
+            var { value: file } = await Swal.fire({
+                title: "Select image",
+                html: html,
+                input: "file",
+                confirmButtonColor: '#13467D',
+                inputAttributes: {
+                    "accept": ".jpg, .png, .pdf",
+                    "aria-label": "Upload your file"
+                }
+            });
+
+            if (file) {
+                var reader = new FileReader()
+                reader.onload = (e) => {
+                    Swal.fire({
+                        title: "Your uploaded file",
+                        confirmButtonColor: '#13467D',
+                        imageUrl: e.target.result,
+                        imageAlt: "The uploaded file"
+                    }).then((result) => {
+                        // Set the background color of the file-upload-btn to green and
+                        // change the text of the button to "Uploaded" and disable the button
+                        $(this).css("background-color", "green");
+                        $(this).text("File Uploaded");
+                    });
+
+                    // Set the value of the nearest id_identification_path to the file
+                    // Encode the file contents as a Base64 string
+                    var fileContent = e.target.result.split(",")[1];
+                    identification_path.val(fileContent);
+                }
+
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Listen for the form submit event. If the all of the id_identification_path inputs 
+        // are empty then prevent the form from submitting. Also for each empty id_identification_path
+        // color the corresponding Upload ID button red.
+        $("form").submit(function (event) {
+            var empty_identification_paths = 0;
+            $(".household_member").each(function () {
+                var household_member = $(this).attr("id");
+                var identification_path = $(`#${household_member} > input[name="identification_path"]`).val();
+                if (identification_path === "") {
+                    empty_identification_paths++;
+                    $(`#${household_member} > .file-upload-btn`).css("background-color", "red");
+                }
+            });
+            if (empty_identification_paths > 0) {
+                event.preventDefault();
+                Swal.fire({
+                    title: 'Household Information',
+                    text: 'Please upload a photo of your ID for each member of your household.',
+                    icon: 'error',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#13467D'
+                });
+            }
+        });
+    });
+
+    function showFileUploadBtn(household_member) {
+        // Get the nearest name and birthday inputs for the household_member and check if they have values
+        if ($(`#${household_member} > input[name="name"]`).val() !== "" && $(`#${household_member} > input[name="birthdate"]`).val() !== "") {
+            $(`#${household_member} > .file-upload-btn`).show();
+        } else {
+            $(`#${household_member} > .file-upload-btn`).hide();
+        }
+    }
+
+    var household_names = document.getElementsByName("name");
+    var household_birthdates = document.getElementsByName("birthdate");
+    try {
+        if (update_mode || renewal_mode) {
+            // Check if the new number of household members is different from the old number of household members
+            // If it is let the user know to check over the names and birthdates
+            if (household_names.length !== formData.persons_in_household.length) {
+                Swal.fire({
+                    title: 'Household Information',
+                    text: 'The members of your household have changed since you last submitted your application. Please make sure their names and birthdays are up to date.',
+                    icon: 'info',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#13467D'
+                });
+            }
+        }
+
+        for (var i = 0; i < household_names.length; i++) {
+            if (formData.persons_in_household[i]) {
+                household_names[i].value = formData.persons_in_household[i].name;
+                household_birthdates[i].value = formData.persons_in_household[i].birthdate;
+            }
+        }
+    } catch (error) {
+        console.warn("User has no household members");
+    }
+</script>
+{% endblock %}

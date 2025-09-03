@@ -1,0 +1,39 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" style="background-color: white;">
+
+{% include "partials/head.html" with title="Privacy Policy" css="application" %}
+
+<body style="background-color: white;">
+    {% include "partials/environment_banner.html" with is_prod=is_prod db_env_str=db_env_str %}
+
+    <div class="nav">
+        <a href="{% url 'app:index' %}" style="margin-left:auto; margin-right:10px">
+            <p style="color:#999999; font-weight: 700;">EXIT</p>
+        </a>
+    </div>
+
+    <div class="content spaceAround">
+        {% include "partials/privacy_statement.html" %}
+    </div>
+</body>
+
+</html>

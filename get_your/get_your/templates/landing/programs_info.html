@@ -1,0 +1,74 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+{% include "partials/head.html" with title=title css="dashboard" %}
+
+<body>
+    {% include "partials/environment_banner.html" with is_prod=is_prod db_env_str=db_env_str %}
+
+    <div style="display: flex; justify-content: flex-end;padding: 10px; " id="google_translate_element"></div>
+
+    {% url 'app:index' as back_link %}
+    {% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
+
+    <div class="iq_program_container">
+        {% for program in iq_programs %}
+        <div class="modulequickApply">
+            <div class="row" style="margin:0; width:100%">
+                <div style="margin:0">
+                    <p style="font-weight: 550; margin: 0">{{ program.friendly_name }}</p>
+                    <p style="margin-top:3px;"> {{ program.friendly_category }} </p>
+                    <p style="margin-top:3px;">{{ program.friendly_description }}</p>
+
+                </div>
+            </div>
+            <div class="row" style="margin:0;width:100%">
+                <a class="row" href="{{ program.learn_more_link }}" target="_blank"
+                    style="text-decoration: none;justify-content: start;align-items: center;margin:0">
+                    <p style="margin: 0;color:var(--lightblue)"> Learn More </p>
+                    <img src="{% static 'images/Arrow 1.svg' %}" alt="back"
+                        style="height: 3vw; margin-left: 5px;color:black">
+                </a>
+                {% if program.friendly_supplemental_info %}
+                <p style="color:#999999;margin-top:0;text-align: right;">{{ program.friendly_supplemental_info }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <style>
+        @media screen and (min-width : 768px) {
+            .iq_program_container {
+                padding-left: 300px;
+            }
+        }
+
+        @media screen and (max-width : 767px) {
+            .iq_program_container {
+                padding-left: 0px;
+            }
+        }
+    </style>
+</body>
+
+</html>
