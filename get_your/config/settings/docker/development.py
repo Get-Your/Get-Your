@@ -1,10 +1,25 @@
-# ruff: noqa: E501
-import logging
+"""
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
 from .base import *  # noqa: F403
 from .base import INSTALLED_APPS
 from .base import REDIS_URL
-from .base import SPECTACULAR_SETTINGS
 from .base import env
 
 # ENV
@@ -36,7 +51,7 @@ DATABASES = {
             hst=env("POSTGRES_HOST"),
             prt=env("POSTGRES_PORT"),
             dbn=env("POSTGRES_DB"),
-        )
+        ),
     ),
     "monitor": env.db(
         "postgres://{usr}:{pwd}@{hst}:{prt}/{dbn}".format(
@@ -45,7 +60,7 @@ DATABASES = {
             hst=env("POSTGRES_HOST"),
             prt=env("POSTGRES_PORT"),
             dbn=env("MONITOR_DB"),
-    )
+        ),
     ),
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
@@ -156,18 +171,20 @@ ANYMAIL = {
 # ------------------------------------------------------------------------------
 # Add environment-specific loggers (I don't know if this is the correct
 # way to do this)
-LOGGING["loggers"].update({
-    "django.db.backends": {
-        "handlers": ["db_log"],
-        "level": "ERROR",
-        "propagate": False,
-    },
-    "django.security.DisallowedHost": {
-        "handlers": ["db_log"],
-        "level": "ERROR",
-        "propagate": False,
-    },
-})
+LOGGING["loggers"].update(
+    {
+        "django.db.backends": {
+            "handlers": ["db_log"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.security.DisallowedHost": {
+            "handlers": ["db_log"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    }
+)
 
 # Set logging level to DEBUG
 LOGGING["loggers"]["app"]["level"] = "DEBUG"
