@@ -653,23 +653,226 @@ class ETLToNew:
         run).
 
         Rubric for new table:
-            '<app name>_<lowercase model name>': {
-                'source_table': '',
-                'source_fields': [
+            "<app name>_<lowercase model name>": {
+                "source_table": "",
+                "source_fields": [
                 ],
-                'target_fields': [
+                "target_fields": [
                 ],
-                'target_types': [
+                "target_types": [
                 ],
-                'after_port': [{
-                    'function': ,
-                    'kwargs': {},
+                "after_port": [{
+                    "function": ,
+                    "kwargs": {},
                 }],
             },
 
         """
 
-        table_defs = {}
+        table_defs = {
+            "users_user": {
+                "source_table": "app_user",
+                "source_fields": [
+                    "id",
+                    "password",
+                    "last_login",
+                    "is_superuser",
+                    "is_staff",
+                    "is_active",
+                    "date_joined",
+                    "email",
+                    "first_name",
+                    "last_name",
+                    "phone_number",
+                    "has_viewed_dashboard",
+                    "is_updated",
+                    "last_completed_at",
+                    "last_action_notification_at",
+                ],
+                "target_fields": [
+                    "id",
+                    "password",
+                    "last_login",
+                    "is_superuser",
+                    "is_staff",
+                    "is_active",
+                    "date_joined",
+                    "email",
+                    "first_name",
+                    "last_name",
+                    "phone_number",
+                    "has_viewed_dashboard",
+                    "user_has_updated",
+                    "last_completed_at",
+                    "last_action_notification_at",
+                ],
+            },
+            "account_emailaddress": {
+                "source_table": "app_user",
+                "source_fields": [
+                    "id",
+                    "email",
+                    # Use non-strings to denote that a constant should be used
+                    True,
+                    True,
+                ],
+                "target_fields": [
+                    "user_id",
+                    "email",
+                    "verified",
+                    "primary",
+                ],
+            },
+            "auth_group": {
+                "source_table": "auth_group",
+            },
+            "auth_permission": {
+                "source_table": "auth_permission",
+            },
+            "users_user_groups": {
+                "source_table": "app_user_groups",
+            },
+            "users_user_user_permissions": {
+                "source_table": "app_user_user_permissions",
+            },
+            "users_usernote": {
+                "source_table": "app_admin",
+            },
+            "auth_group_permissions": {
+                "source_table": "auth_group_permissions",
+            },
+            "ref_iqprogram": {
+                "source_table": "app_iqprogramrd",
+                "source_fields": [
+                    "id",
+                    "created_at",
+                    "modified_at",
+                    "program_name",
+                    "ami_threshold",
+                    "friendly_name",
+                    "friendly_category",
+                    "friendly_description",
+                    "friendly_supplemental_info",
+                    "learn_more_link",
+                    "friendly_eligibility_review_period",
+                    "enable_autoapply",
+                    "renewal_interval_year",
+                    "requires_is_city_covered",
+                    "requires_is_in_gma",
+                ],
+                "target_fields": [
+                    "id",
+                    "created_at",
+                    "modified_at",
+                    "program_name",
+                    "ami_threshold",
+                    "friendly_name",
+                    "friendly_category",
+                    "friendly_description",
+                    "friendly_supplemental_info",
+                    "learn_more_link",
+                    "friendly_eligibility_review_period",
+                    "enable_autoapply",
+                    "renewal_interval_year",
+                    "requires_is_city_covered",
+                    "requires_is_in_gma",
+                ],
+            },
+            "ref_eligibilityprogram": {
+                "source_table": "app_eligibilityprogramrd",
+                "source_fields": [
+                    "id",
+                    "created_at",
+                    "modified_at",
+                    "program_name",
+                    "ami_threshold",
+                    "friendly_name",
+                    "friendly_description",
+                ],
+                "target_fields": [
+                    "id",
+                    "created_at",
+                    "modified_at",
+                    "program_name",
+                    "ami_threshold",
+                    "friendly_name",
+                    "friendly_description",
+                ],
+            },
+            "ref_address": {
+                "source_table": "app_addressrd",
+            },
+            "app_iqprogram": {
+                "source_table": "app_iqprogram",
+            },
+            "app_household": {
+                "source_table": "app_household",
+                "source_fields": [
+                    "created_at",
+                    "modified_at",
+                    "user_id",
+                    "is_updated",
+                    "is_income_verified",
+                    "duration_at_address",
+                    "number_persons_in_household",
+                    "income_as_fraction_of_ami",
+                    "rent_own",
+                ],
+                "target_fields": [
+                    "created_at",
+                    "modified_at",
+                    "user_id",
+                    "user_has_updated",
+                    "is_income_verified",
+                    "duration_at_address",
+                    "number_persons_in_household",
+                    "income_as_fraction_of_ami",
+                    "rent_own",
+                ],
+            },
+            "app_householdmembers": {
+                "source_table": "app_householdmembers",
+                "source_fields": [
+                    "created_at",
+                    "modified_at",
+                    "user_id",
+                    "household_info",
+                    "is_updated",
+                ],
+                "target_fields": [
+                    "created_at",
+                    "modified_at",
+                    "user_id",
+                    "household_info",
+                    "user_has_updated",
+                ],
+            },
+            "app_eligibilityprogram": {
+                "source_table": "app_eligibilityprogram",
+            },
+            "app_address": {
+                "source_table": "app_address",
+                "source_fields": [
+                    "created_at",
+                    "modified_at",
+                    "user_id",
+                    "eligibility_address_id",
+                    "mailing_address_id",
+                    "is_updated",
+                ],
+                "target_fields": [
+                    "created_at",
+                    "modified_at",
+                    "user_id",
+                    "eligibility_address_id",
+                    "mailing_address_id",
+                    "user_has_updated",
+                ],
+            },
+            "dashboard_feedback": {
+                "source_table": "app_feedback",
+            },
+        }
 
         return table_defs
 
