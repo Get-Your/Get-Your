@@ -74,8 +74,8 @@ class Address(TimeStampedModel):
         related_name="eligibility_user",
     )
 
-    # Important: for this model, ``is_updated`` applies *only to the mailing address*
-    is_updated = models.BooleanField(default=False)
+    # Important: for this model, ``user_has_updated`` applies *only to the mailing address*
+    user_has_updated = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "address"
@@ -88,7 +88,7 @@ class Household(TimeStampedModel):
         on_delete=models.CASCADE,
         primary_key=True,  # set this to the primary key of this model
     )
-    is_updated = models.BooleanField(default=False)
+    user_has_updated = models.BooleanField(default=False)
     is_income_verified = models.BooleanField(
         default=False,
         verbose_name="income has been verified",
@@ -140,7 +140,7 @@ class HouseholdMembers(TimeStampedModel):
     # Store the household info (individuals' names, birthdates, and path to an uploaded ID) as JSON for
     # quick storage and reference
     household_info = models.JSONField(null=True, blank=True)
-    is_updated = models.BooleanField(default=False)
+    user_has_updated = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "household member"
