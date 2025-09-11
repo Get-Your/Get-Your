@@ -30,7 +30,7 @@ from pathlib import Path
 from typing import Union
 
 # from psycopg.errors import UniqueViolation
-from psycopg.errors import FeatureNotSupported, UndefinedColumn
+from psycopg.errors import FeatureNotSupported
 from sqlalchemy import (
     Table,
     bindparam,
@@ -386,11 +386,23 @@ class ETLToNew:
                         # Use all columns in df
                         **{x: bindparam(x) for x in df.columns}
                     )
-                    upsert_stmt = upsert_stmt.on_conflict_do_update(
-                        index_elements=[target_table.c.id],
-                        # Set all columns except 'id'
-                        set_={x: bindparam(x) for x in df.columns if x != "id"},
-                    )
+
+                    # Try the ON CONFLICT DO UPDATE first with 'id', then with
+                    # 'user_id' if that fails
+                    try:
+                        upsert_stmt = upsert_stmt.on_conflict_do_update(
+                            index_elements=[target_table.c.id],
+                            # Set all columns except 'id'
+                            set_={x: bindparam(x) for x in df.columns if x != "id"},
+                        )
+                    except AttributeError:
+                        upsert_stmt = upsert_stmt.on_conflict_do_update(
+                            index_elements=[target_table.c.user_id],
+                            # Set all columns except 'id'
+                            set_={
+                                x: bindparam(x) for x in df.columns if x != "user_id"
+                            },
+                        )
                     with self.new.engine.connect() as conn:
                         conn.execute(upsert_stmt, df.to_dict("records"))
                         conn.commit()
@@ -748,7 +760,7 @@ class ETLToNew:
             # Update auto-increment to be the value after the max, if applicable
             try:
                 self._update_autoincrement(target_table)
-            except UndefinedColumn:
+            except AttributeError:
                 # Case for if there is no 'id' column
                 pass
 
