@@ -1,6 +1,7 @@
 import re
 from pathlib import Path
 from typing import Union
+from uuid import uuid1
 
 import coftc_cred_man as crd
 import numpy as np
@@ -229,6 +230,7 @@ class FieldMapping:
         """
 
         self.__source_fields = []
+        self.__source_values = []
         self.__target_fields = []
         self.__target_types = []
         self.__indices = {}
@@ -264,6 +266,20 @@ class FieldMapping:
 
         """
         return {key: "" for key in self.__source_fields if key is not None}
+
+    @property
+    def source_values(self):
+        """
+        Return the source_values as a dictionary relative to source_fields.
+
+        This is read-only because no setter is defined.
+
+        """
+        return {
+            key: val
+            for key, val in zip(self.__source_fields, self.__source_values)
+            if key is not None
+        }
 
     @property
     def target_fields(self):
@@ -350,8 +366,16 @@ class FieldMapping:
 
         """
 
+        # If source_field is not a string, set a placeholder and define the value
+        if isinstance(source_field, str):
+            source_name = source_field
+            source_value = None
+        else:
+            source_name = str(uuid1()).replace("-", "")
+            source_value = source_field
+
         # Ensure the field doesn't already exist
-        if self.__indices.get(source_field) is not None:
+        if self.__indices.get(source_name) is not None:
             raise AttributeError(
                 f"'{source_field}' already exists. Try update() instead."
             )
@@ -359,7 +383,8 @@ class FieldMapping:
         # Store the next index for the field, for ease of lookup
         new_index = len(self.__source_fields)
         self.__indices.update({source_field: new_index})
-        self.__source_fields = list(self.__source_fields[:new_index]) + [source_field]
+        self.__source_fields = list(self.__source_fields[:new_index]) + [source_name]
+        self.__source_values = list(self.__source_values[:new_index]) + [source_value]
         self.__target_fields = list(self.__target_fields[:new_index]) + [target_field]
         if target_type:
             self.__target_types = list(self.__target_types[:new_index]) + [target_type]
@@ -393,6 +418,11 @@ class FieldMapping:
             list(self.__source_fields[:search_index])
             + [None]
             + list(self.__source_fields[search_index + 1 :])
+        )
+        self.__source_values = (
+            list(self.__source_values[:search_index])
+            + [None]
+            + list(self.__source_values[search_index + 1 :])
         )
         self.__target_fields = (
             list(self.__target_fields[:search_index])
@@ -461,6 +491,12 @@ class FieldMapping:
         return_dict = {
             "target_name": self.__target_fields[search_index],
         }
+        if self.__source_values[search_index]:
+            return_dict.update(
+                {
+                    "source_value": self.__source_values[search_index],
+                }
+            )
         if hasattr(self, "__target_types"):
             return_dict.update(
                 {
@@ -490,6 +526,27 @@ class FieldMapping:
 
         search_index = self.__indices.get(source_field)
         return self.__target_fields[search_index]
+
+    def get_value(
+        self,
+        source_field: str,
+    ):
+        """
+        Get the source_value, based on the source_field.
+
+        Parameters
+        ----------
+        source_field : str
+            The name of the source field.
+
+        Returns
+        -------
+        Returns corresponding source_value.
+
+        """
+
+        search_index = self.__indices.get(source_field)
+        return self.__source_values[search_index]
 
     def get_type(
         self,
