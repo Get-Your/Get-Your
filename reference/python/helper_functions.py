@@ -436,8 +436,8 @@ class FieldMapping:
                 + list(self.__target_types[search_index + 1 :])
             )
 
-        # Delete the index
-        del self.__indices[source_field]
+        # Remove the index (without reordering the 'indices' list)
+        self.__indices[search_index] = None
 
     def update(
         self,
