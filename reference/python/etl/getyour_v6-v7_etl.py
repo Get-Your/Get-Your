@@ -273,9 +273,9 @@ class ETLToNew:
     def port_data(
         self,
         source_table_name: str,
-        source_fields: Union[list, tuple],
         target_table_name: str,
-        target_fields: Union[list, tuple],
+        source_fields: Union[list, tuple] = (),
+        target_fields: Union[list, tuple] = (),
         target_types: Union[list, tuple] = (),
     ):
         """
@@ -303,16 +303,16 @@ class ETLToNew:
 
         """
 
+        if self.new.db_type not in ("postgres", "sqlite"):
+            raise NotImplementedError(
+                "The UPSERT functionality used for the target table is currently only available for PostgreSQL and SQLite."
+            )
+
         if len(source_fields) != len(target_fields) or (
             target_types and len(source_fields) != len(target_types)
         ):
             raise AttributeError(
                 "'source_fields', 'target_fields', and 'target_types' (if exists) must be the same length"
-            )
-
-        if self.new.db_type not in ("postgres", "sqlite"):
-            raise NotImplementedError(
-                "The UPSERT functionality used for the target table is currently only available for PostgreSQL and SQLite."
             )
 
         try:
@@ -329,6 +329,13 @@ class ETLToNew:
             )
 
             # Define field mapping
+
+            # If source_fields has no values, it means target_fields should be
+            # equivalent; pull all fields from source_table and set them to
+            # both source_ and target_fields
+            if not source_fields:
+                source_fields = target_fields = [x.name for x in source_table.columns]
+
             if target_types:
                 mappings = [
                     {"source_field": src, "target_field": trg, "target_type": typ}
@@ -716,9 +723,13 @@ class ETLToNew:
             if "source_table" in tbldef.keys():
                 source_table, target_table = self.port_data(
                     source_table_name=tbldef["source_table"],
-                    source_fields=tbldef["source_fields"],
                     target_table_name=tblnm,
-                    target_fields=tbldef["target_fields"],
+                    source_fields=tbldef["source_fields"]
+                    if "source_fields" in tbldef
+                    else (),
+                    target_fields=tbldef["target_fields"]
+                    if "target_fields" in tbldef
+                    else (),
                     target_types=tbldef["target_types"]
                     if "target_types" in tbldef
                     else (),
