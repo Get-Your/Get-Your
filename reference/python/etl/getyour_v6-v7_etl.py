@@ -29,19 +29,18 @@ import sys
 from pathlib import Path
 from typing import Union
 
-# from psycopg.errors import UniqueViolation
 from psycopg.errors import FeatureNotSupported
 from sqlalchemy import (
     Table,
     bindparam,
     delete,
     func,
+    literal_column,
     select,
     text,
     update,
 )
 
-# from sqlalchemy.exc import IntegrityError, NoSuchTableError
 # Use Postgres-specific insert
 from sqlalchemy.dialects.postgresql import insert
 
@@ -349,8 +348,16 @@ class ETLToNew:
 
             field_mapping = FieldMapping(mappings=mappings)
 
+            # Define the SELECT statement. Gather the field if source_value is
+            # None, otherwise use the (literal) source_value labeled as the
+            # field name
             stmt = select(
-                *[source_table.c.get(x) for x in field_mapping.source_fields.keys()],
+                *[
+                    source_table.c.get(fd)
+                    if not vl
+                    else literal_column(str(vl)).label(fd)
+                    for fd, vl in field_mapping.source_values.items()
+                ],
             )
 
             # Pull the data into a DataFrame and process it
