@@ -348,17 +348,14 @@ class ETLToNew:
 
             field_mapping = FieldMapping(mappings=mappings)
 
-            # Define the SELECT statement. Gather the field if source_value is
-            # None, otherwise use the (literal) source_value labeled as the
-            # field name
-            stmt = select(
-                *[
-                    source_table.c.get(fd)
-                    if not vl
-                    else literal_column(str(vl)).label(fd)
-                    for fd, vl in field_mapping.source_values.items()
-                ],
-            )
+            # Gather the field if source_value is None, otherwise use the
+            # (literal) source_value labeled as the field name
+            source_table_fields = [
+                source_table.c.get(fd) if not vl else literal_column(str(vl)).label(fd)
+                for fd, vl in field_mapping.source_values.items()
+            ]
+            # Define the SELECT statement
+            stmt = select(*source_table_fields)
 
             # Pull the data into a DataFrame and process it
             df = process_data(stmt, self.old.engine, field_mapping)
@@ -372,7 +369,7 @@ class ETLToNew:
             # )
 
             # Finalize df for database upsert
-            df = finalize_df_for_database(df)
+            df = finalize_df_for_database(df, db_columns=source_table_fields)
 
             try:
                 # Find the primary key(s) to upsert with

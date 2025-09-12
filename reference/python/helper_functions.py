@@ -1,3 +1,4 @@
+import json
 import re
 from pathlib import Path
 from typing import Union
@@ -15,10 +16,12 @@ from sqlalchemy import (
     create_engine,
     text,
 )
+from sqlalchemy.dialects.postgresql.json import JSON, JSONB
 from sqlalchemy.engine.base import Engine
 
 # Use Postgres-specific insert
 from sqlalchemy.sql.selectable import Select
+from sqlalchemy.sql.sqltypes import TEXT
 
 
 class DBMetadata:
@@ -773,6 +776,7 @@ def process_data(
 
 def finalize_df_for_database(
     df_data: pd.DataFrame,
+    db_fields: Union[list, tuple] = None,
 ):
     """
     Finalize the input DataFrame for insert into a database.
@@ -781,6 +785,9 @@ def finalize_df_for_database(
     ----------
     df_data : pd.DataFrame
         The input DataFrame to perform finalization on.
+    db_fields : Union[list, tuple], optional
+        Fields from the database that correspond to each column in the df.
+        The default is None.
 
     Returns
     -------
@@ -788,6 +795,18 @@ def finalize_df_for_database(
         Returns a finalized DataFrame.
 
     """
+    # Stringify all dict fields (note that this is only available with Postgres
+    # or SQLite as the source database, otherwise this will fail silently)
+    if db_fields:
+        # Verify the length of db_fields and df.columns is equal
+        if len(db_fields) != len(df_data.columns):
+            raise AttributeError(
+                "db_fields must be the same length as the columns in the input DataFrame"
+            )
+        for nm, col in zip(df_data.columns, db_fields):
+            if isinstance(col.type, (JSON, JSONB)) or isinstance(col.type, TEXT):
+                df_data[nm] = df_data[nm].apply(json.dumps)
+
     # Replace all NaN and NaT with Python None
     df_data = df_data.replace({np.nan: None})
 
