@@ -753,6 +753,7 @@ class ETLToNew:
                     "renewal_interval_year",
                     "requires_is_city_covered",
                     "requires_is_in_gma",
+                    "is_active",
                 ],
                 "target_fields": [
                     "id",
@@ -770,6 +771,7 @@ class ETLToNew:
                     "renewal_interval_year",
                     "requires_is_city_covered",
                     "requires_is_in_gma",
+                    "is_active",
                 ],
             },
             "ref_eligibilityprogram": {
@@ -782,6 +784,7 @@ class ETLToNew:
                     "ami_threshold",
                     "friendly_name",
                     "friendly_description",
+                    "is_active",
                 ],
                 "target_fields": [
                     "id",
@@ -791,6 +794,7 @@ class ETLToNew:
                     "ami_threshold",
                     "friendly_name",
                     "friendly_description",
+                    "is_active",
                 ],
             },
             "ref_address": {
@@ -865,6 +869,20 @@ class ETLToNew:
             },
             "dashboard_feedback": {
                 "source_table": "app_feedback",
+                "source_fields": [
+                    "id",
+                    "created",
+                    "modified",
+                    "star_rating",
+                    "feedback_comments",
+                ],
+                "target_fields": [
+                    "id",
+                    "created_at",
+                    "modified_at",
+                    "star_rating",
+                    "feedback_comments",
+                ],
             },
         }
 
