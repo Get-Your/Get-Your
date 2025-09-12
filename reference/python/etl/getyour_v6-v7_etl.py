@@ -949,6 +949,16 @@ class ETLToNew:
                     "feedback_comments",
                 ],
             },
+            "monitor_loglevel": {
+                "source_table": "logger_levelrd",
+                "source_db": self.old_analytics,
+                "target_db": self.new_monitor,
+            },
+            "monitor_logdetail": {
+                "source_table": "logger_detail",
+                "source_db": self.old_analytics,
+                "target_db": self.new_monitor,
+            },
         }
 
         return table_defs
