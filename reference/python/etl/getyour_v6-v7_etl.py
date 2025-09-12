@@ -397,7 +397,7 @@ class ETLToNew:
             # )
 
             # Finalize df for database upsert
-            df = finalize_df_for_database(df, db_columns=source_table_fields)
+            df = finalize_df_for_database(df, db_fields=source_table_fields)
 
             try:
                 # Find the primary key(s) to upsert with
