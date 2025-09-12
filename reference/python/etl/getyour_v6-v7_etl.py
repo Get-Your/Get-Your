@@ -196,6 +196,7 @@ class ETLToNew:
     def _update_autoincrement(
         self,
         target_table: Table,
+        target_db: DBMetadata = None,
     ):
         """
         Update the specified table's auto-increment ``id`` value, if applicable.
@@ -207,6 +208,9 @@ class ETLToNew:
         ----------
         target_table : Table
             The table to update autoincrement for.
+        target_db : DBMetadata, optional
+            The DBMetadata object to use for the transfer. If excluded (the
+            default), ``self.new`` will be used.
 
         Returns
         -------
@@ -214,23 +218,27 @@ class ETLToNew:
 
         """
 
-        if self.new.db_type not in ("postgres", "sqlite"):
+        # Gather the proper DBMetadata
+        target_db = target_db or self.new
+
+        # Ensure the database is supported
+        if target_db.db_type not in ("postgres", "sqlite"):
             raise NotImplementedError(
                 "The autoincrement-reset functionality is currently only available for PostgreSQL and SQLite."
             )
 
         # Check if the target table has values
         count_stmt = select(func.count(target_table.c.id))
-        with self.new.engine.begin() as conn:
+        with target_db.engine.begin() as conn:
             count_val = conn.execute(count_stmt).fetchone()[0]
 
         try:
-            if self.new.db_type == "postgres":
+            if target_db.db_type == "postgres":
                 # Get the Postgres sequence name
                 sequence_name_stmt = text(
                     f"select pg_get_serial_sequence('{target_table.name}', 'id')"
                 )
-                with self.new.engine.begin() as conn:
+                with target_db.engine.begin() as conn:
                     sequence_name = conn.execute(sequence_name_stmt).fetchone()[0]
 
                 # If the table has values, set the sequence to the value after
@@ -241,7 +249,7 @@ class ETLToNew:
                     )
                 else:
                     sequence_stmt = text(f"select setval('{sequence_name}', 1, false)")
-                with self.new.engine.begin() as conn:
+                with target_db.engine.begin() as conn:
                     conn.execute(sequence_stmt)
 
             else:
@@ -249,14 +257,14 @@ class ETLToNew:
                 # autoincrement value
                 sequence_table = Table(
                     "sqlite_sequence",
-                    self.new.metadata,
-                    autoload_with=self.new.engine,
+                    target_db.metadata,
+                    autoload_with=target_db.engine,
                 )
 
                 # If the table has values, find the max ID; else, set to zero
                 if count_val > 0:
                     max_id_stmt = select(func.max(target_table.c.id))
-                    with self.new.engine.begin() as conn:
+                    with target_db.engine.begin() as conn:
                         max_id = conn.execute(max_id_stmt).fetchone()[0]
                 else:
                     max_id = 0
@@ -270,7 +278,7 @@ class ETLToNew:
                     )
                     .where(sequence_table.c.name == target_table.name)
                 )
-                with self.new.engine.begin() as conn:
+                with target_db.engine.begin() as conn:
                     conn.execute(sequence_stmt)
 
         except Exception as exc:
@@ -301,7 +309,9 @@ class ETLToNew:
         self,
         source_table_name: str,
         target_table_name: str,
+        source_db: DBMetadata = None,
         source_fields: Union[list, tuple] = (),
+        target_db: DBMetadata = None,
         target_fields: Union[list, tuple] = (),
         target_types: Union[list, tuple] = (),
     ):
@@ -312,13 +322,21 @@ class ETLToNew:
         ----------
         source_table_name : str
             Name of the source table.
-        source_fields : Union[list, tuple]
-            Ordered fields to pull from the source table.
         target_table_name : str
             Name of the target table.
-        target_fields : Union[list, tuple]
+        source_db : DBMetadata, optional
+            The DBMetadata object to use for the transfer. If excluded (the
+            default), ``self.old`` will be used.
+        source_fields : Union[list, tuple], optional
+            Ordered fields to pull from the source table. If excluded (the
+            default), all fields from the source table will be used.
+        target_db : DBMetadata, optional
+            The DBMetadata object to use for the transfer. If excluded (the
+            default), ``self.new`` will be used.
+        target_fields : Union[list, tuple], optional
             Ordered fields to insert into the target table (matching the order
-            of source_fields).
+            of source_fields). If excluded (the default), all fields (and exact
+            names) from the source table will be used.
         target_types : Union[list, tuple], optional
             Ordered datatypes for the data in the target table. This is only
             necessary if any datatypes are different than in the source table;
@@ -330,11 +348,20 @@ class ETLToNew:
 
         """
 
-        if self.new.db_type not in ("postgres", "sqlite"):
+        # Gather the proper DBMetadata
+        source_db = source_db or self.old
+        target_db = target_db or self.new
+
+        # Ensure the databases are supported
+        if source_db.db_type not in ("postgres", "sqlite") or target_db.db_type not in (
+            "postgres",
+            "sqlite",
+        ):
             raise NotImplementedError(
                 "The UPSERT functionality used for the target table is currently only available for PostgreSQL and SQLite."
             )
 
+        # Ensure all field/type inputs match
         if len(source_fields) != len(target_fields) or (
             target_types and len(source_fields) != len(target_types)
         ):
@@ -346,13 +373,13 @@ class ETLToNew:
             # First, load the source and target tables from metadata reflections
             source_table = Table(
                 source_table_name,
-                self.old.metadata,
-                autoload_with=self.old.engine,
+                source_db.metadata,
+                autoload_with=source_db.engine,
             )
             target_table = Table(
                 target_table_name,
-                self.new.metadata,
-                autoload_with=self.new.engine,
+                target_db.metadata,
+                autoload_with=target_db.engine,
             )
 
             # Define field mapping
@@ -386,7 +413,7 @@ class ETLToNew:
             stmt = select(*source_table_fields)
 
             # Pull the data into a DataFrame and process it
-            df = process_data(stmt, self.old.engine, field_mapping)
+            df = process_data(stmt, source_db.engine, field_mapping)
 
             # # Add records
             # column_length = len(df)
@@ -405,9 +432,9 @@ class ETLToNew:
 
                 # Use MERGE to upsert if the target is Postgres; else use
                 # ON CONFLICT
-                if self.new.db_type == "postgres":
+                if target_db.db_type == "postgres":
                     upsert_via_merge(
-                        self.new,
+                        target_db,
                         target_table,
                         df,
                         primary_keys,
@@ -429,7 +456,7 @@ class ETLToNew:
                             x: bindparam(x) for x in df.columns if x not in primary_keys
                         },
                     )
-                    with self.new.engine.connect() as conn:
+                    with target_db.engine.connect() as conn:
                         conn.execute(upsert_stmt, df.to_dict("records"))
                         conn.commit()
 
@@ -449,7 +476,7 @@ class ETLToNew:
                     )
                     for row in df.to_dict("records"):
                         try:
-                            with self.new.engine.connect() as conn:
+                            with target_db.engine.connect() as conn:
                                 conn.execute(insert_stmt, row)
                                 conn.commit()
                         except:
@@ -485,6 +512,12 @@ class ETLToNew:
 
         Parameters
         ----------
+        source_db : DBMetadata, optional
+            The DBMetadata object to use for the transfer. If excluded (the
+            default), ``self.old`` will be used.
+        target_db : DBMetadata, optional
+            The DBMetadata object to use for the transfer. If excluded (the
+            default), ``self.new`` will be used.
         starting_target_table : str, optional
             Specifies the table in the target database to start the process
             with. Table order (in self.dynamic_table_definitions) is preserved
@@ -504,11 +537,6 @@ class ETLToNew:
         None.
 
         """
-
-        if self.new.db_type not in ("postgres", "sqlite"):
-            raise NotImplementedError(
-                "The truncate functionality is currently only available for PostgreSQL and SQLite."
-            )
 
         # Format custom portion of the truncation message
         custom_truncate_msg = ""
@@ -546,27 +574,40 @@ class ETLToNew:
         # Include all dynamic tables, beginning with starting_idx and ending
         # with ending_idx (inclusive)
         table_names = [
-            x
-            for idx, x in enumerate(self.dynamic_table_definitions.keys())
+            (dct["target_db"] if "target_db" in dct else self.new, nm)
+            for idx, (nm, dct) in enumerate(self.dynamic_table_definitions.items())
             if idx >= starting_idx and idx <= ending_idx
         ]
 
+        # Group tables by database
+        unique_dbs = set(x[0] for x in table_names)
+        tables_to_truncate = {key: [] for key in unique_dbs}
+        for itm in table_names:
+            tables_to_truncate[itm[0]].append(itm[1])
+
+        # Ensure all databases are supported
+        if any(x.db_type not in ("postgres", "sqlite") for x in tables_to_truncate):
+            raise NotImplementedError(
+                "The truncate functionality is currently only available for PostgreSQL and SQLite."
+            )
+
+        for dbm, tbls in tables_to_truncate.items():
         # If SQLite, use the SQLAlchemy option; else, use Postgres with
         # error-checking
-        if self.new.db_type == "sqlite":
+            if dbm.db_type == "sqlite":
             # Use the SQLITE_SEQUENCE table to update the next autoincrement
             # value
             sequence_table = Table(
                 "sqlite_sequence",
-                self.new.metadata,
-                autoload_with=self.new.engine,
+                    dbm.metadata,
+                    autoload_with=dbm.engine,
             )
 
-            for tbl in table_names:
+                for tbl in tbls:
                 target_table = Table(
                     tbl,
-                    self.new.metadata,
-                    autoload_with=self.new.engine,
+                        dbm.metadata,
+                        autoload_with=dbm.engine,
                 )
                 # Delete all from the table, then reset auto-increment
                 delete_stmt = delete(target_table)
@@ -581,7 +622,7 @@ class ETLToNew:
                     .where(sequence_table.c.name == target_table.name)
                 )
 
-                with self.new.engine.begin() as conn:
+                    with dbm.engine.begin() as conn:
                     conn.execute(delete_stmt)
                     conn.execute(reset_autoincrement_stmt)
 
@@ -590,16 +631,15 @@ class ETLToNew:
             try:
                 delete_stmt = text(
                     "truncate {} restart identity".format(
-                        ", ".join([f"public.{x}" for x in table_names])
+                            ", ".join([f"public.{x}" for x in tbls])
                     )
                 )
-                with self.new.engine.begin() as conn:
+                    with dbm.engine.begin() as conn:
                     conn.execute(delete_stmt)
 
             except FeatureNotSupported as exc:
                 # Extract the error message and rollback the connection
                 error_msg = exc.args[0]
-                self.target_conn.rollback()
 
                 # Attempt to parse the error. If error_msg startswith
                 # case-insensitive 'cannot truncate'...
@@ -624,14 +664,14 @@ class ETLToNew:
                             self.dynamic_table_definitions.keys()
                         ).index(reftable_name)
                         if reftable_index <= ending_idx:
-                            additional_notification = f'\n\nAdditional error: "{reftable_name}" is defined *before* "{table_names[-1]}"; this will need to be rearranged before proceeding.'
+                                additional_notification = f'\n\nAdditional error: "{reftable_name}" is defined *before* "{tbls[-1]}"; this will need to be rearranged before proceeding.'
                         elif reftable_index != ending_idx + 1:
-                            additional_notification = f'\n\nAdditionally: consider moving "{reftable_name}" to directly after "{table_names[-1]}" in the dynamic table definitions to simplify the ETL.'
+                                additional_notification = f'\n\nAdditionally: consider moving "{reftable_name}" to directly after "{tbls[-1]}" in the dynamic table definitions to simplify the ETL.'
                         else:
                             additional_notification = ""
 
                         raise FeatureNotSupported(
-                            f"""Update the command to use "ending_target_table='{reftable_name}'" to resolve this issue: table "{table_names[-1]}" could not be truncated.{additional_notification}"""
+                                f"""Update the command to use "ending_target_table='{reftable_name}'" to resolve this issue: table "{tbls[-1]}" could not be truncated.{additional_notification}"""
                         ) from exc
                 raise
 
@@ -983,9 +1023,11 @@ class ETLToNew:
                 source_table, target_table = self.port_data(
                     source_table_name=tbldef["source_table"],
                     target_table_name=tblnm,
+                    source_db=tbldef["source_db"] if "source_db" in tbldef else None,
                     source_fields=tbldef["source_fields"]
                     if "source_fields" in tbldef
                     else (),
+                    target_db=tbldef["target_db"] if "target_db" in tbldef else None,
                     target_fields=tbldef["target_fields"]
                     if "target_fields" in tbldef
                     else (),
@@ -1006,7 +1048,10 @@ class ETLToNew:
 
             # Update auto-increment to be the value after the max, if applicable
             try:
-                self._update_autoincrement(target_table)
+                self._update_autoincrement(
+                    target_table,
+                    target_db=tbldef["target_db"] if "target_db" in tbldef else None,
+                )
             except AttributeError:
                 # Case for if there is no 'id' column
                 pass
