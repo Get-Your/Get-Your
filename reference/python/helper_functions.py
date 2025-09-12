@@ -735,36 +735,28 @@ def process_data(
     """
     # Gather the data. dfiter returns an iterator of data chunks, which are
     # then looping over to return the full df
-    if hasattr(field_mapping, "target_types"):
-        dfiter = pd.read_sql(
-            db_query,
-            con=db_engine,
-            # Chunk the result
-            chunksize=100000,
-            # Coerce datatypes to match target expectations. If the target datatype
-            # is 'str', ignore it here; 'str' will coerce NULL values to 'None' (a
-            # string), while the default will properly read NULL as None (and bring
-            # string values in properly as well)
-            dtype={
-                key: val
-                for key, val in field_mapping.target_types.items()
-                if val != "str"
-            },
-        )
-    else:
-        # Don't coerce datatypes if field_mapping.target_types doesn't exist
-        dfiter = pd.read_sql(
-            db_query,
-            con=db_engine,
-            # Chunk the result
-            chunksize=100000,
-        )
+    dfiter = pd.read_sql(
+        db_query,
+        con=db_engine,
+        # Chunk the result
+        chunksize=100000,
+        # Coerce datatypes to match target expectations (if exists). If the
+        # target datatype is 'str', ignore it here; 'str' will coerce NULL
+        # values to 'None' (a string), while the default will properly read NULL
+        # as None (and bring string values in properly as well)
+        dtype={
+            key: val for key, val in field_mapping.target_types.items() if val != "str"
+        },
+    )
 
     for iteridx, itm in enumerate(dfiter):
         if iteridx == 0:
             df = itm
         else:
             # Concatenate itm with df
+            print(f"Index {iteridx}; df len={len(df)}")
+            if iteridx == 4:
+                break
             df = pd.concat([df, itm], ignore_index=True)
 
     # Rename the fields (if field_mapping exists)
