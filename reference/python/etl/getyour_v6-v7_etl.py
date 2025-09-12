@@ -375,6 +375,9 @@ class ETLToNew:
             df = finalize_df_for_database(df)
 
             try:
+                # Find the primary key(s) to upsert with
+                primary_keys = [x.name for x in target_table.columns if x.primary_key]
+
                 # Use MERGE to upsert if the target is Postgres; else use
                 # ON CONFLICT
                 if self.new.db_type == "postgres":
@@ -382,7 +385,7 @@ class ETLToNew:
                         self.new,
                         target_table,
                         df,
-                        [x.name for x in target_table.columns if x.primary_key],
+                        primary_keys,
                     )
 
                 else:
@@ -394,22 +397,13 @@ class ETLToNew:
                         **{x: bindparam(x) for x in df.columns}
                     )
 
-                    # Try the ON CONFLICT DO UPDATE first with 'id', then with
-                    # 'user_id' if that fails
-                    try:
-                        upsert_stmt = upsert_stmt.on_conflict_do_update(
-                            index_elements=[target_table.c.id],
-                            # Set all columns except 'id'
-                            set_={x: bindparam(x) for x in df.columns if x != "id"},
-                        )
-                    except AttributeError:
-                        upsert_stmt = upsert_stmt.on_conflict_do_update(
-                            index_elements=[target_table.c.user_id],
-                            # Set all columns except 'id'
-                            set_={
-                                x: bindparam(x) for x in df.columns if x != "user_id"
-                            },
-                        )
+                    upsert_stmt = upsert_stmt.on_conflict_do_update(
+                        index_elements=primary_keys,
+                        # Set all columns except the primary keys
+                        set_={
+                            x: bindparam(x) for x in df.columns if x not in primary_keys
+                        },
+                    )
                     with self.new.engine.connect() as conn:
                         conn.execute(upsert_stmt, df.to_dict("records"))
                         conn.commit()
@@ -437,7 +431,7 @@ class ETLToNew:
                             ignore_count += 1
 
                     print(
-                        f"Row-by-row insertion successful! {ignore_count} records ignored."
+                        f"Row-by-row insertion successful! {ignore_count} of {len(df)} records ignored."
                     )
 
                 else:
