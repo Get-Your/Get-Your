@@ -67,7 +67,13 @@ class ETLToNew:
             .joinpath("..", "..", "..", "get_your", "db.sqlite3")
             .resolve()
         ),
+        newdb_monitor_profile: str = str(
+            Path(FILE_DIR)
+            .joinpath("..", "..", "..", "get_your", "db_monitor.sqlite3")
+            .resolve()
+        ),
         olddb_profile: str = "getfoco_prod_v6",
+        olddb_analytics_profile: str = "getfoco_dev_analytics_v6",
         ignore_errors: bool = True,
     ):
         """
@@ -79,10 +85,18 @@ class ETLToNew:
             The coftc-cred-man profile with the proper credentials for the new
             database connection, or the path to a SQLite database. The default
             is the path to the default Django SQLite database.
+        newdb_monitor_profile : str, optional
+            The coftc-cred-man profile with the proper credentials for the new
+            database 'monitor' connection, or the path to a SQLite database.
+            The default is the path to the 'monitor' Django SQLite database.
         olddb_profile : str, optional
             The coftc-cred-man profile with the proper credentials for the old
             database connection, or the path to a SQLite database. The default
             is 'getfoco_prod_v6'.
+        olddb_analytics_profile : str, optional
+            The coftc-cred-man profile with the proper credentials for the old
+            database 'analytics' connection, or the path to a SQLite database.
+            The default is 'getfoco_dev_analytics_v6'.
         ignore_errors : bool, optional
             Specifies whether errors inserting specific records are to be
             ignored. The alternative is to rollback the entire transaction on a
@@ -102,8 +116,14 @@ class ETLToNew:
         self.new = DBMetadata(
             newdb_profile,
         )
+        self.new_monitor = DBMetadata(
+            newdb_monitor_profile,
+        )
         self.old = DBMetadata(
             olddb_profile,
+        )
+        self.old_analytics = DBMetadata(
+            olddb_analytics_profile,
         )
 
         # # Initialize the table functions. Note that this must happen before the
@@ -266,6 +286,14 @@ class ETLToNew:
             pass
         try:
             self.new.cleanup()
+        except:
+            pass
+        try:
+            self.old_analytics.cleanup()
+        except:
+            pass
+        try:
+            self.new_monitor.cleanup()
         except:
             pass
 
