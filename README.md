@@ -75,7 +75,7 @@ Run the following to create the SQLite database and populate it with the databas
 > Each database migration must be run separately.
 
     python3 manage_local.py migrate
-    python3 manage_local.py migrate --database=<analytics_database>
+    python3 manage_local.py migrate --database=<monitor_database>
     python3 manage_local.py runserver
 
 # Development and Deployment
@@ -354,7 +354,7 @@ Summary of the database setup
 - Database names
   - `platform_dev` is the database name on the DEV server instance
   - `platform_stage` and `platform_prod` are separate databases on the PROD server instance
-  - The 'analytics' counterpart (used by Django for logging) is its own database in each environment (specified where necessary as \<analytics_database\>)
+  - The 'monitor' counterpart (used by Django for logging) is its own database in each environment (specified where necessary as \<monitor_database\>)
 - Database users (\<env\> is the database instance for each user ('dev', 'stage', or 'prod'))
   - developer_\<env\>_user: Privileged database user, used locally for Django development
   - django_\<env\>_user: Base database user, used by Django with the minimum necessary database privileges
@@ -384,7 +384,7 @@ Use the following connection string to connect to the target database. The hostn
 `pg_dump` and `pg_restore` are PostgreSQL utilities used from the local command line (e.g. not from within the `psql` connection).
 
 ### Creating a Database
-On a freshly-deployed Azure instance, only the admin user (assigned during server setup) and the `postgres` database exist. Use the following code to create the `platform` database and its 'analytics' counterpart.
+On a freshly-deployed Azure instance, only the admin user (assigned during server setup) and the `postgres` database exist. Use the following code to create the `platform` database and its 'monitor' counterpart.
 
     psql --host=<hostname> --port=5432 --username=<admin_username> --dbname=postgres --command="CREATE DATABASE <target_database_name>;"
 
@@ -478,7 +478,7 @@ Connect to the primary (`platform`) database and complete the following steps:
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
 
 #### Configure Other Databases
-This section should be used for all other databases on the same server (such as the 'analytics' database used for logging). It relies on the roles that were created in the [previous section](#configure-the-primary-database).
+This section should be used for all other databases on the same server (such as the 'monitor' database used for logging). It relies on the roles that were created in the [previous section](#configure-the-primary-database).
 
 Connect to the database to configure and complete the following steps:
 
