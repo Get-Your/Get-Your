@@ -413,7 +413,7 @@ def quick_coming_soon(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def notify_remaining(request, **kwargs):
     try:
         log.debug(
@@ -526,7 +526,7 @@ def get_ready(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def address(request, **kwargs):
     try:
         if request.session.get("application_addresses"):
@@ -659,7 +659,7 @@ def address(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def address_correction(request, **kwargs):
     try:
         log.debug(
@@ -962,7 +962,7 @@ def address_correction(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def take_usps_address(request, **kwargs):
     try:
         log.debug(
@@ -1145,7 +1145,7 @@ def take_usps_address(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def household(request, **kwargs):
     try:
         if request.session.get("application_addresses"):
@@ -1239,7 +1239,7 @@ def household(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def household_members(request, **kwargs):
     try:
         # Check the boolean value of update_mode session var
@@ -1473,7 +1473,7 @@ def household_members(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def programs(request, **kwargs):
     try:
         # Check the boolean value of update_mode session var
@@ -1573,7 +1573,7 @@ def programs(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def files(request, **kwargs):
     """
     Variables:
@@ -1737,7 +1737,7 @@ def files(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def broadcast(request, **kwargs):
     try:
         log.debug(

@@ -42,7 +42,7 @@ from .forms import FeedbackForm
 log = LoggerWrapper(logging.getLogger(__name__))
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def dashboard(request, **kwargs):
     try:
         log.debug(
@@ -196,7 +196,7 @@ def dashboard(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def quick_apply(request, iq_program, **kwargs):
     try:
         in_gma_with_no_service = False
@@ -283,7 +283,7 @@ def quick_apply(request, iq_program, **kwargs):
         raise
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def user_settings(request, **kwargs):
     try:
         log.debug(
@@ -345,7 +345,7 @@ def user_settings(request, **kwargs):
 # Note that auth is required for this only because the dashboard sidenav is
 # embedded in privacy.html
 # TODO: determine why this is different than landing.privacy_policy
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def privacy(request, **kwargs):
     try:
         log.debug(
@@ -379,7 +379,7 @@ def privacy(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def qualified_programs(request, **kwargs):
     try:
         log.debug(
@@ -499,7 +499,7 @@ def feedback_received(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def programs_list(request, **kwargs):
     try:
         log.debug(
@@ -545,7 +545,7 @@ def programs_list(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name="auth_next")
+@login_required()
 def apply_now_modal(request, **kwargs):
     if request.method == "POST":
         # This alone will trigger a toast (displaying showMessage) and *nothing
