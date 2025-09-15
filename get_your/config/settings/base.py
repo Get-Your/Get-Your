@@ -392,7 +392,8 @@ ACCOUNT_SIGNUP_FIELDS = [
 # Define a hidden field named something related to account creation. This is to
 # potentially trick a spambot into filling it; if filled, account creation is
 # disabled. Note that this must be a field name not otherwise used for signup
-ACCOUNT_SIGNUP_FORM_HONEYPOT_FIELD = "username"
+# (including 'username')
+ACCOUNT_SIGNUP_FORM_HONEYPOT_FIELD = "address"
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 # Make email verification mandatory, then allow logging in with 'magic link'
 # (that times out after 5 minutes)
