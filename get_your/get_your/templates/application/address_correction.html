@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% extends "bases/application_base.html" %}
 
 {% block navigation %}
-{% if update_mode %}
+{% if request.session.update_mode %}
 {% url 'app:address' as back_link %}
 {% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
 {% else %}

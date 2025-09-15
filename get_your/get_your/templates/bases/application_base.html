@@ -94,7 +94,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         }
     </style>
 
-    {% if renewal_mode %}
+    {% if request.session.renewal_mode %}
     <script>
         function checkFormChanges() {
             const $form = $("form");

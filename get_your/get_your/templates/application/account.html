@@ -20,9 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% load static %}
 
 {% block navigation %}
-{% if renewal_mode %}
+{% if request.session.renewal_mode %}
 {% include "partials/navigation.html" with display_back_link=False display_save_link=False display_exit_link=True %}
-{% elif update_mode %}
+{% elif request.session.update_mode %}
 {% url 'app:user_settings' as back_link %}
 {% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
 {% else %}
@@ -34,7 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% block body %}
 <p id="application_step" class="application-step">STEP {{ step }} OF {{ form_page_number }}</p>
 
-{% if update_mode %}
+{% if request.session.update_mode %}
 <h2 style="font-weight: 700; margin:5vh 0"> Update Your Account Information</h2>
 {% else %}
 <h2 style="font-weight: 700; margin:5vh 0"> Create an Account </h2>
@@ -128,7 +128,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     <div class="footer">
-        {% if update_mode or renewal_mode %}
+        {% if request.session.update_mode or request.session.renewal_mode %}
         <button type="submit"> CONFIRM </button>
         {% else %}
         <button type="submit"> CREATE </button>
@@ -168,7 +168,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     var same = document.getElementById("same");
     var complex = document.getElementById("complex");
 
-    {% if not update_mode %}
+    {% if not request.session.update_mode %}
     var myInput = document.getElementById("password");
     var myInput2 = document.getElementById("password2");
 

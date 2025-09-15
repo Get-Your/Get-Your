@@ -20,19 +20,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% load static %}
 
 {% block navigation %}
-{% if renewal_mode %}
+{% if request.session.renewal_mode %}
 {% url 'app:household_members' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True back_link=back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True
+back_link=back_link %}
 {% else %}
 {% url 'app:household_members' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=True back_link=back_link|add:"?app_status=in_progress" %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=True
+back_link=back_link|add:"?app_status=in_progress" %}
 {% endif %}
 {% endblock %}
 
 {% block body %}
 <p id="application_step" class="application-step">STEP {{ step }} OF {{ form_page_number }}</p>
 
-{% with header="It's Time to Get Excited" description="Choose programs you are already a part of. This information will be used to determine what aid you qualify for." %}
+{% with header="It's Time to Get Excited" description="Choose programs you are already a part of. This information will
+be used to determine what aid you qualify for." %}
 {% include "partials/side_content.html" with header=header description=description suppliment="Choose all that apply."%}
 {% endwith %}
 

@@ -20,11 +20,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% load static %}
 
 {% block navigation %}
-{% if renewal_mode %}
+{% if request.session.renewal_mode %}
 {% url 'app:account' as back_link %}
 {% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True
 back_link=back_link %}
-{% elif update_mode %}
+{% elif request.session.update_mode %}
 {% url 'app:user_settings' as back_link %}
 {% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
 {% else %}
@@ -41,7 +41,7 @@ back_link=back_link|add:"?app_status=in_progress" %}
 {% include "partials/side_content.html" with header=header %}
 {% endwith %}
 
-{% if not update_mode %}
+{% if not request.session.update_mode %}
 <h2 style="font-weight: 700; margin:5vh 0"> Where do you live?</h2>
 {% endif %}
 
@@ -56,7 +56,7 @@ back_link=back_link|add:"?app_status=in_progress" %}
     {% endfor %}
     {% endif %}
 
-    {% if not update_mode %}
+    {% if not request.session.update_mode %}
     {% if field.label == "State" %}
     <div class="row" style="width:100%">
         <div class="input" style="width:100%">
@@ -86,7 +86,7 @@ back_link=back_link|add:"?app_status=in_progress" %}
     {% endif %}
     {% endfor %}
 
-    {% if not update_mode %}
+    {% if not request.session.update_mode %}
     <div style="padding-top: 15px; padding-bottom: 25px;">
         <label style="display: block;" for="mailing_address">Is your mailing address the same as your home
             address?</label>
@@ -134,7 +134,7 @@ back_link=back_link|add:"?app_status=in_progress" %}
     </div>
 
     <div class="footer">
-        {% if update_mode or renewal_mode %}
+        {% if request.session.update_mode or request.session.renewal_mode %}
         <button type="submit"> CONFIRM </button>
         {% else %}
         <button type="submit"> CONTINUE </button>
@@ -160,7 +160,7 @@ back_link=back_link|add:"?app_status=in_progress" %}
     }
 </style>
 
-{% if not update_mode %}
+{% if not request.session.update_mode %}
 <script>
     $(document).ready(function () {
         var sameAddress = "{{ same_address }}" === "True";

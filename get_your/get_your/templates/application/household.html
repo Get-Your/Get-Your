@@ -20,11 +20,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% load static %}
 
 {% block navigation %}
-{% if renewal_mode %}
+{% if request.session.renewal_mode %}
 {% url 'app:address' as back_link %}
 {% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True
 back_link=back_link %}
-{% elif update_mode %}
+{% elif request.session.update_mode %}
 {% url 'app:user_settings' as back_link %}
 {% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
 {% else %}
@@ -81,7 +81,7 @@ assistance programs you may qualify for." %}
     </div>
 
     <div class="footer">
-        {% if update_mode %}
+        {% if request.session.update_mode %}
         <input type="hidden" name="update_mode" value="true">
         <button type="submit">CONFIRM</button>
         {% else %}
