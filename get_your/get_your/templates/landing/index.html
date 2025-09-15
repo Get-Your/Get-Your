@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 {% include "partials/head.html" with title="Home" css="landing" %}
 
-<!-- TODO: make a message to only look at this on mobile-->
+{# TODO: make a message to only look at this on mobile #}
 
 <body style="margin:0; padding:0">
     {% include "partials/environment_banner.html" with is_prod=is_prod db_env_str=db_env_str %}
@@ -35,7 +35,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
             <div class="row"
                 style="height: 5vh; vertical-align: middle; display: table-cell; text-align: right;overflow: initial;">
-                <!--TODO: MAKE SURE THIS LINK WORKS-->
+                {# TODO: MAKE SURE THIS LINK WORKS #}
                 <a href="#How it Works" class="navLink"> How it Works</a>
                 <a href="#Available Programs" class="navLink"> Available Programs </a>
                 <a href="#Check Availability" class="navLink"> Check Availability </a>
@@ -160,13 +160,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <h2 style="color:white"><a id="Check Availability">Curious?</a></h2>
         <p style="color:white">Enter your address to check if you qualify for City of Fort Collins' income eligible
             programs.</p>
-        <!--TODO: Save input and add logic for checking zipcode-->
+        {# TODO: Save input and add logic for checking zipcode #}
 
         <form action="{% url 'app:index' %}" method="post" autocomplete="false" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="row" style="margin: 30px 0 0 0;">
                 <div class="input" style="width:100%">
-                    <!--TODO: change this to dropdown menu with data-->
+                    {# TODO: change this to dropdown menu with data #}
                     <input class="fill" name="{{ form.address.name }}" id="{{ form.address.id_for_label }}"
                         maxlength="{{ form.address.max_length }}" type="text" style="width:95%;" required
                         autocomplete="off">

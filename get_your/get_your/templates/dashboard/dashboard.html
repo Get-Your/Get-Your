@@ -20,9 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% load static %}
 
 {% block body %}
-<!-- The Modal -->
+{# The Modal #}
 <div id="modalDashboard" class="modal Dashboard">
-    <!-- Modal content -->
+    {# Modal content #}
     <div class="modal-content">
         <span class="close">&times;</span>
         {% if qualified_programs == 0 and pending_programs == 0 and active_programs == 0 %}
@@ -42,7 +42,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 <div class="content">
     <div class="fadeLarge">
-        <!--Program number blocks - information section-->
+        {# Program number blocks - information section #}
         {% if renewal_programs != 0 %}
         <div class="row">
             <a style="color:var(--white); font-weight: 800; text-decoration: none; width: 100%"
@@ -81,7 +81,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </a>
         </div>
 
-        <!-- Mobile news section -->
+        {# Mobile news section #}
         <div class="module">
             {% include "partials/news_feed.html" %}
         </div>
@@ -91,10 +91,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    <!-- content for desktop!-->
+    {# content for desktop! #}
     <div class="fadeSmall">
         <div class="container">
-            <!-- START: RENEWAL IQ PROGRAMS -->
+            {# START: RENEWAL IQ PROGRAMS #}
             {% if renewal_programs != 0 %}
             <div class="item thin">
                 <a style="color:var(--white); font-weight: 800; text-decoration: none;"
@@ -138,13 +138,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 {% endfor %}
             </div>
             {% endif %}
-            <!-- END: RENEWAL IQ PROGRAMS -->
+            {# END: RENEWAL IQ PROGRAMS #}
 
-            <!-- START: QUALIFIED IQ PROGRAMS -->
+            {# START: QUALIFIED IQ PROGRAMS #}
             <div class="item thin">
                 <a style="color:var(--white); font-weight: 800; text-decoration: none;"
                     href="{% url 'app:qualified_programs' %}">
-                    <!--CSV HERE-->
+                    {# CSV HERE #}
                     <hprogram style="color: #4CAD00;margin:0"> {{qualified_programs}} </hprogram>
                 </a>
                 {% if pending_programs|add:active_programs > 0 %}
@@ -190,11 +190,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 {% endif %}
                 {% endfor %}
             </div>
-            <!-- END: QUALIFIED IQ PROGRAMS -->
+            {# END: QUALIFIED IQ PROGRAMS #}
 
-            <!-- START: PENDING IQ PROGRAMS -->
+            {# START: PENDING IQ PROGRAMS #}
             <div class="item thin">
-                <!--CSV HERE-->
+                {# CSV HERE #}
                 <hprogram style="color: var(--darkblue)"> {{pending_programs}} </hprogram>
                 <p style="font-weight: 400; padding-left: 20px;  ">Pending Approval</p>
                 <button class="button button2" id="toggle-button"><img src="{% static 'img/downArrow.svg' %}"
@@ -219,11 +219,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 {% endif %}
                 {% endfor %}
             </div>
-            <!-- END: PENDING IQ PROGRAMS -->
+            {# END: PENDING IQ PROGRAMS #}
 
-            <!-- START: ACTIVE IQ PROGRAMS -->
+            {# START: ACTIVE IQ PROGRAMS #}
             <div class="item thin">
-                <!--CSV HERE-->
+                {# CSV HERE #}
                 <hprogram style="color: var(--darkblue)"> {{active_programs}} </hprogram>
                 <p style="font-weight: 400; padding-left: 20px; ">Active Program(s)</p>
                 <button id="active_programs_tooltip" class="button button2">
@@ -256,14 +256,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 {% endif %}
                 {% endfor %}
             </div>
-            <!-- END: ACTIVE IQ PROGRAMS -->
+            {# END: ACTIVE IQ PROGRAMS #}
 
-            <!-- Desktop News Section -->
+            {# Desktop News Section #}
             <div class="item large">
                 {% include "partials/news_feed.html" %}
             </div>
 
-            <!-- Feedback section -->
+            {# Feedback section #}
             <div class="item extraLarge" style="padding-left: 3%;">
                 {% include "partials/feedback_form.html" %}
             </div>

@@ -65,14 +65,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     {% if field.label == "First Name" %}
     <div class="row">
         <div class="input">
-            <!--TODO: Save input-->
+            {# TODO: Save input #}
             <input class="fill" name="{{ field.name }}" id="{{ field.id_for_label }}" maxlength="{{ field.max_length }}"
                 value="{{ form.first_name.value|default:'' }}" type="text" style="width:80%;" required
                 autocomplete="off">
             <label class="label">{{field.label}}</label>
         </div>
         <div class="input">
-            <!--TODO: change this to dropdown menu with data-->
+            {# TODO: change this to dropdown menu with data #}
             <input class="fill" name="{{ form.last_name.name }}" id="{{ form.last_name.id_for_label }}"
                 maxlength="{{ form.last_name.max_length }}" type="text" value="{{ form.last_name.value|default:'' }}"
                 style="width:100%;" required autocomplete="off">
@@ -80,7 +80,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    <!--Probably not the best way, but I needed to get rid of the last name-->
+    {# Probably not the best way, but I needed to get rid of the last name #}
     {% elif field.label == "Last Name" %}
     {% elif field.label == "Phone Number" %}
     <div class="input">
@@ -93,7 +93,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <p style="color: red;"><strong> {{ passwordError }} </strong> </p>
 
     <div class="input">
-        <!--Have styling that I like on the forms-->
+        {# Have styling that I like on the forms #}
         <input class="fill" name="{{ field.name }}" id="password" maxlength="{{ field.max_length }}" type="password"
             style="width:100%;" required autocomplete="off">
         <label class="label">{{field.label}}</label>
@@ -102,14 +102,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     {% elif field.label == "Enter Password Again" %}
     <div class="input">
-        <!--Have styling that I like on the forms-->
+        {# Have styling that I like on the forms #}
         <input class="fill" name="{{ field.name }}" id="password2" maxlength="{{ field.max_length }}" type="password"
             style="width:100%;" required autocomplete="off" onblur="finalChecks()">
         <label class="label">{{field.label}}</label>
     </div>
     {% else %}
     <div class="input">
-        <!--Have styling that I like on the forms-->
+        {# Have styling that I like on the forms #}
         <input class="fill" name="{{ field.name }}" id="{{ field.id_for_label }}" maxlength="{{ field.max_length }}"
             type="text" value="{{ form.email.value|default:'' }}" style="width:100%;" required autocomplete="off">
         <label class="label">{{field.label}}</label>
@@ -136,7 +136,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </div>
 </form>
 
-<!-- Password Server Side Check -->
+{# Password Server Side Check #}
 <script>
     $(document).on("submit", "#account-form", function (e) {
         e.preventDefault();

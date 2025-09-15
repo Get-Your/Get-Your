@@ -22,13 +22,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% block navigation %}
 {% if renewal_mode %}
 {% url 'app:account' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True back_link=back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True
+back_link=back_link %}
 {% elif update_mode %}
 {% url 'app:user_settings' as back_link %}
 {% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
 {% else %}
 {% url 'app:account' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=True back_link=back_link|add:"?app_status=in_progress" %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=True
+back_link=back_link|add:"?app_status=in_progress" %}
 {% endif %}
 {% endblock %}
 
@@ -58,13 +60,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     {% if field.label == "State" %}
     <div class="row" style="width:100%">
         <div class="input" style="width:100%">
-            <!--TODO: Save input-->
+            {# TODO: Save input #}
             <input class="fill" value="{{ field.value|default:'' }}" name="{{ field.name }}" id="state"
                 maxlength="{{ field.max_length }}" type="text" style="width:80%;" autocomplete="off" required>
             <label class="label">{{field.label}}</label>
         </div>
         <div class="input" style="width:100%">
-            <!--TODO: change this to dropdown menu with data-->
+            {# TODO: change this to dropdown menu with data #}
             <input class="fill" value="{{ eligibility_address_form.zip_code.value|default:'' }}"
                 name="{{ eligibility_address_form.zip_code.name }}" id="zip_code" pattern="[0-9]{5}"
                 title="Please enter a 5-digit Zip Code" maxlength="5" type="text" style="width:100%;" autocomplete="off"
@@ -75,7 +77,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     {% elif field.label == "Zip Code" %}
     {% else %}
     <div class="input">
-        <!--Have styling that I like on the forms-->
+        {# Have styling that I like on the forms #}
         <input class="fill" value="{{ field.value|default:'' }}" name="{{ field.name }}" id="{{ field.id_for_label }}"
             maxlength="{{ field.max_length }}" type="text" style="width:100%;" autocomplete="off">
         <label class="label">{{field.label}}</label>
@@ -103,14 +105,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         {% if field.label == "State" %}
         <div class="row" style="width:100%">
             <div class="input" style="width:100%">
-                <!--TODO: Save input-->
+                {# TODO: Save input #}
                 <input class="fill" value="{{ field.value|default:'' }}" name="mailing_{{ field.name }}"
                     id="mailing_state" maxlength="{{ field.max_length }}" type="text" style="width:80%;"
                     autocomplete="off" required>
                 <label class="label">{{field.label}}</label>
             </div>
             <div class="input" style="width:100%">
-                <!--TODO: change this to dropdown menu with data-->
+                {# TODO: change this to dropdown menu with data #}
                 <input class="fill" value="{{ mailing_address_form.zip_code.value|default:'' }}"
                     name="mailing_{{ mailing_address_form.zip_code.name }}" id="mailing_zip_code" pattern="[0-9]{5}"
                     title="Please enter a 5-digit Zip Code" maxlength="5" type="text" style="width:100%;"
@@ -121,7 +123,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         {% elif field.label == "Zip Code" %}
         {% else %}
         <div class="input">
-            <!--Have styling that I like on the forms-->
+            {# Have styling that I like on the forms #}
             <input class="fill" value="{{ field.value|default:'' }}" name="mailing_{{ field.name }}"
                 id="mailing_{{ field.id_for_label }}" maxlength="{{ field.max_length }}" type="text" style="width:100%;"
                 autocomplete="off">
