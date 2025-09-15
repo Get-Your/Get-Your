@@ -181,8 +181,8 @@ AUTH_USER_MODEL = "users.User"
 LOGIN_REDIRECT_URL = "users:redirect"
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = "account_login"
-# # https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
-# LOGOUT_REDIRECT_URL = "users:redirect"
+# https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
+LOGOUT_REDIRECT_URL = "app:index"
 
 # PASSWORDS
 # ------------------------------------------------------------------------------
@@ -378,16 +378,37 @@ REDIS_SSL = REDIS_URL.startswith("rediss://")
 # django-allauth
 # ------------------------------------------------------------------------------
 ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
+
 # https://docs.allauth.org/en/latest/account/configuration.html
 ACCOUNT_LOGIN_METHODS = {"email"}
-# https://docs.allauth.org/en/latest/account/configuration.html
-ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
-# https://docs.allauth.org/en/latest/account/configuration.html
+ACCOUNT_SIGNUP_FIELDS = [
+    "first_name*",
+    "last_name*",
+    "email*",
+    "phone_number*",
+    "password1*",
+    "password2*",
+]
+# Define a hidden field named something related to account creation. This is to
+# potentially trick a spambot into filling it; if filled, account creation is
+# disabled. Note that this must be a field name not otherwise used for signup
+ACCOUNT_SIGNUP_FORM_HONEYPOT_FIELD = "username"
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-# https://docs.allauth.org/en/latest/account/configuration.html
+# Make email verification mandatory, then allow logging in with 'magic link'
+# (that times out after 5 minutes)
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-# https://docs.allauth.org/en/latest/account/configuration.html
+ACCOUNT_LOGIN_BY_CODE_ENABLED = True
+ACCOUNT_LOGIN_BY_CODE_TIMEOUT = 300
+# Allow the user to resend the email verification link
+ACCOUNT_EMAIL_VERIFICATION_SUPPORTS_RESEND = True
+# Enable password change by following a link sent to the user's email, timing
+# out after 5 minutes
+ACCOUNT_PASSWORD_RESET_BY_CODE_ENABLED = True
+ACCOUNT_PASSWORD_RESET_BY_CODE_TIMEOUT = 300
+
 ACCOUNT_ADAPTER = "get_your.users.adapters.AccountAdapter"
+# Never remember the user (and don't show the 'Remember Me?' option)
+ACCOUNT_SESSION_REMEMBER = False
 # https://docs.allauth.org/en/latest/account/forms.html
 ACCOUNT_FORMS = {"signup": "get_your.users.forms.UserSignupForm"}
 # https://docs.allauth.org/en/latest/socialaccount/configuration.html
