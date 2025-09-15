@@ -65,6 +65,7 @@ urlpatterns = [
         "accounts/",
         include("allauth.urls"),
     ),
+    path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
     # Your stuff: custom urls includes go here
     # path(
     #     "password_reset/done/",

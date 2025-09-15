@@ -41,7 +41,7 @@ urlpatterns = [
         kwargs={"allow_direct_user": False},
     ),
     path(
-        "dashboard",
+        "",
         views.dashboard,
         name="dashboard",
         kwargs={"allow_direct_user": True},
