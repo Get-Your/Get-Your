@@ -19,8 +19,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from allauth.account.forms import SignupForm
 from allauth.socialaccount.forms import SignupForm as SocialSignupForm
+from django import forms
 from django.contrib.auth import forms as admin_forms
 from django.utils.translation import gettext_lazy as _
+from phonenumber_field.formfields import PhoneNumberField
+from phonenumber_field.widgets import RegionalPhoneNumberWidget
 
 from .fields import LowerEmailFormField
 from .models import User
@@ -53,6 +56,28 @@ class UserSignupForm(SignupForm):
     Default fields will be added automatically.
     Check UserSocialSignupForm for accounts created from social.
     """
+
+    first_name = forms.CharField(
+        label=_("First Name"),
+        required=True,
+        widget=forms.TextInput(
+            attrs={"placeholder": _("First name")},
+        ),
+    )
+    last_name = forms.CharField(
+        label=_("Last Name"),
+        required=True,
+        widget=forms.TextInput(
+            attrs={"placeholder": _("Last name")},
+        ),
+    )
+    phone_number = PhoneNumberField(
+        label=_("Phone Number"),
+        required=True,
+        widget=RegionalPhoneNumberWidget(
+            attrs={"placeholder": _("Phone number")},
+        ),
+    )
 
 
 class UserSocialSignupForm(SocialSignupForm):

@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from allauth.account.views import SignupView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import QuerySet
@@ -63,3 +64,10 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
 
 user_redirect_view = UserRedirectView.as_view()
+
+
+class UserSignupView(SignupView):
+    template_name = "users/signup.html"
+
+
+signup = UserSignupView.as_view()
