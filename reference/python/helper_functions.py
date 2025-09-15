@@ -754,7 +754,6 @@ def process_data(
             df = itm
         else:
             # Concatenate itm with df
-            print(f"Index {iteridx}; df len={len(df)}")
             if iteridx == 4:
                 break
             df = pd.concat([df, itm], ignore_index=True)

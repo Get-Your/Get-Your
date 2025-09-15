@@ -1008,7 +1008,14 @@ class ETLToNew:
         )
         ending_idx = self._get_table_index(
             target_table=ending_target_table,
-        ) or len(self.dynamic_table_definitions)
+        )
+        # 0 === None for the format used in starting_idx; ending_idx needs to be
+        # calculated explicitly so that only None is replaced with the max index
+        ending_idx = (
+            ending_idx
+            if ending_idx is not None
+            else len(self.dynamic_table_definitions)
+        )
 
         # If specified, truncate tables in self.dynamic_table_definitions, using
         # starting_target_table and afterward
