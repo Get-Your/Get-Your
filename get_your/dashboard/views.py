@@ -33,8 +33,8 @@ from app.backend import enable_renew_now
 from app.backend import get_users_iq_programs
 from app.models import IQProgram
 from monitor.wrappers import LoggerWrapper
-from ref.models import AddressRD
-from ref.models import IQProgramRD
+from ref.models import Address as AddressRef
+from ref.models import IQProgram as IQProgramRef
 
 from .forms import FeedbackForm
 
@@ -84,7 +84,7 @@ def dashboard(request, **kwargs):
         renewal_programs = 0
 
         # Get the user's eligibility address
-        eligibility_address = AddressRD.objects.filter(
+        eligibility_address = AddressRef.objects.filter(
             id=request.user.address.eligibility_address_id,
         ).first()
         users_iq_programs = get_users_iq_programs(
@@ -201,8 +201,8 @@ def quick_apply(request, iq_program, **kwargs):
     try:
         in_gma_with_no_service = False
 
-        # Get the IQProgramRD object for the iq_program
-        iq_program = IQProgramRD.objects.get(program_name=iq_program)
+        # Get the IQProgramRef object for the iq_program
+        iq_program = IQProgramRef.objects.get(program_name=iq_program)
 
         log.debug(
             f"Entering function for {iq_program.program_name}",
@@ -211,9 +211,9 @@ def quick_apply(request, iq_program, **kwargs):
         )
 
         # Get the user's get_users_iq_programs and check if
-        # the IQProgramRD object is in the list. If it is not,
+        # the IQProgramRef object is in the list. If it is not,
         # throw a 500 error, else continue
-        eligibility_address = AddressRD.objects.filter(
+        eligibility_address = AddressRef.objects.filter(
             id=request.user.address.eligibility_address_id,
         ).first()
         users_iq_programs = get_users_iq_programs(
@@ -240,9 +240,11 @@ def quick_apply(request, iq_program, **kwargs):
             IQProgram.objects.create(user_id=request.user.id, program_id=iq_program.id)
 
         if iq_program.program_name == "connexion":
-            # Get the user's address from the AddressRD table by joining the eligibility_address_id
-            # to the AddressRD table's id
-            addr = AddressRD.objects.get(id=request.user.address.eligibility_address_id)
+            # Get the user's address from the AddressRef table by joining the eligibility_address_id
+            # to the AddressRef table's id
+            addr = AddressRef.objects.get(
+                id=request.user.address.eligibility_address_id,
+            )
             # Check for Connexion services
             # Recreate the relevant parts of addressDict as if from validate_usps()
             address_dict = {
@@ -389,7 +391,7 @@ def qualified_programs(request, **kwargs):
         )
 
         # Get the user's eligibility address
-        eligibility_address = AddressRD.objects.filter(
+        eligibility_address = AddressRef.objects.filter(
             id=request.user.address.eligibility_address_id,
         ).first()
         users_iq_programs = get_users_iq_programs(
@@ -509,7 +511,7 @@ def programs_list(request, **kwargs):
         )
 
         # Get the user's eligibility address
-        eligibility_address = AddressRD.objects.filter(
+        eligibility_address = AddressRef.objects.filter(
             id=request.user.address.eligibility_address_id,
         ).first()
         users_iq_programs = get_users_iq_programs(
