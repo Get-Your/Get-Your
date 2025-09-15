@@ -592,88 +592,88 @@ class ETLToNew:
             )
 
         for dbm, tbls in tables_to_truncate.items():
-        # If SQLite, use the SQLAlchemy option; else, use Postgres with
-        # error-checking
+            # If SQLite, use the SQLAlchemy option; else, use Postgres with
+            # error-checking
             if dbm.db_type == "sqlite":
-            # Use the SQLITE_SEQUENCE table to update the next autoincrement
-            # value
-            sequence_table = Table(
-                "sqlite_sequence",
+                # Use the SQLITE_SEQUENCE table to update the next autoincrement
+                # value
+                sequence_table = Table(
+                    "sqlite_sequence",
                     dbm.metadata,
                     autoload_with=dbm.engine,
-            )
+                )
 
                 for tbl in tbls:
-                target_table = Table(
-                    tbl,
+                    target_table = Table(
+                        tbl,
                         dbm.metadata,
                         autoload_with=dbm.engine,
-                )
-                # Delete all from the table, then reset auto-increment
-                delete_stmt = delete(target_table)
-
-                # Set the sequence to the calculated max_id value (per SQLite's
-                # standard)
-                reset_autoincrement_stmt = (
-                    update(sequence_table)
-                    .values(
-                        seq=0,
                     )
-                    .where(sequence_table.c.name == target_table.name)
-                )
+                    # Delete all from the table, then reset auto-increment
+                    delete_stmt = delete(target_table)
+
+                    # Set the sequence to the calculated max_id value (per SQLite's
+                    # standard)
+                    reset_autoincrement_stmt = (
+                        update(sequence_table)
+                        .values(
+                            seq=0,
+                        )
+                        .where(sequence_table.c.name == target_table.name)
+                    )
 
                     with dbm.engine.begin() as conn:
-                    conn.execute(delete_stmt)
-                    conn.execute(reset_autoincrement_stmt)
+                        conn.execute(delete_stmt)
+                        conn.execute(reset_autoincrement_stmt)
 
-        else:
-            # Attempt to truncate all specified tables simultaneously
-            try:
-                delete_stmt = text(
-                    "truncate {} restart identity".format(
+            else:
+                # Attempt to truncate all specified tables simultaneously
+                try:
+                    delete_stmt = text(
+                        "truncate {} restart identity".format(
                             ", ".join([f"public.{x}" for x in tbls])
+                        )
                     )
-                )
                     with dbm.engine.begin() as conn:
-                    conn.execute(delete_stmt)
+                        conn.execute(delete_stmt)
 
-            except FeatureNotSupported as exc:
-                # Extract the error message and rollback the connection
-                error_msg = exc.args[0]
+                except FeatureNotSupported as exc:
+                    # Extract the error message and rollback the connection
+                    error_msg = exc.args[0]
 
-                # Attempt to parse the error. If error_msg startswith
-                # case-insensitive 'cannot truncate'...
-                if re.match("cannot truncate", error_msg, re.I):
-                    # Find the 'detail' section and return the table name
-                    reftable_name_re = re.search(
-                        r'detail:\s+table\s+"(.*?)"',
-                        error_msg,
-                        re.I,
-                    )
+                    # Attempt to parse the error. If error_msg startswith
+                    # case-insensitive 'cannot truncate'...
+                    if re.match("cannot truncate", error_msg, re.I):
+                        # Find the 'detail' section and return the table name
+                        reftable_name_re = re.search(
+                            r'detail:\s+table\s+"(.*?)"',
+                            error_msg,
+                            re.I,
+                        )
 
-                    # Re-raise the exception with a custom message, if applicable
-                    try:
-                        reftable_name = reftable_name_re.groups(1)[0]
-                    except:
-                        # Pass this along to the outer 'raise'
-                        pass
-                    else:
-                        # Notify of additional errors or messages, depending on the
-                        # placement of reftable in dynamic_table_definitions
-                        reftable_index = list(
-                            self.dynamic_table_definitions.keys()
-                        ).index(reftable_name)
-                        if reftable_index <= ending_idx:
-                                additional_notification = f'\n\nAdditional error: "{reftable_name}" is defined *before* "{tbls[-1]}"; this will need to be rearranged before proceeding.'
-                        elif reftable_index != ending_idx + 1:
-                                additional_notification = f'\n\nAdditionally: consider moving "{reftable_name}" to directly after "{tbls[-1]}" in the dynamic table definitions to simplify the ETL.'
+                        # Re-raise the exception with a custom message, if applicable
+                        try:
+                            reftable_name = reftable_name_re.groups(1)[0]
+                        except:
+                            # Pass this along to the outer 'raise'
+                            pass
                         else:
-                            additional_notification = ""
+                            # Notify of additional errors or messages, depending on the
+                            # placement of reftable in dynamic_table_definitions
+                            reftable_index = list(
+                                self.dynamic_table_definitions.keys()
+                            ).index(reftable_name)
+                            if reftable_index <= ending_idx:
+                                additional_notification = f'\n\nAdditional error: "{reftable_name}" is defined *before* "{tbls[-1]}"; this will need to be rearranged before proceeding.'
+                            elif reftable_index != ending_idx + 1:
+                                additional_notification = f'\n\nAdditionally: consider moving "{reftable_name}" to directly after "{tbls[-1]}" in the dynamic table definitions to simplify the ETL.'
+                            else:
+                                additional_notification = ""
 
-                        raise FeatureNotSupported(
+                            raise FeatureNotSupported(
                                 f"""Update the command to use "ending_target_table='{reftable_name}'" to resolve this issue: table "{tbls[-1]}" could not be truncated.{additional_notification}"""
-                        ) from exc
-                raise
+                            ) from exc
+                    raise
 
         print("Truncation successful!")
 
