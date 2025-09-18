@@ -22,24 +22,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% block navigation %}
 {% if request.session.renewal_mode %}
 {% url 'app:household' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True
-back_link=back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True back_link=back_link %}
 {% elif request.session.update_mode %}
 {% url 'app:household' as back_link %}
 {% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
 {% else %}
 {% url 'app:household' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=True
-back_link=back_link|add:"?app_status=in_progress" %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=True back_link=back_link|add:"?app_status=in_progress" %}
 {% endif %}
 {% endblock %}
 
 {% block body %}
 <p id="application_step" class="application-step">STEP {{ step }} OF {{ form_page_number }}</p>
 
-{% with header="Share basic information about your income" description="Your information will not be shared with anyone
-outside of the departments of City of Fort Collins' income eligible programs. They are meant to determine potential
-assistance programs you may qualify for." %}
+{% with header="Share basic information about your income" description="Your information will not be shared with anyone outside of the departments of City of Fort Collins' income eligible programs. They are meant to determine potential assistance programs you may qualify for." %}
 {% include "partials/side_content.html" with header=header description=description%}
 {% endwith %}
 

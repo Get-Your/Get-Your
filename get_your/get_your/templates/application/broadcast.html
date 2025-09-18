@@ -25,9 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% block body %}
 <p id="application_step" class="application-step">STEP {{ step }} OF {{ form_page_number }}</p>
 
-{% with header="One Last Thing!" description="Get FoCo sent some pretty important emails. We'll notify you when it's
-time to reapply for a specific program or when you've been approved. We won't ever spam you with any unwanted emails."
-%}
+{% with header="One Last Thing!" description="Get FoCo sent some pretty important emails. We'll notify you when it's time to reapply for a specific program or when you've been approved. We won't ever spam you with any unwanted emails." %}
 {% include "partials/side_content.html" with header=header description=description%}
 {% endwith %}
 

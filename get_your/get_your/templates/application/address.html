@@ -22,15 +22,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% block navigation %}
 {% if request.session.renewal_mode %}
 {% url 'app:account' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True
-back_link=back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True back_link=back_link %}
 {% elif request.session.update_mode %}
 {% url 'app:user_settings' as back_link %}
 {% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
 {% else %}
 {% url 'app:account' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=True
-back_link=back_link|add:"?app_status=in_progress" %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=True back_link=back_link|add:"?app_status=in_progress" %}
 {% endif %}
 {% endblock %}
 
