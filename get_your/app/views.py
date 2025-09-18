@@ -41,6 +41,7 @@ from files.backend import userfiles_path
 from files.forms import FileUploadForm
 from monitor.wrappers import LoggerWrapper
 from ref.models import Address as AddressRef
+from ref.models import ApplicationPage
 from ref.models import EligibilityProgram as EligibilityProgramRef
 from ref.models import IQProgram as IQProgramRef
 
@@ -489,6 +490,13 @@ def get_ready(request, **kwargs):
         eligiblity_programs = EligibilityProgramRef.objects.filter(
             is_active=True,
         ).order_by("friendly_name")
+
+        # Add 'app:get_ready' to `user_completed_pages` here (since the next
+        # page is linked from the template rather than POST back here)
+        # TODO: consider standardizing all pages to use POST (a benefit would be that the proper next page can be calculated here)
+        request.user.user_completed_pages.add(
+            ApplicationPage.objects.get(page_url="app:get_ready"),
+        )
 
         # Check if the next query param is set
         # If so, save the renewal action and redirect to the account page
@@ -1107,6 +1115,11 @@ def take_usps_address(request, **kwargs):
                     # renewal metadata as data updates
                     save_renewal_action(request, "address")
 
+                # Add 'app:address' to `user_completed_pages`
+                request.user.user_completed_pages.add(
+                    ApplicationPage.objects.get(page_url="app:address"),
+                )
+
                 return redirect(reverse("app:household"))
             # We're in update_mode here, so we're only updating the users
             # mailing address. Then redirecting them to their settings page.
@@ -1199,6 +1212,12 @@ def household(request, **kwargs):
 
             if update_mode:
                 return redirect(f"{reverse('app:household_members')}?update_mode=1")
+
+            # Add 'app:household' to `user_completed_pages`
+            request.user.user_completed_pages.add(
+                ApplicationPage.objects.get(page_url="app:household"),
+            )
+
             return redirect(reverse("app:household_members"))
 
         log.debug(
@@ -1431,6 +1450,12 @@ def household_members(request, **kwargs):
                 return redirect(
                     f"{reverse('users:detail', kwargs={'pk': request.user.id})}?page_updated=household",
                 )
+
+            # Add 'app:household_members' to `user_completed_pages`
+            request.user.user_completed_pages.add(
+                ApplicationPage.objects.get(page_url="app:household_members"),
+            )
+
             return redirect(reverse("app:programs"))
 
         log.debug(
@@ -1534,6 +1559,12 @@ def programs(request, **kwargs):
                 save_renewal_action(request, "eligibility_programs")
 
             EligibilityProgram.objects.bulk_create(selected_eligibility_programs)
+
+            # Add 'app:programs' to `user_completed_pages`
+            request.user.user_completed_pages.add(
+                ApplicationPage.objects.get(page_url="app:programs"),
+            )
+
             return redirect(reverse("app:files"))
         log.debug(
             "Entering function (GET)",
@@ -1699,6 +1730,11 @@ def files(request, **kwargs):
                 # Update the session vars from the finalize application output
                 for key, itm in session_updates.items():
                     request.session[key] = itm
+
+                # Add 'app:files' to `user_completed_pages`
+                request.user.user_completed_pages.add(
+                    ApplicationPage.objects.get(page_url="app:files"),
+                )
 
                 # Redirect to the finalize application target
                 return redirect(target_page)
