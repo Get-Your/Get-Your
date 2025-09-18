@@ -45,7 +45,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                         <a style="color:{{ program_list_color }}; " href="{% url 'app:programs_list' %}">
                             <li>Program List</li>
                         </a>
-                        <a style="color:{{ Settings_color }};" href="{% url 'app:user_settings' %}">
+                        <a style="color:{{ Settings_color }};" href="{% url 'users:detail' pk=request.user.pk %}">
                             <li>Settings</li>
                         </a>
                         {% if enable_renew_now %}
@@ -85,7 +85,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                                 href="{% url 'app:programs_list' %}">Programs</a></p>
                         <p> <img src="{% static 'images/Settings.svg' %}"> <a
                                 style="color:{{ Settings_color }};text-decoration:none; "
-                                href="{% url 'app:user_settings' %}">Settings</a></p>
+                                href="{% url 'users:detail' pk=request.user.pk %}">Settings</a></p>
                         {% if enable_renew_now %}
                         <p><i class="fa-solid fa-rotate-right"></i>
                             <a class="renew_now" style="color:white;text-decoration:none; "

@@ -299,7 +299,7 @@ def user_settings(request, **kwargs):
         page_updated = request.GET.get("page_updated")
         if page_updated:
             request.session["page_updated"] = page_updated
-            return redirect(reverse("app:user_settings"))
+            return redirect(reverse("users:detail", kwargs={"pk": request.user.id}))
 
         if "page_updated" in request.session:
             page_updated = request.session.get("page_updated")
@@ -319,7 +319,7 @@ def user_settings(request, **kwargs):
                 "lastName": request.user.last_name,
                 "email": request.user.email,
                 "routes": {
-                    "account": reverse("app:account"),
+                    "account": reverse("users:detail", kwargs={"pk": request.user.id}),
                     "address": reverse("app:address"),
                     "household": reverse("app:household"),
                 },

@@ -111,7 +111,7 @@ def account(request, **kwargs):
                     return JsonResponse({"redirect": f"{reverse('app:address')}"})
                 return JsonResponse(
                     {
-                        "redirect": f"{reverse('app:user_settings')}?page_updated=account",
+                        "redirect": f"{reverse('users:detail', kwargs={'pk': request.user.id})}?page_updated=account",
                     },
                 )
             if form.is_valid():

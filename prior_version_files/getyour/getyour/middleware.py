@@ -52,19 +52,15 @@ class LoginRequiredMiddleware:
         if not request.user.is_authenticated:
             # If the route is in excluded_paths don't do anything
             excluded_paths = [
-                reverse("app:login"),
                 reverse("app:index"),
                 reverse("app:get_ready"),
-                reverse("app:account"),
+                reverse("users:detail"),
                 reverse("app:quick_available"),
                 reverse("app:quick_not_available"),
                 reverse("app:quick_coming_soon"),
                 reverse("app:quick_not_found"),
                 reverse("app:programs_info"),
                 reverse("app:privacy_policy"),
-                reverse("app:password_reset"),
-                reverse("password_reset_done"),
-                reverse("password_reset_complete"),
             ]
 
             # Get the view instance that's handling the current request
@@ -73,7 +69,7 @@ class LoginRequiredMiddleware:
             # Redirect to login if the current path isn't excluded or includes
             # 'reset'. The login workflow will take over after successful auth
             if not (current_path in excluded_paths or "reset" in current_path):
-                return redirect("app:login")
+                return redirect("users:signup")
 
         # Default to calling the specified view
         response = self.get_response(request)

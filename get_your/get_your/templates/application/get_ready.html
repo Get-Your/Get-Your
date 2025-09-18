@@ -62,7 +62,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     {% if request.session.renewal_mode %}
     <a class="footer-btn" href="{% url 'app:get_ready' %}?next=account">CONTINUE</a>
     {% else %}
-    <a class="footer-btn" href="{% url 'app:account' %}">APPLY</a>
+    <a class="footer-btn" href="{% url 'users:signup' %}">APPLY</a>
     {% endif %}
 </div>
 

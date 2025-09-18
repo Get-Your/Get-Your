@@ -499,7 +499,7 @@ def get_ready(request, **kwargs):
                 user_id=request.user.id,
             )
             save_renewal_action(request, "get_ready")
-            return redirect("app:account")
+            return redirect("users:detail", kwargs={"pk": request.user.id})
         return render(
             request,
             "application/get_ready.html",
@@ -1119,7 +1119,9 @@ def take_usps_address(request, **kwargs):
             address.update_mode = update_mode
 
             address.save()
-            return redirect(f"{reverse('app:user_settings')}?page_updated=address")
+            return redirect(
+                f"{reverse('users:detail', kwargs={'pk': request.user.id})}?page_updated=address",
+            )
 
         except (KeyError, TypeError):
             log.warning(
@@ -1427,7 +1429,7 @@ def household_members(request, **kwargs):
 
             if update_mode:
                 return redirect(
-                    f"{reverse('app:user_settings')}?page_updated=household",
+                    f"{reverse('users:detail', kwargs={'pk': request.user.id})}?page_updated=household",
                 )
             return redirect(reverse("app:programs"))
 

@@ -23,7 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 {% if request.session.renewal_mode %}
 {% include "partials/navigation.html" with display_back_link=False display_save_link=False display_exit_link=True %}
 {% elif request.session.update_mode %}
-{% url 'app:user_settings' as back_link %}
+{% url 'users:detail' pk=request.user.pk as back_link %}
 {% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
 {% else %}
 {% url 'app:get_ready' as back_link %}
