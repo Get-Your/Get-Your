@@ -303,3 +303,25 @@ class EligibilityProgram(TimeStampedModel):
 
     def __str__(self):
         return str(self.friendly_name)
+
+
+class ApplicationPage(TimeStampedModel):
+    """
+    Storage for each page in the application itself. This is used to track user
+    progress through the application (both initial and renewal).
+
+    """
+
+    page_order = models.IntegerField(
+        verbose_name="order of page in the application",
+        help_text=_(
+            "Definition of the order each page appears in the application.",
+        ),
+    )
+    page_url = models.CharField(
+        max_length=80,
+        verbose_name="django URL for the page",
+        help_text=_(
+            "The URL of the page, in Django terminology.",
+        ),
+    )
