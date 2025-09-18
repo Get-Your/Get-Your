@@ -12,6 +12,7 @@ initial_applicationpage = {
     "app:household_members": {'page_order': 5},
     "app:programs": {'page_order': 6},
     "app:files": {'page_order': 7},
+    "dashboard:dashboard": {'page_order': 8},
 }
 
 
