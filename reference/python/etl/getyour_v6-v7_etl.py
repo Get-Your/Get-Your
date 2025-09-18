@@ -29,10 +29,13 @@ import sys
 from pathlib import Path
 from typing import Union
 
+import pandas as pd
 from psycopg.errors import FeatureNotSupported
 from sqlalchemy import (
+    Integer,
     Table,
     bindparam,
+    cast,
     delete,
     func,
     literal_column,
@@ -56,6 +59,222 @@ from helper_functions import (
 
 # Return the directory of this file
 FILE_DIR = Path(__file__).parent
+
+
+class TableFunctions:
+    def __init__(self, etl_object):
+        """Table-specific functions for the ETL process."""
+        self.etlo = etl_object
+
+    def determine_completed_pages(self):
+        """
+        For each user, determine how to fill User.user_completed_pages.
+
+        This will either be from the JSON in last_renewal_action or,
+        secondarily, from the calculation in app.backend.what_page().
+
+        """
+
+        # Load the source and target tables from metadata reflections
+        source_user_table = Table(
+            "app_user",
+            self.etlo.old.metadata,
+            autoload_with=self.etlo.old.engine,
+        )
+        source_address_table = Table(
+            "app_address",
+            self.etlo.old.metadata,
+            autoload_with=self.etlo.old.engine,
+        )
+        source_household_table = Table(
+            "app_household",
+            self.etlo.old.metadata,
+            autoload_with=self.etlo.old.engine,
+        )
+        source_householdmembers_table = Table(
+            "app_householdmembers",
+            self.etlo.old.metadata,
+            autoload_with=self.etlo.old.engine,
+        )
+        source_eligibilityprogram_table = Table(
+            "app_eligibilityprogram",
+            self.etlo.old.metadata,
+            autoload_with=self.etlo.old.engine,
+        )
+        target_table = Table(
+            "users_user_user_completed_pages",
+            self.etlo.new.metadata,
+            autoload_with=self.etlo.new.engine,
+        )
+
+        # This section is modified app.backend.what_page() (for use outside the
+        # webapp)
+
+        # See if user.address exists
+        stmt = select(
+            source_address_table.c.user_id,
+        )
+        with self.etlo.old.engine.begin() as conn:
+            result = conn.execute(stmt)
+            address_exists_dict = {rw.user_id: True for rw in result}
+
+        # See if user.household exists
+        stmt = select(
+            source_household_table.c.user_id,
+        )
+        with self.etlo.old.engine.begin() as conn:
+            result = conn.execute(stmt)
+            household_exists_dict = {rw.user_id: True for rw in result}
+
+        # See if HouseholdMembers has been filled
+        stmt = select(
+            source_householdmembers_table.c.user_id,
+        )
+        with self.etlo.old.engine.begin() as conn:
+            result = conn.execute(stmt)
+            householdmembers_exists_dict = {rw.user_id: True for rw in result}
+
+        stmt = (
+            select(
+                source_eligibilityprogram_table.c.user_id,
+                func.sum(
+                    cast(source_eligibilityprogram_table.c.document_path == "", Integer)
+                ).label("empty_uploads_count"),
+            )
+            .order_by(
+                source_eligibilityprogram_table.c.user_id,
+            )
+            .group_by(source_eligibilityprogram_table.c.user_id)
+        )
+        with self.etlo.old.engine.begin() as conn:
+            result = conn.execute(stmt)
+            empty_uploads_dict = {rw.user_id: rw.empty_uploads_count for rw in result}
+
+        # Define the mapping from 'page name' to ref.ApplicationPage.page_url
+        # This is the `application_pages` var in the v6 app.constants
+        application_page_mapping = {
+            "get_ready": "app:get_ready",
+            "account": "app:account",
+            "address": "app:address",
+            "household": "app:household",
+            "household_members": "app:household_members",
+            "eligibility_programs": "app:programs",
+            "files": "app:files",
+        }
+
+        # Gather the last_renewal_action field for all users
+        stmt = select(
+            source_user_table.c.id,
+            source_user_table.c.last_renewal_action,
+        ).order_by("id")
+        with self.etlo.old.engine.begin() as conn:
+            result = conn.execute(stmt)
+            renewals_dict = {rw.id: rw.last_renewal_action for rw in result}
+
+        # Loop through users to determine completed application pages in the v7
+        # model
+
+        # Initialize a list for insert
+        complete_pages = []
+        for user_id, renewal in renewals_dict.items():
+            # Check the last_renewal_action dictionary first; this held
+            # precedence in the v6 app
+            if renewal is not None:
+                # For each element with 'status: completed', find the page_url
+                # using application_page_mapping and set that page as 'complete'
+                # for the current user in the v7
+                # 'users_user_user_completed_pages' table
+                complete_pages.extend(
+                    [
+                        {
+                            "user_id": user_id,
+                            "page_url": application_page_mapping[ky],
+                        }
+                        for ky, vl in renewal.items()
+                        if vl["status"] == "completed"
+                    ]
+                )
+
+            else:
+                # If no renewal exists, use v6 app.backend.what_page() to
+                # determine what pages are complete
+
+                # Initialize complete_pages with 'get_ready' and 'account'
+                # (because the user exists)
+                complete_pages.extend(
+                    [
+                        {"user_id": user_id, "page_url": "app:get_ready"},
+                        {"user_id": user_id, "page_url": "app:account"},
+                    ]
+                )
+
+                if user_id in address_exists_dict:
+                    complete_pages.append(
+                        {"user_id": user_id, "page_url": "app:address"},
+                    )
+                if user_id in household_exists_dict:
+                    complete_pages.append(
+                        {"user_id": user_id, "page_url": "app:household"}
+                    )
+                if user_id in householdmembers_exists_dict:
+                    complete_pages.append(
+                        {
+                            "user_id": user_id,
+                            "page_url": "app:household_members",
+                        }
+                    )
+                # Check to see if the user has selected any eligibility programs
+                if user_id in empty_uploads_dict:
+                    complete_pages.append(
+                        {"user_id": user_id, "page_url": "app:programs"}
+                    )
+                    # Check if any of the eligibility programs have empty uploads
+                    if empty_uploads_dict[user_id] == 0:
+                        complete_pages.append(
+                            {"user_id": user_id, "page_url": "app:files"}
+                        )
+
+        # Convert insert list to DataFrame
+        df_completed = pd.DataFrame(data=complete_pages)
+
+        # Gather the ID for each applicationpage_url
+        applicationpage_table = Table(
+            "ref_applicationpage",
+            self.etlo.new.metadata,
+            autoload_with=self.etlo.new.engine,
+        )
+        stmt = select(applicationpage_table.c.id, applicationpage_table.c.page_url)
+        with self.etlo.new.engine.begin() as conn:
+            result = conn.execute(stmt)
+            url_ids = [
+                # Use the users_user_user_completed_pages name for 'page id'
+                {"page_url": rw.page_url, "applicationpage_id": rw.id}
+                for rw in result
+            ]
+        df_lookup = pd.DataFrame(data=url_ids)
+
+        # Now join df_lookup onto df_completed to match `page_url` to `id`
+        df_completed = df_completed.merge(
+            df_lookup,
+            on="page_url",
+        )
+
+        # Remove 'page_url' and insert into users_user_user_completed_pages
+        del df_completed["page_url"]
+
+        # Truncate then insert the data (rather than upsert). Because this is a
+        # M2M table, all values must be unique
+        truncate_stmt = delete(target_table)
+        with self.etlo.new.engine.begin() as conn:
+            conn.execute(truncate_stmt)
+        self.etlo._update_autoincrement(
+            target_table,
+        )
+        insert_stmt = insert(target_table).values(
+            **{x: bindparam(x) for x in df_completed.columns}
+        )
+        with self.etlo.new.engine.begin() as conn:
+            conn.execute(insert_stmt, df_completed.to_dict("records"))
 
 
 class ETLToNew:
@@ -126,9 +345,9 @@ class ETLToNew:
             olddb_analytics_profile,
         )
 
-        # # Initialize the table functions. Note that this must happen before the
-        # # table defintions are called
-        # self.table_functions = TableFunctions(self)
+        # Initialize the table functions. Note that this must happen before the
+        # table defintions are called
+        self.table_functions = TableFunctions(self)
 
         # # Define static tables. These tables may not be truncated.
         # self.static_table_definitions = {
@@ -764,6 +983,12 @@ class ETLToNew:
                     "user_has_updated",
                     "last_completed_at",
                     "last_action_notification_at",
+                ],
+                "after_port": [
+                    {
+                        "function": self.table_functions.determine_completed_pages,
+                        "kwargs": {},
+                    },
                 ],
             },
             "account_emailaddress": {
