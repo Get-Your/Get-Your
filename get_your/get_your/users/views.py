@@ -66,14 +66,16 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
         # TODO: if a user in mid-renewal, have a case for page/modal to prompt user to continue renewal or go to dashboard
         # This currently assumes no renewal
-        completed_pages = self.request.user.user_completed_pages.order_by("-id")
+        completed_pages = self.request.user.user_completed_pages.order_by("-page_order")
         if completed_pages.count() > 0:
-            last_completed_page_id = completed_pages.first().id
+            last_completed_page_order = completed_pages.first().page_order
         else:
-            last_completed_page_id = 0
+            last_completed_page_order = 0
         # TODO: Need error checking for this
         return reverse(
-            ApplicationPage.objects.get(page_order=last_completed_page_id + 1).page_url,
+            ApplicationPage.objects.get(
+                page_order=last_completed_page_order + 1,
+            ).page_url,
         )
 
         # Original value here:
