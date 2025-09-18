@@ -72,10 +72,13 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
         else:
             last_completed_page_order = 0
         # TODO: Need error checking for this
-        return reverse(
-            ApplicationPage.objects.get(
-                page_order=last_completed_page_order + 1,
-            ).page_url,
+        # TODO: Connect URL parameter to modal advising the user that the app is continuing where they left off
+        return "{}?continue=1".format(
+            reverse(
+                ApplicationPage.objects.get(
+                    page_order=last_completed_page_order + 1,
+                ).page_url,
+            ),
         )
 
         # Original value here:
