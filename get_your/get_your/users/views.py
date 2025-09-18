@@ -28,6 +28,7 @@ from django.views.generic import RedirectView
 from django.views.generic import UpdateView
 
 from get_your.users.models import User
+from ref.models import ApplicationPage
 
 
 class UserDetailView(LoginRequiredMixin, DetailView):
@@ -60,7 +61,23 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
     permanent = False
 
     def get_redirect_url(self) -> str:
-        return reverse("users:detail", kwargs={"pk": self.request.user.pk})
+        if self.request.user.has_viewed_dashboard:
+            return reverse("dashboard:dashboard")
+
+        # TODO: if a user in mid-renewal, have a case for page/modal to prompt user to continue renewal or go to dashboard
+        # This currently assumes no renewal
+        completed_pages = self.request.user.user_completed_pages.order_by("-id")
+        if completed_pages.count() > 0:
+            last_completed_page_id = completed_pages.first().id
+        else:
+            last_completed_page_id = 0
+        # TODO: Need error checking for this
+        return reverse(
+            ApplicationPage.objects.get(page_order=last_completed_page_id + 1).page_url,
+        )
+
+        # Original value here:
+        # return reverse("users:detail", kwargs={"pk": self.request.user.pk})
 
 
 user_redirect_view = UserRedirectView.as_view()
