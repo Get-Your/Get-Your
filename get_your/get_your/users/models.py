@@ -64,7 +64,10 @@ class User(AbstractUser):
 
     # Define user-updated data
     user_has_updated = models.BooleanField(default=False)
-    user_application_status = models.JSONField(null=True, blank=True)
+    user_completed_pages = models.ManyToManyField(
+        "ref.ApplicationPage",
+        related_name="user",
+    )
 
     # Define system-updated data
     last_action_notification_at = models.DateTimeField(
