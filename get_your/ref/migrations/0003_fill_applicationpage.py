@@ -6,7 +6,7 @@ from django.db import migrations
 
 initial_applicationpage = {
     "app:get_ready": {'page_order': 1},
-    "app:account": {'page_order': 2},
+    "users:signup": {'page_order': 2},
     "app:address": {'page_order': 3},
     "app:household": {'page_order': 4},
     "app:household_members": {'page_order': 5},

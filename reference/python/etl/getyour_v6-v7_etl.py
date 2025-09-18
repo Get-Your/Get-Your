@@ -154,7 +154,7 @@ class TableFunctions:
         # This is the `application_pages` var in the v6 app.constants
         application_page_mapping = {
             "get_ready": "app:get_ready",
-            "account": "app:account",
+            "account": "users:signup",
             "address": "app:address",
             "household": "app:household",
             "household_members": "app:household_members",
@@ -204,7 +204,7 @@ class TableFunctions:
                 complete_pages.extend(
                     [
                         {"user_id": user_id, "page_url": "app:get_ready"},
-                        {"user_id": user_id, "page_url": "app:account"},
+                        {"user_id": user_id, "page_url": "users:signup"},
                     ]
                 )
 
