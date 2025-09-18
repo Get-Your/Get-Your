@@ -397,7 +397,8 @@ ACCOUNT_SIGNUP_FORM_HONEYPOT_FIELD = "address"
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 # Make email verification mandatory, then allow logging in with 'magic link'
 # (that times out after 5 minutes)
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+# TODO: Switch ACCOUNT_EMAIL_VERIFICATION back to "mandatory"
+ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_LOGIN_BY_CODE_ENABLED = True
 ACCOUNT_LOGIN_BY_CODE_TIMEOUT = 300
 # Allow the user to resend the email verification link
