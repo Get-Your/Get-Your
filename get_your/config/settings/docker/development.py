@@ -116,7 +116,8 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
 AZURE_ACCOUNT_KEY = env("DJANGO_AZURE_ACCOUNT_KEY")
 AZURE_ACCOUNT_NAME = env("DJANGO_AZURE_ACCOUNT_NAME")
 AZURE_CONTAINER = env("DJANGO_AZURE_CONTAINER_NAME")
-AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
+AZURE_CONTAINER_SUFFIX = env("DJANGO_AZURE_CONTAINER_SUFFIX")
+AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}{AZURE_CONTAINER_SUFFIX}"
 # STATIC & MEDIA
 # ------------------------
 STORAGES = {
@@ -183,7 +184,7 @@ LOGGING["loggers"].update(
             "level": "ERROR",
             "propagate": False,
         },
-    }
+    },
 )
 
 # Set logging level to DEBUG
