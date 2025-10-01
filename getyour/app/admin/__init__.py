@@ -17,11 +17,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import logging
+from itertools import chain
 from django.http.response import HttpResponse
 import pendulum
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q, Exists, OuterRef
 from django.shortcuts import render, reverse
 from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.html import format_html
@@ -44,7 +46,7 @@ from app.models import (
     EligibilityProgramRD,
     IQProgram,
     IQProgramRD,
-    Admin as AppAdmin,
+    AppAdmin,
     Feedback,
 )
 from app.backend import (
@@ -52,10 +54,12 @@ from app.backend import (
     get_iqprogram_requires_fields,
     finalize_address,
     finalize_application,
-    remove_ineligible_programs,
+    remove_ineligible_programs_for_user,
+    update_users_for_program,
     address_check,
 )
 from app.constants import application_pages
+from app.admin.models import StaffPermissions
 from app.admin.filters import (
     GMAListFilter,
     CityCoveredListFilter,
@@ -70,7 +74,6 @@ from app.admin.forms import (
     EligibilityProgramRDForm,
     IQProgramRDForm,
 )
-from app.admin.views import add_elig_program
 
 from logger.wrappers import LoggerWrapper
 
@@ -102,7 +105,7 @@ def create_modeladmin(
     the same model.
     
     """
-    
+
     class Meta:
         proxy = True
         app_label = model._meta.app_label
@@ -176,7 +179,7 @@ def get_admin_url(obj, urltype='change'):
 
 class AddressInline(admin.TabularInline):
     model = Address
-    
+
     fk_name = "user"
 
     fields = readonly_fields = [
@@ -220,7 +223,7 @@ class AddressInline(admin.TabularInline):
 
 class HouseholdInline(admin.TabularInline):
     model = Household
-    
+
     fk_name = "user"
 
     fields = [
@@ -233,13 +236,18 @@ class HouseholdInline(admin.TabularInline):
         'is_income_verified',
     ]
 
-    def get_readonly_fields(self, request, obj):
+    def get_readonly_fields(self, request, obj=None):
         """
         Return readonly fields based on user type and groups. Note that this
         follows zero-trust; it starts with all fields read-only and removes them
         based on permissions.
         
         """
+        # Parse the available permissions and those of the request user
+        request.user.staff_permissions = StaffPermissions(request.user)
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
 
         # Store is_income_verified in session var, for use with
         # has_delete_permission
@@ -264,25 +272,27 @@ class HouseholdInline(admin.TabularInline):
         ]
 
         readonly_remove = []
-        if request.user.is_superuser:
+        if request.user.staff_permissions.contains(
+            permission_groups.SUPERUSER
+        ):
             # Remove the following readonly fields for superusers
             readonly_remove.extend(superuser_remove)
-        if request.user.groups.filter(
-            name__istartswith='income'
-        ).exists():
+        if request.user.staff_permissions.contains(
+            permission_groups.INCOME_VERIFICATION
+        ):
             # Remove these fields from read-only if the user is in the
             # 'income...' group
             readonly_remove.extend(income_remove)
-        if request.user.groups.filter(
-            name__istartswith='admin'
-        ).exists():
+        if request.user.staff_permissions.contains(
+            permission_groups.PROGRAM_ADMIN
+        ):
             # Remove these fields from read-only if the user is in the
             # 'admin...' group
             readonly_remove.extend(admin_remove)
-        
+
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
-    
+
     def has_delete_permission(self, request, obj=None):
         if request.session.get('is_income_verified', True):
             # If the user's income has been verified (or the session var DNE),
@@ -365,7 +375,7 @@ class EligibilityProgramInline(admin.TabularInline):
             'program__friendly_name'
         )
         return qs
-    
+
     # Adding/deleting directly from this inline is always disabled since these
     # wouldn't be governed by the same logic as via EligibilityProgramAdmin
     def has_add_permission(self, request, obj=None):
@@ -377,7 +387,8 @@ class EligibilityProgramInline(admin.TabularInline):
 
     fk_name = "user"
 
-    fields = readonly_fields = [
+    # Define all possible fields and set them as readonly
+    all_possible_fields = readonly_fields = [
         'created_at',
         'modified_at',
         'program_name',
@@ -385,10 +396,34 @@ class EligibilityProgramInline(admin.TabularInline):
         'display_document_link',
     ]
 
+    def get_fields(self, request, obj=None):
+        """
+        Return fields based on staff user permissions.
+        
+        """
+        # Parse the available permissions and those of the request user
+        request.user.staff_permissions = StaffPermissions(request.user)
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
+
+        # Default fields is all_available_fields *except* the 'edit record' link
+        fields = [x for x in self.all_possible_fields if x!='record_edit']
+
+        # Determine if 'record_edit' is available based on permissions group
+        if request.user.staff_permissions.contains(
+            permission_groups.SUPERUSER,
+            permission_groups.PROGRAM_ADMIN,
+        ):
+            # Insert 'record_edit' into index 3
+            fields.insert(3, 'record_edit')
+
+        return fields
+
     @admin.display(description='program name')
     def program_name(self, obj):
         return obj.program.friendly_name
-    
+
     @admin.display(description='edit record')
     def record_edit(self, obj):
         # Record can only be edited if is_income_verified is False
@@ -414,26 +449,31 @@ class IQProgramInline(admin.TabularInline):
         qs = super().get_queryset(request)
         qs = qs.order_by('program__friendly_name')
         return qs
-    
+
     def has_add_permission(self, request, obj=None):
         # Adding directly from this inline is always disabled since it wouldn't
         # be governed by the same logic as via IQProgramAdmin
         return False
-    
+
     fields = [
         'program_name',
         'applied_at',
         'is_enrolled',
         'enrollment_status',
     ]
-    
-    def get_readonly_fields(self, request, obj):
+
+    def get_readonly_fields(self, request, obj=None):
         """
         Return readonly fields based on user type and groups. Note that this
         follows zero-trust; it starts with all fields read-only and removes them
         based on permissions.
         
         """
+        # Parse the available permissions and those of the request user
+        request.user.staff_permissions = StaffPermissions(request.user)
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
 
         # Global readonly fields. Note that @property and calculated fields must
         # be read-only
@@ -443,16 +483,16 @@ class IQProgramInline(admin.TabularInline):
         # Enrollment status can only be altered if income has been verified
         if hasattr(obj, 'household') and obj.household.is_income_verified is True:
             # Remove fields from readonly_fields based on permissions group
-            if request.user.is_superuser:
-            # # Stub of planned functionality
-            # if request.user.is_superuser or request.user.groups.filter(
-            #     name__istartswith='program'
-            # ).exists():
+            if request.user.staff_permissions.contains(
+                permission_groups.SUPERUSER,
+                # # Stub of planned functionality
+                # permission_groups.PROGRAM_COORDINATOR,
+            ):
                 # Remove is_enrolled
                 readonly_remove.extend([
                     'is_enrolled',
                 ])
-        
+
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
 
@@ -479,7 +519,7 @@ class IQProgramInline(admin.TabularInline):
                 '.'.join(ts.format('A').lower()),
             )
             return ts_formatted
-        
+
         return self.get_empty_value_display()
 
     # Show zero extra (unfilled) options
@@ -488,7 +528,7 @@ class IQProgramInline(admin.TabularInline):
 
 class AppAdminInline(admin.StackedInline):
     model = AppAdmin
-    
+
     fk_name = "user"
 
     fields = [
@@ -501,7 +541,7 @@ class AppAdminInline(admin.StackedInline):
 
 
 class UserAdmin(admin.ModelAdmin):
-    search_fields = ('last_name__startswith', 'first_name__startswith', 'email')
+    search_fields = ('last_name', 'first_name', 'email')
     list_display = ('last_name', 'first_name', 'email', 'last_completed_at')
     ordering = (Lower('last_name'), Lower('first_name'))    # case-insensitive
     list_display_links = ('email', )
@@ -512,6 +552,7 @@ class UserAdmin(admin.ModelAdmin):
     )
     date_hierarchy = 'last_completed_at'
     actions = ('export_users', 'mark_awaiting_response', 'mark_verified')
+    save_on_top = True
 
     user_fields = [
         'full_name',
@@ -543,9 +584,9 @@ class UserAdmin(admin.ModelAdmin):
             ])
 
             return '\n'.join(status_list)
-        
+
         return self.get_empty_value_display()
-        
+
     @admin.display(description='message to user')
     def user_message(self, obj):
         msg = []
@@ -577,40 +618,53 @@ class UserAdmin(admin.ModelAdmin):
                     )
 
         if len(msg) > 0:
-            return "- {}".format('\n- '.join(msg))
+            return "\u2023 {}".format('\n\u2023 '.join(msg))
         return self.get_empty_value_display()
-        
+
     def has_add_permission(self, request, obj=None):
         # Adding directly from the admin panel is disallowed for everyone
         return False
-        
+
     def has_income_verification_permission(self, request, obj=None):
+        # Parse the available permissions and those of the request user; this
+        # is defined here for use in the changelist
+        request.user.staff_permissions = StaffPermissions(request.user)
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
+
         # Define income_verification permissions
-        if request.user.is_superuser or request.user.groups.filter(
-            name__istartswith='income'
-        ).exists():
+        if request.user.staff_permissions.contains(
+            permission_groups.SUPERUSER,
+            permission_groups.INCOME_VERIFICATION,
+        ):
             return True
         return False
 
-    def get_fieldsets(self, request, obj):
-        """
-        Return fieldsets based on user type. All users get the default fieldset,
-        then additional fields are added for superusers.
-        
-        """
-
+    def get_changelist(self, request, **kwargs):
         # Log entrance to this changelist. This attempts to track called
         # functions
-        log.info(
+        log.debug(
             "Entering admin changelist",
             function='UserAdmin',
             user_id=request.user.id,
         )
 
+        return super().get_changelist(request, **kwargs)
+
+    def get_fieldsets(self, request, obj=None):
+        """
+        Return fieldsets based on user type. All users get the default fieldset,
+        then additional fields are added for superusers.
+        
+        """
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
+
         # Create an AppAdmin object for the current user, if DNE
         if AppAdmin.objects.filter(user=obj).count() == 0:
             AppAdmin.objects.create(user=obj)
-
 
         fieldsets = [
             (
@@ -629,7 +683,9 @@ class UserAdmin(admin.ModelAdmin):
             ),
         ]
 
-        if request.user.is_superuser:
+        if request.user.staff_permissions.contains(
+            permission_groups.SUPERUSER,
+        ):
             for idx, elem in enumerate(fieldsets):
                 if elem[0] == 'USER':
                     fieldsets[idx][1]['fields'].extend([
@@ -647,22 +703,25 @@ class UserAdmin(admin.ModelAdmin):
 
         return fieldsets
 
-    def get_form(self, *args, **kwargs):
+    def get_form(self, request, obj=None, change=False, **kwargs):
         # Use this function to add help_text to the display-only fields
         help_texts = {
             'renewal_action_parsed': "The uncompleted steps in a user's renewal flow. An empty value indicates the user is not mid-renewal.",
             'user_message': "Message to the user regarding their application or account. Aspects shown here may not yet be available to the user.",
         }
         kwargs.update({'help_texts': help_texts})
-        return super().get_form(*args, **kwargs)
+        return super().get_form(request, obj=obj, change=change, **kwargs)
 
-    def get_readonly_fields(self, request, obj):
+    def get_readonly_fields(self, request, obj=None):
         """
         Return readonly fields based on user type and groups. Note that this
         follows zero-trust; it starts with all fields read-only and removes them
         based on permissions.
         
         """
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
 
         # Global readonly fields. Note that @property and calculated fields must
         # be read-only
@@ -670,7 +729,9 @@ class UserAdmin(admin.ModelAdmin):
 
         # Remove fields from readonly_fields based on permissions group
         readonly_remove = []
-        if request.user.is_superuser:
+        if request.user.staff_permissions.contains(
+            permission_groups.SUPERUSER,
+        ):
             # Remove all readonly fields except the calculated fields
             readonly_remove.extend([
                 'email',
@@ -678,16 +739,16 @@ class UserAdmin(admin.ModelAdmin):
                 'is_archived',
                 'last_completed_at',
             ])
-        if request.user.groups.filter(
-            name__istartswith='admin'
-        ).exists():
+        if request.user.staff_permissions.contains(
+            permission_groups.PROGRAM_ADMIN
+        ):
             # Remove these fields from read-only if the user is in the
             # 'income...' group
             readonly_remove.extend([
                 'phone_number',
                 'is_archived',
             ])
-        
+
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
 
@@ -700,11 +761,25 @@ class UserAdmin(admin.ModelAdmin):
         IQProgramInline,
     ]
 
+    def save_model(self, request, obj, form, change):
+        """ Save the primary model (User). """
+        # Set admin_mode for proper signals functionality
+        obj.admin_mode = True
+        # Set is_updated so any changes will be reflected to the business users
+        if form.changed_data:
+            obj.is_updated = True
+
+        super().save_model(request, obj, form, change)
+
     def save_formset(self, request, form, formset, change):
+        """ Save the additional models (Inlines). """
         instances = formset.save(commit=False)
 
         enrolled_iq_programs = []
         for obj in formset.deleted_objects:
+            # Set admin_mode for proper signals functionality
+            obj.admin_mode = True
+
             # IQProgram objects cannot be deleted if the user is enrolled;
             # add to list to notify the user
             if isinstance(obj, IQProgram) and obj.is_enrolled:
@@ -713,6 +788,12 @@ class UserAdmin(admin.ModelAdmin):
                 obj.delete()
 
         for instance in instances:
+            # Set admin_mode for proper signals functionality
+            instance.admin_mode = True
+            # Set is_updated so any changes will be reflected to the business users
+            if formset.changed_objects:
+                instance.is_updated = True
+
             # Add logic to alterations of IQProgramInline
             if isinstance(instance, IQProgram):
                 if instance.is_enrolled:
@@ -740,7 +821,7 @@ class UserAdmin(admin.ModelAdmin):
         # Mark the selected users as 'awaiting response', which will hide them
         # from the 'new' needs verification filter
 
-        log.info(
+        log.debug(
             "Entering admin action",
             function='mark_awaiting_response',
             user_id=request.user.id,
@@ -764,7 +845,7 @@ class UserAdmin(admin.ModelAdmin):
 
         # Log entrance to this action. This attempts to track called
         # functions
-        log.info(
+        log.debug(
             "Entering admin action",
             function='mark_verified',
             user_id=request.user.id,
@@ -790,7 +871,7 @@ class UserAdmin(admin.ModelAdmin):
                 function='mark_verified',
                 user_id=request.user.id,
             )
-            
+
             # Add a message to the user when complete
             self.message_user(request, ngettext(
                 'Income was verified for %d user.',
@@ -936,6 +1017,14 @@ class UserAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
 
+        # Parse the available permissions and those of the request user; this
+        # is defined here as the first request-based function to be called for a
+        # change page
+        request.user.staff_permissions = StaffPermissions(request.user)
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
+
         # Add any custom buttons. This must be a list/tuple of list/tuples, as
         # (name, url). The 'url' portion must match the
         # "if 'url' in request.POST:" section of response_change()
@@ -946,9 +1035,10 @@ class UserAdmin(admin.ModelAdmin):
         # IQ Programs can be added at any time after the user has completed the
         # application
         if obj.last_completed_at is not None and (
-            request.user.is_superuser or request.user.groups.filter(
-                name__istartswith='admin'
-            ).exists()
+            request.user.staff_permissions.contains(
+                permission_groups.SUPERUSER,
+                permission_groups.PROGRAM_ADMIN,
+            )
         ):
             # ...but Eligibility Program addition is disallowed once income has
             # been verified
@@ -966,7 +1056,8 @@ class UserAdmin(admin.ModelAdmin):
                 ])
             extra_context['custom_buttons'].extend([
                 {
-                    'title': 'Add IQ Program',
+                    # Buttons that open in the same window save the model first
+                    'title': 'Save and add IQ Program',
                     'link': '_add_iq_program',
                 },
             ])
@@ -1062,10 +1153,10 @@ class UserAdmin(admin.ModelAdmin):
         return super().change_view(
             request,
             object_id,
-            form_url,
+            form_url=form_url,
             extra_context=extra_context,
         )
-    
+
     def response_change(self, request, obj):
         if "_add_iq_program" in request.POST:
             # Handle 'Add Program': load the page to select the program name
@@ -1089,14 +1180,14 @@ class UserAdmin(admin.ModelAdmin):
             return super().response_change(request, obj)
 
 
-class AddressAdmin(admin.ModelAdmin):
-    search_fields = ('address1__icontains', 'address2__icontains')
+class AddressRDAdmin(admin.ModelAdmin):
+    search_fields = ('address1', 'address2')
     list_display = ('address1', 'address2', 'is_in_gma', 'is_city_covered')
     ordering = list_display_links = ('address1', 'address2')
     list_filter = (GMAListFilter, CityCoveredListFilter)
     actions = ['update_gma']
 
-    fields = [
+    all_possible_change_fields = [
         'pretty_address',
         'is_in_gma',
         'is_city_covered',
@@ -1111,7 +1202,18 @@ class AddressAdmin(admin.ModelAdmin):
 
     list_per_page = 100
 
-    def get_fields(self, request, obj):
+    def get_changelist(self, request, **kwargs):
+        # Log entrance to this changelist. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin changelist",
+            function='AddressRDAdmin',
+            user_id=request.user.id,
+        )
+
+        return super().get_changelist(request, **kwargs)
+
+    def get_fields(self, request, obj=None):
         """
         Return fields based on whether object exists (new or existing).
 
@@ -1119,6 +1221,18 @@ class AddressAdmin(admin.ModelAdmin):
         New addresses can only enter the address information itself.
         
         """
+
+        # Log entrance to this change page. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin change page",
+            function='AddressRDAdmin',
+            user_id=request.user.id,
+        )
+
+        # Parse the available permissions and those of the request user. This is
+        # defined here because it runs before get_readonly_fields()
+        request.user.staff_permissions = StaffPermissions(request.user)
 
         if obj is None:
             fields = [
@@ -1128,27 +1242,18 @@ class AddressAdmin(admin.ModelAdmin):
                 'zip_code',
             ]
         else:
-            fields = [
-                'pretty_address',
-                'is_in_gma',
-                'is_city_covered',
-            ]
+            fields = self.all_possible_change_fields
 
         return fields
 
-    def get_readonly_fields(self, request, obj):
+    def get_readonly_fields(self, request, obj=None):
         """
         Return readonly fields based on GMA status.
         
         """
-
-        # Log entrance to this changelist. This attempts to track called
-        # functions
-        log.info(
-            "Entering admin changelist",
-            function='AddressAdmin',
-            user_id=request.user.id,
-        )
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
 
         # If obj is None (as in, adding a new address), there are no readonly
         # fields
@@ -1156,18 +1261,19 @@ class AddressAdmin(admin.ModelAdmin):
             return []
 
         # Global readonly fields
-        readonly_fields = self.fields
+        readonly_fields = self.all_possible_change_fields
 
         readonly_remove = []
         # is_city_covered can be modified only if is_in_gma==False and user is
         # either superuser or in 'admin' group
         if not obj.is_in_gma and (
-            request.user.is_superuser or request.user.groups.filter(
-                name__istartswith='admin'
-            ).exists()
+            request.user.staff_permissions.contains(
+                permission_groups.SUPERUSER,
+                permission_groups.PROGRAM_ADMIN,
+            )
         ):
             readonly_remove.append('is_city_covered')
-        
+
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
 
@@ -1181,14 +1287,14 @@ class AddressAdmin(admin.ModelAdmin):
         or a queryset from the changelist actions.
         
         """
-        
+
         # Log entrance to this action. This attempts to track called
         # functions
-        log.info(
+        log.debug(
             "Entering admin action",
             function='update_gma',
             user_id=request.user.id,
-        )        
+        )
 
         # If the input_object is not a QuerySet, coerce it into a list so for
         # similar operation
@@ -1197,7 +1303,7 @@ class AddressAdmin(admin.ModelAdmin):
         else:
             queryset = [input_object]
 
-        # Loop through the queryset (or similated queryset)
+        # Loop through the queryset (or simulated queryset)
         updated_addr_count = 0
         for obj in queryset:
             # Format for address_check. All addresses in the database have been
@@ -1241,7 +1347,10 @@ class AddressAdmin(admin.ModelAdmin):
                         _ = finalize_application(addr.user, update_user=False)
 
                         # Remove any no-longer-eligible programs
-                        remove_ineligible_programs(addr.user.id)
+                        remove_ineligible_programs_for_user(
+                            addr.user.id,
+                            admin_mode=True,
+                        )
 
         log.info(
             f"{len(queryset)} addresses checked; updates applied to {updated_addr_count}.",
@@ -1258,6 +1367,11 @@ class AddressAdmin(admin.ModelAdmin):
 
     # Temporarily redirect the user to an error message if trying to add new
     def add_view(self, request, form_url='', extra_context=None):
+
+        # Parse the available permissions and those of the request user; this
+        # is defined here as the first request-based function to be called for
+        # an 'add' page
+        request.user.staff_permissions = StaffPermissions(request.user)
 
         self.message_user(
             request,
@@ -1287,19 +1401,28 @@ class AddressAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
 
+        # Parse the available permissions and those of the request user; this
+        # is defined here as the first request-based function to be called for a
+        # change page
+        request.user.staff_permissions = StaffPermissions(request.user)
+
         # Add any custom buttons. This must be a list/tuple of list/tuples, as
         # (name, url). The 'url' portion must match the
         # "if 'url' in request.POST:" section of response_change()
         extra_context['custom_buttons'] = [
             {
-                'title': 'Update GMA',
+                # Buttons that open in the same window save the model first
+                'title': 'Save and update GMA',
                 'link': '_update_gma',
             },
         ]
         return super().change_view(
-            request, object_id, form_url, extra_context=extra_context,
+            request,
+            object_id,
+            form_url=form_url,
+            extra_context=extra_context,
         )
-    
+
     def response_change(self, request, obj):
         opts = self.model._meta
         pk_value = obj._get_pk_val()
@@ -1327,12 +1450,18 @@ class AddressAdmin(admin.ModelAdmin):
         else:
             return super().response_change(request, obj)
 
+    def save_model(self, request, obj, form, change):
+        # Set admin_mode for proper signals functionality
+        obj.admin_mode = True
+
+        super().save_model(request, obj, form, change)
+
 
 class EligibilityProgramAdmin(admin.ModelAdmin):
     search_fields = (
-        'user__last_name__startswith',
-        'user__first_name__startswith',
-        'user__email__contains',
+        'user__last_name',
+        'user__first_name',
+        'user__email',
     )
     list_display = (
         'user_last_name',
@@ -1342,9 +1471,6 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
     )
     list_display_links = ('program_name', )
     ordering = (Lower('user__last_name'), Lower('user__first_name'))    # case-insensitive
-
-    # def get_list_display(self, request):
-    #     return None
 
     eligibility_fields = [
         'created_at',
@@ -1358,17 +1484,28 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         # Adding directly from the admin panel is disallowed for everyone
         return False
 
-    def get_fieldsets(self, request, obj):
+    def get_changelist(self, request, **kwargs):
+        # Log entrance to this changelist. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin changelist",
+            function='EligibilityProgramAdmin',
+            user_id=request.user.id,
+        )
+
+        return super().get_changelist(request, **kwargs)
+
+    def get_fieldsets(self, request, obj=None):
         """
         Return fieldsets based on user type. All users get the default fieldset,
         then additional fields are added for superusers.
         
         """
 
-        # Log entrance to this changelist. This attempts to track called
+        # Log entrance to this change page. This attempts to track called
         # functions
-        log.info(
-            "Entering admin changelist",
+        log.debug(
+            "Entering admin change page",
             function='EligibilityProgramAdmin',
             user_id=request.user.id,
         )
@@ -1397,15 +1534,15 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         ]
 
         return fieldsets
-    
+
     @admin.display
     def full_name(self, obj):
         return obj.user.full_name
-    
+
     @admin.display
     def user_last_name(self, obj):
         return obj.user.last_name
-    
+
     @admin.display
     def user_first_name(self, obj):
         return obj.user.first_name
@@ -1417,7 +1554,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
     @admin.display(description='program name')
     def program_name(self, obj):
         return obj.program.friendly_name
-    
+
     @admin.display(description='document')
     def display_document_link(self, obj):
         """ Display a link to each document. """
@@ -1448,19 +1585,33 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
 
+        # Parse the available permissions and those of the request user; this
+        # is defined here as the first request-based function to be called for a
+        # change page
+        request.user.staff_permissions = StaffPermissions(request.user)
+        # Use the `_available_groups` attribute so the Enum groups are
+        # comparable (they must originate in the same module)
+        permission_groups = request.user.staff_permissions._available_groups
+
         # Add any custom buttons. This must be a list/tuple of list/tuples, as
         # (name, url). The 'url' portion must match the
         # "if 'url' in request.POST:" section of response_change()
 
-        # Editing is disallowed once income has been verified
-        obj = EligibilityProgram.objects.get(pk=object_id)
-        if obj.user.household.is_income_verified is False:
-            extra_context['custom_buttons'] = [
-                {
-                    'title': 'Change Program',
-                    'link': '_change_program',
-                },
-            ]
+        # Only show the 'change program button if superuser or 'admin'
+        if request.user.staff_permissions.contains(
+            permission_groups.SUPERUSER,
+            permission_groups.PROGRAM_ADMIN,
+        ):
+            # Editing is disallowed once income has been verified
+            obj = EligibilityProgram.objects.get(pk=object_id)
+            if obj.user.household.is_income_verified is False:
+                extra_context['custom_buttons'] = [
+                    {
+                        # Buttons that open in the same window save the model first
+                        'title': 'Save and change program',
+                        'link': '_change_program',
+                    },
+                ]
 
         # Intercept any POSTs from the custom button intermediate pages before
         # calling super() (so that super() only handles the following GET)
@@ -1498,7 +1649,10 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                             _ = finalize_application(obj.user, update_user=False)
 
                         # Remove any no-longer-eligible programs
-                        msg = remove_ineligible_programs(obj.user.id)
+                        msg = remove_ineligible_programs_for_user(
+                            obj.user.id,
+                            admin_mode=True,
+                        )
 
                 except AttributeError as e:
                     # Undo the changes (automatic, since an exception was
@@ -1538,7 +1692,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                 redirect_url,
             )
             return HttpResponseRedirect(redirect_url)
-        
+
         elif '_change_program_cancel' in request.POST:
             # User selected 'cancel'
             self.message_user(
@@ -1564,10 +1718,10 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         return super().change_view(
             request,
             object_id,
-            form_url,
+            form_url=form_url,
             extra_context=extra_context,
         )
-    
+
     def response_change(self, request, obj):
         if "_change_program" in request.POST:
             # Handle 'Update Program': load the page to select the program name
@@ -1638,11 +1792,14 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         )
 
     # Add logic to update the user's info after the object is deleted. Note that
-    # the is only database deletion; blobs are retained for posterity
+    # this is only database deletion; blobs are retained for posterity
     def delete_model(self, request, obj):
         # If there is an exception with finalize_application, the deletion will
         # automatically be rolled back due to this transaction.atomic() block
         with transaction.atomic():
+            # Set admin_mode for proper signals functionality
+            obj.admin_mode = True
+
             super().delete_model(request, obj)
 
             # Although the object itself is deleted, the relations still exist
@@ -1650,10 +1807,11 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                 _ = finalize_application(obj.user, update_user=False)
 
                 # Remove any no-longer-eligible programs
-                request.session['remove_ineligible_message'] = remove_ineligible_programs(
+                request.session['remove_ineligible_message'] = remove_ineligible_programs_for_user(
                     obj.user.id,
+                    admin_mode=True,
                 )
-                
+
     def response_delete(self, request, obj_display, obj_id):
         msg = request.session.pop('remove_ineligible_message', '')
 
@@ -1673,14 +1831,33 @@ class EligibilityProgramRDAdmin(admin.ModelAdmin):
         qs = qs.order_by('friendly_name')
         return qs
 
-    search_fields = ('friendly_name__contains', )
+    search_fields = ('friendly_name', )
     list_display = ('friendly_name', 'is_active', 'ami_threshold')
     list_filter = ('is_active', )
     list_display_links = ('friendly_name', )
 
-    def get_form(self, request, obj=None, **kwargs):
+    def get_changelist(self, request, **kwargs):
+        # Log entrance to this changelist. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin changelist",
+            function='EligibilityProgramRDAdmin',
+            user_id=request.user.id,
+        )
+
+        return super().get_changelist(request, **kwargs)
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        # Log entrance to this change page. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin change page",
+            function='EligibilityProgramRDAdmin',
+            user_id=request.user.id,
+        )
+
         kwargs["form"] = EligibilityProgramRDForm
-        return super().get_form(request, obj, **kwargs)
+        return super().get_form(request, obj=obj, change=change, **kwargs)
 
     list_per_page = 100
 
@@ -1692,36 +1869,349 @@ class IQProgramRDAdmin(admin.ModelAdmin):
         qs = qs.order_by('friendly_name')
         return qs
 
-    search_fields = ('friendly_name__contains', )
+    search_fields = ('friendly_name', )
     list_display = ('friendly_name', 'is_active')
     list_filter = ('is_active', )
     list_display_links = ('friendly_name', )
 
-    def get_form(self, request, obj=None, **kwargs):
+    def get_form(self, request, obj=None, change=False, **kwargs):
         kwargs["form"] = IQProgramRDForm
-        return super().get_form(request, obj, **kwargs)
+        return super().get_form(request, obj=obj, change=change, **kwargs)
 
     list_per_page = 100
 
+    # Perform additional logic if any of the 'requires' fields are altered; save
+    # the model or perform a dry run based on the input to this function
+    def get_changes(self, request, obj, form, change, view_only=True):
+        # If this is an addition (not change) or the changed_data is empty (not
+        # form.changed_data), add a message and go directly to display
+        if not change or not form.changed_data:
+            affected_users = {
+                'permissive': [],
+                'restrictive': [],
+            }
+            log.info(
+                f"No changes detected (view_only=={view_only})",
+                function='IQProgramRDAdmin.get_changes',
+                user_id=request.user.id,
+            )
+
+            if view_only:
+                user_message = "There are no tests for the specified action; proceed at will."
+            else:
+                user_message = "No changes detected."
+            self.message_user(
+                request,
+                user_message,
+                messages.SUCCESS,
+            )
+
+        else:
+            req_fields = get_iqprogram_requires_fields()
+
+            # For each itm that is a 'requires' field, calculate how many
+            # active accounts may be affected and alert the user
+
+            # Gather all 'requires' fields that were updated vs not
+            updated_fields = [x for x in req_fields if x[0] in form.changed_data]
+
+            # If none of the updated fields are in req_fields, go directly to
+            # display
+            if len(updated_fields) == 0:
+                affected_users = {
+                    'permissive': [],
+                    'restrictive': [],
+                }
+                log.debug(
+                    f"'Requires' field update not detected (view_only=={view_only})",
+                    function='IQProgramRDAdmin.get_changes',
+                    user_id=request.user.id,
+                )
+
+            else:
+                log.info(
+                    "'Requires' field update detected ({}) (view_only=={})".format(
+                        ', '.join([x[0] for x in updated_fields]),
+                        view_only,
+                    ),
+                    function='IQProgramRDAdmin.get_changes',
+                    user_id=request.user.id,
+                )
+
+                # Determine affected users based on currently eligibility vs
+                # proposed eligibility for the changes
+
+                # Build Q queries to filter addresses that are ineligible (both
+                # currently and after the proposed changes)
+                filter_criteria = {
+                    f"eligibility_address__{cor}": False for req, cor in req_fields if form.initial[req] is True
+                }
+                # Use OR to match *any of* the fields
+                filter_currently_ineligible = Q(
+                    **filter_criteria,
+                    _connector='OR',
+                )
+
+                filter_criteria = {
+                    f"eligibility_address__{cor}": False for req, cor in req_fields if form.cleaned_data[req] is True
+                }
+                # Use OR to match *any of* the fields
+                filter_proposed_ineligible = Q(
+                    **filter_criteria,
+                    _connector='OR',
+                )
+
+                # Build Q queries to filter addresses that are eligible (both
+                # currently and after the proposed changes)
+                filter_criteria = {
+                    f"eligibility_address__{cor}": True for req, cor in req_fields if form.initial[req] is True
+                }
+                # Use the default AND to match *all* fields
+                filter_currently_eligible = Q(**filter_criteria)
+
+                filter_criteria = {
+                    f"eligibility_address__{cor}": True for req, cor in req_fields if form.cleaned_data[req] is True
+                }
+                # Use the default AND to match *all* fields
+                filter_proposed_eligible = Q(**filter_criteria)
+
+                # Gather any IQProgram objects for each user for the specified
+                # program (if this DNE for a user, they haven't applied to the
+                # program)
+                applied_iq_objects = IQProgram.objects.filter(
+                    user_id=OuterRef('id'),
+                    program_id=obj.id,
+                )
+
+                # Initialize the affected users dict, using empty lists as
+                # effective placeholders for querysets
+                affected_users = {
+                    'permissive': [],
+                    'restrictive': [],
+                }
+
+                # Gather any address for each user for the 'permissive' and
+                # 'restrictive' cases (an address that is currently ineligible
+                # but would be eligible with the proposed changes and vice
+                # versa, respectively)
+                permissive_address = Address.objects.select_related(
+                    'eligibility_address'
+                ).filter(
+                    filter_currently_ineligible,
+                    filter_proposed_eligible,
+                    user_id=OuterRef('id'),
+                )
+
+                restrictive_address = Address.objects.select_related(
+                    'eligibility_address'
+                ).filter(
+                    filter_currently_eligible,
+                    filter_proposed_ineligible,
+                    user_id=OuterRef('id'),
+                )
+
+                # Gather all active users with complete applications that
+                # include the affected addresses and have applied for the
+                # specified IQ program
+                affected_users['restrictive'] = User.objects.select_related(
+                    'address'
+                ).filter(
+                    # User has an address affected by this change
+                    Exists(restrictive_address),
+                    # User has applied for the specified IQ program
+                    Exists(applied_iq_objects),
+                    is_archived=False,
+                    last_completed_at__isnull=False,
+                )
+
+                affected_users['permissive'] = User.objects.select_related(
+                    'address'
+                ).filter(
+                    # User has an address affected by this change
+                    Exists(permissive_address),
+                    # User cannot have applied to the specific IQ program, since
+                    # they are currently ineligible
+                    is_archived=False,
+                    last_completed_at__isnull=False,
+                )
+
+                # Update affected users after the model was saved (if applicable)
+                if not view_only:
+                    # Update each user for the specified program and collect the
+                    # counts of changes
+                    users = list(chain(
+                        affected_users['permissive'],
+                        affected_users['restrictive'],
+                    ))
+
+                    affected_counts = update_users_for_program(
+                        program=obj,
+                        users=users,
+                    )
+
+                    user_message = "Users affected by the change to “{}”: {} auto-applied user(s), {} unapplied user(s), and {} enrolled user(s) (could not be altered)".format(
+                        '”, “'.join(
+                            [x[0] for x in updated_fields]
+                        ),
+                        affected_counts['applied_users'],
+                        affected_counts['removed_users'],
+                        affected_counts['ignored_users'],
+                    )
+                    log.info(
+                        "{} (view_only={})".format(
+                            # Remove the unicode quotes when logging
+                            user_message.replace('“', '"').replace('”', '"'),
+                            view_only,
+                        ),
+                        function='IQProgramRDAdmin.get_changes',
+                        user_id=request.user.id,
+                    )
+                    self.message_user(
+                        request,
+                        user_message,
+                        messages.SUCCESS,
+                    )
+
+        return affected_users
+
+    # Add custom buttons to the save list in the admin template (from
+    # https://stackoverflow.com/a/34899874/5438550 and
+    # https://stackoverflow.com/a/69487616/5438550)
+    change_form_template = 'admin/custom_button_change_form.html'
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+
+        # Add any custom buttons. This must be a list/tuple of list/tuples, as
+        # (name, url). The 'url' portion must match the
+        # "if 'url' in request.POST:" section of response_change()
+        extra_context['custom_buttons'] = [
+            {
+                'title': 'View Changes',
+                'link': '_view_changes',
+            },
+        ]
+
+        opts = self.model._meta
+        pk_value = object_id
+        preserved_filters = self.get_preserved_filters(request)
+        if '_view_changes_complete' in request.POST:
+            # If 'View Changes' was selected, refresh the page via a redirect
+            redirect_url = reverse(
+                f"admin:{opts.app_label}_{opts.model_name}_change",
+                args=(pk_value,),
+                current_app=self.admin_site.name,
+            )
+            redirect_url = add_preserved_filters(
+                {
+                    'preserved_filters': preserved_filters,
+                    'opts': opts,
+                },
+                redirect_url,
+            )
+            return HttpResponseRedirect(redirect_url)
+
+        return super().change_view(
+            request,
+            object_id,
+            form_url=form_url,
+            extra_context=extra_context,
+        )
+
+    def response_change(self, request, obj):
+        if "_view_changes" in request.POST:
+            # Set the current_app for the admin base template
+            request.current_app = self.admin_site.name
+            return render(
+                request,
+                'admin/open_view_changes.html',
+                {
+                    # Set some page-specific text
+                    'site_header': 'Get FoCo administration',
+                    'title': 'Calculating proposed changes in new window...',
+                    'site_title': 'Get FoCo administration',
+                },
+            )
+
+        else:
+            return super().response_change(request, obj)
+
+    def save_model(self, request, obj, form, change):
+        if "_view_changes" in request.POST:
+            # Run the logic for changes
+            affected_users = self.get_changes(request, obj, form, change)
+
+            # Set a session var with the affected users
+            request.session['permissive_user_ids'] = [x.id for x in affected_users['permissive']]
+            request.session['restrictive_user_ids'] = [x.id for x in affected_users['restrictive']]
+
+            # Set a session var with the altered fields
+            request.session['altered_fields'] = [
+                (x, form.initial[x], form.cleaned_data[x]) for x in form.changed_data
+            ]
+
+        else:
+            # If 'View Changes' was not selected, save the model (with
+            # message(s) to the user). The model must be saved first in order
+            # to properly apply/remove programs
+            super().save_model(request, obj, form, change)
+
+            # Make the changes after saving the model
+            _ = self.get_changes(request, obj, form, change, view_only=False)
+
 
 class FeedbackAdmin(admin.ModelAdmin):
-    search_fields = ('feedback_comments__contains', )
+    search_fields = ('feedback_comments', )
     list_display = list_display_links = ('created', 'star_rating')
     list_filter = ('star_rating', )
     ordering = ('-created', )
     date_hierarchy = 'created'
 
-    fields = readonly_fields = [
+    list_per_page = 100
+
+    # Define all possible fields and set them as readonly
+    all_possible_fields = readonly_fields = [
         'created',
         'star_rating',
         'feedback_comments',
     ]
 
-    list_per_page = 100
-
     def has_add_permission(self, request, obj=None):
         # Adding directly from the admin panel is disallowed for everyone
         return False
+
+    def has_delete_permission(self, request, obj=None):
+        # Deleting is disallowed for everyone
+        return False
+
+    def get_changelist(self, request, **kwargs):
+        # Log entrance to this changelist. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin changelist",
+            function='FeedbackAdmin',
+            user_id=request.user.id,
+        )
+
+        return super().get_changelist(request, **kwargs)
+
+    def get_fields(self, request, obj=None):
+        """
+        Return fields based on whether object exists (new or existing).
+
+        Existing addresses can only update is_city_covered, when applicable.
+        New addresses can only enter the address information itself.
+        
+        """
+
+        # Log entrance to this change page. This attempts to track called
+        # functions
+        log.debug(
+            "Entering admin change page",
+            function='FeedbackAdmin',
+            user_id=request.user.id,
+        )
+
+        return self.all_possible_fields
 
 
 # Register the models
@@ -1735,7 +2225,7 @@ class FeedbackAdmin(admin.ModelAdmin):
 # )
 
 admin.site.register(User, UserAdmin)
-admin.site.register(AddressRD, AddressAdmin)
+admin.site.register(AddressRD, AddressRDAdmin)
 admin.site.register(EligibilityProgram, EligibilityProgramAdmin)
 admin.site.register(EligibilityProgramRD, EligibilityProgramRDAdmin)
 admin.site.register(IQProgramRD, IQProgramRDAdmin)

@@ -221,4 +221,10 @@ urlpatterns = [
         name='admin_add_elig_program',
         kwargs={'allow_direct_user': False},
     ),
+    path(
+        'app_admin/view_changes',
+        admin_views.view_changes,
+        name='admin_view_changes',
+        kwargs={'allow_direct_user': False},
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
