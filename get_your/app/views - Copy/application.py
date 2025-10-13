@@ -29,7 +29,8 @@ from django.shortcuts import reverse
 
 from app.backend import form_page_number
 from app.backend import login
-from app.backend import save_renewal_action
+
+# from app.backend import save_renewal_action
 from app.decorators import set_update_mode
 from app.forms import UserForm
 from app.forms import UserUpdateForm
@@ -95,14 +96,14 @@ def account(request, **kwargs):
                 instance = form.save(commit=False)
 
                 # Set the attributes to let pre_save know to save history
-                instance.update_mode = update_mode
-                instance.renewal_mode = renewal_mode
+                # instance.update_mode = update_mode
+                # instance.renewal_mode = renewal_mode
                 instance.save()
 
                 if renewal_mode:
                     # Call save_renewal_action after .save() so as not to save
                     # renewal metadata as data updates
-                    save_renewal_action(request, "account")
+                    # save_renewal_action(request, "account")
                     return JsonResponse({"redirect": f"{reverse('app:address')}"})
                 if (
                     hasattr(request.user, "has_viewed_dashboard")

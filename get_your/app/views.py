@@ -53,7 +53,8 @@ from .backend import finalize_address
 from .backend import finalize_application
 from .backend import form_page_number
 from .backend import get_in_progress_eligiblity_file_uploads
-from .backend import save_renewal_action
+
+# from .backend import save_renewal_action
 from .backend import serialize_household_members
 from .backend import tag_mapping
 from .backend import validate_usps
@@ -506,7 +507,7 @@ def get_ready(request, **kwargs):
                 function="get_ready",
                 user_id=request.user.id,
             )
-            save_renewal_action(request, "get_ready")
+            # save_renewal_action(request, "get_ready")
             return redirect("users:detail", kwargs={"pk": request.user.id})
         return render(
             request,
@@ -1105,15 +1106,16 @@ def take_usps_address(request, **kwargs):
                         )
 
                     # Set the attributes to let pre_save know to save history
-                    address.update_mode = update_mode
-                    address.renewal_mode = renewal_mode
+                    # address.update_mode = update_mode
+                    # address.renewal_mode = renewal_mode
 
                     address.save()
 
                 if renewal_mode:
                     # Call save_renewal_action after .save() so as not to save
                     # renewal metadata as data updates
-                    save_renewal_action(request, "address")
+                    # save_renewal_action(request, "address")
+                    pass
 
                 # Add 'app:address' to `user_completed_pages`
                 request.user.user_completed_pages.add(
@@ -1129,7 +1131,7 @@ def take_usps_address(request, **kwargs):
             )
 
             # Set the attributes to let pre_save know to save history
-            address.update_mode = update_mode
+            # address.update_mode = update_mode
 
             address.save()
             return redirect(
@@ -1200,15 +1202,16 @@ def household(request, **kwargs):
                 instance.is_income_verified = False
 
             # Set the attributes to let pre_save know to save history
-            instance.update_mode = update_mode
-            instance.renewal_mode = renewal_mode
+            # instance.update_mode = update_mode
+            # instance.renewal_mode = renewal_mode
 
             instance.save()
 
             if renewal_mode:
                 # Call save_renewal_action after .save() so as not to save
                 # renewal metadata as data updates
-                save_renewal_action(request, "household")
+                # save_renewal_action(request, "household")
+                pass
 
             if update_mode:
                 return redirect(f"{reverse('app:household_members')}?update_mode=1")
@@ -1436,15 +1439,16 @@ def household_members(request, **kwargs):
             instance.household_info = serialize_household_members(request, file_paths)
 
             # Set the attribute to let pre_save know to save history
-            instance.update_mode = update_mode
-            instance.renewal_mode = renewal_mode
+            # instance.update_mode = update_mode
+            # instance.renewal_mode = renewal_mode
 
             instance.save()
 
             if renewal_mode:
                 # Call save_renewal_action after .save() so as not to save
                 # renewal metadata as data updates
-                save_renewal_action(request, "household_members")
+                # save_renewal_action(request, "household_members")
+                pass
 
             if update_mode:
                 return redirect(
@@ -1528,7 +1532,7 @@ def programs(request, **kwargs):
                 )
                 # for every program loop through and delete the program
                 for program in eligibility_programs:
-                    program.renewal_mode = True
+                    # program.renewal_mode = True
                     program.delete()
             else:
                 # In case a user has migrated back to the programs page, clear out their existing
@@ -1551,12 +1555,13 @@ def programs(request, **kwargs):
                     EligibilityProgram(
                         user_id=request.user.id,
                         program_id=value,
-                        renewal_mode=renewal_mode,
+                        # renewal_mode=renewal_mode,
                     ),
                 )
 
             if renewal_mode:
-                save_renewal_action(request, "eligibility_programs")
+                # save_renewal_action(request, "eligibility_programs")
+                pass
 
             EligibilityProgram.objects.bulk_create(selected_eligibility_programs)
 
@@ -1673,7 +1678,7 @@ def files(request, **kwargs):
 
                 for f in request.FILES.getlist("document_path"):
                     fileAmount += 1
-                    instance.renewal_mode = renewal_mode
+                    # instance.renewal_mode = renewal_mode
 
                     # This allows us to save multiple files under the same
                     # Eligibility Program record. Note that the database is updated

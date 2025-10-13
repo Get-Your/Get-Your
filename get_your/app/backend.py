@@ -1004,7 +1004,7 @@ def finalize_application(user, renewal_mode=False, update_user=True):
         # last_renewal_action to null
         if update_user:
             user = User.objects.get(id=user.id)
-            user.renewal_mode = True
+            # user.renewal_mode = True
             user.last_completed_at = pendulum.now()
             user.last_renewal_action = None
             user.save()
@@ -1021,7 +1021,7 @@ def finalize_application(user, renewal_mode=False, update_user=True):
         # For each element in users_current_iq_programs, delete the program.
         # Note that each element has a non-null renewal interval
         for program in users_current_iq_programs:
-            program.renewal_mode = True
+            # program.renewal_mode = True
             program.delete()
 
         # Get the user's eligibility address
