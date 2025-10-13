@@ -65,21 +65,22 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
             return reverse("dashboard:dashboard")
 
         # TODO: if a user in mid-renewal, have a case for page/modal to prompt user to continue renewal or go to dashboard
-        # This currently assumes no renewal
-        completed_pages = self.request.user.user_completed_pages.order_by("-page_order")
+        # Note that this currently assumes no renewal
+        completed_pages = self.request.user.user_completed_pages.order_by(
+            "page_order",
+        ).all()
         if completed_pages.count() > 0:
-            last_completed_page_order = completed_pages.first().page_order
+            all_pages = ApplicationPage.objects.order_by("page_order").all()
+            first_uncompleted_page = next(
+                iter(x for x in all_pages if x not in completed_pages),
+            )
         else:
-            last_completed_page_order = 0
+            first_uncompleted_page = ApplicationPage.objects.order_by(
+                "page_order",
+            ).first()
         # TODO: Need error checking for this
         # TODO: Connect URL parameter to modal advising the user that the app is continuing where they left off
-        return "{}?continue=1".format(
-            reverse(
-                ApplicationPage.objects.get(
-                    page_order=last_completed_page_order + 1,
-                ).page_url,
-            ),
-        )
+        return f"{reverse(first_uncompleted_page.page_url)}?continue=1"
 
         # Original value here:
         # return reverse("users:detail", kwargs={"pk": self.request.user.pk})
