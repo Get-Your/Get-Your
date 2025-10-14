@@ -46,7 +46,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         {% if renewal_programs != 0 %}
         <div class="row">
             <a style="color:var(--white); font-weight: 800; text-decoration: none; width: 100%"
-                href="{% url 'app:qualified_programs' %}?order_by=renewal">
+                href="{% url 'dashboard:qualified_programs' %}?order_by=renewal">
                 <div class="module" style="margin-left: 1.5vw; margin-right:0; padding: 1vw; text-align: center;">
                     <hprogram style="color: orange; font-size: max(0.8vh, 40px)"> Renewal Required </hprogram>
                 </div>
@@ -56,14 +56,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
         <div class="row">
             <a style="color:var(--white); font-weight: 800; text-decoration: none;"
-                href="{% url 'app:qualified_programs' %}?order_by=active">
+                href="{% url 'dashboard:qualified_programs' %}?order_by=active">
                 <div class="module" style="margin-left: 0;margin-right:1.5vw;padding: 1vw;">
                     <hprogram style="color: var(--darkblue)"> {{active_programs}} </hprogram>
                     <h3 style="font-weight: 400; margin: 0; ">Active Program(s)</h3>
                 </div>
             </a>
             <a style="color:var(--white); font-weight: 800; text-decoration: none;"
-                href="{% url 'app:qualified_programs' %}?order_by=pending">
+                href="{% url 'dashboard:qualified_programs' %}?order_by=pending">
                 <div class="module" style="margin-left: 1.5vw;margin-right:0;padding: 1vw;">
                     <hprogram style="color: var(--darkblue)"> {{pending_programs}} </hprogram>
                     <h3 style="font-weight: 400; margin: 0;">Pending Approval </h3>
@@ -73,7 +73,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
         <div class="row">
             <a style="color:var(--white); font-weight: 800; text-decoration: none;"
-                href="{% url 'app:qualified_programs' %}?order_by=eligible">
+                href="{% url 'dashboard:qualified_programs' %}?order_by=eligible">
                 <div class="module" style="margin-left: 0;margin-right:1.5vw;padding: 1vw;">
                     <hprogram style="color: #4CAD00"> {{qualified_programs}} </hprogram>
                     <h3 style="font-weight: 400; margin: 0; ">Active Program(s)</h3>
@@ -98,7 +98,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             {% if renewal_programs != 0 %}
             <div class="item thin">
                 <a style="color:var(--white); font-weight: 800; text-decoration: none;"
-                    href="{% url 'app:qualified_programs' %}">
+                    href="{% url 'dashboard:qualified_programs' %}">
                 </a>
                 <p style="font-weight: 400; padding-left: 15px;">
                     Renewal Required
@@ -117,8 +117,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
             <div class="item collapsible renewal">
                 {% for program in iq_programs %}
-                {% if program.status_for_user != 'PENDING' and program.status_for_user != 'ACTIVE' and
-                program.status_for_user != '' %}
+                {% if program.status_for_user != 'PENDING' and program.status_for_user != 'ACTIVE' and program.status_for_user != '' %}
                 <div class="divider"></div>
                 <div class="row" style="margin:0; width:100%">
                     <div style="margin:0">
@@ -143,7 +142,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             {# START: QUALIFIED IQ PROGRAMS #}
             <div class="item thin">
                 <a style="color:var(--white); font-weight: 800; text-decoration: none;"
-                    href="{% url 'app:qualified_programs' %}">
+                    href="{% url 'dashboard:qualified_programs' %}">
                     {# CSV HERE #}
                     <hprogram style="color: #4CAD00;margin:0"> {{qualified_programs}} </hprogram>
                 </a>
@@ -158,8 +157,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
             <div class="item collapsible qualifyfor">
                 {% for program in iq_programs %}
-                {% if program.status_for_user != 'PENDING' and program.status_for_user != 'ACTIVE' and
-                program.status_for_user != 'RENEWAL' %}
+                {% if program.status_for_user != 'PENDING' and program.status_for_user != 'ACTIVE' and program.status_for_user != 'RENEWAL' %}
                 <div class="divider"></div>
                 <div class="row" style="margin:0; width:100%">
                     <div style="margin:0">

@@ -455,7 +455,7 @@ def feedback(request, **kwargs):
             form = FeedbackForm(request.POST)
             if form.is_valid():
                 form.save()
-                return redirect(reverse("app:feedback_received"))
+                return redirect(reverse("dashboard:feedback_received"))
 
     # General view-level exception catching
     except:

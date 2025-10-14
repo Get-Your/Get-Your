@@ -753,7 +753,7 @@ def get_users_iq_programs(
         program.button = build_qualification_button(status_for_user)
         program.status_for_user = status_for_user
         program.quick_apply_link = reverse(
-            "app:quick_apply",
+            "dashboard:quick_apply",
             kwargs={
                 "iq_program": program.program.program_name
                 if hasattr(program, "program")
@@ -1076,7 +1076,7 @@ def finalize_application(user, renewal_mode=False, update_user=True):
 
         # Return the target page and a dictionary of <session var>: <value>
         return (
-            "app:dashboard",
+            "dashboard:dashboard",
             {
                 "app_renewed": True,
                 "renewal_eligible": sorted(renewal_eligible),

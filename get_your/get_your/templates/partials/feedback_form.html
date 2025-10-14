@@ -1,5 +1,5 @@
 {% load static %}
-<form action="{% url 'app:feedback' %}" method="post">
+<form action="{% url 'dashboard:feedback' %}" method="post">
     {% csrf_token %}
     <p>Feedback</p>
     <div class="column" style="margin:0; width:100%;">

@@ -39,10 +39,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <span></span>
 
                     <ul id="menu">
-                        <a style="color: {{ dashboard_color }} ; " href="{% url 'app:dashboard' %}">
+                        <a style="color: {{ dashboard_color }} ; " href="{% url 'dashboard:dashboard' %}">
                             <li>Dashboard</li>
                         </a>
-                        <a style="color:{{ program_list_color }}; " href="{% url 'app:programs_list' %}">
+                        <a style="color:{{ program_list_color }}; " href="{% url 'dashboard:programs_list' %}">
                             <li>Program List</li>
                         </a>
                         <a style="color:{{ Settings_color }};" href="{% url 'users:detail' pk=request.user.pk %}">
@@ -58,7 +58,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                             <li>Badge</li>
                         </a>
                         {% endif %}
-                        <a style="color:{{ Privacy_Policy_color }}; " href="{% url 'app:privacy' %}">
+                        <a style="color:{{ Privacy_Policy_color }}; " href="{% url 'dashboard:privacy' %}">
                             <li>Privacy Policy</li>
                         </a>
                         <a style="color:white; " href="{% url 'app:index' %}">
@@ -79,10 +79,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                         </p>
                         <p> <img src="{% static 'images/Dashboard.svg' %}"> <a
                                 style="color: {{ dashboard_color }}; text-decoration:none; "
-                                href="{% url 'app:dashboard' %}">Dashboard</a></p>
+                                href="{% url 'dashboard:dashboard' %}">Dashboard</a></p>
                         <p> <img src="{% static 'images/ProgramList.svg' %}"> <a
                                 style="color:{{ program_list_color }}; text-decoration:none;"
-                                href="{% url 'app:programs_list' %}">Programs</a></p>
+                                href="{% url 'dashboard:programs_list' %}">Programs</a></p>
                         <p> <img src="{% static 'images/Settings.svg' %}"> <a
                                 style="color:{{ Settings_color }};text-decoration:none; "
                                 href="{% url 'users:detail' pk=request.user.pk %}">Settings</a></p>
@@ -98,7 +98,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                         {% endif %}
                         <p> <img src="{% static 'images/PrivacyPolicy.svg' %}"> <a
                                 style="color:{{ Privacy_Policy_color }};text-decoration:none; "
-                                href="{% url 'app:privacy' %}">Privacy Policy</a></p>
+                                href="{% url 'dashboard:privacy' %}">Privacy Policy</a></p>
                         <p> <img src="{% static 'images/LogOut.svg' %}"> <a style="color:white;text-decoration:none; "
                                 href="{% url 'app:index' %}">Log Out</a></p>
                         <p

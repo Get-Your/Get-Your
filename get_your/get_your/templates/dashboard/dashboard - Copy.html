@@ -131,8 +131,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
             <div class="item collapsible renewal">
                 {% for program in iq_programs %}
-                {% if program.status_for_user != 'PENDING' and program.status_for_user != 'ACTIVE' and
-                program.status_for_user != '' %}
+                {% if program.status_for_user != 'PENDING' and program.status_for_user != 'ACTIVE' and program.status_for_user != '' %}
                 <div class="divider"></div>
                 <div class="row" style="margin:0; width:100%">
                     <div style="margin:0">
@@ -172,8 +171,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
             <div class="item collapsible qualifyfor">
                 {% for program in iq_programs %}
-                {% if program.status_for_user != 'PENDING' and program.status_for_user != 'ACTIVE' and
-                program.status_for_user != 'RENEWAL' %}
+                {% if program.status_for_user != 'PENDING' and program.status_for_user != 'ACTIVE' and program.status_for_user != 'RENEWAL' %}
                 <div class="divider"></div>
                 <div class="row" style="margin:0; width:100%">
                     <div style="margin:0">

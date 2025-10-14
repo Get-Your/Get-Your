@@ -145,7 +145,7 @@ def index(request, **kwargs):
                     is_in_gma, has_isp_service = address_check(address_dict)
 
                     if not is_in_gma:
-                        return redirect(reverse("app:quick_not_available"))
+                        return redirect(reverse("dashboard:quick_not_available"))
 
                     if is_in_gma and not has_isp_service:
                         # Connexion status unknown, but since is_in_gma==True, it
@@ -163,12 +163,12 @@ def index(request, **kwargs):
                         # working properly (so we removed Connexion from our
                         # messaging completely). This should be cleaned up and the
                         # templates renamed for clarity.
-                        return redirect(reverse("app:quick_available"))
+                        return redirect(reverse("dashboard:quick_available"))
 
-                    return redirect(reverse("app:quick_available"))
+                    return redirect(reverse("dashboard:quick_available"))
 
                 except Exception:
-                    return redirect(reverse("app:quick_not_found"))
+                    return redirect(reverse("dashboard:quick_not_found"))
 
         else:
             log.debug(
