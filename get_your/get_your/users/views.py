@@ -61,16 +61,20 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
     permanent = False
 
     def get_redirect_url(self) -> str:
-        if self.request.user.has_viewed_dashboard:
-            return reverse("dashboard:dashboard")
+        """
+        Get the redirect URL for the now-logged-in user.
 
+        Note that this occurs only if there is no login_required() redirect (
+        e.g. this code happens after login_required() resolution).
+
+        """
         # TODO: if a user in mid-renewal, have a case for page/modal to prompt user to continue renewal or go to dashboard
-        # Note that this currently assumes no renewal
+        all_pages = ApplicationPage.objects.order_by("page_order").all()
+
         completed_pages = self.request.user.user_completed_pages.order_by(
             "page_order",
         ).all()
         if completed_pages.count() > 0:
-            all_pages = ApplicationPage.objects.order_by("page_order").all()
             first_uncompleted_page = next(
                 iter(x for x in all_pages if x not in completed_pages),
             )
