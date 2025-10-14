@@ -400,7 +400,7 @@ td {
 
     .button2 {
         background-color: transparent;
-        background-image: url('/static/img/downArrow.svg') no-repeat;
+        background-image: url('/static/images/downArrow.svg') no-repeat;
         border-radius: none;
         border: none;
         outline: none;
