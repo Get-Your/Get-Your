@@ -163,6 +163,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <div style="margin:0">
                         <p style="font-weight: 400; margin: 0">{{ program.title }}</p>
                     </div>
+                    {# Disable *all* 'apply now' buttons if needs_renewal==True #}
+                    {% if needs_renewal %}
+                    <div style="text-decoration: none; text-align: center;">
+                        {# Match the style attributes to the 'Renew' button (above) #}
+                        <div class="quickapply linkQA"
+                            style="border-color: orange; color: orange">
+                            Available after Renewal</div>
+                    </div>
+                    {% else %}
                     {% if program.program_name == 'spin'%}
                     <a href="#" onclick="return false;" id="spinPrivacyAcknowledgement"
                         style="text-decoration: none; text-align: center;">
@@ -175,6 +184,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                         <div class="quickapply linkQA">
                             {{ program.button.text }}</div>
                     </a>
+                    {% endif %}
                     {% endif %}
                 </div>
                 <div class="row" style="margin:0;width:100%">

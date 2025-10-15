@@ -39,6 +39,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </div>
             {% if program.program_name == 'spin'%}
             {% if program.status_for_user == '' %}
+            {# Disable *all* 'apply now' buttons if needs_renewal==True #}
+            {% if needs_renewal %}
+            <div style="text-decoration: none">
+                {# Match the style attributes to the 'Renew' button in dashboard.html #}
+                <div class="quickapply link"
+                    style="border-color: orange; color: orange">
+                    Available after Renewal
+                </div>
+            </div>
+            {% else %}
             <a href="#" onclick="return false;" id="spinPrivacyAcknowledgement"
                 style="text-decoration: none; text-align: center;">
                 <div class="quickapply link"
@@ -46,7 +56,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     {{ program.button.text }}
                 </div>
             </a>
-            {% else %}
+            {% endif %}
             <a style="text-decoration: none; text-align: center;">
                 <div class="quickapply link"
                     style="background-color: {{ program.button.color }}; color: {{ program.button.textColor }}">
@@ -56,12 +66,23 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             {% endif %}
             {% else %}
             {% if program.status_for_user == '' %}
+            {# Disable *all* 'apply now' buttons if needs_renewal==True #}
+            {% if needs_renewal %}
+            <div style="text-decoration: none">
+                {# Match the style attributes to the 'Renew' button in dashboard.html #}
+                <div class="quickapply link"
+                    style="border-color: orange; color: orange">
+                    Available after Renewal
+                </div>
+            </div>
+            {% else %}
             <a href="{{ program.quick_apply_link }}" style="text-decoration: none">
                 <div class="quickapply link"
                     style="background-color: {{ program.button.color }}; color: {{ program.button.textColor }}">
                     {{ program.button.text }}
                 </div>
             </a>
+            {% endif %}
             {% elif program.status_for_user == 'RENEWAL' %}
             <a href="#" onclick="return false;" class="renewalModal" style="text-decoration: none">
                 <div class="quickapply link"
