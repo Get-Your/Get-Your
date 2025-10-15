@@ -44,6 +44,216 @@ log = LoggerWrapper(logging.getLogger(__name__))
 
 
 @login_required()
+def account_overview(request, **kwargs):
+    try:
+        # Render the account overview template and pass in the user object
+        # as a context variable
+        return render(
+            request,
+            "dashboard/account-overview.html",
+            {
+                "user": request.user,
+                "routes": {
+                    "address": reverse("app:address"),
+                    "household": reverse("app:household"),
+                },
+            },
+        )
+    except:
+        try:
+            user_id = request.user.id
+        except Exception:
+            user_id = None
+        log.exception(
+            "Uncaught view-level exception",
+            function="account_overview",
+            user_id=user_id,
+        )
+        raise
+
+
+@login_required()
+def account_settings(request, **kwargs):
+    try:
+        # Render the account settings template and pass in the user object
+        # as a context variable
+        return render(
+            request,
+            "dashboard/account-settings.html",
+            {"user": request.user},
+        )
+    except:
+        try:
+            user_id = request.user.id
+        except Exception:
+            user_id = None
+        log.exception(
+            "Uncaught view-level exception",
+            function="account_settings",
+            user_id=user_id,
+        )
+        raise
+
+
+@login_required()
+def account_programs(request, **kwargs):
+    try:
+        log.debug(
+            "Entering function",
+            function="dashboard",
+            user_id=request.user.id,
+        )
+
+        # Check if the users renewal_mode session variable is set to True and
+        # retrieve renewal_eligible and renewal_ineligible session vars
+        renewal_eligible = request.session.get("renewal_eligible", [])
+        renewal_ineligible = request.session.get("renewal_ineligible", [])
+
+        quick_apply_result = kwargs.get("quick_apply_result")
+        if quick_apply_result:
+            quick_apply_result = {
+                "program_name": kwargs.get("program_name"),
+                "title": kwargs.get("title"),
+                "in_gma_with_no_service": kwargs.get("in_gma_with_no_service"),
+            }
+
+        app_renewed = False
+        if request.session.get("renewal_mode", False) and request.session.get(
+            "app_renewed",
+            False,
+        ):
+            app_renewed = True
+            request.session["renewal_mode"] = False
+            request.session["app_renewed"] = False
+            del request.session["renewal_eligible"]
+            del request.session["renewal_ineligible"]
+            log.info(
+                "Renewal completed successfully",
+                function="dashboard",
+                user_id=request.user.id,
+            )
+
+        # Reset update and renewal mode session vars; dashboard() is the
+        # starting point for each of these modes, so this provides a blank slate
+        # Note that this is done *after* the check to set `app_renewed`
+        request.session["update_mode"] = False
+        request.session["renewal_mode"] = False
+
+        qualified_programs = 0
+        active_programs = 0
+        pending_programs = 0
+        renewal_programs = 0
+
+        # Get the user's eligibility address
+        eligibility_address = AddressRef.objects.filter(
+            id=request.user.address.eligibility_address_id,
+        ).first()
+        users_iq_programs = get_users_iq_programs(
+            request.user.id,
+            request.user.household.income_as_fraction_of_ami,
+            eligibility_address,
+        )
+        for program in users_iq_programs:
+            # If the program's visibility is 'block' or the status is `ACTIVE` or `PENDING`, it means the user is eligible for the program
+            # so we'll count it for their total number of programs they qualify for
+            if (
+                program.status_for_user == "ACTIVE"
+                or program.status_for_user == "PENDING"
+                or program.status_for_user == "RENEWAL"
+                or program.status_for_user == ""
+            ):
+                qualified_programs += 1
+
+            # If a program's status_for_user is 'PENDING' add 1 to the pending number and subtract 1 from the qualified_programs
+            if program.status_for_user == "PENDING":
+                pending_programs += 1
+                qualified_programs -= 1
+            # If a program's status_for_user is 'ACTIVE' add 1 to the active number and subtract 1 from the qualified_programs
+            elif program.status_for_user == "ACTIVE":
+                active_programs += 1
+                qualified_programs -= 1
+            elif program.status_for_user == "RENEWAL":
+                renewal_programs += 1
+                qualified_programs -= 1
+
+        # By default we assume the user has viewed the dashboard, but if they haven't
+        # we set the proxy_viewed_dashboard flag to false and update the user
+        # in the database to say that they have viewed the dashboard. This obviates
+        # the need to create some AJAX call to a Django template to update the database
+        # when the user views the dashboard.
+        proxy_viewed_dashboard = True
+        if request.user.has_viewed_dashboard == False:
+            proxy_viewed_dashboard = False
+            request.user.has_viewed_dashboard = True
+            request.user.save()
+
+        # Parse and stringify renewal_eligible and renewal_ineligible
+        if len(renewal_eligible) == 1:
+            renewal_eligible_str = f"{renewal_eligible[-1]} was successfully renewed!"
+        elif len(renewal_eligible) > 1:
+            renewal_eligible_str = (
+                "{plur}{oxcom} and {sing} were successfully renewed!".format(
+                    plur=", ".join(renewal_eligible[:-1]),
+                    oxcom="," if len(renewal_eligible) > 2 else "",
+                    sing=renewal_eligible[-1],
+                )
+            )
+        else:
+            renewal_eligible_str = ""
+
+        ineligible_pre = "Unfortunately, you are no longer qualified for"
+        ineligible_post = (
+            f"If you think this is in error, please email {settings.CONTACT_EMAIL}"
+        )
+        if len(renewal_ineligible) == 1:
+            renewal_ineligible_str = (
+                f"{ineligible_pre} {renewal_ineligible[-1]}. {ineligible_post}"
+            )
+        elif len(renewal_ineligible) > 1:
+            renewal_ineligible_str = "{pre} {plur}{oxcom} and {sing}. {pst}".format(
+                plur=", ".join(renewal_ineligible[:-1]),
+                oxcom="," if len(renewal_ineligible) > 2 else "",
+                sing=renewal_ineligible[-1],
+                pre=ineligible_pre,
+                pst=ineligible_post,
+            )
+        else:
+            renewal_ineligible_str = ""
+
+        # Render the account programs template and pass in the user object
+        # as a context variable
+        return render(
+            request,
+            "dashboard/account-programs.html",
+            {
+                "user": request.user,
+                "iq_programs": users_iq_programs,
+                "qualified_programs": qualified_programs,
+                "pending_programs": pending_programs,
+                "active_programs": active_programs,
+                "renewal_programs": renewal_programs,
+                "proxy_viewed_dashboard": proxy_viewed_dashboard,
+                "app_renewed": app_renewed,
+                "renewal_eligible": renewal_eligible_str,
+                "renewal_ineligible": renewal_ineligible_str,
+                "enable_renew_now": enable_renew_now(request.user.id),
+                "quick_apply_result": quick_apply_result,
+            },
+        )
+    except:
+        try:
+            user_id = request.user.id
+        except Exception:
+            user_id = None
+        log.exception(
+            "Uncaught view-level exception",
+            function="account_programs",
+            user_id=user_id,
+        )
+        raise
+
+
+@login_required()
 def dashboard(request, **kwargs):
     try:
         log.debug(
@@ -266,17 +476,14 @@ def quick_apply(request, iq_program, **kwargs):
             if is_in_gma and not has_isp_service:  # this covers both None and False
                 in_gma_with_no_service = True
 
-        return render(
-            request,
-            "dashboard/quick_apply.html",
-            {
-                "program_name": iq_program.program_name.title(),
-                "title": f"{iq_program.program_name.title()} Application Complete",
-                # Pass the external form link
-                "form_link": iq_program.additional_external_form_link,
-                "in_gma_with_no_service": in_gma_with_no_service,
-            },
-        )
+        quick_apply_result = {
+            "program_name": iq_program.program_name.title(),
+            "title": f"{iq_program.program_name.title()} Application Complete",
+            "in_gma_with_no_service": in_gma_with_no_service,
+        }
+
+        # Redirect to the account programs page with the quick_apply_result
+        return redirect(reverse("app:account_programs", kwargs=quick_apply_result))
 
     # General view-level exception catching
     except Exception:

@@ -1,0 +1,426 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+{% include 'partials/static-imports.html' with title="Get Your | Account - Programs" %}
+
+
+<!-- Body -->
+
+<body class="bg-secondary">
+
+
+    <!-- Page loading spinner -->
+    <div class="page-loading active">
+        <div class="page-loading-inner">
+            <div class="page-spinner"></div>
+            <span>Loading...</span>
+        </div>
+    </div>
+
+
+    <!-- Page wrapper -->
+    <main class="page-wrapper">
+
+        {% include 'partials/header.html' %}
+
+        <!-- Page container -->
+        <div class="container py-5 mt-4 mt-lg-5 mb-lg-4 my-xl-5">
+            <div class="row pt-sm-2 pt-lg-0">
+
+                {% include "partials/sidebar.html" %}
+
+
+                <!-- Page content -->
+                <div class="col-lg-12 pt-4 pb-2 pb-sm-4">
+                    <h1 class="h2 mb-4">Programs &amp; News</h1>
+
+                        <section class="card border-0 py-1 p-md-2 p-xl-3 p-xxl-4 mb-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mt-sm-n1 mb-0 mb-lg-1 mb-xl-3">
+                                    <i class="gi-grid text-primary lead pe-1 me-2"></i>
+                                    <h2 class="h4 mb-0">Programs</h2>
+                                </div>
+                                <div class="row g-3 g-sm-4 mt-0 mt-lg-2">
+                                    <!-- Tabs inside card header -->
+                                    <div class="card-header px-0 mx-0 w-100">
+                                        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                                            <li class="nav-item">
+                                                <a href="#available" class="nav-link active" data-bs-toggle="tab" role="tab"
+                                                    aria-selected="true">Available <span class="badge bg-primary ms-2">{{qualified_programs}}</span></a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="#pending" class="nav-link" data-bs-toggle="tab" role="tab" aria-selected="false">Pending <span class="badge bg-primary ms-2">{{pending_programs}}</span></a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="#active" class="nav-link" data-bs-toggle="tab" role="tab" aria-selected="false">Active <span class="badge bg-primary ms-2">{{active_programs}}</span></a>
+                                            </li>
+                                            {% if renewal_programs != 0 %}
+                                            <li class="nav-item">
+                                                <a href="#renew" class="nav-link" data-bs-toggle="tab" role="tab" aria-selected="false">Renew <span class="badge bg-danger ms-2">{{renewal_programs}}</span></a>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                    <div class="tab-content px-0 py-0">
+                                        <div class="card-body tab-pane fade show active px-0 py-0" id="available" role="tabpanel" aria-labelledby="available-tab"
+                                            aria-labelledby="available-tab">
+                                            <div class="row">
+
+                                                {% for program in iq_programs %}
+                                                {% if program.status_for_user != 'PENDING' and program.status_for_user != 'ACTIVE' and program.status_for_user != 'RENEWAL' %}
+                                                <div class="col-md-6 col-lg-3 mb-4">
+                                                    <div class="card bg-secondary text-start h-100">
+                                                        <div class="card-body">
+                                                            <h4 class="card-title">{{ program.title }}</h4>
+                                                            <div class="d-flex flex-column">
+                                                                <a class="btn btn-primary my-1 my-lg-2" href="{{ program.quick_apply_link }}">Apply Now</a>
+                                                                <a class="btn btn-warning" href="{{ program.learn_more_link }}" target="_blank">Learn More</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                {% endfor %}
+
+                                            </div>
+                                        </div>
+
+                                        <div class="card-body tab-pane fade px-0 py-0" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                                            <div class="row">
+                                                {% for program in iq_programs %}
+                                                {% if program.status_for_user == 'PENDING' %}
+                                                <div class="col-md-6 col-lg-3 mb-4">
+                                                    <div class="card bg-secondary text-start h-100">
+                                                        <div class="card-body">
+                                                            <h4 class="card-title">{{ program.title }}</h4>
+                                                            <p class="card-text">{{ program.eligibility_review_time_period }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="card-body tab-pane fade px-0 py-0" id="active" role="tabpanel" aria-labelledby="active-tab">
+                                            {% for program in iq_programs %}
+                                            {% if program.status_for_user == 'ACTIVE' %}
+                                            <div class="col-md-6 col-lg-3 mb-4">
+                                                <div class="card bg-secondary text-start h-100">
+                                                    <div class="card-body">
+                                                        <h4 class="card-title">{{ program.title }}</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </div>
+
+                                        {% if renewal_programs != 0 %}
+                                        <div class="card-body tab-pane fade px-0 py-0" id="renew" role="tabpanel" aria-labelledby="Renew-tab">
+                                            <!-- Create a button that's centered exactly in the center of the card-body -->
+                                            <div class="d-flex justify-content-center align-items-center h-100">
+                                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#startAppRenewalModal">Renew Application</button>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+                            <section class="col">
+                                <div class="card h-100 border-0 py-1 p-md-2 p-xl-3 p-xxl-4">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mt-sm-n1 mb-0 mb-lg-1 mb-xl-3">
+                                            <i class="gi-calendar text-primary lead pe-1 me-2"></i>
+                                            <h2 class="h4 mb-0">News</h2>
+                                        </div>
+                                        <div class="row g-3 g-sm-4 mt-0 mt-lg-2">
+                                            <!-- List group with custom content -->
+                                            <div class="list-group">
+                                                <div class="list-group-item list-group-item-action flex-column align-items-start py-3">
+                                                    <div class="d-flex flex-wrap w-100 justify-content-between">
+                                                        <h6>Getting started with SNAP is a snap!</h6>
+                                                        <small class="text-body-secondary mb-2">May 2023</small>
+                                                    </div>
+                                                    <p class="fs-sm fw-normal text-body">The Food Bank Outreach team can also help you sign up for
+                                                        services to help you pay for energy bills (LEAP), WIC,
+                                                        Medicaid, or cash assistance (TANF). Schedule an appointment if you're interested in
+                                                        applying
+                                                        for any of these programs! Call: 1-877-707-8570 or email: snap@foodbanklarimer.org</p>
+                                                    <a href="https://foodbanklarimer.org/snap-outreach" target="_blank"><small
+                                                            class="text-body-secondary">Click here for more information!</small></a>
+                                                </div>
+                                                <div class="list-group-item list-group-item-action flex-column align-items-start py-3">
+                                                    <div class="d-flex flex-wrap w-100 justify-content-between">
+                                                        <h6>Utility Affordability Programs</h6>
+                                                        <small class="text-body-secondary mb-2">April 2022</small>
+                                                    </div>
+                                                    <p class="fs-sm fw-normal text-body">Check out utility programs that can reduce your monthly
+                                                        expenses.</p>
+                                                    <a href="https://www.fcgov.com/utilities/manage-your-account/payment-options/utilities-affordability-portfolio"
+                                                        target="_blank"><small class="text-body-secondary">Click here for more
+                                                            information!</small></a>
+                                                </div>
+                                                <div class="list-group-item list-group-item-action flex-column align-items-start py-3">
+                                                    <div class="d-flex flex-wrap w-100 justify-content-between">
+                                                        <h6>United Way of Larimer County</h6>
+                                                        <small class="text-body-secondary mb-2">April 2022</small>
+                                                    </div>
+                                                    <p class="fs-sm fw-normal text-body">Information is available for Larimer County residents in
+                                                        need
+                                                        of rent, food or utilities assistance. Also includes
+                                                        resources for seniors, small business, mental health support, families, unemployment and
+                                                        medical
+                                                        needs.</p>
+                                                    <a href="https://uwaylc.org/Get-Help/" target="_blank"><small class="text-body-secondary">Click
+                                                            here
+                                                            for more information!</small></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="col">
+                                <div class="card h-100 border-0 py-1 p-md-2 p-xl-3 p-xxl-4">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mt-sm-n1 mb-0 mb-lg-1 mb-xl-3">
+                                            <i class="gi-star text-primary lead pe-1 me-2"></i>
+                                            <h2 class="h4 mb-0">How are we doing?</h2>
+                                        </div>
+                                        <div class="row g-3 g-sm-4 mt-0 mt-lg-2">
+                                            <!-- Forms validation: status text -->
+                                            <form class="needs-validation" action="{% url 'dashboard:feedback' %}" method="post" novalidate>
+
+                                                {% csrf_token %}
+                                                <div class="row">
+                                                    <label for="startRating" class="form-label">How would you rate your experience so far using the Get FoCo
+                                                        portal?</label>
+                                                    <div id="starRatings" class="col-12 mb-5">
+                                                        <clearButton required> <img src="{% static 'img/reviewStarUnfilled.svg' %}" style="width:min(10vw, 50px);"
+                                                                data-star-value="1">
+                                                        </clearButton>
+                                                        <clearButton> <img src="{% static 'img/reviewStarUnfilled.svg' %}" style="width:min(10vw, 50px);"
+                                                                data-star-value="2">
+                                                        </clearButton>
+                                                        <clearButton> <img src="{% static 'img/reviewStarUnfilled.svg' %}" style="width:min(10vw, 50px);"
+                                                                data-star-value="3">
+                                                        </clearButton>
+                                                        <clearButton> <img src="{% static 'img/reviewStarUnfilled.svg' %}" style="width:min(10vw, 50px);"
+                                                                data-star-value="4">
+                                                        </clearButton>
+                                                        <clearButton> <img src="{% static 'img/reviewStarUnfilled.svg' %}" style="width:min(10vw, 50px);"
+                                                                data-star-value="5">
+                                                        </clearButton>
+                                                        <label class="d-none" for="star-elements" class="form-label">Hidden Label</label>
+                                                        <input type="text" name="hacky_validation" id="star-elements" class="d-none" required>
+                                                        <div class="invalid-feedback">Please select at least one star</div>
+                                                    </div>
+                                                    
+                                                    
+                                                
+                                                    <div class="col-12 mb-5">
+                                                        <label for="feedback-textarea" class="form-label">How can we do better? Don't worry, your feedback
+                                                            is anonymous!</label>
+                                                        <textarea class="form-control" id="feedback-textarea" placeholder="Tell us how we're doing!"
+                                                            name="feedback_comments" maxlength="500"></textarea>
+                                                    </div>
+                                                </div>
+                                                
+                                                <button name="star_rating" class="btn btn-primary w-100" type="submit">Submit</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- Sidebar toggle button -->
+        <button class="d-lg-none btn btn-sm fs-sm btn-primary w-100 rounded-0 fixed-bottom" type="button"
+            data-bs-toggle="offcanvas" data-bs-target="#sidebarAccount">
+            <i class="gi-menu me-2"></i>
+            Account menu
+        </button>
+
+        <!-- Welcome Modal -->
+        <div class="modal fade" id="welcomeModal" tabindex="-1" aria-labelledby="welcomeModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="welcomeModalLabel">Welcome!</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="welcomeModalBody">
+                        {% if qualified_programs == 0 and pending_programs == 0 and active_programs == 0 %}
+                        <p>We're sorry, currently you do not qualify for any programs. If you think this is an error please <a
+                                href="mailto: {{ contact_email }}?subject=Income Qualification Question - Get FoCo&body=Hello Get FoCo team, I seem to be having an issue with qualification. Can you help clarify the qualifications for the available programs?"
+                                style="font-style: none;">contact us</a>.</p>
+                        {% else %}
+                        <p>Congrats on creating an account! <br> <br> With the information you provided we gathered all your available programs!
+                            All you need to do now is to click Apply Now to apply for programs you're interested in.
+                            If you don't see a program you're expecting or are having an issue, please call {{ contact_number }}.</p>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- App Renewal Complete Modal -->
+        <div class="modal fade" id="appRenewedModal" tabindex="-1" aria-labelledby="appRenewedModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="appRenewedModalLabel">Application Renewed</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="appRenewedModalBody">
+                        <p>{{ renewal_eligible }}</p>
+                        <p>{{ renewal_ineligible }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start App Renewal Modal -->
+        <div class="modal fade" id="startAppRenewalModal" tabindex="-1" aria-labelledby="startAppRenewalModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="startAppRenewalModalLabel">Renew Application</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="startAppRenewalModalBody">
+                        <p>In order to continue providing benefits, we need you to renew your information. Please click 'renew' to start the
+                        process.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <!-- Create an anchor tag button that takes up the full width of the modal -->
+                        <a href="{% url 'app:get_ready' %}?renewal_mode=1" class="btn btn-primary w-100">Renew</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Apply Modal -->
+        {% if quick_apply_result %}
+        <div class="modal fade" id="quickApplyResultModal" tabindex="-1" aria-labelledby="quickApplyResultModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="quickApplyResultModalLabel">{{ quick_apply_result.program_name }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>{{ quick_apply_result.title }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    
+    </main>
+
+    <script src="{% static 'vendor/cleave.js/dist/cleave.min.js' %}"></script>
+
+    {% include 'partials/footer.html' %}
+
+    <script>
+        var has_viewed_dashboard = "{{ proxy_viewed_dashboard }}" === "True";
+        if (!has_viewed_dashboard) {
+            var welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'), {
+                keyboard: false
+            });
+            welcomeModal.show();
+        }
+
+        var app_renewed = "{{ app_renewed }}" === "True";
+        if (app_renewed) {
+            var appRenewedModal = new bootstrap.Modal(document.getElementById('appRenewedModal'), {
+                keyboard: false
+            });
+            appRenewedModal.show();
+        }
+
+        // Check if the quick_apply_result is not None
+        var quick_apply_result = "{{ quick_apply_result }}" !== "None";
+        if (quick_apply_result) {
+            var quickApplyResultModal = new bootstrap.Modal(document.getElementById('quickApplyResultModal'), {
+                keyboard: false
+            });
+            quickApplyResultModal.show();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+                var clearButtons = document.querySelectorAll('clearButton');
+                // for each clearButton, add an event listener
+                clearButtons.forEach(function (clearButton) { 
+                    clearButton.addEventListener('click', function (event) {
+                        var starValue = event.target.getAttribute('data-star-value');
+
+                        // Get all of the img elements inside the starRatings id div
+                        var images = document.getElementById('starRatings').querySelectorAll('img');
+
+                        images.forEach(function (image) {
+                            if (image.getAttribute('data-star-value') <= starValue) {
+                                // Set the hacky_validation input to the starValue
+                                document.querySelector('input[name="hacky_validation"]').value = starValue;
+                                image.setAttribute('src', "{% static 'img/reviewStarFilled.svg' %}");
+                            } else {
+                                image.setAttribute('src', "{% static 'img/reviewStarUnfilled.svg' %}");
+                            }
+                        });
+
+                        var button = document.querySelector("button[name='star_rating']");
+                        button.value = starValue;
+                    });
+                });
+
+                var applyNowButtons = document.querySelectorAll('a[href*="apply"]');
+                applyNowButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        var spinner = document.createElement('div');
+                        spinner.classList.add('spinner-border', 'spinner-border-sm', 'ms-2');
+                        button.appendChild(spinner);
+                    });
+                });
+            });
+    </script>
+</body>
+
+</html>

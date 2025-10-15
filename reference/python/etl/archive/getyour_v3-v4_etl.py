@@ -110,8 +110,8 @@ def what_page_clone(
     if fileCount < programCount:
         return "app:files"
 
-    # If all checks pass, return 'dashboard'
-    return "app:dashboard"
+    # If all checks pass, return 'account_overview'
+    return "dashboard:account_overview"
 
 
 def run_full_porting(profile):
