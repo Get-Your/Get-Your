@@ -16,73 +16,114 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-{% extends "bases/application_base.html" %}
 {% load static %}
 
-{% block navigation %}
-{% if request.session.renewal_mode %}
-{% url 'app:address' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True back_link=back_link %}
-{% elif request.session.update_mode %}
-{% url 'users:detail' pk=request.user.pk as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
-{% else %}
-{% url 'app:address' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=True back_link=back_link|add:"?app_status=in_progress" %}
-{% endif %}
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+{% include "partials/static-imports.html" with title="Get FoCo | Household" %}
 
-{% block body %}
-<p id="application_step" class="application-step">STEP {{ step }} OF {{ form_page_number }}</p>
+<body class="bg-secondary">
+    <!-- Page container -->
+    <div class="container py-5 mt-4 mt-lg-5 mb-lg-4 my-xl-5">
+        <div class="row pt-sm-2 pt-lg-0">
+            <!-- Page content -->
+            <div class="col-lg-12 pt-4 pb-2 pb-sm-4">
+                {% if not update_mode %}
+                <h1 class="h2 mb-4">Household</h1>
+                {% endif %}
 
-{% with header="Share basic information about your income" description="Your information will not be shared with anyone outside of the departments of City of Fort Collins' income eligible programs. They are meant to determine potential assistance programs you may qualify for." %}
-{% include "partials/side_content.html" with header=header description=description%}
-{% endwith %}
+                <div class="card">
+                    <div class="card-body">
+                        <form id="household-form" method="post" action="{% url 'app:household' %}"
+                            class="needs-validation" novalidate autocomplete="false">
+                            {% csrf_token %}
+                            <div class="row mb-4">
+                                <div class="col-5">
+                                    {% include "partials/steps.html" with active_step="household"%}
+                                </div>
+                                <div class="col-7">
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <p class="mb-0 form-label">
+                                                Do you rent or own your current residence?
+                                            </p>
+                                            {% for choice in form.rent_own %}
+                                            <div class="form-check">
+                                                <!--  -->
+                                                <input class="form-check-input" type="radio" name="rent_own"
+                                                    value="{{choice.data.value}}" />
+                                                <label class="form-label" for="{{choice.id_for_label}}">
+                                                    {{ choice.choice_label }}
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
 
-<form action="{% url 'app:household' %}" method="post" autocomplete="false" id="eligibilityForm">
-    {% csrf_token %}
+                                        <div class="col-12">
+                                            <p class="mb-0 form-label">
+                                                How long have you lived at this address?
+                                            </p>
+                                            {% for choice in form.duration_at_address %}
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="duration_at_address"
+                                                    value="{{choice.data.value}}" />
+                                                <label class="form-label" for="{{choice.id_for_label}}">
+                                                    {{ choice.choice_label }}
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
 
-    <div class="input" style="padding-top:0">
-        <label class="labelword">Do you rent or own your current residence?</label>
-        <div class="row" style="justify-content:left; padding-top:5%">
-            {% for choice in form.rent_own %}
-            <label for="{{choice.id_for_label}}" class="row" style="padding-right: 5%;" required>
-                <span class="radio">{{ choice.tag }}</span>
-                <p>{{ choice.choice_label }}</p>
-            </label>
-            {% endfor %}
+                                        <div class="col-12">
+                                            <label for="{{ form.number_persons_in_household.id_for_label}}"
+                                                class="form-label">
+                                                {{ form.number_persons_in_household.label }}
+                                                <i class="gi-circle-info" data-bs-toggle="tooltip"
+                                                    data-bs-placement="top" title="'Household' means the applicant and any other people claimed on your federal tax return. This could
+                                                    include your spouse, and your children by birth or adoption, step children, foster children and
+                                                    children under legal guardianship who live with you in your home as submitted on your federal income
+                                                    tax return.">
+                                                </i>
+                                            </label>
+                                            <input class="form-control" type="number" min="1"
+                                                name="{{ form.number_persons_in_household.name }}"
+                                                value="{{ form.number_persons_in_household.value|default:'' }}"
+                                                id="{{ form.number_persons_in_household.id_for_label}}" required />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'app:address' %}?app_status=in_progress"
+                                    class="btn btn-primary">Back</a>
+                                {% if update_mode or renewal_mode %}
+                                <button class="btn btn-primary" type="submit">Confirm</button>
+                                {% else %}
+                                <button class="btn btn-primary" type="submit">
+                                    Continue
+                                </button>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="input" style="padding-top:0">
-        <label class="labelword">How long have you lived at this address?</label>
-        <div class="row" style="justify-content:left; padding-top:5%">
-            {% for choice in form.duration_at_address %}
-            <label for="{{choice.id_for_label}}" class="row" style="padding-right: 5%;" required>
-                <span class="radio">{{ choice.tag }}</span>
-                <p>{{ choice.choice_label }}</p>
-            </label>
-            {% endfor %}
-        </div>
-    </div>
+    {% include "partials/footer.html" %}
 
-    <div class="input">
-        <label class="labelword" style="position:relative">{{ form.number_persons_in_household.label }}</label> <a
-            href="{% url 'app:household_definition' %}"><img src="{% static 'images/clipart249308.png' %}" alt="info"
-                style="width:min(4.5vw,20px);"></a>
-        <input class="fill" type="text" name="{{ form.number_persons_in_household.name }}"
-            value="{{ form.number_persons_in_household.value|default:'' }}"
-            id="{{ form.number_persons_in_household.id_for_label}}" style="height: 3vh;" pattern="[1-9]\d*"
-            title="Number of household members must be a positive whole number" required>
-    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var submitButton = document.querySelector("button[type=submit]");
+            submitButton.addEventListener('click', function (e) {
+                var spinner = document.createElement('div');
+                spinner.classList.add('spinner-border', 'spinner-border-sm', 'ms-2');
+                submitButton.appendChild(spinner);
+            });
+        });
+    </script>
+</body>
 
-    <div class="footer">
-        {% if request.session.update_mode %}
-        <input type="hidden" name="update_mode" value="true">
-        <button type="submit">CONFIRM</button>
-        {% else %}
-        <button type="submit"> CONTINUE </button>
-        {% endif %}
-    </div>
-</form>
-{% endblock %}
+</html>

@@ -21,6 +21,8 @@ import re
 
 from django.conf import settings
 
+from ref.models import IQProgram as IQProgramRef
+
 
 def global_template_variables(request):
     """These are context variables that are available to all templates"""
@@ -35,11 +37,10 @@ def global_template_variables(request):
         prs=parsed_number.groups(),
     )
 
-    data = {
+    return {
         "is_prod": settings.IS_PROD,
         "code_version": settings.CODE_VERSION,
         "contact_email": settings.CONTACT_EMAIL,
         "contact_number": contact_number,
+        "footer_iq_programs": IQProgramRef.objects.filter(is_active=True),
     }
-
-    return data

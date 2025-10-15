@@ -16,180 +16,214 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-{% extends "bases/application_base.html" %}
 {% load static %}
 
-{% block navigation %}
-{% if request.session.renewal_mode %}
-{% url 'users:detail' pk=request.user.pk as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True back_link=back_link %}
-{% elif request.session.update_mode %}
-{% url 'users:detail' pk=request.user.pk as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
-{% else %}
-{% url 'users:detail' pk=request.user.pk as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=True back_link=back_link|add:"?app_status=in_progress" %}
-{% endif %}
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block body %}
-<p id="application_step" class="application-step">STEP {{ step }} OF {{ form_page_number }}</p>
+{% include "partials/static-imports.html" with title="Get FoCo | Account Setup" %}
 
-{% with header="Provide your address so we can find programs you may qualify for!" %}
-{% include "partials/side_content.html" with header=header %}
-{% endwith %}
+<body class="bg-secondary">
 
-{% if not request.session.update_mode %}
-<h2 style="font-weight: 700; margin:5vh 0"> Where do you live?</h2>
-{% endif %}
+    <!-- Page container -->
+    <div class="container py-5 mt-4 mt-lg-5 mb-lg-4 my-xl-5">
+        <div class="row pt-sm-2 pt-lg-0">
+            <!-- Page content -->
+            <div class="col-lg-12 pt-4 pb-2 pb-sm-4">
+                {% if not update_mode %}
+                <h1 class="h2 mb-4">Where do you live?</h1>
+                {% endif %}
 
-<form action="{% url 'app:address' %}" method="post" autocomplete="false" enctype="multipart/form-data">
-    {% csrf_token %}
-    {% for field in eligibility_address_form %}
-    {% if form.errors %}
-    {% for error in field.errors %}
-    <div class="alert alert-danger">
-        <strong>{{ error|escape }}</strong>
-    </div>
-    {% endfor %}
-    {% endif %}
+                <div class="card">
+                    <div class="card-body">
+                        <form id="address-form" method="post" action="{% url 'app:address' %}" class="needs-validation"
+                            novalidate>
 
-    {% if not request.session.update_mode %}
-    {% if field.label == "State" %}
-    <div class="row" style="width:100%">
-        <div class="input" style="width:100%">
-            {# TODO: Save input #}
-            <input class="fill" value="{{ field.value|default:'' }}" name="{{ field.name }}" id="state"
-                maxlength="{{ field.max_length }}" type="text" style="width:80%;" autocomplete="off" required>
-            <label class="label">{{field.label}}</label>
-        </div>
-        <div class="input" style="width:100%">
-            {# TODO: change this to dropdown menu with data #}
-            <input class="fill" value="{{ eligibility_address_form.zip_code.value|default:'' }}"
-                name="{{ eligibility_address_form.zip_code.name }}" id="zip_code" pattern="[0-9]{5}"
-                title="Please enter a 5-digit Zip Code" maxlength="5" type="text" style="width:100%;" autocomplete="off"
-                required>
-            <label class="label">{{ eligibility_address_form.zip_code.label }}</label>
-        </div>
-    </div>
-    {% elif field.label == "Zip Code" %}
-    {% else %}
-    <div class="input">
-        {# Have styling that I like on the forms #}
-        <input class="fill" value="{{ field.value|default:'' }}" name="{{ field.name }}" id="{{ field.id_for_label }}"
-            maxlength="{{ field.max_length }}" type="text" style="width:100%;" autocomplete="off">
-        <label class="label">{{field.label}}</label>
-    </div>
-    {% endif %}
-    {% endif %}
-    {% endfor %}
+                            <div class="row mb-4">
+                                <div class="col-5">
+                                    {% include "partials/steps.html" with active_step="address"%}
+                                </div>
+                                <div class="col-7">
+                                    <div class="row g-3">
+                                    {% csrf_token %}
+                                    <h5 class="h5">Home Address</h5>
+                                    {% for field in eligibility_address_form %}
+                                    {% if form.errors %}
+                                    {% for error in field.errors %}
+                                    <div class="alert alert-danger">
+                                        <strong>{{ error|escape }}</strong>
+                                    </div>
+                                    {% endfor %}
+                                    {% endif %}
 
-    {% if not request.session.update_mode %}
-    <div style="padding-top: 15px; padding-bottom: 25px;">
-        <label style="display: block;" for="mailing_address">Is your mailing address the same as your home
-            address?</label>
-        <label>
-            <input style="display: inline-block;" type="radio" name="mailing_address" value="yes" checked>Yes
-        </label>
-        <label>
-            <input style="display: inline-block;" type="radio" name="mailing_address" value="no">No
-        </label>
-    </div>
-    {% endif %}
 
-    <div id="mailing_address_wrapper">
-        <h2 style="font-weight: 700; margin:5vh 0"> What's your mailing address?</h2>
-        {% for field in mailing_address_form %}
-        {% if field.label == "State" %}
-        <div class="row" style="width:100%">
-            <div class="input" style="width:100%">
-                {# TODO: Save input #}
-                <input class="fill" value="{{ field.value|default:'' }}" name="mailing_{{ field.name }}"
-                    id="mailing_state" maxlength="{{ field.max_length }}" type="text" style="width:80%;"
-                    autocomplete="off" required>
-                <label class="label">{{field.label}}</label>
+                                        {% if not update_mode %}
+                                        {% if field.label == "State" %}
+                                        <!-- Add inputs for State and Zip Code -->
+                                        <div class="col-md-6">
+                                            <label for="{{ field.name }}" class="form-label">{{field.label}}</label>
+                                            <input type="text" class="form-control" id="state"
+                                                maxlength="{{ field.max_length }}" type="text"
+                                                value="{{ field.value|default:'' }}" name="{{ field.name }}"
+                                                autocomplete="off" required>
+                                            <div class="invalid-feedback">
+                                                Please provide a valid {{field.label}}.
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="{{ eligibility_address_form.zip_code.name }}"
+                                                class="form-label">Zip Code</label>
+                                            <input type="text" class="form-control" id="zip_code"
+                                                name="{{ eligibility_address_form.zip_code.name }}"
+                                                value="{{ eligibility_address_form.zip_code.value|default:'' }}"
+                                                pattern="[0-9]{5}" maxlength="5" required autocomplete="off">
+                                            <div class="invalid-feedback">
+                                                Please provide a valid Zip Code.
+                                            </div>
+                                        </div>
+                                        {% elif field.label == "Zip Code" %}
+                                        {% else %}
+                                        <div class="col-12">
+                                            <label for="{{ field.name }}" class="form-label">{{field.label}}</label>
+                                            <input type="text" class="form-control" id="{{ field.id_for_label }}"
+                                                maxlength="{{ field.max_length }}" type="text"
+                                                value="{{ field.value|default:'' }}" name="{{ field.name }}"
+                                                autocomplete="off" required>
+                                            <div class="invalid-feedback">
+                                                Please provide a valid {{field.label}}.
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% endif %}
+                                        {% endfor %}
+
+                                        {% if not update_mode %}
+                                        <!-- Is your mailing address the same as your home address? -->
+                                        <div class="col-12">
+                                            <p class="mb-0">Is your mailing address the same as your home address?</p>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="mailing_address" value="yes" checked>
+                                                <label class="form-check-label" for="mailing_address1">
+                                                    Yes
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="mailing_address" value="no">
+                                                <label class="form-check-label" for="mailing_address2">
+                                                    No
+                                                </label>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <div id="mailing_address_wrapper">
+                                            <h5 class="h5">Mailing Address</h5>
+                                            <div class="row g-3">
+                                            {% for field in mailing_address_form %}
+                                            {% if field.label == "State" %}
+                                            <div class="col-md-6">
+                                                <label for="mailing_state" class="form-label">{{field.label}}</label>
+                                                <input type="text" class="form-control" id="mailing_state"
+                                                    maxlength="{{ field.max_length }}" type="text"
+                                                    value="{{ field.value|default:'' }}" name="mailing_{{ field.name }}"
+                                                    autocomplete="off" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="mailing_zip_code" class="form-label">Zip Code</label>
+                                                <input type="text" class="form-control" id="mailing_zip_code"
+                                                    name="mailing_{{ mailing_address_form.zip_code.name }}"
+                                                    value="{{ mailing_address_form.zip_code.value|default:'' }}"
+                                                    pattern="[0-9]{5}" maxlength="5" required autocomplete="off">
+                                            </div>
+                                            {% elif field.label == "Zip Code" %}
+                                            {% else %}
+                                            <div class="col-12">
+                                                <label for="mailing_{{ field.name }}" class="form-label">{{field.label}}</label>
+                                                <input type="text" class="form-control" id="mailing_{{ field.id_for_label }}"
+                                                    maxlength="{{ field.max_length }}" type="text"
+                                                    value="{{ field.value|default:'' }}" name="mailing_{{ field.name }}"
+                                                    autocomplete="off" required>
+                                                <div class="invalid-feedback">
+                                                    Please provide a valid {{field.label}}.
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            {% endfor %}
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'users:detail' pk=request.user.pk %}?app_status=in_progress"
+                                    class="btn btn-primary">Back</a>
+                                {% if update_mode or renewal_mode %}
+                                <button class="btn btn-primary" type="submit"> Confirm </button>
+                                {% else %}
+                                <button class="btn btn-primary" type="submit"> Continue </button>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div class="input" style="width:100%">
-                {# TODO: change this to dropdown menu with data #}
-                <input class="fill" value="{{ mailing_address_form.zip_code.value|default:'' }}"
-                    name="mailing_{{ mailing_address_form.zip_code.name }}" id="mailing_zip_code" pattern="[0-9]{5}"
-                    title="Please enter a 5-digit Zip Code" maxlength="5" type="text" style="width:100%;"
-                    autocomplete="off" required>
-                <label class="label">{{ mailing_address_form.zip_code.label }}</label>
-            </div>
         </div>
-        {% elif field.label == "Zip Code" %}
-        {% else %}
-        <div class="input">
-            {# Have styling that I like on the forms #}
-            <input class="fill" value="{{ field.value|default:'' }}" name="mailing_{{ field.name }}"
-                id="mailing_{{ field.id_for_label }}" maxlength="{{ field.max_length }}" type="text" style="width:100%;"
-                autocomplete="off">
-            <label class="label">{{field.label}}</label>
-        </div>
-        {% endif %}
-        {% endfor %}
     </div>
 
-    <div class="footer">
-        {% if request.session.update_mode or request.session.renewal_mode %}
-        <button type="submit"> CONFIRM </button>
-        {% else %}
-        <button type="submit"> CONTINUE </button>
-        {% endif %}
-    </div>
-</form>
+    {% include "partials/footer.html" %}
 
-<style>
-    @media screen and (max-width : 767px) {
-        .address-header {
-            color: white;
-            margin-top: 0px;
-            margin-bottom: 10px;
-        }
-    }
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var submitButton = document.querySelector("button[type=submit]");
+            submitButton.addEventListener('click', function (e) {
+                var spinner = document.createElement('div');
+                spinner.classList.add('spinner-border', 'spinner-border-sm', 'ms-2');
+                submitButton.appendChild(spinner);
+            });
 
-    @media screen and (min-width: 768px) {
-        .address-header {
-            color: var(--darkblue);
-            margin-top: 0px;
-            margin-bottom: 10px;
-        }
-    }
-</style>
+            {% if not update_mode %}
+            var sameAddress = "{{ same_address }}" === "True";
+            var mailingAddressWrapper = document.getElementById("mailing_address_wrapper");
+            var mailingAddressHtml = mailingAddressWrapper.innerHTML;
+            mailingAddressWrapper.innerHTML = "";
 
-{% if not request.session.update_mode %}
-<script>
-    $(document).ready(function () {
-        var sameAddress = "{{ same_address }}" === "True";
-        var mailingAddressHtml = $("#mailing_address_wrapper").html();
-        $("#mailing_address_wrapper").empty();
+            var mailingAddressRadios = document.querySelectorAll('input[type=radio][name=mailing_address]');
+            if (sameAddress) {
+                document.querySelector('input[type=radio][name=mailing_address][value=yes]').checked = true;
+            } else {
+                document.querySelector('input[type=radio][name=mailing_address][value=no]').checked = true;
+            }
 
-        if (sameAddress) {
-            $('input[type=radio][name=mailing_address][value=yes]').prop('checked', true);
-        } else {
-            $('input[type=radio][name=mailing_address][value=no]').prop('checked', true);
-        }
-
-        updateMailingAddressVisibility(mailingAddressHtml);
-
-        $('input[type=radio][name=mailing_address]').change(function () {
             updateMailingAddressVisibility(mailingAddressHtml);
+
+            mailingAddressRadios.forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    updateMailingAddressVisibility(mailingAddressHtml);
+                });
+            });
+            {% endif %}
         });
-    });
 
-    function updateMailingAddressVisibility(mailingAddressHtml) {
-        var mailingAddressBtn = $('input[type=radio][name=mailing_address]:checked').val();
-        toggleMailingAddressVisibility(mailingAddressBtn, mailingAddressHtml);
-    }
-
-    function toggleMailingAddressVisibility(mailingAddressBtn, mailingAddressHtml) {
-        if (mailingAddressBtn == 'yes') {
-            $("#mailing_address_wrapper").empty();
-        } else if (mailingAddressBtn == 'no') {
-            $("#mailing_address_wrapper").html(mailingAddressHtml);
+        {% if not update_mode %}
+        function updateMailingAddressVisibility(mailingAddressHtml) {
+            var mailingAddressBtn = document.querySelector('input[type=radio][name=mailing_address]:checked').value;
+            toggleMailingAddressVisibility(mailingAddressBtn, mailingAddressHtml);
         }
-    }
-</script>
-{% endif %}
-{% endblock %}
+
+        function toggleMailingAddressVisibility(mailingAddressBtn, mailingAddressHtml) {
+            var mailingAddressWrapper = document.getElementById("mailing_address_wrapper");
+            if (mailingAddressBtn == 'yes') {
+                mailingAddressWrapper.innerHTML = "";
+            } else if (mailingAddressBtn == 'no') {
+                mailingAddressWrapper.innerHTML = mailingAddressHtml;
+            }
+        }
+        {% endif %}
+    </script>
+</body>
+
+</html>
