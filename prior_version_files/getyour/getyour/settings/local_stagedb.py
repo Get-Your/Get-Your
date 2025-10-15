@@ -26,7 +26,7 @@ env.read_env(BASE_DIR.joinpath(".prod.env"))
 SECRET_KEY = env("SECRET_KEY")
 AZURE_ACCOUNT_NAME = env("AZURE_ACCOUNT_NAME")
 AZURE_ACCOUNT_KEY = env("AZURE_ACCOUNT_KEY")
-AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
+AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.usgovcloudapi.net"
 AZURE_CONTAINER = env("AZURE_CONTAINER")
 IS_PROD = None  # 'None' implies this is the stage database
 
