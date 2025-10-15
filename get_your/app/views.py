@@ -492,12 +492,7 @@ def get_ready(request, **kwargs):
             is_active=True,
         ).order_by("friendly_name")
 
-        # Add 'app:get_ready' to `user_completed_pages` here (since the next
-        # page is linked from the template rather than POST back here)
-        # TODO: consider standardizing all pages to use POST (a benefit would be that the proper next page can be calculated here)
-        request.user.user_completed_pages.add(
-            ApplicationPage.objects.get(page_url="app:get_ready"),
-        )
+        # TODO: consider standardizing all pages to use POST instead of linking the next page via the get_ready template (a benefit would be that the proper next page can be calculated here)
 
         # Check if the next query param is set
         # If so, save the renewal action and redirect to the account page

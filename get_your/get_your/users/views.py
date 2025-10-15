@@ -98,7 +98,9 @@ class UserSignupView(SignupView):
 
     def post(self, request, *args, **kwargs):
         # Extend post() to add 'users:signup' to `user_completed_pages`
+        # Also add 'app:get_ready', now that the user has created an account
         request.user.user_completed_pages.add(
+            ApplicationPage.objects.get(page_url="app:get_ready"),
             ApplicationPage.objects.get(page_url="users:signup"),
         )
         return super().post(request, *args, **kwargs)
