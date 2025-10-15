@@ -39,10 +39,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <span></span>
 
                     <ul id="menu">
-                        <a style="color: {{ dashboard_color }} ; " href="{% url 'dashboard:dashboard' %}">
+                        <a style="color: {{ dashboard_color }} ; " href="{% url 'dashboard:account_overview' %}">
                             <li>Dashboard</li>
                         </a>
-                        <a style="color:{{ program_list_color }}; " href="{% url 'dashboard:programs_list' %}">
+                        <a style="color:{{ program_list_color }}; " href="{% url 'app:programs_list' %}">
                             <li>Program List</li>
                         </a>
                         <a style="color:{{ Settings_color }};" href="{% url 'users:detail' pk=request.user.pk %}">
@@ -73,24 +73,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 <div class="sideNav" style="padding-left: 0;">
 
                     <ul>
-                        <p style="color: var(--yellow); font-weight: 700; font-size: 25px;">Get <span
-                                style="color: white"></span>
+                        <p style="color: var(--yellow); font-weight: 700; font-size: 25px;">Get <span style="color: white"></span>
                             FoCo</p>
                         </p>
                         <p> <img src="{% static 'images/Dashboard.svg' %}"> <a
                                 style="color: {{ dashboard_color }}; text-decoration:none; "
-                                href="{% url 'dashboard:dashboard' %}">Dashboard</a></p>
+                                href="{% url 'dashboard:account_overview' %}">Dashboard</a></p>
                         <p> <img src="{% static 'images/ProgramList.svg' %}"> <a
                                 style="color:{{ program_list_color }}; text-decoration:none;"
-                                href="{% url 'dashboard:programs_list' %}">Programs</a></p>
+                                href="{% url 'app:programs_list' %}">Programs</a></p>
                         <p> <img src="{% static 'images/Settings.svg' %}"> <a
                                 style="color:{{ Settings_color }};text-decoration:none; "
-                                href="{% url 'users:detail' pk=request.user.pk %}">Settings</a></p>
+                                href="{% url 'dashboard:user_settings' %}">Settings</a></p>
                         {% if enable_renew_now %}
                         <p><i class="fa-solid fa-rotate-right"></i>
-                            <a class="renew_now" style="color:white;text-decoration:none; "
-                                href="javascript:void(0)">Renew Now</a>
-                        </p>
+                            <a class="renew_now" style="color:white;text-decoration:none; " href="javascript:void(0)">Renew Now</a></p>
                         {% endif %}
                         {% if badge_visible %}
                         <p class="badge"> <i class="fa-solid fa-certificate"></i><a
@@ -101,14 +98,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                                 href="{% url 'dashboard:privacy' %}">Privacy Policy</a></p>
                         <p> <img src="{% static 'images/LogOut.svg' %}"> <a style="color:white;text-decoration:none; "
                                 href="{% url 'app:index' %}">Log Out</a></p>
-                        <p
-                            style="position: absolute; bottom: 22px; font-size: 15px; left: 0px; right: 0px; display: block; margin-left: auto; margin-right: auto;">
+                        <p style="position: absolute; bottom: 22px; font-size: 15px; left: 0px; right: 0px; display: block; margin-left: auto; margin-right: auto;">
                             Service brought to you by the City of Fort Collins.</p>
                         <img style="align-items:center; position:absolute; bottom: 80px; left: 0px; right: 0px; display: block; margin-left: auto; margin-right: auto; width: 50%;"
                             src="{% static 'images/CityLogoWhite-01.png' %}">
-                        <span
-                            style="position: absolute; bottom: 10px; font-size: 12px; left: 0px; right: 0px; display: block; margin-left: auto; margin-right: auto; color: #bdccdb;">Get
-                            FoCo {{ code_version }}</span>
+                        <span style="position: absolute; bottom: 10px; font-size: 12px; left: 0px; right: 0px; display: block; margin-left: auto; margin-right: auto; color: #bdccdb;">Get FoCo {{ code_version }}</span>
                     </ul>
                     <div>
 

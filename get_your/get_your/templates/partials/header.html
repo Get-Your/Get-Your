@@ -1,0 +1,60 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% load static %}
+<!-- Navbar. Remove 'fixed-top' class to make the navigation bar scrollable with the page -->
+<header class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+
+        <!-- Navbar brand (Logo) -->
+        <div class="navbar-brand">
+            <img src="{% static 'img/logo/svg/gy-horizontal-color.svg' %}" alt="Get Your Logo" width="128" height="128">
+        </div>
+
+        <!-- User signed in state. Account dropdown on screens > 576px -->
+        <div class="dropdown nav d-none d-sm-block order-lg-3 ms-auto">
+            <a class="nav-link d-flex align-items-center p-0" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+
+                <div class="ps-2">
+                    <div class="fs-sm dropdown-toggle">Hi, {{ user.first_name }}</div>
+                </div>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end my-1">
+                <h6 class="dropdown-header fs-xs fw-medium text-body-secondary text-uppercase pb-1">Dashboard</h6>
+                <a class="dropdown-item" href="{% url 'dashboard:account_overview' %}">
+                    <i class="gi-user-check fs-lg opacity-70 me-2"></i>
+                    Overview
+                </a>
+                <a class="dropdown-item" href="{% url 'dashboard:account_programs' %}">
+                    <i class="gi-dashboard fs-base opacity-70 me-2 mt-n1"></i>
+                    Programs &amp; News
+                </a>
+                <a class="dropdown-item" href="{% url 'dashboard:account_settings' %}">
+                    <i class="gi-settings fs-lg opacity-70 me-2"></i>
+                    Settings
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/">
+                    <i class="gi-logout fs-lg opacity-70 me-2"></i>
+                    Sign out
+                </a>
+            </div>
+        </div>
+
+    </div>
+</header>

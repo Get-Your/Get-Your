@@ -16,271 +16,155 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-{% extends "bases/application_base.html" %}
 {% load static %}
 
-{% block navigation %}
-{% if request.session.renewal_mode %}
-{% include "partials/navigation.html" with display_back_link=False display_save_link=False display_exit_link=True %}
-{% elif request.session.update_mode %}
-{% url 'users:detail' pk=request.user.pk as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
-{% else %}
-{% url 'app:get_ready' as back_link %}
-{% include "partials/navigation.html" with display_back_link=True display_save_link=False back_link=back_link %}
-{% endif %}
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block body %}
-<p id="application_step" class="application-step">STEP {{ step }} OF {{ form_page_number }}</p>
+{% include "partials/static-imports.html" with title="Get FoCo | Account Setup" %}
 
-{% if request.session.update_mode %}
-<h2 style="font-weight: 700; margin:5vh 0"> Update Your Account Information</h2>
-{% else %}
-<h2 style="font-weight: 700; margin:5vh 0"> Create an Account </h2>
-{% endif %}
+<body class="bg-secondary">
 
-{% with header="You're on your way!" description="Get FoCo has good things in store for you." %}
-{% include "partials/side_content.html" with header=header description=description %}
-{% endwith %}
+    <!-- Page container -->
+    <div class="container py-5 mt-4 mt-lg-5 mb-lg-4 my-xl-5">
+        <div class="row pt-sm-2 pt-lg-0">
+            <!-- Page content -->
+            <div class="col-lg-12 pt-4 pb-2 pb-sm-4">
+                {% if update_mode %}
+                <h1 class="h2 mb-4">Update Your Account Information</h1>
+                {% else %}
+                <h1 class="h2 mb-4">Create an Account</h1>
+                {% endif %}
 
-<form action="{% url 'app:account' %}" method="post" id="account-form" autocomplete="false">
-    {% csrf_token %}
-    {% for field in form %}
-    {% if form.errors %}
-    {% for error in field.errors %}
-    <div class="alert alert-danger">
-        <p style="color: red;"><strong>{{ error|escape }}</strong> </p>
-    </div>
-    {% endfor %}
+                <div class="card">
+                    <div class="card-body">
+                        <form id="account-form" method="post" action="{% url 'app:account' %}" class="needs-validation"
+                            novalidate>
 
-    {% for error in form.non_field_errors %}
-    <div class="alert alert-danger">
-        <p style="color: red;"><strong>{{ error|escape }}</strong> </p>
-    </div>
-    {% endfor %}
-    {% endif %}
+                            <div class="row mb-4">
+                                <div class="col-5">
+                                    {% include "partials/steps.html" with active_step="account"%}
+                                </div>
+                                <div class="col-7">
+
+                                    {% csrf_token %}
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="first_name" class="form-label">First name</label>
+                                            <input type="text" class="form-control" id="first_name" name="first_name"
+                                                value="{{ user.first_name }}" required>
+                                            <div class="invalid-feedback">
+                                                Please provide a valid first name.
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="last_name" class="form-label">Last name</label>
+                                            <input type="text" class="form-control" id="last_name" name="last_name"
+                                                value="{{ user.last_name }}" required>
+                                            <div class="invalid-feedback">
+                                                Please provide a valid last name.
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="email" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="email" name="email"
+                                                value="{{ user.email }}" required>
+                                            <div class="invalid-feedback">
+                                                Please provide a valid email address.
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="phone_number" class="form-label">Phone Number</label>
+                                            <input type="tel" class="form-control" id="phone_number" name="phone_number"
+                                                value="{{ user.phone_number }}" required>
+                                            <div class="invalid-feedback">
+                                                Please provide a valid phone number.
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="password" class="form-label">Password</label>
+                                            <input type="password" class="form-control" id="password" name="password"
+                                                required>
+                                            <div class="invalid-feedback">
+                                                Please provide a valid password.
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="password2" class="form-label">Confirm Password</label>
+                                            <input type="password" class="form-control" id="password2" name="password2"
+                                                required>
+                                            <div class="invalid-feedback">
+                                                Please provide a valid password.
+                                            </div>
+                                        </div>
+                                    </div>
 
 
-    {% if field.label == "First Name" %}
-    <div class="row">
-        <div class="input">
-            {# TODO: Save input #}
-            <input class="fill" name="{{ field.name }}" id="{{ field.id_for_label }}" maxlength="{{ field.max_length }}"
-                value="{{ form.first_name.value|default:'' }}" type="text" style="width:80%;" required
-                autocomplete="off">
-            <label class="label">{{field.label}}</label>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'app:get_ready' %}" class="btn btn-primary">Back</a>
+                                {% if update_mode or renewal_mode %}
+                                <button class="btn btn-primary" type="submit"> Confirm </button>
+                                {% else %}
+                                <button class="btn btn-primary" type="submit"> Create </button>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="input">
-            {# TODO: change this to dropdown menu with data #}
-            <input class="fill" name="{{ form.last_name.name }}" id="{{ form.last_name.id_for_label }}"
-                maxlength="{{ form.last_name.max_length }}" type="text" value="{{ form.last_name.value|default:'' }}"
-                style="width:100%;" required autocomplete="off">
-            <label class="label">{{ form.last_name.label }}</label>
-        </div>
     </div>
 
-    {# Probably not the best way, but I needed to get rid of the last name #}
-    {% elif field.label == "Last Name" %}
-    {% elif field.label == "Phone Number" %}
-    <div class="input">
-        <input class="fill" name="{{ field.name }}" id="phone_number" maxlength="{{ field.max_length }}" type="tel"
-            value="{{ form.phone_number.value|default:'' }}" style="width:100%;" required autocomplete="off">
-        <label class="label">{{field.label}}</label>
-    </div>
+    {% include "partials/footer.html" %}
 
-    {% elif field.label == "Password" %}
-    <p style="color: red;"><strong> {{ passwordError }} </strong> </p>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("account-form").addEventListener("submit", function (e) {
+                e.preventDefault();
+                // Add a spinner to the button to indicate that the form is being submitted
+                var submitButton = document.querySelector("button[type=submit]");
+                submitButton.addEventListener('click', function () {
+                    var spinner = document.createElement('div');
+                    spinner.classList.add('spinner-border', 'spinner-border-sm', 'ms-2');
+                    button.appendChild(spinner);
+                });
 
-    <div class="input">
-        {# Have styling that I like on the forms #}
-        <input class="fill" name="{{ field.name }}" id="password" maxlength="{{ field.max_length }}" type="password"
-            style="width:100%;" required autocomplete="off">
-        <label class="label">{{field.label}}</label>
-    </div>
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", this.action, true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.result === "success") {
+                            alert("account created!");
+                            window.location = "address";
+                        } else if ("redirect" in data) {
+                            window.location.href = data.redirect;
+                        } else {
+                            alert(data.message);
+                        }
+                    }
+                };
+                xhr.onerror = function () {
+                    console.log(xhr.responseText);
+                };
+                xhr.send(new URLSearchParams(new FormData(document.getElementById("account-form"))).toString());
+            });
 
+            {% if not update_mode %}
+            var myInput = document.getElementById("password");
+            var myInput2 = document.getElementById("password2");
+            {% endif %}
 
-    {% elif field.label == "Enter Password Again" %}
-    <div class="input">
-        {# Have styling that I like on the forms #}
-        <input class="fill" name="{{ field.name }}" id="password2" maxlength="{{ field.max_length }}" type="password"
-            style="width:100%;" required autocomplete="off" onblur="finalChecks()">
-        <label class="label">{{field.label}}</label>
-    </div>
-    {% else %}
-    <div class="input">
-        {# Have styling that I like on the forms #}
-        <input class="fill" name="{{ field.name }}" id="{{ field.id_for_label }}" maxlength="{{ field.max_length }}"
-            type="text" value="{{ form.email.value|default:'' }}" style="width:100%;" required autocomplete="off">
-        <label class="label">{{field.label}}</label>
-    </div>
-    {% endif %}
-    {% endfor %}
-
-    <div id="message">
-        <p>Password must contain the following:</p>
-        <p id="letter" class="invalid">A <b>lowercase</b> letter</p>
-        <p id="capital" class="invalid">A <b>capital (uppercase)</b> letter</p>
-        <p id="number" class="invalid">A <b>number</b></p>
-        <p id="length" class="invalid">Minimum <b>8 characters</b></p>
-        <p id="complex" class="invalid">Must <b>NOT</b> be a common password</p>
-        <p id="same" class="invalid">Passwords <b>must match</b></p>
-    </div>
-
-    <div class="footer">
-        {% if request.session.update_mode or request.session.renewal_mode %}
-        <button type="submit"> CONFIRM </button>
-        {% else %}
-        <button type="submit"> CREATE </button>
-        {% endif %}
-    </div>
-</form>
-
-{# Password Server Side Check #}
-<script>
-    $(document).on("submit", "#account-form", function (e) {
-        e.preventDefault();
-        $.ajax({
-            type: "POST",
-            url: $("#account-form").attr("action"),
-            data: $("#account-form").serialize(),
-            success: function (data) {
-                if (data.result === "success") {
-                    alert("account created!");
-                    window.location = "address";
-                } else if ("redirect" in data) {
-                    window.location.href = data.redirect;
-                } else {
-                    alert(data.message)
-                }
-            },
-
-            error: function (response) {
-                console.log(response)
-            },
+            // document.getElementById('phone_number').addEventListener('input', function (e) {
+            //     var x = e.target.value.replace(/\D/g, '').match(/(\d{0, 3})(\d{0, 3})(\d{0, 4})/);
+            //     e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+            // });
         });
-    });
+    </script>
+</body>
 
-    var letter = document.getElementById("letter");
-    var capital = document.getElementById("capital");
-    var number = document.getElementById("number");
-    var length = document.getElementById("length");
-    var same = document.getElementById("same");
-    var complex = document.getElementById("complex");
-
-    {% if not request.session.update_mode %}
-    var myInput = document.getElementById("password");
-    var myInput2 = document.getElementById("password2");
-
-
-    // When the user clicks on the password field, show the message box
-    myInput.onfocus = function () {
-        document.getElementById("message").style.display = "block";
-    }
-
-    // When the user starts to type something inside the password field
-    myInput.onkeyup = function () {
-
-        // Validate lowercase letters
-        var lowerCaseLetters = /[a-z]/g;
-        if (myInput.value.match(lowerCaseLetters)) {
-            letter.classList.remove("invalid");
-            letter.classList.add("valid");
-        } else {
-            letter.classList.remove("valid");
-            letter.classList.add("invalid");
-        }
-
-        // Validate capital letters
-        var upperCaseLetters = /[A-Z]/g;
-        if (myInput.value.match(upperCaseLetters)) {
-            capital.classList.remove("invalid");
-            capital.classList.add("valid");
-        } else {
-            capital.classList.remove("valid");
-            capital.classList.add("invalid");
-        }
-
-        // Validate numbers
-        var numbers = /[0-9]/g;
-        if (myInput.value.match(numbers)) {
-            number.classList.remove("invalid");
-            number.classList.add("valid");
-        } else {
-            number.classList.remove("valid");
-            number.classList.add("invalid");
-        }
-
-        // Validate length
-        if (myInput.value.length >= 8) {
-            length.classList.remove("invalid");
-            length.classList.add("valid");
-        } else {
-            length.classList.remove("valid");
-            length.classList.add("invalid");
-        }
-
-        //below is password check code and variables
-        var check = document.getElementById("password").value;
-        var passwordDigest = new Hashes.SHA1().hex(check);
-        var digestFive = passwordDigest.substring(0, 5).toUpperCase();
-        var queryURL = "https://api.pwnedpasswords.com/range/" + digestFive;
-        var checkDigest = passwordDigest.substring(5, 41).toUpperCase();
-        var result;
-
-        // Validate non common password
-        $.ajax({
-            url: queryURL,
-            type: "GET",
-            async: false,
-            success: function (res) {
-                if (res.search(checkDigest) > -1) {
-                    complex.classList.remove("valid");
-                    complex.classList.add("invalid");
-                    return false;
-                } else {
-                    complex.classList.remove("invalid");
-                    complex.classList.add("valid");
-                    return true;
-                }
-            }
-        });
-
-    }
-
-    myInput2.onkeyup = function () {
-        // Validate same
-        if (document.getElementById("password").value == document.getElementById("password2").value) {
-            same.classList.remove("invalid");
-            same.classList.add("valid");
-        } else {
-            same.classList.remove("valid");
-            same.classList.add("invalid");
-        }
-    }
-    {% endif %}
-
-    document.getElementById('phone_number').addEventListener('input', function (e) {
-        var x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
-        e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
-    });
-
-    function finalChecks() {
-        if (letter.classList == "invalid") {
-            alert("You need a lowercase letter in your password")
-        }
-        else if (capital.classList == "invalid") {
-            alert("You need an uppercase letter in your password")
-        }
-        else if (number.classList == "invalid") {
-            alert("You need a number in your password")
-        }
-        else if (length.classList == "invalid") {
-            alert("You need atleast 8 characters letter in your password")
-        }
-        else if (same.classList == "invalid") {
-            alert("Your passwords need to match")
-        }
-    }
-</script>
-{% endblock %}
+</html>
