@@ -1,0 +1,205 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+{% include "partials/head.html" with title="Home" css="landing" %}
+
+{# TODO: make a message to only look at this on mobile #}
+
+<body style="margin:0; padding:0">
+    {% include "partials/environment_banner.html" with is_prod=is_prod db_env_str=db_env_str %}
+
+    <div id="full-nav">
+        <ul class="navUl" style="vertical-align: middle;">
+            <div id="google_translate_element" style="display: inline;padding-top:1vh;width: 196px; padding-right: 2%;">
+            </div>
+            <img src="{% static 'images/CityLogoWhite-01.png' %}">
+
+            <div class="row"
+                style="height: 5vh; vertical-align: middle; display: table-cell; text-align: right;overflow: initial;">
+                {# TODO: MAKE SURE THIS LINK WORKS #}
+                <a href="#How it Works" class="navLink"> How it Works</a>
+                <a href="#Available Programs" class="navLink"> Available Programs </a>
+                <a href="#Check Availability" class="navLink"> Check Availability </a>
+                <a class="link" style="display: inline;" href="{% url 'account_login' %}">LOG IN</a>
+                <button onclick="location.href='{% url 'app:get_ready' %}'"><b>APPLY</b></button>
+            </div>
+        </ul>
+    </div>
+    <div class="bluemain" style="margin:0;">
+        <div class="img" style="float:left; padding: 20px;">
+            <img src="{% static 'images/WelcomeIllustration.svg' %}" alt="Welcome" style="width:100%; float:left">
+        </div>
+        <h1 style="color:white">Welcome to</h1>
+        <h1 style="color:white"><b>Get <b class=yellow style=>FoCo</b></b></h1>
+        <div style="overflow: auto;">
+            <p style="color:white;">An all-in-one application portal to the discounted services and municipal benefits
+                offered by the City of Fort Collins, for income eligible residents. Get FoCo is a partnership between
+                Fort Collins' Connexion and the City of Fort Collins' income eligible programming.</p>
+        </div>
+    </div>
+    <div class="whitemain">
+        <h2 style="text-align:center"><b><a id="How it Works">How it Works</a></b></h2>
+        <p style="padding-bottom:20px">With Get Foco, you'll be able to do more with your City of Fort Collins program
+            applications than ever before.</p>
+        <div class="column">
+            <div class="row" style="justify-content: space-around;">
+                <div class="img">
+                    <div class="fadeLarge">
+                        <img src="{% static 'images/control.png' %}" alt="Control" style="width:100%">
+                    </div>
+                    <div class="fadeSmall">
+                        <img src="{% static 'images/control.svg' %}" alt="Control" style="width:100%">
+                    </div>
+                </div>
+                <div class="wordblock">
+                    <p style="margin-top:0;"><b>Control Your Application</b></p>
+                    <p>Manage applications in real
+                        time with up-to-date
+                        application status.</p>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="row" style="justify-content: space-around;">
+                <div class="img">
+                    <div class="fadeLarge">
+                        <img src="{% static 'images/save.png' %}" alt="Save" style="width:100%">
+                    </div>
+                    <div class="fadeSmall">
+                        <img src="{% static 'images/save.svg' %}" alt="Save" style="width:100%">
+                    </div>
+                </div>
+                <div class="wordblock">
+                    <p style="margin-top:0;"><b>Do More, Save More</b></p>
+                    <p>If you qualify, you'll get access
+                        to specific City of Fort Collins' income qualified programs
+                        that are tailored to save you money.</p>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="row" style="justify-content: space-around;">
+                <div class="img">
+                    <div class="fadeLarge">
+                        <img src="{% static 'images/forget.png' %}" alt="Forget" style="width:100%">
+                    </div>
+                    <div class="fadeSmall">
+                        <img src="{% static 'images/forget.svg' %}" alt="Forget" style="width:100%">
+                    </div>
+                </div>
+                <div class="wordblock">
+                    <p style="margin-top:0;"><b>Forget "Forgetting"</b></p>
+                    <p>Never forget to renew your
+                        application with easy reminders - making information
+                        updates a breeze.</p>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="row" style="justify-content: space-around;">
+                <div class="img">
+                    <div class="fadeLarge">
+                        <img src="{% static 'images/know.png' %}" alt="Know" style="width:100%">
+                    </div>
+                    <div class="fadeSmall">
+                        <img src="{% static 'images/know.svg' %}" alt="Know" style="width:100%">
+                    </div>
+                </div>
+                <div class="wordblock">
+                    <p style="margin-top:0;"><b>Stay in the Know</b></p>
+                    <p>Be informed with the latest
+                        news & updates from both
+                        Connexion & the City.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="programsListmain">
+        <h2 style="color:white; text-align: center;"><a id="Available Programs">Available Income Eligible Programs</a>
+        </h2>
+        <p style="color:white; text-align: center;">Get FoCo is always working to include more programs into the mobile
+            app making it easier for you to be connected!</p>
+        <div class="fadeSmall">
+            <div class="exploreDiv">
+                <div style="padding-top: 1vw; padding-left: 3vw;">
+                    <h4 style="color: white;">All Programs</h4>
+                </div>
+                {% for iq_program in iq_programs %}
+                <div class="exploreDivPrograms">
+                    <p class=p2><b>{{iq_program.friendly_name}}</b> <span>{{iq_program.friendly_category}}</span></p>
+                    <p class=p2>{{iq_program.friendly_description}}</p>
+                    <p class=p3>{{iq_program.friendly_supplemental_info}}</p>
+                    <a href="{{iq_program.learn_more_link}}" style="color: #F9B316;" target="_blank"> Learn More</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="fadeLarge"><button style="background-color: var(--darkblue);width:100%;margin-bottom: 3vh;"
+                onclick="location.href='{% url 'app:programs_info' %}'">Explore Programs</button> </div>
+    </div>
+    <div class="intrigued">
+        <h2 style="color:white"><a id="Check Availability">Curious?</a></h2>
+        <p style="color:white">Enter your address to check if you qualify for City of Fort Collins' income eligible
+            programs.</p>
+        {# TODO: Save input and add logic for checking zipcode #}
+
+        <form action="{% url 'app:index' %}" method="post" autocomplete="false" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row" style="margin: 30px 0 0 0;">
+                <div class="input" style="width:100%">
+                    {# TODO: change this to dropdown menu with data #}
+                    <input class="fill" name="{{ form.address.name }}" id="{{ form.address.id_for_label }}"
+                        maxlength="{{ form.address.max_length }}" type="text" style="width:95%;" required
+                        autocomplete="off">
+                    <label class="label">{{ form.address.label }}</label>
+                </div>
+                <button style="background-color:var(--darkblue);font-weight: 700;" type="submit"> ENTER </button>
+            </div>
+        </form>
+        <p class="link" style="margin:0; padding-top: 10%;">Service brought to you by the City of Fort Collins</p>
+        <a class="link" href="{% url 'app:privacy_policy' %}" style="margin:0; padding-top: 10%;"><u>Privacy
+                Policy</u></a>
+    </div>
+
+    <style>
+        .swal2-container {
+            position: fixed;
+        }
+    </style>
+
+    <script>
+        var inProgressAppSaved = "{{ in_progress_app_saved|yesno:'true,false' }}" === "true";
+
+        $(document).ready(function () {
+            if (inProgressAppSaved) {
+                Swal.fire({
+                    icon: "info",
+                    title: "Logged Out",
+                    text: "Your changes are saved. When you're ready to continue, log back in.",
+                    confirmButtonColor: "#13467D",
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

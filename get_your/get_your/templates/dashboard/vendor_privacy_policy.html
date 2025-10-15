@@ -1,0 +1,17 @@
+<form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title">Privacy Policy</h5>
+    <button type="button" class="btn-close" hx-trigger='{"showMessage": "Apply Now cancelled"}' data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+  <div class="modal-body">
+    <div class="mb-3">
+      {{ policy_text }}
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" hx-trigger="click" hx-target="toast" hx-on:html:config-request="event.detail.headers = '{\"showMessage\": \"Apply Now cancelled.\"}'" data-bs-dismiss="modal">
+      Cancel
+    </button>
+    <button type="submit" class="btn btn-primary">Accept</button>
+  </div>
+</form>

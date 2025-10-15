@@ -1,0 +1,39 @@
+{% load static %}
+<div class="sideNav">
+    <div class="fadeSmall">
+        <!-- <div class="side-content-logo"> -->
+        <img class="side-content-logo" src="{% static 'images/CityLogoWhite-01.png' %}">
+        <span class="version-info">Get FoCo {{ code_version }}</span>
+        <!-- </div> -->
+        <h1>
+            <b>{{ header|default:"" }}</b>
+        </h1>
+        <p>{{ description|default:"" }}</p>
+        <p class="supplimental-description">
+            {{ suppliment|default:"" }}
+        </p>
+    </div>
+</div>
+
+<style>
+    .side-content-logo {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 70%;
+    }
+
+    .supplimental-description {
+        font-size: 1.5em;
+        font-weight: 700;
+    }
+
+    .version-info {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        font-size: 0.7em;
+        text-align: center;
+        color: #bdccdb;
+    }
+</style>

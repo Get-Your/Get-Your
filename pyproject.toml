@@ -1,0 +1,66 @@
+[project]
+name = "get-your"
+version = "7.0.0"
+description = "Platform for the universal online application for income-qualified programs"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "argon2-cffi==25.1.0",
+    "coftc-cred-man",
+    "coftc-file-utils",
+    "coftc-logging-utils",
+    "coverage==7.10.6",
+    "crispy-bootstrap5==2025.6",
+    "django==4.2.23",
+    "django-allauth[mfa]==65.11.1",
+    "django-anymail[sendgrid]==13.0.1",
+    "django-case-insensitive-field==1.0.7",
+    "django-coverage-plugin==3.1.1",
+    "django-crispy-forms==2.4",
+    "django-debug-toolbar==6.0.0",
+    "django-environ==0.12.0",
+    "django-extensions==4.1",
+    "django-formset==1.7.8",
+    "django-model-utils==5.0.0",
+    "django-phonenumber-field[phonenumbers]==8.1.0",
+    "django-q2==1.8.0",
+    "django-redis==6.0.0",
+    "django-softdelete==0.11.5",
+    "django-storages[azure]==1.14.6",
+    "django-stubs[compatible-mypy]==5.2.2",
+    "djlint==1.36.4",
+    "factory-boy==3.3.2",
+    "gunicorn==23.0.0",
+    "hiredis==3.2.1",
+    "httpagentparser==1.9.5",
+    "ipdb==0.13.13",
+    "mypy==1.17.1",
+    "pandas~=2.2.3",
+    "pendulum==3.1.0",
+    "pillow==11.3.0",
+    "pre-commit==4.3.0",
+    "psycopg[binary]~=3.2.9",
+    "pytest==8.4.1",
+    "pytest-django==4.11.1",
+    "pytest-sugar==1.1.1",
+    "python-magic==0.4.27",
+    "python-magic-bin~=0.4 ; sys_platform == 'win32'",
+    "python-slugify==8.0.4",
+    "redis==6.4.0",
+    "ruff==0.12.11",
+    "sendgrid==6.6.0",
+    "sphinx==8.2.3",
+    "sphinx-autobuild==2025.8.25",
+    "sqlalchemy==2.0.43",
+    "twilio==9.7.2",
+    "usaddress==0.5.10",
+    "usaddress-scourgify==0.6.0",
+    "usps-api==0.5",
+    "werkzeug[watchdog]==3.1.3",
+    "whitenoise==6.9.0",
+]
+
+[tool.uv.sources]
+coftc-file-utils = { path = "../dist/coftc_file_utils-3.0.1-py3-none-any.whl" }
+coftc-cred-man = { path = "../dist/coftc_cred_man-4.0.2-py3-none-any.whl" }
+coftc-logging-utils = { path = "../dist/coftc_logging_utils-2.0.2-py3-none-any.whl" }

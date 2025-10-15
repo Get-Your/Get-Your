@@ -1,0 +1,10 @@
+{% extends "base_cookiecutter.html" %}
+
+{% block mainbody %}
+<div class="row">
+    <h2 class="text-dark mt-5">Server Error</h2>
+    {% if message != '' %}
+    <h5 class="text-dark">{{ message }}</h2>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% extends "bases/application_base.html" %}
+{% load static %}
+
+{% block navigation %}
+{% if request.session.renewal_mode %}
+{% url 'app:household_members' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=False display_exit_link=True back_link=back_link %}
+{% else %}
+{% url 'app:household_members' as back_link %}
+{% include "partials/navigation.html" with display_back_link=True display_save_link=True back_link=back_link|add:"?app_status=in_progress" %}
+{% endif %}
+{% endblock %}
+
+{% block body %}
+<p id="application_step" class="application-step">STEP {{ step }} OF {{ form_page_number }}</p>
+
+{% with header="It's Time to Get Excited" description="Choose programs you are already a part of. This information will be used to determine what aid you qualify for." %}
+{% include "partials/side_content.html" with header=header description=description suppliment="Choose all that apply."%}
+{% endwith %}
+
+<h2 style="font-weight: 700; margin-top:5vh"> Are you currently enrolled in any of the following programs? </h2>
+
+<div class="fadeLarge">
+    <p> Choose all that apply: </p>
+</div>
+
+<form action="{% url 'app:programs' %}" method="post" autocomplete="false">
+    {% csrf_token %}
+    {% for program in programs %}
+    <input style="display: none;" id="{{ program.program_name }}" type="checkbox" name="{{ program.program_name }}"
+        value="{{ program.id }}">
+    <label class="checklabel" for="{{ program.program_name }}">
+        <style>
+            input:not(.checked)~label span.buttonCheck {
+                color: white;
+            }
+        </style>
+        <span class="buttonCheck">{{ program.friendly_name }}</span>
+    </label>
+    {% endfor %}
+
+    <div class="footer">
+        <button id="btnContinue" type="submit" disabled> SELECT A PROGRAM </button>
+    </div>
+
+</form>
+
+<script>
+    // Check for when the document is ready
+    $(document).ready(function () {
+        // When a checkbox is clicked, call the toggleBtnState() function
+        $("input[type=checkbox]").click(function () {
+            toggleBtnState();
+        });
+
+        // Check if any of the input[type=checkbox] are checked when the page
+        // is ready.
+        setTimeout(function () {
+            toggleBtnState();
+        }, 500);
+    });
+
+    // toggleBtnState() is called when a checkbox is clicked
+    function toggleBtnState() {
+        // Check if any of the input[type=checkbox] are checked, except for the
+        // one with the id of "id_Identification"
+        // If they are, enable the button and change the text to "Continue"
+        // If they are not, disable the button and change the text to "Select a Program"
+        if ($("input[type=checkbox]:checked").not("#id_Identification").length > 0) {
+            $("#btnContinue").prop("disabled", false);
+            $("#btnContinue").html("CONTINUE");
+        } else {
+            $("#btnContinue").prop("disabled", true);
+            $("#btnContinue").html("SELECT A PROGRAM");
+        }
+    }
+</script>
+{% endblock %}

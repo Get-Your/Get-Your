@@ -1,8 +1,14 @@
-# Get FoCo
+# Get-Your
 
-The universal income-qualified application for the City of Fort Collins, Colorado.
+Platform for the universal online application for income-qualified programs
 
-// TODO: write README
+[![Built with Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
+License: GPLv3
+
+> ![CAUTION]
+> Note that the following is specific to 'Get FoCo', the City of Fort Collins implementation of the Get-Your platform.
 
 # Table of Contents
 1. [Get FoCo](#get-foco)
@@ -69,7 +75,7 @@ Run the following to create the SQLite database and populate it with the databas
 > Each database migration must be run separately.
 
     python3 manage_local.py migrate
-    python3 manage_local.py migrate --database=<analytics_database>
+    python3 manage_local.py migrate --database=<monitor_database>
     python3 manage_local.py runserver
 
 # Development and Deployment
@@ -126,7 +132,51 @@ Hybrid development uses `secrets.dev.toml` and `secrets.prod.toml` for DEV and S
 
 > Note that **all** migrations must be run via `local_devdb.py` or `caution_local_proddb.py` settings using the privileged database user (summarized in the [database setup](#database-setup-summary)).
 
+## Settings
+
+Moved to [settings](https://cookiecutter-django.readthedocs.io/en/latest/1-getting-started/settings.html).
+
+## Basic Commands
+
+### Setting Up Your Users
+
+- To create a **normal user account**, just go to Sign Up and fill out the form. Once you submit it, you'll see a "Verify Your E-mail Address" page. Go to your console to see a simulated email verification message. Copy the link into your browser. Now the user's email should be verified and ready to go.
+
+- To create a **superuser account**, use this command:
+
+      $ python manage.py createsuperuser
+
+For convenience, you can keep your normal user logged in on Chrome and your superuser logged in on Firefox (or similar), so that you can see how the site behaves for both kinds of users.
+
+### Type checks
+
+Running type checks with mypy:
+
+    $ mypy get_your
+
+### Test coverage
+
+To run the tests, check your test coverage, and generate an HTML coverage report:
+
+    $ coverage run -m pytest
+    $ coverage html
+    $ open htmlcov/index.html
+
+#### Running tests with pytest
+
+    $ pytest
+
+### Live reloading and Sass CSS compilation
+
+Moved to [Live reloading and SASS compilation](https://cookiecutter-django.readthedocs.io/en/latest/2-local-development/developing-locally.html#using-webpack-or-gulp).
+
 ## Deployment
+> ![NOTE]
+> Soon, the cookiecutter deployment plan will be implemented here:
+>
+> ### Docker
+> See detailed [cookiecutter-django Docker documentation](https://cookiecutter-django.readthedocs.io/en/latest/3-deployment/deployment-with-docker.html).
+
 Deployment consists of building and pushing the Docker container, then pulling into the Azure [Web App](#web-app). Get FoCo is set up for the following:
 
 - DEV
@@ -304,7 +354,7 @@ Summary of the database setup
 - Database names
   - `platform_dev` is the database name on the DEV server instance
   - `platform_stage` and `platform_prod` are separate databases on the PROD server instance
-  - The 'analytics' counterpart (used by Django for logging) is its own database in each environment (specified where necessary as \<analytics_database\>)
+  - The 'monitor' counterpart (used by Django for logging) is its own database in each environment (specified where necessary as \<monitor_database\>)
 - Database users (\<env\> is the database instance for each user ('dev', 'stage', or 'prod'))
   - developer_\<env\>_user: Privileged database user, used locally for Django development
   - django_\<env\>_user: Base database user, used by Django with the minimum necessary database privileges
@@ -334,7 +384,7 @@ Use the following connection string to connect to the target database. The hostn
 `pg_dump` and `pg_restore` are PostgreSQL utilities used from the local command line (e.g. not from within the `psql` connection).
 
 ### Creating a Database
-On a freshly-deployed Azure instance, only the admin user (assigned during server setup) and the `postgres` database exist. Use the following code to create the `platform` database and its 'analytics' counterpart.
+On a freshly-deployed Azure instance, only the admin user (assigned during server setup) and the `postgres` database exist. Use the following code to create the `platform` database and its 'monitor' counterpart.
 
     psql --host=<hostname> --port=5432 --username=<admin_username> --dbname=postgres --command="CREATE DATABASE <target_database_name>;"
 
@@ -428,7 +478,7 @@ Connect to the primary (`platform`) database and complete the following steps:
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
 
 #### Configure Other Databases
-This section should be used for all other databases on the same server (such as the 'analytics' database used for logging). It relies on the roles that were created in the [previous section](#configure-the-primary-database).
+This section should be used for all other databases on the same server (such as the 'monitor' database used for logging). It relies on the roles that were created in the [previous section](#configure-the-primary-database).
 
 Connect to the database to configure and complete the following steps:
 
