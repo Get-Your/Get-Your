@@ -558,14 +558,14 @@ wheels = [
 
 [[package]]
 name = "django-formset"
-version = "1.7.8"
+version = "2.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2c/0c/2936d288ff4bcac6940f6a11c3a831b46e1fc76654e1a85d95b86168dacf/django_formset-1.7.8.tar.gz", hash = "sha256:32992a286109d62671c7483fee47c2680a36430f745ccf2d5c4dd7d76197c5ac", size = 795712, upload-time = "2025-08-29T08:11:30.638Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5d/ff/4009775a9f0b7491439a99421dacb2b970ec86a1bd230809ba6790484f1f/django_formset-2.1.2.tar.gz", hash = "sha256:8bc70d6ccbd30762fb1610a05a98ef003ed4374bfab75a901de41ac70a492e1b", size = 1004957, upload-time = "2025-10-15T21:03:45.142Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/53/1e/0277484a45d3104411e7805949fef66fc7d752ee3b37fa1a51937444f022/django_formset-1.7.8-py3-none-any.whl", hash = "sha256:49b4f675f48183159436d3bcc57cc084f5468758668dbc658952b1737a8c125f", size = 1107563, upload-time = "2025-08-29T08:11:29.1Z" },
+    { url = "https://files.pythonhosted.org/packages/67/17/791476bc57c8d30c6da8852054e5175df846a1ba81286c556bdcb7848712/django_formset-2.1.2-py3-none-any.whl", hash = "sha256:c35961808d1fe39eb9fc06c86a53bf8a89197afbe2cd4e1f5bbec1d2a172a116", size = 1331723, upload-time = "2025-10-15T21:03:43.087Z" },
 ]
 
 [[package]]
@@ -919,7 +919,7 @@ requires-dist = [
     { name = "django-debug-toolbar", specifier = "==6.0.0" },
     { name = "django-environ", specifier = "==0.12.0" },
     { name = "django-extensions", specifier = "==4.1" },
-    { name = "django-formset", specifier = "==1.7.8" },
+    { name = "django-formset", specifier = "==2.1.2" },
     { name = "django-model-utils", specifier = "==5.0.0" },
     { name = "django-phonenumber-field", extras = ["phonenumbers"], specifier = "==8.1.0" },
     { name = "django-q2", specifier = "==1.8.0" },
