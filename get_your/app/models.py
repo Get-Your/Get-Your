@@ -86,7 +86,7 @@ class Household(TimeStampedModel):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        primary_key=True,  # set this to the primary key of this model
+        primary_key=True,
     )
     user_has_updated = models.BooleanField(default=False)
     is_income_verified = models.BooleanField(
@@ -99,13 +99,6 @@ class Household(TimeStampedModel):
     duration_at_address = models.CharField(
         max_length=200,
         choices=duration_at_address_choices,
-    )
-    number_persons_in_household = models.IntegerField(
-        default=1,
-        verbose_name="household size",
-        help_text=_(
-            "Number of persons in the household.",
-        ),
     )
 
     # Define the min and max Gross Annual Household Income as a fraction of
@@ -134,12 +127,13 @@ class HouseholdMembers(TimeStampedModel):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        primary_key=True,  # set this to the primary key of this model
+        primary_key=True,
     )
 
-    # Store the household info (individuals' names, birthdates, and path to an uploaded ID) as JSON for
-    # quick storage and reference
-    household_info = models.JSONField(null=True, blank=True)
+    full_name = models.CharField(max_length=200)
+    birthdate = models.DateField()
+    identification_path = models.FileField()
+
     user_has_updated = models.BooleanField(default=False)
 
     class Meta:

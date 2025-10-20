@@ -57,12 +57,12 @@ class HouseholdForm(forms.ModelForm):
         fields = [
             "rent_own",
             "duration_at_address",
-            "number_persons_in_household",
+            # "number_persons_in_household",
         ]
         labels = {
             "rent_own": "Do you rent or own your current residence?",
             "duration_at_address": "How long have you lived at this address?",
-            "number_persons_in_household": "How many individuals are in your household?",
+            # "number_persons_in_household": "How many individuals are in your household?",
         }
 
 
