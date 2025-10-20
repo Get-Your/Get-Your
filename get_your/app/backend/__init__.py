@@ -352,13 +352,17 @@ def get_in_progress_eligiblity_file_uploads(request):
     return users_in_progress_file_uploads
 
 
-def save_renewal_action(request, action, status="completed", data={}):
+def save_renewal_action(request_or_user, action, status="completed", data={}):
     """Saves a renewal action to the database
     Args:
-        request (HttpRequest): The request object
+        request_or_user (HttpRequest or User object): The request object or User
         action (str): The action to save
     """
-    user = UserModel.objects.get(id=request.user.id)
+    if isinstance(request_or_user, http.HttpRequest):
+        user = UserModel.objects.get(id=request_or_user.user.id)
+    else:
+        user = request_or_user
+
     if hasattr(user, "last_renewal_action"):
         last_renewal_action = (
             user.last_renewal_action if user.last_renewal_action else {}

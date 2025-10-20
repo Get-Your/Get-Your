@@ -1247,6 +1247,12 @@ class HouseholdFormView(LoginRequiredMixin, EditCollectionView):
 
     def form_collection_valid(self, form_collection):
         response = super().form_collection_valid(form_collection)
+
+        # if self.renewal_mode:
+        #     # Call save_renewal_action after models have been saved so as not to
+        #     # save renewal metadata as data updates
+        #     save_renewal_action(self.object.user, 'household')
+
         return response
 
     def post(self, request, *args, **kwargs):
