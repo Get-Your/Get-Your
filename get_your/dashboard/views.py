@@ -29,6 +29,7 @@ from django.shortcuts import render
 from django.shortcuts import reverse
 
 from app.backend import address_check
+from app.backend import check_if_user_needs_to_renew
 from app.backend import enable_renew_now
 from app.backend import get_users_iq_programs
 from app.models import IQProgram
@@ -87,6 +88,9 @@ def dashboard(request, **kwargs):
         eligibility_address = AddressRef.objects.filter(
             id=request.user.address.eligibility_address_id,
         ).first()
+        # Determine if the user needs renewal for *any* program, and set as a
+        # user-level 'needs renewal'
+        needs_renewal = check_if_user_needs_to_renew(request.user.id)
         users_iq_programs = get_users_iq_programs(
             request.user.id,
             request.user.household.income_as_fraction_of_ami,
@@ -168,6 +172,7 @@ def dashboard(request, **kwargs):
                 "program_list_color": "white",
                 "Settings_color": "white",
                 "Privacy_Policy_color": "white",
+                "needs_renewal": needs_renewal,
                 "iq_programs": users_iq_programs,
                 "qualified_programs": qualified_programs,
                 "pending_programs": pending_programs,
@@ -394,6 +399,9 @@ def qualified_programs(request, **kwargs):
         eligibility_address = AddressRef.objects.filter(
             id=request.user.address.eligibility_address_id,
         ).first()
+        # Determine if the user needs renewal for *any* program, and set as a
+        # user-level 'needs renewal'
+        needs_renewal = check_if_user_needs_to_renew(request.user.id)
         users_iq_programs = get_users_iq_programs(
             request.user.id,
             request.user.household.income_as_fraction_of_ami,
@@ -424,6 +432,7 @@ def qualified_programs(request, **kwargs):
                 "program_list_color": "var(--yellow)",
                 "Settings_color": "white",
                 "Privacy_Policy_color": "white",
+                "needs_renewal": needs_renewal,
                 "iq_programs": users_iq_programs,
                 "enable_renew_now": enable_renew_now(request.user.id),
             },
