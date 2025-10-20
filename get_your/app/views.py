@@ -1152,6 +1152,7 @@ def take_usps_address(request, **kwargs):
 
 
 @method_decorator(login_required, name="dispatch")
+# @method_decorator([login_required, set_update_mode], name="dispatch")
 class HouseholdFormView(LoginRequiredMixin, EditCollectionView):
     model = Household
     collection_class = HouseholdFormCollection
