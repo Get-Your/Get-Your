@@ -22,24 +22,38 @@ from functools import wraps
 from django.shortcuts import redirect
 
 
-def set_update_mode(view_func):
+def determine_update_mode():
     """
-    Decorator to set the update mode in the session.
+    Decorator to determine the update mode in the session. This uses the format
+    of django.contrib.auth.decorators.user_passes_test() from Django v4.1.
     """
 
-    @wraps(view_func)
-    def wrapper(request, *args, **kwargs):
-        # Get the update_mode query string parameter
-        update_mode = request.GET.get("update_mode")
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            # Get the update_mode query string parameter
+            update_mode = request.GET.get("update_mode")
 
-        # Check explicitly in case the query string is used another way later
-        if update_mode == "1":
-            # This session var will be the global bool for update_mode
-            request.session["update_mode"] = True
-            return redirect(request.path)
+            # Check explicitly in case the query string is used another way later
+            if update_mode == "1":
+                # This session var will be the global bool for update_mode
+                request.session["update_mode"] = True
+                return redirect(request.path)
 
-        # Call the original view function
-        response = view_func(request, *args, **kwargs)
-        return response
+            return view_func(request, *args, **kwargs)
 
-    return wrapper
+        return _wrapped_view
+
+    return decorator
+
+
+def set_update_mode(function=None):
+    """
+    Decorator to set the update mode in the session. This uses the format of
+    django.contrib.auth.decorators.login_required() from Django v4.1.
+
+    """
+    actual_decorator = determine_update_mode()
+    if function:
+        return actual_decorator(function)
+    return actual_decorator
