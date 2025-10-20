@@ -34,62 +34,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
                 <div class="card">
                     <div class="card-body">
-                        <form id="household-form" method="post" action="{% url 'app:household' %}"
-                            class="needs-validation" novalidate autocomplete="false">
-                            {% csrf_token %}
+                        <django-formset class="bootstrap" endpoint="{{ request.path }}" csrf-token="{{ csrf_token }}">
                             <div class="row mb-4">
                                 <div class="col-5">
                                     {% include "partials/steps.html" with active_step="household"%}
                                 </div>
                                 <div class="col-7">
                                     <div class="row g-3">
-                                        <div class="col-12">
-                                            <p class="mb-0 form-label">
-                                                Do you rent or own your current residence?
-                                            </p>
-                                            {% for choice in form.rent_own %}
-                                            <div class="form-check">
-                                                <!--  -->
-                                                <input class="form-check-input" type="radio" name="rent_own"
-                                                    value="{{choice.data.value}}" />
-                                                <label class="form-label" for="{{choice.id_for_label}}">
-                                                    {{ choice.choice_label }}
-                                                </label>
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-
-                                        <div class="col-12">
-                                            <p class="mb-0 form-label">
-                                                How long have you lived at this address?
-                                            </p>
-                                            {% for choice in form.duration_at_address %}
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="radio" name="duration_at_address"
-                                                    value="{{choice.data.value}}" />
-                                                <label class="form-label" for="{{choice.id_for_label}}">
-                                                    {{ choice.choice_label }}
-                                                </label>
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-
-                                        <div class="col-12">
-                                            <label for="{{ form.number_persons_in_household.id_for_label}}"
-                                                class="form-label">
-                                                {{ form.number_persons_in_household.label }}
-                                                <i class="gi-circle-info" data-bs-toggle="tooltip"
-                                                    data-bs-placement="top" title="'Household' means the applicant and any other people claimed on your federal tax return. This could
-                                                    include your spouse, and your children by birth or adoption, step children, foster children and
-                                                    children under legal guardianship who live with you in your home as submitted on your federal income
-                                                    tax return.">
-                                                </i>
-                                            </label>
-                                            <input class="form-control" type="number" min="1"
-                                                name="{{ form.number_persons_in_household.name }}"
-                                                value="{{ form.number_persons_in_household.value|default:'' }}"
-                                                id="{{ form.number_persons_in_household.id_for_label}}" required />
-                                        </div>
+                                        {{ form_collection }}
                                     </div>
                                 </div>
                             </div>
@@ -98,14 +50,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                                 <a href="{% url 'app:address' %}?app_status=in_progress"
                                     class="btn btn-primary">Back</a>
                                 {% if update_mode or renewal_mode %}
-                                <button class="btn btn-primary" type="submit">Confirm</button>
+                                <button class="btn btn-primary" type="button" df-click="disable -> spinner -> submit -> okay(1000) -> proceed !~ enable -> bummer(1000)">
+                                    Confirm
+                                    <span class="dj-button-decorator"></span>
+                                </button>
                                 {% else %}
-                                <button class="btn btn-primary" type="submit">
+                                <button class="btn btn-primary" type="button" df-click="disable -> spinner -> submit -> okay(1000) -> proceed !~ enable -> bummer(1000)">
                                     Continue
+                                    <span class="dj-button-decorator"></span>
                                 </button>
                                 {% endif %}
                             </div>
-                        </form>
+                        </django-formset>
                     </div>
                 </div>
             </div>
@@ -114,16 +70,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     {% include "partials/footer.html" %}
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var submitButton = document.querySelector("button[type=submit]");
-            submitButton.addEventListener('click', function (e) {
-                var spinner = document.createElement('div');
-                spinner.classList.add('spinner-border', 'spinner-border-sm', 'ms-2');
-                submitButton.appendChild(spinner);
-            });
-        });
-    </script>
 </body>
 
 </html>

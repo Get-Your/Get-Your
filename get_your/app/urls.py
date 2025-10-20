@@ -83,14 +83,8 @@ urlpatterns = [
     # ),
     path(
         "household",
-        views.household,
+        views.HouseholdFormView.as_view(),
         name="household",
-        kwargs={"allow_direct_user": False},
-    ),
-    path(
-        "household_members",
-        views.household_members,
-        name="household_members",
         kwargs={"allow_direct_user": False},
     ),
     path(
