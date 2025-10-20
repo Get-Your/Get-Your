@@ -115,6 +115,43 @@ def householdmembers_pre_save(sender, instance, **kwargs):
                 instance.is_updated = True
 
 
+@receiver(pre_delete, sender=HouseholdMembers)
+def householdmembers_pre_delete(sender, instance, **kwargs):
+    # Run historical save if update or renewal mode
+    if instance.update_mode or instance.renewal_mode or instance.admin_mode:
+        try:
+            # Save the previous values of the fields that have been updated in the
+            # user's householdmembers data to the database in the
+            # householdmembershist table
+            householdmembers_history = HouseholdMembersHist(
+                user=instance.household.user,
+                # Convert the updated household objects to a dictionary and then to
+                # a JSON string and set it to the historical_values field
+                historical_values=json.loads(
+                    json.dumps(
+                        changed_modelfields_to_dict(
+                            sender.objects.get(pk=instance.pk),
+                            instance,
+                            pre_delete=True,
+                        ),
+                        cls=DjangoJSONEncoder,
+                    )
+                ),
+            )
+
+        except HouseholdMembers.DoesNotExist:
+            # No historical data to use for the update
+            pass
+
+        else:
+            # Save or perform operations with the original instance if any field
+            # has changed
+            if householdmembers_history.historical_values != {}:
+                householdmembers_history.save()
+                # Set is_updated if any values have changed
+                instance.is_updated = True
+
+
 @receiver(pre_save, sender=User)
 def user_pre_save(sender, instance, **kwargs):
     # The user object gets saved at times other than update_mode (such as
