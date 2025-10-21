@@ -41,10 +41,26 @@ User = get_user_model()
 
 
 def populate_cache_task():
+    # Initialize logger
+    log = LoggerWrapper(logging.getLogger(__name__))
+
+    log.debug(
+        "Entering function",
+        function="populate_cache_task",
+    )
+
     async_task(populate_redis_cache)
 
 
 def populate_redis_cache():
+    # Initialize logger
+    log = LoggerWrapper(logging.getLogger(__name__))
+
+    log.debug(
+        "Entering function",
+        function="populate_redis_cache",
+    )
+
     # Add each user needing renewal to the renewal cache
 
     # Loop through every user in the database that isn't archived or has a NULL
@@ -53,6 +69,11 @@ def populate_redis_cache():
         is_archived=False,
         last_completed_at__isnull=False,
     ):
+        log.debug(
+            f"Looping through users: user {user.id}",
+            function="populate_redis_cache",
+            user_id=user.id,
+        )
         cache_key = renewal_cache_key_preform.format(user_id=user.id)
 
         # No need to run calculations if cache_key already exists in the cache
@@ -63,7 +84,13 @@ def populate_redis_cache():
         # cache users that don't need application renewals
         needs_renewal = check_if_user_needs_to_renew(user.id)
         if needs_renewal:
-            cache.set(
+            log.debug(
+                f"Caching user {user.id} (needs_renewal==True)",
+                function="populate_redis_cache",
+                user_id=user.id,
+            )
+
+            ok = cache.set(
                 cache_key,
                 {
                     "user_id": user.id,
@@ -76,6 +103,13 @@ def populate_redis_cache():
                 # Don't timeout a user needing renewal (deletion is elsewhere)
                 timeout=None,
             )
+            # If the cache didn't set properly, log an error and continue
+            if not ok:
+                log.error(
+                    "ERROR: User could not be cached.",
+                    function="populate_redis_cache",
+                    user_id=user.id,
+                )
 
 
 def run_renewal_task():
@@ -166,13 +200,19 @@ def send_renewal_email(cache_key, cache_value):
 
             # Update the cache with the new last_action_notification_at
             cache_value["last_notified"] = str(new_notification_at)
-            cache.set(
+            ok = cache.set(
                 cache_key,
                 cache_value,
                 # Don't timeout a user needing renewal (deletion is elsewhere)
                 timeout=None,
             )
-
+            # If the cache didn't set properly, log an error and continue
+            if not ok:
+                log.error(
+                    f"ERROR: User cache update failed ({cache_key})",
+                    function="send_renewal_email",
+                    user_id=user.id,
+                )
         else:
             log.debug(
                 f"SendGrid call failed. SendGrid status_code: '{status_code}'",
