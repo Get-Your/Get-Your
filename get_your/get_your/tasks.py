@@ -32,6 +32,7 @@ from sendgrid.helpers.mail import Mail
 from app.backend import broadcast_renewal_email
 from dashboard.backend import check_if_user_needs_to_renew
 from get_your.constants import notification_buffer_month
+from get_your.constants import renewal_cache_key_preform
 from monitor.wrappers import LoggerWrapper
 
 # Get the user model
@@ -51,7 +52,7 @@ def populate_redis_cache():
         is_archived=False,
         last_completed_at__isnull=False,
     ):
-        cache_key = f"user_last_notified_{user.id}"
+        cache_key = renewal_cache_key_preform.format(user_id=user.id)
 
         # No need to run calculations if cache_key already exists in the cache
         if cache.has_key(cache_key):
