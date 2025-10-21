@@ -22,9 +22,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from files.backend import userfiles_path
-
-from .constants import duration_at_address_choices
-from .constants import rent_own_choices
+from get_your.constants import duration_at_address_choices
+from get_your.constants import rent_own_choices
 
 # Get the user model
 User = get_user_model()

@@ -30,8 +30,8 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
 from app.backend import broadcast_renewal_email
-from app.constants import notification_buffer_month
 from dashboard.backend import check_if_user_needs_to_renew
+from get_your.constants import notification_buffer_month
 from monitor.wrappers import LoggerWrapper
 
 # Get the user model

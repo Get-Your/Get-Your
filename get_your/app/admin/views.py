@@ -36,8 +36,8 @@ from django.shortcuts import render
 from app.admin import get_admin_url
 from app.backend import file_validation
 from app.backend import finalize_application
-from app.constants import supported_content_types
 from app.models import EligibilityProgram
+from get_your.constants import supported_content_types
 from monitor.wrappers import LoggerWrapper
 from ref.models import EligibilityProgram as EligibilityProgramRef
 

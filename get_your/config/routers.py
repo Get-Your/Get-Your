@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from app import constants
+from get_your.constants import logger_app_labels
 
 
 class LogRouter:
@@ -26,7 +26,7 @@ class LogRouter:
 
     """
 
-    route_app_labels = constants.logger_app_labels
+    route_app_labels = logger_app_labels
 
     def db_for_read(self, model, **hints):
         """

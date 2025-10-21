@@ -20,10 +20,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from django import forms
 from django.contrib.auth import get_user_model
 
+from get_your.constants import duration_at_address_choices
+from get_your.constants import rent_own_choices
 from ref.models import Address as AddressRef
 
-from .constants import duration_at_address_choices
-from .constants import rent_own_choices
 from .models import Household
 from .models import HouseholdMembers
 

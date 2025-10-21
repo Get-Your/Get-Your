@@ -30,9 +30,9 @@ from django.shortcuts import render
 from django.shortcuts import reverse
 
 from app.backend.address import address_check
-from app.constants import platform_settings_render_variables
 from app.models import IQProgram
 from app.models import PlatformSettings
+from get_your.constants import platform_settings_render_variables
 from monitor.wrappers import LoggerWrapper
 from ref.models import AddressRD
 from ref.models import IQProgramRD
