@@ -17,14 +17,24 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import logging
+
 # Set the notification buffer to be used for reminders
 notification_buffer_month = 1
 
 # Enable Calendar Year Renewals
 enable_calendar_year_renewal = True
 
-# Set the specified app label(s) for use in the logging db router
+# Set the specified app label and logging levels for use in the logging db
 logger_app_labels = {"monitor"}
+LOG_LEVELS = (
+    (logging.NOTSET, "NotSet"),
+    (logging.INFO, "Info"),
+    (logging.WARNING, "Warning"),
+    (logging.DEBUG, "Debug"),
+    (logging.ERROR, "Error"),
+    (logging.FATAL, "Fatal"),
+)
 
 # Define the content types supported by this app
 supported_content_types = {
