@@ -1,7 +1,7 @@
 """
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
-Copyright (C) 2022-2025
+Copyright (C) 2022-2024
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import logging
+import re
 
 import pendulum
 from django.conf import settings
@@ -61,14 +62,17 @@ def populate_redis_cache():
         # Check if user needs to renew their application. We don't want to
         # cache users that don't need application renewals
         needs_renewal = check_if_user_needs_to_renew(user.id)
-
         if needs_renewal:
             cache.set(
                 cache_key,
-                # Use last_action_notification_at if exists (it should, since
-                # last_completed_at is nonnull), else set to epoch to ensure the
-                # user gets notified
-                str(user.last_action_notification_at) or "1970-01-01 00:00:00",
+                {
+                    "user_id": user.id,
+                    # Use last_action_notification_at if exists (it should,
+                    # since last_completed_at is nonnull), else set to epoch to
+                    # ensure the user gets notified
+                    "last_notified": str(user.last_action_notification_at)
+                    or "1970-01-01 00:00:00",
+                },
                 # Don't timeout a user needing renewal (deletion is elsewhere)
                 timeout=None,
             )
@@ -89,109 +93,101 @@ def run_renewal_task():
         function="run_renewal_task",
     )
 
-    # For every user in the database that isn't archived or has a NULL
-    # last_completed_at, run the send_renewal_email task (asynchronously)
-    for user in User.objects.filter(
-        is_archived=False,
-        last_completed_at__isnull=False,
-    ):
-        cache_key = f"user_last_notified_{user.id}"
-        last_notified = cache.get(cache_key)
-        should_enqueue = (
-            last_notified is None
-            or (pendulum.now() - pendulum.parse(last_notified)).in_months()
-            > notification_buffer_month
+    # For each user in the cache, run the send_renewal_email task
+    # (asynchronously)
+
+    # Filter only the renewal keys. This pattern matches only full key names
+    # that are the 'renewal cache key' string with a number as the user id
+    re_obj = re.compile(
+        r"^{}$".format(
+            renewal_cache_key_preform.format(user_id=r"\d*"),
+        ),
+    )
+    renewal_keys = [x for x in cache.keys("*") if re_obj.match(x)]
+    cache_dict = cache.get_many(renewal_keys)
+
+    for key, val in cache_dict.items():
+        log.debug(
+            f"Looping through cache keys: {key}",
+            function="run_renewal_task",
         )
-
-        if should_enqueue:
-            async_task(send_renewal_email, user)
+        async_task(send_renewal_email, key, val)
 
 
-def send_renewal_email(user):
+def send_renewal_email(cache_key, cache_value):
     """
-    Determine if the user
-    a) needs to renew and
-    b) hasn't been notified within the buffer period
-
-    and kick off the 'renewal required' email.
+    Get the value from the cache, then kick off the 'renewal required' email if
+    the specified user hasn't been notified within the buffer period.
 
     """
 
     # Initialize logger (needs to be done within the async task)
     log = LoggerWrapper(logging.getLogger(__name__))
-    cache_key = f"user_last_notified_{user.id}"
 
-    # Check if user needs to renew their application
-    needs_renewal = check_if_user_needs_to_renew(user.id)
+    # Check if the user has been notified within the specified period
+    # Note that the user will be notified each `notification_buffer_month`
+    # months
 
-    # If they need to renew and if they have been notified within the
-    # notification buffer period, send them a renewal email.
-    if needs_renewal:
-        # Check if the user has been notified within the specified period
-        # Note that the user will be notified each `notification_buffer_month`
-        # months
+    # `.months` specifies number of months within a year,
+    # where `in_months()` (used here) specifies overall number of months
+    # (e.g. period.months + period.years*12 = period.in_months())
+    # .in_months()==1 at the one-month mark, so '>=' is used here
+    should_notify = (
+        pendulum.now() - pendulum.parse(cache_value["last_notified"])
+    ).in_months() >= notification_buffer_month
 
-        # `.months` specifies number of months within a year,
-        # where `in_months()` (used here) specifies overall number of months
-        # (e.g. period.months + period.years*12 = period.in_months())
-        last_notified = cache.get(cache_key)
-
-        # .in_months()==1 at the one-month mark, so '>=' is used here
-        should_notify = (
-            last_notified is None
-            or (pendulum.now() - pendulum.parse(last_notified)).in_months()
-            >= notification_buffer_month
+    if should_notify:
+        log.info(
+            "User needs renewal; sending notification",
+            function="send_renewal_email",
+            user_id=cache_value["user_id"],
         )
-        if should_notify:
-            log.info(
-                "User needs renewal; sending notification",
+
+        # Get user object
+        user = User.objects.get(id=cache_value["user_id"])
+
+        # Note that SendGrid doesn't have rate limits for 'send' operations
+        # in the v3 API (used here), so this needs no rate consideration
+        status_code = broadcast_renewal_email(user.email)
+
+        # Now update the user's last_action_notification_at
+        # field to the current time if status_code is '202 Accepted' (see
+        # https://docs.sendgrid.com/ui/account-and-settings/api-keys#testing-an-api-key
+        # for the closest documentation I could find)
+        if status_code == 202:
+            log.debug(
+                f"SendGrid call successful. last_action_notification_at updating from '{user.last_action_notification_at}'",
                 function="send_renewal_email",
                 user_id=user.id,
             )
+            new_notification_at = pendulum.now()
+            user.last_action_notification_at = new_notification_at
+            user.save()
 
-            # Note that SendGrid doesn't have rate limits for 'send' operations
-            # in the v3 API (used here), so this needs no rate consideration
-            status_code = broadcast_renewal_email(user.email)
+            # Update the cache with the new last_action_notification_at
+            cache_value["last_notified"] = str(new_notification_at)
+            cache.set(
+                cache_key,
+                cache_value,
+                # Don't timeout a user needing renewal (deletion is elsewhere)
+                timeout=None,
+            )
 
-            # Now update the user's last_action_notification_at
-            # field to the current time if status_code is '202 Accepted' (see
-            # https://docs.sendgrid.com/ui/account-and-settings/api-keys#testing-an-api-key
-            # for the closest documentation I could find)
-            if status_code == 202:
-                log.debug(
-                    f"SendGrid call successful. last_action_notification_at updating from '{user.last_action_notification_at}'",
-                    function="send_renewal_email",
-                    user_id=user.id,
-                )
-                user.last_action_notification_at = pendulum.now()
-                user.save()
-                cache.set(
-                    cache_key,
-                    str(pendulum.now()),
-                    timeout=3600 * 24 * 30 * notification_buffer_month,
-                )
-            else:
-                log.debug(
-                    f"SendGrid call failed. SendGrid status_code: '{status_code}'",
-                    function="send_renewal_email",
-                    user_id=user.id,
-                )
         else:
             log.debug(
-                "User needs renewal but has recently been notified",
+                f"SendGrid call failed. SendGrid status_code: '{status_code}'",
                 function="send_renewal_email",
                 user_id=user.id,
             )
-
-            # TODO: Discuss archiving users that haven't renewed and have
-            # exceeded the `notification_buffer_month` notification window
-
     else:
         log.debug(
-            "User does not need renewal",
+            "User needs renewal but has recently been notified",
             function="send_renewal_email",
             user_id=user.id,
         )
+
+        # TODO: Discuss archiving users that haven't renewed and have
+        # exceeded the `notification_buffer_month` notification window
 
 
 def send_generic_email(template_str, *args):
