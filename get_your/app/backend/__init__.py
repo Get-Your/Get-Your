@@ -28,6 +28,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth import login as django_auth_login
 from django.contrib.auth.backends import UserModel
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import UploadedFile
 from django.core.serializers.json import DjangoJSONEncoder
@@ -40,14 +41,18 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
+from usps import Address
+from usps import USPSApi
 
-from app.constants import application_pages
-from app.constants import supported_content_types
 from app.models import EligibilityProgram
 from app.models import Household
 from app.models import HouseholdMembers
 from app.models import IQProgram
 from dashboard.backend import get_users_iq_programs
+from get_your.constants import application_pages
+from get_your.constants import enable_calendar_year_renewal
+from get_your.constants import renewal_cache_key_preform
+from get_your.constants import supported_content_types
 from monitor.wrappers import LoggerWrapper
 from ref.models import Address as AddressRef
 from ref.models import IQProgram as IQProgramRef
@@ -421,6 +426,19 @@ def finalize_application(user, renewal_mode=False, update_user=True):
     # Now save the value of the ami_threshold to the user's household
     household = Household.objects.get(Q(user_id=user.id))
     household.income_as_fraction_of_ami = lowest_ami["program__ami_threshold"]
+
+    # Remove the user from the renewal cache (regardless of renewal_mode; use
+    # cache existence only)
+    cache_key = renewal_cache_key_preform.format(user_id=user.id)
+    if cache.has_key(cache_key):
+        ok = cache.delete(cache_key)
+        # If the cache didn't delete properly, log an error and continue
+        if not ok:
+            log.error(
+                f"ERROR: User cache deletion failed ({cache_key})",
+                function="finalize_application",
+                user_id=user.id,
+            )
 
     if renewal_mode:
         household.is_income_verified = False
