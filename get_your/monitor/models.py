@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from django.db import models
 
-from .constants import LOG_LEVELS
+from get_your.constants import LOG_LEVELS
 
 
 class LogLevel(models.Model):
