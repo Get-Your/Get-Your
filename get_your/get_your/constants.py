@@ -96,3 +96,6 @@ platform_settings_render_variables = {
         "field": "email",
     },
 }
+
+# Define the preformatted string for the renewal cache key
+renewal_cache_key_preform = "renewal_user_{user_id}"
