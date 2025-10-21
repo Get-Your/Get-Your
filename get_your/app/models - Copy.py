@@ -27,7 +27,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models import Value
 from django.db.models.functions import Concat
 
-from app.constants import (
+from get_your.constants import (
     rent_own_choices,
     duration_at_address_choices,
     platform_settings_render_variables,

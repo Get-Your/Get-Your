@@ -47,13 +47,13 @@ from twilio.rest import Client
 from usps import Address
 from usps import USPSApi
 
+from get_your.constants import application_pages
+from get_your.constants import enable_calendar_year_renewal
+from get_your.constants import supported_content_types
 from monitor.wrappers import LoggerWrapper
 from ref.models import Address as AddressRef
 from ref.models import IQProgram as IQProgramRef
 
-from .constants import application_pages
-from .constants import enable_calendar_year_renewal
-from .constants import supported_content_types
 from .models import EligibilityProgram
 from .models import Household
 from .models import HouseholdMembers

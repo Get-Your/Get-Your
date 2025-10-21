@@ -39,6 +39,7 @@ from django.shortcuts import reverse
 
 from files.backend import userfiles_path
 from files.forms import FileUploadForm
+from get_your.constants import supported_content_types
 from monitor.wrappers import LoggerWrapper
 from ref.models import Address as AddressRef
 from ref.models import ApplicationPage
@@ -59,7 +60,6 @@ from .backend import serialize_household_members
 from .backend import tag_mapping
 from .backend import validate_usps
 from .backend import what_page
-from .constants import supported_content_types
 from .forms import AddressForm
 from .forms import AddressLookupForm
 from .forms import HouseholdForm
