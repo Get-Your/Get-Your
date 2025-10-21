@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import logging
+import math
 import re
 
 import pendulum
@@ -114,8 +115,14 @@ def add_cache_user(user):
                 "last_notified": str(user.last_action_notification_at)
                 or "1970-01-01 00:00:00",
             },
-            # Don't timeout a user needing renewal (deletion is elsewhere)
-            timeout=None,
+            # Time out the cache record after the notification buffer (by >10%)
+            # This is a cache reset for error correction in case there's a
+            # mismatch somewhere
+            timeout=3600
+            * 24
+            * math.ceil(
+                pendulum.now().days_in_month * 1.1 * notification_buffer_month,
+            ),
         )
         # If the cache didn't set properly, log an error and continue
         if not ok:
@@ -216,8 +223,14 @@ def send_renewal_email(cache_key, cache_value):
             ok = cache.set(
                 cache_key,
                 cache_value,
-                # Don't timeout a user needing renewal (deletion is elsewhere)
-                timeout=None,
+                # Time out the cache record after the notification buffer (by >10%)
+                # This is a cache reset for error correction in case there's a
+                # mismatch somewhere
+                timeout=3600
+                * 24
+                * math.ceil(
+                    pendulum.now().days_in_month * 1.1 * notification_buffer_month,
+                ),
             )
             # If the cache didn't set properly, log an error and continue
             if not ok:
