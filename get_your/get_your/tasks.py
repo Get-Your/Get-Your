@@ -43,7 +43,7 @@ User = get_user_model()
 def populate_cache_task():
     """
     Use this task at AppConfig.ready to populate the cache on server startup
-    without base Django touching the database (inadvisable, per the docs).
+    without the base Django touching the database (inadvisable, per the docs).
 
     """
     # Initialize logger
@@ -205,7 +205,7 @@ def send_renewal_email(cache_key, cache_value):
             log.debug(
                 f"SendGrid call successful. last_action_notification_at updating from '{user.last_action_notification_at}'",
                 function="send_renewal_email",
-                user_id=user.id,
+                user_id=cache_value["user_id"],
             )
             new_notification_at = pendulum.now()
             user.last_action_notification_at = new_notification_at
@@ -224,19 +224,19 @@ def send_renewal_email(cache_key, cache_value):
                 log.error(
                     f"ERROR: User cache update failed ({cache_key})",
                     function="send_renewal_email",
-                    user_id=user.id,
+                    user_id=cache_value["user_id"],
                 )
         else:
             log.debug(
                 f"SendGrid call failed. SendGrid status_code: '{status_code}'",
                 function="send_renewal_email",
-                user_id=user.id,
+                user_id=cache_value["user_id"],
             )
     else:
         log.debug(
             "User needs renewal but has recently been notified",
             function="send_renewal_email",
-            user_id=user.id,
+            user_id=cache_value["user_id"],
         )
 
         # TODO: Discuss archiving users that haven't renewed and have
