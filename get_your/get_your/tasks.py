@@ -41,7 +41,7 @@ from monitor.wrappers import LoggerWrapper
 User = get_user_model()
 
 
-def populate_cache_task():
+def populate_cache_on_startup():
     """
     Use this task at AppConfig.ready to populate the cache on server startup
     without the base Django touching the database (inadvisable, per the docs).
@@ -52,7 +52,7 @@ def populate_cache_task():
 
     log.debug(
         "Entering function",
-        function="populate_cache_task",
+        function="populate_cache_on_startup",
     )
 
     async_task(populate_redis_cache)

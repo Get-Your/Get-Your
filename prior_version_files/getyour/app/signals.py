@@ -38,7 +38,7 @@ from app.models import (
     User,
     UserHist,
 )
-from app.tasks import populate_cache_task
+from app.tasks import populate_cache_on_startup
 
 # Defines a custom signal for us to listen for
 populate_cache = Signal()
@@ -272,4 +272,4 @@ def eligiblity_program_pre_delete(sender, instance, **kwargs):
 
 @receiver(populate_cache)
 def trigger_cache_population(sender, **kwargs):
-    populate_cache_task()
+    populate_cache_on_startup()
