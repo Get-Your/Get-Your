@@ -47,17 +47,16 @@ from twilio.rest import Client
 from usps import Address
 from usps import USPSApi
 
+from app.constants import application_pages
+from app.constants import enable_calendar_year_renewal
+from app.constants import supported_content_types
+from app.models import EligibilityProgram
+from app.models import Household
+from app.models import HouseholdMembers
+from app.models import IQProgram
 from monitor.wrappers import LoggerWrapper
 from ref.models import Address as AddressRef
 from ref.models import IQProgram as IQProgramRef
-
-from .constants import application_pages
-from .constants import enable_calendar_year_renewal
-from .constants import supported_content_types
-from .models import EligibilityProgram
-from .models import Household
-from .models import HouseholdMembers
-from .models import IQProgram
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
