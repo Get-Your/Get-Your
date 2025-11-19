@@ -158,7 +158,7 @@ def view_blob(request, blob_name, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -314,7 +314,7 @@ def add_elig_program(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -386,7 +386,7 @@ def view_changes(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:

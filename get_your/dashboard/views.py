@@ -188,7 +188,7 @@ def dashboard(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -277,7 +277,7 @@ def quick_apply(request, iq_program, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -336,7 +336,7 @@ def user_settings(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -373,7 +373,7 @@ def privacy(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -439,7 +439,7 @@ def qualified_programs(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -467,7 +467,7 @@ def feedback(request, **kwargs):
                 return redirect(reverse("dashboard:feedback_received"))
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -497,7 +497,7 @@ def feedback_received(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -543,7 +543,7 @@ def programs_list(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:

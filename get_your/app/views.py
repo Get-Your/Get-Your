@@ -216,7 +216,7 @@ def index(request, **kwargs):
             )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -251,7 +251,7 @@ def privacy_policy(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -282,7 +282,7 @@ def programs_info(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -312,7 +312,7 @@ def quick_available(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -342,7 +342,7 @@ def quick_not_available(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -372,7 +372,7 @@ def quick_not_found(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -402,7 +402,7 @@ def quick_coming_soon(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -435,7 +435,7 @@ def notify_remaining(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -462,7 +462,7 @@ def household_definition(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -517,7 +517,7 @@ def get_ready(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -650,7 +650,7 @@ def address(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -953,7 +953,7 @@ def address_correction(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -1144,7 +1144,7 @@ def take_usps_address(request, **kwargs):
             return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -1245,7 +1245,7 @@ def household(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -1486,7 +1486,7 @@ def household_members(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -1593,7 +1593,7 @@ def programs(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -1762,7 +1762,7 @@ def files(request, **kwargs):
             )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
@@ -1827,7 +1827,7 @@ def broadcast(request, **kwargs):
         )
 
     # General view-level exception catching
-    except:
+    except Exception:
         try:
             user_id = request.user.id
         except Exception:
