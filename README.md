@@ -465,7 +465,7 @@ Connect to the primary (`platform`) database and complete the following steps:
 
     Create and permissions analytics user role (named `analytics_role`, for use with reporting and analytics) without login privileges.
 
-    > This role is slightly different in that it removes all access from tables with names (`app_user`, `app_householdmembers`, and their history tables) and gives read-only access to all other existing and new tables. *There is a planned update to move to schema-level permissions instead of table-level*.
+    > This role is slightly different in that it removes as much access as possible from tables with names (`app_user`, `app_householdmembers`, and their history tables) and gives read-only access to all other existing and new tables. This isn't quite possible, since timestamps in `app_user` are important for reporting, so the `app_user` and `app_userhist` are *not* excluded for now. **There is a planned update to move to schema-level permissions instead of table-level.**
     
     > This is set up so that `user_id` can be used to connect tables, but no specific names are available.
 
@@ -474,10 +474,8 @@ Connect to the primary (`platform`) database and complete the following steps:
         GRANT USAGE ON SCHEMA public TO analytics_role;
         GRANT SELECT ON ALL TABLES IN SCHEMA public TO analytics_role;
         GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO analytics_role;
-        -- Revoke privileges for this role to the two tables with names (and their history tables)
-        REVOKE ALL PRIVILEGES ON app_user FROM analytics_role;
+        -- Revoke privileges for this role to specified tables
         REVOKE ALL PRIVILEGES ON app_householdmembers FROM analytics_role;
-        REVOKE ALL PRIVILEGES ON app_userhist FROM analytics_role;
         REVOKE ALL PRIVILEGES ON app_householdmembershist FROM analytics_role;
         -- Grant this role to admin user (permanently, but to no material affect) to alter default privileges
         GRANT analytics_role TO <admin_user>;
