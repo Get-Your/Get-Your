@@ -24,8 +24,8 @@ from django.forms.widgets import Textarea
 from django.utils.translation import gettext_lazy as _
 
 from app.backend import get_iqprogram_requires_fields
-from app.backend import get_users_iq_programs
 from app.models import Household
+from dashboard.backend import get_users_iq_programs
 from ref.models import Address as AddressRef
 from ref.models import EligibilityProgram as EligibilityProgramRef
 from ref.models import IQProgram as IQProgramRef

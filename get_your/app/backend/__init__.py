@@ -20,13 +20,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import datetime
 import json
 import logging
-from enum import Enum
 
 import httpagentparser
 import magic
 import pendulum
-import requests
-from django import http
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth import login as django_auth_login
@@ -37,27 +34,23 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.db.models.query import QuerySet
-from django.shortcuts import reverse
 from phonenumber_field.phonenumber import PhoneNumber
 from python_http_client.exceptions import HTTPError as SendGridHTTPError
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
-from usps import Address
-from usps import USPSApi
 
+from app.constants import application_pages
+from app.constants import supported_content_types
+from app.models import EligibilityProgram
+from app.models import Household
+from app.models import HouseholdMembers
+from app.models import IQProgram
+from dashboard.backend import get_users_iq_programs
 from monitor.wrappers import LoggerWrapper
 from ref.models import Address as AddressRef
 from ref.models import IQProgram as IQProgramRef
-
-from .constants import application_pages
-from .constants import enable_calendar_year_renewal
-from .constants import supported_content_types
-from .models import EligibilityProgram
-from .models import Household
-from .models import HouseholdMembers
-from .models import IQProgram
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -67,43 +60,6 @@ User = get_user_model()
 
 
 form_page_number = 6
-
-
-# Use the following tag mapping for USPS standards for all functions
-tag_mapping = {
-    "Recipient": "recipient",
-    "AddressNumber": "address_2",
-    "AddressNumberPrefix": "address_2",
-    "AddressNumberSuffix": "address_2",
-    "StreetName": "address_2",
-    "StreetNamePreDirectional": "address_2",
-    "StreetNamePreModifier": "address_2",
-    "StreetNamePreType": "address_2",
-    "StreetNamePostDirectional": "address_2",
-    "StreetNamePostModifier": "address_2",
-    "StreetNamePostType": "address_2",
-    "CornerOf": "address_2",
-    "IntersectionSeparator": "address_2",
-    "LandmarkName": "address_2",
-    "USPSBoxGroupID": "address_2",
-    "USPSBoxGroupType": "address_2",
-    "USPSBoxID": "address_2",
-    "USPSBoxType": "address_2",
-    "BuildingName": "address_1",
-    "OccupancyType": "address_1",
-    "OccupancyIdentifier": "address_1",
-    "SubaddressIdentifier": "address_1",
-    "SubaddressType": "address_1",
-    "PlaceName": "city",
-    "StateName": "state",
-    "ZipCode": "zipcode",
-}
-
-
-class QualificationStatus(Enum):
-    NOTQUALIFIED = "NOT QUALIFIED"
-    PENDING = "PENDING"
-    ACTIVE = "ACTIVE"
 
 
 def broadcast_sms(phone_Number):
@@ -118,322 +74,6 @@ def broadcast_sms(phone_Number):
         )
     except TwilioRestException as e:
         log.exception(e, function="broadcast_sms")
-
-
-def address_check(address_dict):
-    """
-    Check for address GMA and Connexion statuses.
-
-    Parameters
-    ----------
-    instance : dict
-        Post-USPS-validation dictionary. Usable data for this script are in
-        ['AddressValidateResponse']['Address'][...].
-
-    Returns
-    -------
-    bool
-        Whether the address is in the GMA (True, False).
-    bool
-        The status of Connexion service (True, False, None).
-
-    """
-
-    try:
-        # Gather the coordinate string for future queries
-        # Parse the 'instance' data for proper 'address_parts'
-        address_parts = "{}, {}".format(
-            address_dict["AddressValidateResponse"]["Address"]["Address2"],
-            address_dict["AddressValidateResponse"]["Address"]["Zip5"],
-        )
-        coord_string = address_lookup(address_parts)
-
-    except NameError:
-        # NameError specifies that the address is not found
-        # in City lookups and is therefore *probably* not in the IQ
-        # service area
-
-        # Log a potential error if the city is 'Fort Collins'
-        if (
-            address_dict["AddressValidateResponse"]["Address"]["City"].lower()
-            == "fort collins"
-        ):
-            log.error(
-                "Potential issue: Fort Collins address marked 'not in GMA': {}".format(
-                    address_dict["AddressValidateResponse"]["Address"],
-                ),
-                function="address_check",
-            )
-
-        return (False, False)
-
-    else:
-        has_connexion = connexion_lookup(coord_string)
-        msg = (
-            "Connexion not available or API not found"
-            if has_connexion is None
-            else "Connexion available"
-            if has_connexion
-            else "Connexion coming soon"
-        )
-        log.info(msg, function="address_check")
-
-        is_in_gma = gma_lookup(coord_string)
-        msg = "Address is in GMA" if is_in_gma else "Address is outside of GMA"
-        log.info(msg, function="address_check")
-
-        return (is_in_gma, has_connexion)
-
-
-def address_lookup(address_parts):
-    """
-    Look up the coordinates for an address to input into future queries.
-
-    Parameters
-    ----------
-    address_parts : str
-        The address parts to use for the lookup (specifically in the format
-        <address_2>, <zip code>) (e.g. "300 LAPORTE AVE, 80521", sans quotes).
-
-    Raises
-    ------
-    requests.exceptions.HTTPError
-        An issue with the lookup endpoint.
-    NameError
-        Address not found in City lookups - address is not in IQ service area.
-
-    Returns
-    -------
-    str
-        Formatted string of x,y coordinates for the address, to input in
-        future queries.
-
-    """
-
-    url = "https://gisweb.fcgov.com/arcgis/rest/services/Geocode/Fort_Collins_Area_Address_Point_Geocoding_Service/GeocodeServer/findAddressCandidates"
-
-    payload = {
-        "f": "pjson",
-        "Street": address_parts,
-    }
-
-    # Gather response
-    response = requests.get(url, params=payload)
-    if response.status_code != requests.codes.ok:
-        log.error(
-            f"API error {response.status_code}: {response.reason}; {response.content}",
-            function="address_lookup",
-        )
-        raise requests.exceptions.HTTPError(response.reason, response.content)
-
-    # Parse response
-    outVal = response.json()
-
-    # Since the gisweb endpoint seems to always return an HTTP 200, also check
-    # the JSON for an 'error' key
-    if "error" in outVal:
-        errDict = outVal["error"]
-        log.error(
-            f"API error {errDict['code']}: {errDict['message']}",
-            function="address_lookup",
-        )
-        raise requests.exceptions.HTTPError(errDict["code"], errDict["message"])
-
-    # Ensure candidate(s) exist and they have a decent match score
-    # Because this is how the Sales Tax lookup is architected, it should be
-    # safe to assume these are returned sorted, with best candidate first
-    if len(outVal["candidates"]) > 0 and outVal["candidates"][0]["score"] > 85:
-        # Define the coordinate string to be used in future queries
-        coord_string = "{x},{y}".format(
-            x=outVal["candidates"][0]["location"]["x"],
-            y=outVal["candidates"][0]["location"]["y"],
-        )
-
-    else:
-        raise NameError("Matching address not found")
-
-    return coord_string
-
-
-def connexion_lookup(coord_string):
-    """
-    Look up the Connexion service status given the coordinate string.
-
-    Parameters
-    ----------
-    coord_string : str
-        Formatted <x>,<y> string of coordinates from address_lookup().
-
-    Raises
-    ------
-    requests.exceptions.HTTPError
-        An issue with the lookup endpoint.
-    IndexError
-        Address not found in Connexion lookups - Connexion is likely to be
-        unavailable at this address.
-
-    Returns
-    -------
-    bool
-        Boolean 'status', designating True for 'service available' or False
-        for 'service will be available, but not yet' OR None for 'unavailable'
-        (probably)
-
-    TODO: Switch this to an enum if we want to keep this structure
-
-    """
-
-    url = "https://gisweb.fcgov.com/arcgis/rest/services/FDH_Boundaries_ForPublic/MapServer/0/query"
-
-    payload = {
-        "f": "pjson",
-        "geometryType": "esriGeometryPoint",
-        "geometry": coord_string,
-    }
-
-    try:
-        # Gather response
-        response = requests.post(url, params=payload)
-        if response.status_code != requests.codes.ok:
-            log.error(
-                f"API error {response.status_code}: {response.reason}; {response.content}",
-                function="connexion_lookup",
-            )
-            raise requests.exceptions.HTTPError(response.reason, response.content)
-
-        # Parse response
-        outVal = response.json()
-
-        # Since the gisweb endpoint seems to always return an HTTP 200, also check
-        # the JSON for an 'error' key
-        if "error" in outVal:
-            errDict = outVal["error"]
-            log.error(
-                f"API error {errDict['code']}: {errDict['message']}",
-                function="connexion_lookup",
-            )
-            raise requests.exceptions.HTTPError(errDict["code"], errDict["message"])
-
-        statusInput = outVal["features"][0]["attributes"]["INVENTORY_STATUS_CODE"]
-
-    except requests.exceptions.HTTPError:
-        return None
-
-    except (IndexError, KeyError):
-        return None
-
-    else:
-        statusInput = statusInput.lower()
-
-        # If we made it to this point, Connexion will be or is currently
-        # available
-        return statusInput in ("released", "out of warranty")
-
-
-def gma_lookup(coord_string):
-    """
-    Look up the GMA location given the coordinate string.
-
-    Parameters
-    ----------
-    coord_string : str
-        Formatted <x>,<y> string of coordinates from address_lookup().
-
-    Raises
-    ------
-    requests.exceptions.HTTPError
-        An issue with the lookup endpoint.
-
-    Returns
-    -------
-    Boolean 'status', designating True for an address within the GMA, or False
-    otherwise.
-
-    """
-
-    url = "https://gisweb.fcgov.com/arcgis/rest/services/FCMaps/MapServer/26/query"
-
-    payload = {
-        # Manually stringify 'geometry' - requests and json.dumps do this
-        # incorrectly
-        "geometry": """{"points":[["""
-        + coord_string
-        + """]],"spatialReference":{"wkid":102653}}""",
-        "geometryType": "esriGeometryMultipoint",
-        "inSR": 2231,
-        "spatialRel": "esriSpatialRelIntersects",
-        "where": "",
-        "returnGeometry": "false",
-        "outSR": 2231,
-        "outFields": "*",
-        "f": "pjson",
-    }
-
-    try:
-        # Gather response
-        response = requests.get(url, params=payload)
-        if response.status_code != requests.codes.ok:
-            log.error(
-                f"API error {response.status_code}: {response.reason}; {response.content}",
-                function="gma_lookup",
-            )
-            raise requests.exceptions.HTTPError(response.reason, response.content)
-
-        # Parse response
-        outVal = response.json()
-
-        # Since the gisweb endpoint seems to always return an HTTP 200, also check
-        # the JSON for an 'error' key
-        if "error" in outVal:
-            errDict = outVal["error"]
-            log.error(
-                f"API error {errDict['code']}: {errDict['message']}",
-                function="gma_lookup",
-            )
-            raise requests.exceptions.HTTPError(errDict["code"], errDict["message"])
-
-        if len(outVal["features"]) > 0:
-            return True
-        return False
-
-    except requests.exceptions.HTTPError:
-        return False
-
-
-def validate_usps(inobj):
-    if isinstance(inobj, http.request.QueryDict):
-        # Combine fields into Address
-        address = Address(
-            name=" ",
-            address_1=inobj["address"],
-            address_2=inobj["address2"],
-            city=inobj["city"],
-            state=inobj["state"],
-            zipcode=inobj["zipcode"],
-        )
-
-    elif isinstance(inobj, dict):
-        address = Address(**inobj)
-
-    else:
-        raise AttributeError("Unknown validation input")
-
-    usps = USPSApi(settings.USPS_SID, test=True)
-    validation = usps.validate_address(address)
-    outDict = validation.result
-    try:
-        log.info(
-            f"Address dict found: {outDict}",
-            function="validate_usps",
-        )
-        return outDict
-
-    except KeyError:
-        log.exception(
-            "Address could not be found - no guesses",
-            function="validate_usps",
-        )
-        raise
 
 
 def broadcast_email(email):
@@ -654,161 +294,6 @@ def what_page(user, request):
     return "app:account"
 
 
-def build_qualification_button(users_enrollment_status):
-    # Create a dictionary to hold the button information
-    return {
-        "PENDING": {"text": "Applied", "color": "green", "textColor": "white"},
-        "ACTIVE": {"text": "Enrolled!", "color": "blue", "textColor": "white"},
-        "RENEWAL": {"text": "Renew", "color": "orange", "textColor": "white"},
-        "": {"text": "Apply Now", "color": "", "textColor": ""},
-    }.get(users_enrollment_status, "")
-
-
-def map_iq_enrollment_status(program, needs_renewal=False):
-    try:
-        # Check pending programs first. Reason being we don't want in progress
-        # programs to be marked as renewal
-        if not program.is_enrolled:
-            return "PENDING"
-        # If the user is enrolled in a "lifetime" program (i.e. a program that
-        # does not have a renewal_interval_year), don't set the status to
-        # renewal
-        if (
-            program.is_enrolled
-            and needs_renewal
-            and program.renewal_interval_year is not None
-        ):
-            return "RENEWAL"
-        if program.is_enrolled:
-            return "ACTIVE"
-
-    except Exception:
-        return ""
-
-
-def get_users_iq_programs(
-    user_id,
-    users_income_as_fraction_of_ami,
-    users_eligiblity_address,
-):
-    """
-    Get the iq programs for the user where the user is geographically eligible,
-    as well as where their ami range is less than or equal to the users max ami
-    range or where the user has already applied to the program. Additionaly
-    filter out
-    params:
-        user_id: the id of the user
-        users_income_as_fraction_of_ami: the user's household income as fraction
-            of ami
-        users_eligiblity_address: the eligibility address for the user
-    returns:
-        a list of users iq programs
-    """
-    # Get all (active) IQ programs that the user is eligible for (regardless of
-    # application status). This accounts for both income and geographical
-    # eligibility
-    eligible_iq_programs = get_eligible_iq_programs(
-        User.objects.get(id=user_id),
-        users_eligiblity_address,
-    )
-
-    # Get the (active) IQ programs that a user has already applied to
-    users_iq_programs = list(
-        IQProgram.objects.select_related(
-            "program",
-        )
-        .filter(
-            user_id=user_id,
-            program__is_active=True,
-        )
-        .order_by("program__id"),
-    )
-
-    # Collapse any programs the user has already applied for into all programs
-    # they are eligible for. The starting point is 'eligible programs' as
-    # IQProgramRef objects, then any program the user is in gets converted to an
-    # IQProgram object for later identification
-    programs = []
-    for prg in eligible_iq_programs:
-        # Append the matching users_iq_programs element to programs if it
-        # exists; else append the eligible_iq_programs element
-        try:
-            iq_program = next(x for x in users_iq_programs if x.program_id == prg.id)
-        except StopIteration:
-            programs.append(prg)
-        else:
-            programs.append(iq_program)
-
-    # Determine if the user needs renewal for *any* program, and set as a user-
-    # level 'needs renewal'
-    needs_renewal = check_if_user_needs_to_renew(user_id)
-
-    for program in programs:
-        program.renewal_interval_year = (
-            program.program.renewal_interval_year
-            if hasattr(program, "program")
-            else program.renewal_interval_year
-        )
-        status_for_user = map_iq_enrollment_status(program, needs_renewal=needs_renewal)
-        program.button = build_qualification_button(status_for_user)
-        program.status_for_user = status_for_user
-        program.quick_apply_link = reverse(
-            "dashboard:quick_apply",
-            kwargs={
-                "iq_program": program.program.program_name
-                if hasattr(program, "program")
-                else program.program_name,
-            },
-        )
-        program.title = (
-            program.program.friendly_name
-            if hasattr(program, "program")
-            else program.friendly_name
-        )
-        program.subtitle = (
-            program.program.friendly_category
-            if hasattr(program, "program")
-            else program.friendly_category
-        )
-        program.description = (
-            program.program.friendly_description
-            if hasattr(program, "program")
-            else program.friendly_description
-        )
-        program.supplemental_info = (
-            program.program.friendly_supplemental_info
-            if hasattr(program, "program")
-            else program.friendly_supplemental_info
-        )
-        program.eligibility_review_status = (
-            "We are reviewing your application! Stay tuned here and check your email for updates."
-            if status_for_user == "PENDING"
-            else "",
-        )
-        program.eligibility_review_time_period = (
-            program.program.friendly_eligibility_review_period
-            if hasattr(program, "program")
-            else program.friendly_eligibility_review_period
-        )
-        program.learn_more_link = (
-            program.program.learn_more_link
-            if hasattr(program, "program")
-            else program.learn_more_link
-        )
-        program.enable_autoapply = (
-            program.program.enable_autoapply
-            if hasattr(program, "program")
-            else program.enable_autoapply
-        )
-        program.ami_threshold = (
-            program.program.ami_threshold
-            if hasattr(program, "program")
-            else program.ami_threshold
-        )
-        program.id = program.program.id if hasattr(program, "program") else program.id
-    return programs
-
-
 def get_eligible_iq_programs(
     user,
     eligibility_address,
@@ -922,46 +407,6 @@ def what_page_renewal(last_renewal_action):
 
     # Default return if all pages are present
     return None
-
-
-def check_if_user_needs_to_renew(user_id):
-    """Checks if the user needs to renew their application
-    Args:
-        user_id (int): The ID (primary key) of the User object
-    Returns:
-        bool: True if the user needs to renew their application, False otherwise
-    """
-    user_profile = User.objects.get(id=user_id)
-
-    # Get the highest frequency renewal_interval_year from active IQProgramRef
-    # values and filter out any null renewal_interval_year
-    highest_freq_program = (
-        IQProgramRef.objects.filter(
-            is_active=True,
-            renewal_interval_year__isnull=False,
-        )
-        .order_by("renewal_interval_year")
-        .first()
-    )
-
-    # If there are no programs without lifetime enrollment (e.g. without
-    # non-null renewal_interval_year), always return False for needs_renewal
-    if highest_freq_program is None:
-        return False
-
-    highest_freq_renewal_interval = highest_freq_program.renewal_interval_year
-
-    # The highest_freq_renewal_interval is measured in years. We need to check
-    # if the user's next renewal date is greater than or equal to the current
-    # date.
-    needs_renewal = (
-        pendulum.instance(user_profile.last_completed_at).add(
-            years=highest_freq_renewal_interval,
-        )
-        <= pendulum.now()
-    )
-
-    return needs_renewal
 
 
 def finalize_application(user, renewal_mode=False, update_user=True):
@@ -1120,36 +565,6 @@ def finalize_application(user, renewal_mode=False, update_user=True):
     return ("app:broadcast", {})
 
 
-def enable_renew_now(user_id):
-    """
-    Enable the 'Renew Now' button on the dashboard pages
-    """
-    # Get the year from the last_completed_at of the user
-    user_profile = User.objects.get(id=user_id)
-    last_completed_at = user_profile.last_completed_at.year
-
-    # Get the highest frequency renewal_interval_year from the IQProgramRef
-    # table and filter out any null renewal_interval_year
-    highest_freq_program = (
-        IQProgramRef.objects.filter(renewal_interval_year__isnull=False)
-        .order_by("renewal_interval_year")
-        .first()
-    )
-
-    # If there are no programs without lifetime enrollment (e.g. without
-    # non-null renewal_interval_year), always return False
-    if highest_freq_program is None:
-        return False
-
-    if (
-        enable_calendar_year_renewal
-        and pendulum.now().year
-        == last_completed_at + highest_freq_program.renewal_interval_year
-    ):
-        return True
-    return False
-
-
 def get_iqprogram_requires_fields():
     """
     Gather all `requires_` fields in the IQProgramRef model along with their
@@ -1214,19 +629,6 @@ def file_validation(
             ", ".join(supported_content_types),
         ),
     )
-
-
-def finalize_address(instance, is_in_gma, has_connexion):
-    """Finalize the address, given inputs calculated earlier."""
-
-    # Record the service area and Connexion status
-    instance.is_in_gma = is_in_gma
-    instance.is_city_covered = is_in_gma
-    instance.has_connexion = has_connexion
-
-    # Final step: mark the address record as 'verified' and save
-    instance.is_verified = True
-    instance.save()
 
 
 def remove_ineligible_programs_for_user(user_id, admin_mode=False):

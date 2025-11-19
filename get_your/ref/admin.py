@@ -45,12 +45,12 @@ from app.admin.filters import GMAListFilter
 from app.admin.forms import EligibilityProgramRefForm
 from app.admin.forms import IQProgramRefForm
 from app.admin.models import StaffPermissions
-from app.backend import address_check
-from app.backend import finalize_address
 from app.backend import finalize_application
 from app.backend import get_iqprogram_requires_fields
 from app.backend import remove_ineligible_programs_for_user
 from app.backend import update_users_for_program
+from app.backend.address import address_check
+from app.backend.address import finalize_address
 from app.models import Address
 from app.models import IQProgram
 from monitor.wrappers import LoggerWrapper
