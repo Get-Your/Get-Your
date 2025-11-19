@@ -5,7 +5,7 @@ The universal income-qualified application for the City of Fort Collins, Colorad
 // TODO: write README
 
 # Table of Contents
-1. [Get FoCo](#get-foco)
+1. [Get-Your](#get-your)
 1. [Running the App](#running-the-app)
 1. [Development and Deployment](#development-and-deployment)
     1. [manage.py](#managepy)
@@ -29,6 +29,7 @@ The universal income-qualified application for the City of Fort Collins, Colorad
         1. [Creating a Database](#creating-a-database)
         1. [Transferring Between Databases](#transferring-between-databases)
         1. [Set Up Database Users](#set-up-database-users)
+1. [User Administration](#user-administration)
 1. [Email Settings](#email-settings)
 1. [Phone Settings](#phone-settings)
     1. [Sending SMS](#sending-sms)
@@ -468,6 +469,14 @@ Connect to the database to configure and complete the following steps:
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
 
+# User Administration
+
+The following Postgres functions have been created for user administration through the IQ verification process:
+
+...
+
+> Note that a function cannot have more that 100 arguments, so income verification is limited to 100 users at a time and program enrollment is limited to 99 users.
+
 # Email Settings
 SendGrid is the service used in this app to send automated email to users. Anything in this section references the `sendgrid` package, although a planned change will be to use [`django-anymail`](https://anymail.dev/en/stable) with the SendGrid option instead in order to genericize the email code.
 
@@ -521,7 +530,6 @@ To reconfigure the voice forwarding function or change the target phone number, 
     > The 'Deploy All' button at the bottom of the window is unnecessary for just changing environment variables.
 
     ![Updating an environment variable in the forward-call function][6]
-
 
 # Request a Consultation
 
