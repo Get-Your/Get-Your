@@ -68,7 +68,7 @@ User = get_user_model()
 
 
 @admin.register(AddressRef)
-class AddressRDAdmin(admin.ModelAdmin):
+class AddressRefAdmin(admin.ModelAdmin):
     search_fields = ("address1", "address2")
     list_display = ("address1", "address2", "is_in_gma", "is_city_covered")
     ordering = list_display_links = ("address1", "address2")
@@ -94,7 +94,7 @@ class AddressRDAdmin(admin.ModelAdmin):
         # functions
         log.debug(
             "Entering admin changelist",
-            function="AddressRDAdmin",
+            function="AddressRefAdmin",
             user_id=request.user.id,
         )
 
@@ -113,7 +113,7 @@ class AddressRDAdmin(admin.ModelAdmin):
         # functions
         log.debug(
             "Entering admin change page",
-            function="AddressRDAdmin",
+            function="AddressRefAdmin",
             user_id=request.user.id,
         )
 
