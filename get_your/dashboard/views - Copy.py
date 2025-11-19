@@ -29,8 +29,6 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.shortcuts import reverse
 
-from app.backend import enable_renew_now
-from app.backend import get_users_iq_programs
 from app.backend.address import address_check
 from app.constants import platform_settings_render_variables
 from app.models import IQProgram
@@ -39,6 +37,8 @@ from monitor.wrappers import LoggerWrapper
 from ref.models import AddressRD
 from ref.models import IQProgramRD
 
+from .backend import enable_renew_now
+from .backend import get_users_iq_programs
 from .forms import FeedbackForm
 
 # Initialize logger
