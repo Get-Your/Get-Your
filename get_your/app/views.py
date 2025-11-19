@@ -45,20 +45,20 @@ from ref.models import ApplicationPage
 from ref.models import EligibilityProgram as EligibilityProgramRef
 from ref.models import IQProgram as IQProgramRef
 
-from .backend import address_check
 from .backend import broadcast_email
 from .backend import broadcast_sms
 from .backend import file_validation
-from .backend import finalize_address
 from .backend import finalize_application
 from .backend import form_page_number
 from .backend import get_in_progress_eligiblity_file_uploads
 
 # from .backend import save_renewal_action
 from .backend import serialize_household_members
-from .backend import tag_mapping
-from .backend import validate_usps
 from .backend import what_page
+from .backend.address import address_check
+from .backend.address import finalize_address
+from .backend.address import tag_mapping
+from .backend.address import validate_usps
 from .constants import supported_content_types
 from .forms import AddressForm
 from .forms import AddressLookupForm
