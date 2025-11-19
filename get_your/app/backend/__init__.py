@@ -20,13 +20,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import datetime
 import json
 import logging
-from enum import Enum
 
 import httpagentparser
 import magic
 import pendulum
-import requests
-from django import http
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth import login as django_auth_login
@@ -37,18 +34,14 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.db.models.query import QuerySet
-from django.shortcuts import reverse
 from phonenumber_field.phonenumber import PhoneNumber
 from python_http_client.exceptions import HTTPError as SendGridHTTPError
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
-from usps import Address
-from usps import USPSApi
 
 from app.constants import application_pages
-from app.constants import enable_calendar_year_renewal
 from app.constants import supported_content_types
 from app.models import EligibilityProgram
 from app.models import Household
