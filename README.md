@@ -42,6 +42,7 @@ License: GPLv3
         1. [Transferring Between Databases](#transferring-between-databases)
         1. [Set Up Database Users](#set-up-database-users)
 1. [User Administration](#user-administration)
+1. [Analytics Settings](#analytics-settings)
 1. [Email Settings](#email-settings)
 1. [Phone Settings](#phone-settings)
     1. [Sending SMS](#sending-sms)
@@ -460,9 +461,32 @@ Connect to the primary (`platform`) database and complete the following steps:
         GRANT base_role TO privileged_role;
         GRANT CREATE ON SCHEMA public TO privileged_role;
 
+1. Create analytics role
+
+    Create and permissions analytics user role (named `analytics_role`, for use with reporting and analytics) without login privileges.
+
+    > This role is slightly different in that it removes all access from tables with names (`app_user`, `app_householdmembers`, and their history tables) and gives read-only access to all other existing and new tables. *There is a planned update to move to schema-level permissions instead of table-level*.
+    
+    > This is set up so that `user_id` can be used to connect tables, but no specific names are available.
+
+        CREATE ROLE analytics_role INHERIT;
+        GRANT CONNECT ON DATABASE <database_name> TO analytics_role;
+        GRANT USAGE ON SCHEMA public TO analytics_role;
+        GRANT SELECT ON ALL TABLES IN SCHEMA public TO analytics_role;
+        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO analytics_role;
+        -- Revoke privileges for this role to the two tables with names (and their history tables)
+        REVOKE ALL PRIVILEGES ON app_user FROM analytics_role;
+        REVOKE ALL PRIVILEGES ON app_householdmembers FROM analytics_role;
+        REVOKE ALL PRIVILEGES ON app_userhist FROM analytics_role;
+        REVOKE ALL PRIVILEGES ON app_householdmembershist FROM analytics_role;
+        -- Grant this role to admin user (permanently, but to no material affect) to alter default privileges
+        GRANT analytics_role TO <admin_user>;
+        -- This is so all tables GRANTs apply to new tables as well
+        ALTER DEFAULT PRIVILEGES FOR ROLE analytics_role IN SCHEMA public GRANT SELECT ON TABLES TO analytics_role;        
+
 1. Create and assign users
 
-    Create users (with passwords and login privileges) and assign the proper role to each (`base_role` for Django users, `privileged_role` for local developers).
+    Create users (with passwords and login privileges) and assign the proper role to each (`base_role` for Django users, `privileged_role` for local developers, `analytics_role` for analysts).
 
         CREATE USER <username> WITH LOGIN PASSWORD '<password>' INHERIT;
         GRANT <role> TO <username>;
@@ -546,6 +570,21 @@ The following Postgres functions have been created for user administration throu
 ...
 
 > Note that a function cannot have more that 100 arguments, so income verification is limited to 100 users at a time and program enrollment is limited to 99 users.
+
+# Analytics Settings
+For the City of Fort Collins needs, Power BI was selected for analytics and reporting. The following tutorial details connecting to the Postgres database from Power BI.
+
+1. In Power BI, select 'Get Data' from the startup splash screen or on the ribbon toolbar
+
+1. In the dialog that opens, type 'postgres' in the top-left search box, then select 'Azure Database for PostgreSQL'
+
+    ![][7]
+
+1. In the next dialog, enter the Server and Database settings. 'DirectQuery' should be selected here for efficiency, as long as Power BI will have connectivity to the database at all times
+
+    ![][8]
+
+1. For the username and password on the next dialog, use the analyst user created under `analytics_role` in the [Set up Database Users](#set-up-database-users) section
 
 # Email Settings
 SendGrid is the service used in this app to send automated email to users. Anything in this section references the `sendgrid` package, although a planned change will be to use [`django-anymail`](https://anymail.dev/en/stable) with the SendGrid option instead in order to genericize the email code.
@@ -642,3 +681,5 @@ This is in the event a user needs to be deleted (except the original admin user,
 [4]: ./media/twilio_forward_call_initial_screen.png
 [5]: ./media/twilio_forward_call_env_vars.png
 [6]: ./media/twilio_forward_call_update_phone_number.png
+[7]: ./media/powerbi_postgres_connection.png
+[8]: ./media/powerbi_postgres_auth.png
