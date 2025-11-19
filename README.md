@@ -428,6 +428,13 @@ Connect to the primary (`platform`) database and complete the following steps:
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
 
+1. Grant the base user to the admin user
+
+    Since the `<admin_user>` here is not a superuser in Azure Postgres, performing administrator-like duties (killing user processes, etc) requires all users being granted to the admin user
+
+        -- Grant the base role to the admin user in order to perform admin duties
+        GRANT <base_user> TO <admin_user>;
+
 #### Configure Other Databases
 This section should be used for all other databases on the same server (such as the 'analytics' database used for logging). It relies on the roles that were created in the [previous section](#configure-the-primary-database).
 
@@ -468,6 +475,13 @@ Connect to the database to configure and complete the following steps:
         -- This is so all privileges for `base_role` apply to any new objects created by <privileged_user>
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
+
+1. Grant the base user to the admin user
+
+    Since the `<admin_user>` here is not a superuser in Azure Postgres, performing administrator-like duties (killing user processes, etc) requires all users being granted to the admin user
+
+        -- Grant the base role to the admin user in order to perform admin duties
+        GRANT <base_user> TO <admin_user>;
 
 # User Administration
 
