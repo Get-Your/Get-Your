@@ -59,9 +59,9 @@ This app runs on the Django web framework. Unless otherwise noted, the following
 
 To run for the first time, a local instance is recommended. To get started, copy the `manage.py` file, paste it as something like `manage_local.py` (see the [manage.py](#managepy) sections for details), then modify the app to use a local environment by changing the line beginning with `os.environ.set...` to 
 
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobileVers.settings.local')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.local')
 
-Next, copy/paste or rename `secrets.xxx.toml.template` as `secrets.dev.toml`. There's no need to set variables for the initial run.
+Next, copy/paste or rename `.env.template` as `.env` and `.dev.env.template` as `.dev.env`. There's no need to set variables for the initial run.
 
 Once the settings have been accounted for, finalize Python setup by [creating a virtual environment](https://docs.python.org/3.9/library/venv.html) (optional, but recommended) and installing dependencies.
 
@@ -87,20 +87,21 @@ Run the following to create the SQLite database and populate it with the databas
     python3 manage_local.py runserver
 
 # Development and Deployment
-This app uses files in the `settings/` directory for its environment settings. There are three categories of use cases:
+This app uses files in the `get_your/config/settings/` directory for its environment settings. There are three categories of use cases:
 
 Fully-local development (see [Local Development](#local-development)):
 - `local.py`
 
 Local development with remote database (see [Hybrid Development](#hybrid-development)):
-- Any file not explicitly named elsewhere in this section (usually named `*local_*.py`)
-
-Deployment (see [Deployment](#deployment)):
-- `dev.py`
+- `development.py`
 - `production.py`
 
+Deployment (see [Deployment](#deployment)):
+- `docker/development.py`
+- `docker/production.py`
+
 ## manage.py
-The development and production Git branches are set up for deployment such that Django's automatically-created management utility (`manage.py`) points to `settings.dev` in the `dev` branch and `settings.production` in the `main` branch. The `manage.py` designation should not be changed; the Docker build process reads `manage.py`, which means the Git branch can be used as a proxy for the deployment environment.
+The development and production Git branches are set up for deployment such that Django's automatically-created management utility (`manage.py`) points to `config.settings.development` in the `dev` branch and `config.settings.production` in the `main` branch. The `manage.py` designation should not be changed.
 
 A local clone of `manage.py` should instead be used for development, where the `settings` module can be updated as needed. This `.py` file can be named with any string before or after 'manage' and be ignored by Git; `manage_local.py` will be referenced in this document.
 
@@ -115,7 +116,7 @@ Local development is completely on the developer's computer. The Django app will
 
 and database operations/migrations will apply to SQLite database files in the repo folder (which will be created if they don't exist). The SQLite databases will be ignored by Git commits.
 
-Local development uses `secrets.dev.toml` for [app secrets](#app-secrets). The SQLite database configuration is hardcoded in `local.py`, so associated variables must exist but won't be used.
+Local development uses `.env` and `.dev.env` for [app secrets](#app-secrets). The SQLite database configuration is hardcoded in `local.py`, so associated variables must exist but won't be used.
 
 ## Hybrid Development
 Hybrid development is for running the webapp locally on the developer's computer and connecting to a remote database for testing or migrating changes. The Django app will be run via
@@ -128,7 +129,7 @@ Hybrid development is for running the webapp locally on the developer's computer
 
 and database operations/migrations will apply to the target remote database.
 
-The primary benefit of this is that these `*local_*.py` scripts have
+The primary benefit of this is that these scripts define
 
     DEBUG = True
 
@@ -136,9 +137,9 @@ so that full error messages are displayed on the webpage, rather than the minima
 
 > Note that `DEBUG` must *always* be set to `False` when the site is viewable on the web.
 
-Hybrid development uses `secrets.dev.toml` and `secrets.prod.toml` for DEV and STAGE/PROD [app secrets](#app-secrets) (respectively).
+Hybrid development uses `.env` plus `.dev.env` / `.prod.env` for DEV / STAGE/PROD [app secrets](#app-secrets) (respectively).
 
-> Note that **all** migrations must be run via `local_devdb.py` or `caution_local_proddb.py` settings using the privileged database user (summarized in the [database setup](#database-setup-summary)).
+> Note that **all** migrations must be run via the Hybrid Development settings using the privileged database user (summarized in the [database setup](#database-setup-summary)).
 
 ## Settings
 
@@ -324,9 +325,9 @@ These steps deploy the Django site for production. Note that the STAGE site is a
 1. Once the script has completed without errors, the STAGE site will automatically update with the latest code.
 
 # App Secrets
-App secrets are loaded into the Docker container as environment variables via the `.*.deploy` files (`.dev.deploy` and `.prod.deploy`, for each [database server instance](#database-setup-summary)) and `secrets.*.toml` files (`secrets.dev.toml` and `secrets.prod.toml`, for each [database server instance](#database-setup-summary)). Each of the four files has a `*.template` template to fill with the relevant variables, found in the `/ref/env_vars` directory.
+App secrets are loaded into the Docker container as environment variables via the `.env` file and applicable `.*.deploy` file (`.env` and `.dev.deploy` / `.prod.deploy`, for each [database server instance](#database-setup-summary)). Each of the files has a `*.template` template to fill with the relevant variables, found in the `reference/env_vars` directory.
 
-The difference between `secrets.*.toml` and `.*.deploy` file usage can be found in [Development and Deployment](#development-and-deployment).
+The difference between `.*.env` and `.*.deploy` file usage can be found in [Development and Deployment](#development-and-deployment).
 
 # Azure App Service Frontend
 
@@ -347,7 +348,7 @@ The Azure service for the Get FoCo app is a Linux-based Docker container Web App
 ## File Store Setup Description
 See [Azure file store selection docs](https://docs.microsoft.com/en-us/azure/storage/files/storage-how-to-create-file-share?tabs=azure-portal) for reference.
 
-Blob Storage is used for storage of user files from Django. The app uses `azure-blob-storage` for the connection; see `/ref/env_vars/.dev.deploy.template` and `/ref/env_vars/secrets.dev.toml.template` for the necessary variables to make the connection.
+Blob Storage is used for storage of user files from Django. The app uses `django-storages[azure]` for the connection; see `/reference/env_vars/.xxx.env.template` and `/reference/env_vars/.xxx.deploy.template` for the necessary variables to make the connection.
 
 # Azure Database Backend
 
@@ -360,8 +361,8 @@ Summary of the database setup
   - Each instance has users named for that instance to avoid confusion
   - Each instance has database(s) named for the environment to avoid confusion
 - Database names
-  - `platform_dev` is the database name on the DEV server instance
-  - `platform_stage` and `platform_prod` are separate databases on the PROD server instance
+  - `getyour_dev` is the database name on the DEV server instance
+  - `getyour_stage` and `getyour_prod` are separate databases on the PROD server instance
   - The 'monitor' counterpart (used by Django for logging) is its own database in each environment (specified where necessary as \<monitor_database\>)
 - Database users (\<env\> is the database instance for each user ('dev', 'stage', or 'prod'))
   - developer_\<env\>_user: Privileged database user, used locally for Django development
@@ -370,16 +371,16 @@ Summary of the database setup
 ## Database Setup Description
 Each database is set up in an Azure Database for PostgreSQL instance. Flexible Server was chosen for the instance type, due to the Burstable compute tier (Single Server was the initial choice, but the Burstable tier is more performant and costs approximately the same as Single Server (for the low loads expected on this site)). See [Microsoft's comparison chart](https://docs.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-compare-single-server-flexible-server) for more details.
 
-In order to properly separate the DEV and STAGE/PROD databases as well as use less-expensive performance settings on the DEV database, two separate Azure Database for PostgreSQL server instances were used. DEV has its own instance and uses a database named `platform_dev`. The PROD server instance houses both `platform_stage` and `platform_prod` databases, for STAGE and PROD, respectively.
+In order to properly separate the DEV and STAGE/PROD databases as well as use less-expensive performance settings on the DEV database, two separate Azure Database for PostgreSQL server instances were used. DEV has its own instance and uses a database named `getyour_dev`. The PROD server instance houses both `getyour_stage` and `getyour_prod` databases, for STAGE and PROD, respectively.
 
 ## Database Administration
 This section relies on the adminstrator to have locally installed the same version of Postgres being used in the Azure instance (the utility versions must match).
 
 For the following sections,
 
-`<source...` prepends the source objects (where applicable), and
-
-`<target...` prepends the target objects
+- `<source...` prepends the source objects (where applicable)
+- `<target...` prepends the target objects
+- `<env>` is a generic suffix for the database name (e.g. `getyour_<env>` -> `getyour_dev` for the DEV database)
 
 ### Connectivity
 Database administration can be completed in any application, but `psql` is the basic GUI incorporated with Postgres that provides simple access to the database.
@@ -392,9 +393,9 @@ Use the following connection string to connect to the target database. The hostn
 `pg_dump` and `pg_restore` are PostgreSQL utilities used from the local command line (e.g. not from within the `psql` connection).
 
 ### Creating a Database
-On a freshly-deployed Azure instance, only the admin user (assigned during server setup) and the `postgres` database exist. Use the following code to create the `platform` database and its 'monitor' counterpart.
+On a freshly-deployed Azure instance, only the admin user (assigned during server setup) and the `postgres` database exist. Use the following code to create the `getyour_<env>` database and its 'monitor' counterpart.
 
-    psql --host=<hostname> --port=5432 --username=<admin_username> --dbname=postgres --command="CREATE DATABASE <target_database_name>;"
+    psql --host=<hostname> --port=5432 --username=<admin_user> --dbname=postgres --command="CREATE DATABASE <target_database_name>;"
 
 ### Transferring Between Databases
 During the setup phase, there was much experimentation of Azure instance types; Azure tenant selection; and database naming conventions before settling on the final version, so transferring structure and data was necessary. The following code can be used to transfer existing data to the new database.
@@ -405,20 +406,20 @@ If there isn't yet existing data, just run Django migrations to the new \<target
 
     # Dump the database structure and data in a custom format to a local file for pg_restore
     # <target_local_backup_file> can have any extension
-    pg_dump -Fc -v --host=<source_hostname> --username=<source_admin_username> --dbname=<source_database_name> -f <target_local_backup_file>
+    pg_dump -Fc -v --host=<source_hostname> --username=<source_admin_user> --dbname=<source_database_name> -f <target_local_backup_file>
 
     # Restore the structure and data to the target database
-    pg_restore -v --host=<target_hostname> --port=5432 --username=<target_admin_username> --dbname=<target_database_name> <target_local_backup_file>
+    pg_restore -v --host=<target_hostname> --port=5432 --username=<target_admin_user> --dbname=<target_database_name> <target_local_backup_file>
 
 ### Set Up Database Users
 This section details the order of steps to set up users, roles, and proper permissions. Roles are used for generic permissions so that future users can be added without having to re-grant all permissions.
 
-The admin user shouldn't be used for development or live database connections; a privileged user should instead be created for local development access and a base user created with minimal privileges for the webapp. The privileged user will be stored in each environment's `secrets.*.toml` file and the base user will be in the `.*.deploy` file (see [App Secrets](#app-secrets)).
+The admin user shouldn't be used for development or live database connections; a privileged user should instead be created for local development access and a base user created with minimal privileges for the webapp. The privileged user will be stored in each environment's `.*.env` file and the base user will be in the `.*.deploy` file (see [App Secrets](#app-secrets)).
 
 #### Configure the Primary Database
-This section should be used for the `platform` database, for the initial configuration. It includes definitions that only need to be run once.
+This section should be used for the `getyour_<env>` database, for the initial configuration. It includes definitions that only need to be run once.
 
-Connect to the primary (`platform`) database and complete the following steps:
+Connect to the primary (`getyour_<env>`) database and complete the following steps:
 
 1. Revoke initial access
 
@@ -586,7 +587,7 @@ For the City of Fort Collins needs, Power BI was selected for analytics and repo
 1. For the username and password on the next dialog, use the analyst user created under `analytics_role` in the [Set up Database Users](#set-up-database-users) section
 
 # Email Settings
-SendGrid is the service used in this app to send automated email to users. Anything in this section references the `sendgrid` package, although a planned change will be to use [`django-anymail`](https://anymail.dev/en/stable) with the SendGrid option instead in order to genericize the email code.
+SendGrid is the service used in this app to send automated email to users. Anything in this section references the `sendgrid` package, although a planned change will be to use [`django-anymail[sendgrid]`](https://anymail.dev/en/stable) instead in order to genericize the email code.
 
 For the best user experience, the recommended email address to accept correspondence is the same address that automated emails are sent from. The code is set up this way, such that the `contact_email` variable is propagated throughout.
 
