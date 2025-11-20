@@ -53,6 +53,7 @@ License: GPLv3
     1. [Call-Forwarding Configuration](#call-forwarding-configuration)
 1. [Request a Consultation](#request-a-consultation)
 1. [Appendix](#appendix)
+    1. [Database Configuration for PostgreSQL < Version 15](#database-configuration-for-postgresql---version-15)
     1. [Database Administration Tools](#database-administration-tools)
         1. [Delete User](#delete-user)
 
@@ -435,22 +436,22 @@ This section should be used for the `getyour_<env>` database, for the initial co
 
 Connect to the primary (`getyour_<env>`) database and complete the following steps:
 
-1. Revoke initial access
+> [!IMPORTANT]
+> Unless the database was *created* on PostgreSQL >= version 15, the steps in [Database Configuration for PostgreSQL < Version 15](#database-configuration-for-postgresql--version-15) in the appendix must be completed first
+> This is because [PostgreSQL 15](https://www.postgresql.org/docs/release/15.0) was the first version to implement zero-trust policies out of the box (Get-Your recommends using these policies regardless of database version). **Note that these policies are not in place for databases that were *upgraded* to v15+, only new databases**
 
-    Azure Database for Postgres Flexible Server with Postgres-only Authentication gives full access to the 'public' role by default (which is counterintuitive). Run these commands once on a new database to reset to zero-trust (where \<database_name\> is the database for use with Django, e.g. `platform_dev`).
+1. Admin role
 
-        REVOKE ALL ON SCHEMA public FROM public;
-        REVOKE ALL ON ALL TABLES IN SCHEMA public FROM public;
-        REVOKE ALL ON DATABASE <database_name> FROM public;
-        REVOKE ALL ON DATABASE azure_maintenance FROM public;
-        REVOKE ALL ON DATABASE azure_sys FROM public;
-        REVOKE ALL ON DATABASE postgres FROM public;
+    a. Create
 
-1. Create admin role
+        Create an admin user role (named `admin_role`) without login privileges.
 
-    Create and grant permissions to an admin user role (named `admin_role`) without login privileges, then grant this role to the Postgres admin account.
+            CREATE ROLE admin_role INHERIT;
 
-        CREATE ROLE admin_role INHERIT;
+    b. Grant permissions
+
+        Assign permissions to `admin_role` and grant this role to the PostgreSQL admin account.
+
         GRANT ALL ON SCHEMA public TO admin_role;
         GRANT ALL ON DATABASE <database_name> TO admin_role;
         GRANT ALL ON ALL TABLES IN SCHEMA public TO admin_role;
@@ -458,33 +459,50 @@ Connect to the primary (`getyour_<env>`) database and complete the following ste
         GRANT ALL ON DATABASE postgres TO admin_role;        
         GRANT admin_role TO <admin_user>;
 
-1. Create basic role
+2. Base role
 
-    Create and grant permissions to a base user role (named `base_role`, for use via Django) without login privileges.
+    a. Create 
+
+        Create a base role (named `base_role`, for use via Django) without login privileges.
 
         CREATE ROLE base_role INHERIT;
+
+    b. Grant permissions
+
         GRANT CONNECT ON DATABASE <database_name> TO base_role;
         GRANT USAGE ON SCHEMA public TO base_role;
         GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO base_role;
         GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO base_role;
 
-1. Create privileged role
+3. Privileged role
 
-    Create and permissions privileged user role (named `privileged_role`, for local developer use) without login privileges. Start by granting `base_role` permissions then add CREATE/DROP table permissions.
+    a. Create and assign role
+
+        Create a privileged role (named `privileged_role`, for local developer use) without login privileges. Start by granting `base_role` permissions.
 
         CREATE ROLE privileged_role INHERIT;
         GRANT base_role TO privileged_role;
+
+    b. Grant permissions
+
+        Grant additions permissions for this privileged role.
+
         GRANT CREATE ON SCHEMA public TO privileged_role;
 
-1. Create analytics role
+4. Analytics role
 
-    Create and permissions analytics user role (named `analytics_role`, for use with reporting and analytics) without login privileges.
+    This role is slightly different in that it removes as much access as possible from tables with names (`app_user` and `app_householdmembers`) and gives read-only access to all other existing and new tables. This isn't quite possible, since timestamps in `app_user` are important for reporting, so the `app_user` are *not* excluded for now. **There is a planned update to move to schema-level permissions instead of table-level, although Django makes this difficult.**
 
-    > This role is slightly different in that it removes as much access as possible from tables with names (`app_user`, `app_householdmembers`, and their history tables) and gives read-only access to all other existing and new tables. This isn't quite possible, since timestamps in `app_user` are important for reporting, so the `app_user` and `app_userhist` are *not* excluded for now. **There is a planned update to move to schema-level permissions instead of table-level.**
+    It's set up so that `user_id` can be used to connect tables, but no specific names are available.
+
+    a. Create
     
-    > This is set up so that `user_id` can be used to connect tables, but no specific names are available.
+        Create an analytics user role (named `analytics_role`, for use with reporting and analytics) without login privileges.
 
         CREATE ROLE analytics_role INHERIT;
+
+    b. Grant permissions
+
         GRANT CONNECT ON DATABASE <database_name> TO analytics_role;
         GRANT USAGE ON SCHEMA public TO analytics_role;
         -- Note that REFERENCES is necessary for table relations (and implicit in INSERT, UPDATE, and DELETE privileges)
@@ -492,90 +510,50 @@ Connect to the primary (`getyour_<env>`) database and complete the following ste
         GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO analytics_role;
         -- Revoke privileges for this role to specified tables
         REVOKE ALL PRIVILEGES ON app_householdmembers FROM analytics_role;
-        REVOKE ALL PRIVILEGES ON app_householdmembershist FROM analytics_role;
         -- Grant this role to admin user (permanently, but to no material affect) to alter default privileges
         GRANT analytics_role TO <admin_user>;
-        -- This is so all tables GRANTs apply to new tables as well
-        ALTER DEFAULT PRIVILEGES FOR ROLE analytics_role IN SCHEMA public GRANT SELECT ON TABLES TO analytics_role;        
 
-1. Create and assign users
+5. Create and assign users
 
-    Create users (with passwords and login privileges) and assign the proper role to each (`base_role` for Django users, `privileged_role` for local developers, `analytics_role` for analysts).
+    Create users as needed (with passwords and login privileges). Assign the proper role to each user (`base_role` for Django users, `privileged_role` for local developers, `analytics_role` for analysts).
 
         CREATE USER <username> WITH LOGIN PASSWORD '<password>' INHERIT;
         GRANT <role> TO <username>;
 
-1. Alter default privileges
+6. Grant all users to the admin user
+
+    Since superuser privileges in Azure PostgreSQL are reserved only for Azure services, performing administrator-like duties (killing user processes, etc) requires all users being granted to <admin_user>.
+
+        GRANT <base_user> TO <admin_user>;
+        GRANT <privileged_user> TO <admin_user>;
+        GRANT <analytics_user> TO <admin_user>;
+
+7. Alter default privileges
 
     Once the privileged user *(not role)* is created, GRANT that user to the admin user so that the admin user can alter default privileges on behalf of the privileged user. Altering the default privileges as below will ensure `base_role` (and users within that role) has the proper privileges on any new tables and sequences within any schema created by the privileged user.
 
     > Note that the ALTER DEFAULT PRIVILEGES command is run *for* the table-creation user (privileged user) *to* `base_role`, meaning that the default privileges are being changed for `base_role` on anything created by the privileged user. Because it's specific to the privileged user and not the privileged *role*, the ALTER DEFAULT PRIVILEGES command will need to be repeated for each privileged user that will be creating objects (e.g. tables, schemas, etc).
 
-        -- Grant this role to admin user to alter default privileges
-        GRANT <privileged_user> TO <admin_user>;
-        
-        -- This is so all privileges for `base_role` apply to any new objects created by <admin_user>
+        -- Alter the default privileges for each lesser role on schemas created by <admin_user>
         ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT USAGE ON SCHEMAS TO base_role;
         ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT CREATE ON SCHEMAS TO privileged_role;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> IN SCHEMA public GRANT SELECT ON TABLES TO analytics_role;  
 
-        -- This is so all privileges for `base_role` apply to any new objects created by <privileged_user>
+        -- Alter the default privileges for each lesser role on tables and sequences created by <privileged_user>
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
-
-1. Grant the base user to the admin user
-
-    Since the `<admin_user>` here is not a superuser in Azure Postgres, performing administrator-like duties (killing user processes, etc) requires all users being granted to the admin user
-
-        -- Grant the base role to the admin user in order to perform admin duties
-        GRANT <base_user> TO <admin_user>;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> IN SCHEMA public GRANT SELECT ON TABLES TO analytics_role;  
 
 #### Configure Other Databases
 This section should be used for all other databases on the same server (such as the 'monitor' database used for logging). It relies on the roles that were created in the [previous section](#configure-the-primary-database).
 
-Connect to the database to configure and complete the following steps:
+Connect to the target database and complete the following steps of [Configure the Primary Database](#configure-the-primary-database):
 
-1. Revoke initial access
-
-        REVOKE ALL ON SCHEMA public FROM public;
-        REVOKE ALL ON ALL TABLES IN SCHEMA public FROM public;
-        REVOKE ALL ON DATABASE <database_name> FROM public;
-        REVOKE ALL ON DATABASE postgres FROM public;
-
-1. Grant permissions to the (existing) admin user role
-
-        GRANT ALL ON SCHEMA public TO admin_role;
-        GRANT ALL ON DATABASE <database_name> TO admin_role;
-        GRANT ALL ON ALL TABLES IN SCHEMA public TO admin_role;
-        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO admin_role;
-        GRANT ALL ON DATABASE postgres TO admin_role;        
-
-1. Grant permissions to the (existing) base user role
-
-        GRANT CONNECT ON DATABASE <database_name> TO base_role;
-        GRANT USAGE ON SCHEMA public TO base_role;
-        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO base_role;
-        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO base_role;
-
-1. Grant permissions to the (existing) privileged user role
-
-        GRANT CREATE ON SCHEMA public TO privileged_role;
-
-1. Alter default privileges
-        
-        -- This is so all privileges for `base_role` apply to any new objects created by <admin_user>
-        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT USAGE ON SCHEMAS TO base_role;
-        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT CREATE ON SCHEMAS TO privileged_role;
-
-        -- This is so all privileges for `base_role` apply to any new objects created by <privileged_user>
-        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
-        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
-
-1. Grant the base user to the admin user
-
-    Since the `<admin_user>` here is not a superuser in Azure Postgres, performing administrator-like duties (killing user processes, etc) requires all users being granted to the admin user
-
-        -- Grant the base role to the admin user in order to perform admin duties
-        GRANT <base_user> TO <admin_user>;
+1. Step 1(b)
+1. Step 2(b)
+1. Step 3(b)
+1. Step 4(b)
+1. Step 7
 
 # User Administration
 
@@ -665,6 +643,19 @@ Andrew Hernandez (software development): `JonAndrew [at] outlook [dot] com`
 Jade Cowan (software development): `jade.cowan [at] penoptech [dot] com`
 
 # Appendix
+
+## Database Configuration for PostgreSQL < Version 15
+
+PostgreSQL releases before Version 15 gave full access to the 'public' role by default, which is in opposition to the zero-trust policies recommended for Get-Your. Run the commands in this section for any PostgreSQL database prior to v15 (**or - crucially - if the v15+ database was upgraded from a v14- database, rather than a fresh instance**).
+
+1. Revoke initial access
+
+        REVOKE ALL ON SCHEMA public FROM public;
+        REVOKE ALL ON ALL TABLES IN SCHEMA public FROM public;
+        REVOKE ALL ON DATABASE <database_name> FROM public;
+        REVOKE ALL ON DATABASE azure_maintenance FROM public;
+        REVOKE ALL ON DATABASE azure_sys FROM public;
+        REVOKE ALL ON DATABASE postgres FROM public;
 
 ## Database Administration Tools
 
