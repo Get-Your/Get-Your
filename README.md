@@ -367,7 +367,7 @@ Blob Storage is used for storage of user files from Django. The app uses `django
 Summary of the database setup
 
 - Azure Database for PostgreSQL Flexible Server
-  - Burstable compute tier
+  - General Purpose compute tier
 - Separate instances for DEV and PROD/STAGE
   - Each instance has users named for that instance to avoid confusion
   - Each instance has database(s) named for the environment to avoid confusion
@@ -380,9 +380,12 @@ Summary of the database setup
   - django_\<env\>_user: Base database user, used by Django with the minimum necessary database privileges
 
 ## Database Setup Description
-Each database is set up in an Azure Database for PostgreSQL instance. Flexible Server was chosen for the instance type, due to the Burstable compute tier (Single Server was the initial choice, but the Burstable tier is more performant and costs approximately the same as Single Server (for the low loads expected on this site)). See [Microsoft's comparison chart](https://docs.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-compare-single-server-flexible-server) for more details.
+Each database is set up in an Azure Database for PostgreSQL instance (Flexible Server).
 
 In order to properly separate the DEV and STAGE/PROD databases as well as use less-expensive performance settings on the DEV database, two separate Azure Database for PostgreSQL server instances were used. DEV has its own instance and uses a database named `getyour_dev`. The PROD server instance houses both `getyour_stage` and `getyour_prod` databases, for STAGE and PROD, respectively.
+
+> [!NOTE]
+> Each database instance should be created with some form of 'PostgreSQL Authentication' (either PostgreSQL-only or combined with Entra); the 'admin user' created with the database instance is referenced in all proceeding steps as `<admin_user>`
 
 ## Database Administration
 This section relies on the adminstrator to have locally installed the same version of Postgres being used in the Azure instance (the utility versions must match).
