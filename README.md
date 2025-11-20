@@ -7,6 +7,7 @@ The universal income-qualified application for the City of Fort Collins, Colorad
 # Table of Contents
 1. [Get-Your](#get-your)
 1. [Getting Started](#getting-started)
+    1. [Dependency Installation](#dependency-installation)
     1. [Running the App](#running-the-app)
 1. [Development and Deployment](#development-and-deployment)
     1. [manage.py](#managepy)
@@ -46,32 +47,38 @@ The universal income-qualified application for the City of Fort Collins, Colorad
 # Getting Started
 This package is built on [uv](https://docs.astral.sh/uv), which installs the necessary dependencies to run the app on the Django web framework. 
 
-## Running the App
-This app runs on the Django web framework. Unless otherwise noted, the following commands must be run from the 'platform' directory within this repo.
+## Dependency Installation
+Once uv is installed, run `uv sync` from the repo's root directory to install all dependencies.
 
-To run for the first time, a local instance is recommended. To get started, copy the `manage.py` file, paste it as something like `manage_local.py` (see the [manage.py](#managepy) sections for details), then modify the app to use a local environment by changing the line beginning with `os.environ.set...` to 
+> The repo's root directory is the reference point for all relative directories in this document.
 
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobileVers.settings.local')
-
-Next, copy/paste or rename `.env.template` as `.env` and `.dev.env.template` as `.dev.env`. There's no need to set variables for the initial run.
-
-Once the settings have been accounted for, finalize Python setup by [creating a virtual environment](https://docs.python.org/3.9/library/venv.html) (optional, but recommended) and installing dependencies.
-
-On **Ubuntu only**, run the following to match the `libmagic1` dependency installed in the Docker container
+On **Ubuntu only**, run the following to match the `libmagic1` dependency installed in the Docker container:
 
     apt-get install libmagic1
 
-On **Windows only**, run
+## Running the App
+Unless otherwise noted, the following commands must be run from the 'get_your' directory within this repo (e.g. `get_your`).
 
-    python3 -m pip install python-magic-bin~=0.4
+1. To run for the first time, a local instance is recommended. To get started, copy the `manage.py` file, paste it as something like `manage_local.py` (see the [manage.py](#managepy) sections for details), then modify the app to use a local environment by changing the line beginning with `os.environ.set...` to 
 
-> If `magic` still isn't working, follow the instructions at https://github.com/pidydx/libmagicwin64.
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 
-On either platform, finish by installing all other dependencies
+2. Next, copy/paste or rename the following templates.
 
-    python3 -m pip install -r requirements.txt
+    | Old name | New name |
+    |:--|:--|
+    | `.env.template` | `.env` |
+    | `.dev.env.template` | `.dev.env` |
 
-Run the following to create the SQLite database and populate it with the database schema and sample data (coming soon - see https://github.com/Get-Your/Get-Your/issues/63).
+    > For a local run, each variable only needs to be added if the app errors because it doesn't exist
+
+3. Set your terminal to use the virtual environment that uv set up in [Dependency Installation](#dependency-installation); the Python executable should be at `.venv/Scripts/python.exe`.
+
+If an initialization error is thrown when loading `magic`:
+- On Windows: `python-magic-bin` may have been installed in the wrong order. If the error is 'ImportError: failed to find libmagic.  Check your installation', try running `uv remove python-magic-bin; uv add python-magic-bin~=0.4`
+- On all other platforms, or if `magic` still isn't working, follow the instructions at https://github.com/pidydx/libmagicwin64
+
+Run the following to start the app. This will create the SQLite database and populate it with the database schema and sample data (coming soon - see https://github.com/Get-Your/Get-Your/issues/63).
 > Each database migration must be run separately.
 
     python3 manage_local.py migrate
