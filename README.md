@@ -12,7 +12,8 @@ License: GPLv3
 
 # Table of Contents
 1. [Get-Your](#get-your)
-1. [Running the App](#running-the-app)
+1. [Getting Started](#getting-started)
+    1. [Running the App](#running-the-app)
 1. [Development and Deployment](#development-and-deployment)
     1. [manage.py](#managepy)
     1. [Local Development](#local-development)
@@ -54,7 +55,10 @@ License: GPLv3
     1. [Database Administration Tools](#database-administration-tools)
         1. [Delete User](#delete-user)
 
-# Running the App
+# Getting Started
+This package is built on [uv](https://docs.astral.sh/uv), which installs the necessary dependencies to run the app on the Django web framework. 
+
+## Running the App
 This app runs on the Django web framework. Unless otherwise noted, the following commands must be run from the 'platform' directory within this repo.
 
 To run for the first time, a local instance is recommended. To get started, copy the `manage.py` file, paste it as something like `manage_local.py` (see the [manage.py](#managepy) sections for details), then modify the app to use a local environment by changing the line beginning with `os.environ.set...` to 
