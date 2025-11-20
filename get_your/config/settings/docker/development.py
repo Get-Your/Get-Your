@@ -30,7 +30,7 @@ from .base import env
 # Because this is a local environment, some settings are unused and set
 # explicity in this file
 if READ_DOT_ENV_FILE:
-    env.read_env(str(BASE_DIR / ".dev.env"), overwrite=True)
+    env.read_env(str(BASE_DIR / ".dev.deploy"), overwrite=True)
 
 # GENERAL
 # ------------------------------------------------------------------------------
