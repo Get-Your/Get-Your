@@ -113,7 +113,7 @@ Local development is completely on the developer's computer. The Django app will
 
     launch.json
 
-and database operations/migrations will apply to SQLite database files in the repo folder (which will be created if they don't exist). The SQLite databases will be ignored by Git commits.
+and database operations/migrations will apply to SQLite database files in the repo folder (which will be created if they don't exist). Any SQLite database(s) will be ignored by Git.
 
 Local development uses `.env` and `.dev.env` for [app secrets](#app-secrets). The SQLite database configuration is hardcoded in `local.py`, so associated variables must exist but won't be used.
 
@@ -332,7 +332,7 @@ In order to properly separate the DEV and STAGE/PROD databases as well as use le
 > Each database instance should be created with some form of 'PostgreSQL Authentication' (either PostgreSQL-only or combined with Entra); the 'admin user' created with the database instance is referenced in all proceeding steps as `<admin_user>`
 
 ## Database Administration
-This section relies on the adminstrator to have locally installed the same version of Postgres being used in the Azure instance (the utility versions must match).
+This section relies on the administrator having PostgreSQL installed locally (the same version used in the Azure instance, for proper utility compatibility).
 
 For the following sections,
 
@@ -341,7 +341,7 @@ For the following sections,
 - `<env>` is a generic suffix for the database name (e.g. `getyour_<env>` -> `getyour_dev` for the DEV database)
 
 ### Connectivity
-Database administration can be completed in any application, but `psql` is the basic GUI incorporated with Postgres that provides simple access to the database.
+Database administration can be completed in any applicable application, but `psql` is the basic CLI UI incorporated with PostgreSQL that provides simple access to the database.
 
 Use the following connection string to connect to the target database. The hostname and admin username can be found under the 'Essentials' section at the top of the Overview page on the Azure Portal as 'Server name' and 'Server admin login name', respectively.
 
@@ -360,10 +360,10 @@ During the setup phase, there was much experimentation of Azure instance types; 
 
 If there isn't yet existing data, just run Django migrations to the new \<target_database_name\>.
 
-> If the same users aren't present in the target database as there are in the source, the `pg_restore` command will throw errors. To ignore object owners specified in the backup file and instead use the input username as the owner of all objects, add the flag `--no-owner` to the `pg_restore` command. This is not recommended because the permissions structure for Get-Your is strictly defined.
+> If the same users aren't present in the target database as there are in the source, the `pg_restore` command will throw errors. To ignore object owners specified in the backup file and instead use the input username as the owner of all objects, add the flag `--no-owner` to the `pg_restore` command. **This is not recommended because the permissions structure for Get-Your is strictly defined.**
 
     # Dump the database structure and data in a custom format to a local file for pg_restore
-    # <target_local_backup_file> can have any extension
+    # <target_local_backup_file> can have any extension (it will only be used by pg_restore)
     pg_dump -Fc -v --host=<source_hostname> --username=<source_admin_user> --dbname=<source_database_name> -f <target_local_backup_file>
 
     # Restore the structure and data to the target database
@@ -500,14 +500,14 @@ Connect to the target database and complete the following steps of [Configure th
 
 # User Administration
 
-The following Postgres functions have been created for user administration through the IQ verification process:
+The following PostgreSQL functions have been created for user administration through the IQ verification process:
 
 ...
 
 > Note that a function cannot have more that 100 arguments, so income verification is limited to 100 users at a time and program enrollment is limited to 99 users.
 
 # Analytics Settings
-For the City of Fort Collins needs, Power BI was selected for analytics and reporting. The following tutorial details connecting to the Postgres database from Power BI.
+For the City of Fort Collins needs, Power BI was selected for analytics and reporting. The following tutorial details connecting to the PostgreSQL database from Power BI.
 
 1. In Power BI, select 'Get Data' from the startup splash screen or on the ribbon toolbar
 
