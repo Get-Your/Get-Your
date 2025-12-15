@@ -24,6 +24,12 @@ This was created for the City of Fort Collins, so references will be to their ve
     1. [Project (codebase)](#project-codebase)
     1. [User](#user)
     1. [Verification Staff](#verification-staff)
+1. [Process Flows](#process-flows)
+    1. [User Process](#user-process)
+    1. [Verification Staff Process](#verification-staff-process)
+        1. [User list view](#user-list-view)
+        1. [User view](#user-view)
+    1. [Program Coordinator Process](#program-coordinator-process)
 
 # Background
 
@@ -112,3 +118,77 @@ A 'user' of the platform is an end-user who has created an [account](#account) o
 
 ## Verification Staff
 This is the staff member(s) responsible for verification of identification and Eligibility Program uploads. This user(s) will mark each applicant 'verified' once uploads have been confirmed as complete and accurate.
+
+# Process Flows
+
+## User Process
+> ![NOTE]
+> The [Get FoCo Process Flow](https://user-images.githubusercontent.com/72939569/198737977-8c08368e-d138-4493-a637-df12e332ef4a.png) Fort-Collins-specific details about this process.
+
+Get-Your allows users to create accounts, upload identification and income verification documentation, then apply for income-qualified programs. A new user's process is described below, starting with selecting 'Apply' from the main landing page:
+
+0. Preliminary step: the user is displayed a 'before we get started' page with descriptions of the [accepted external programs] ([Eligibility Programs](#eligibility-programs)) as well as the organization's [privacy policy]. This page is informational.
+
+    This is defined with `app.views.get_ready()`.
+
+1. Account creation: the user enters their name, email, and phone number, and a password to create an account.
+
+2. Address: the user enters the address at which their household resides (their [Eligibility Address](#eligibility-address)), as well as a separate mailing address, if applicable.
+
+    The system will attempt to confirm each address with USPS. See [Address] for additional details on the usage of these addresses and confirmation steps.
+
+3. Household information: the user enters minimal demographic information, then the number of individuals in their household. The 'number of individuals' is used solely to populate the next page; this is planned to be removed as a form field (instead inferred from the information entered) so that both parts of this step are on a single page.
+
+    On the next page, the user enters the full name and birthdate and uploads a form of identification for each individual in the household. See [Supported Identification] for additional details on this upload.
+
+4. Eligibility Program selection: from a list of external programs (the [same as in the preliminary step]), the user chooses all they are enrolled in.
+
+5. Eligibility Program uploads: the user is prompted to upload supporting documentation for each program selected in the prior step.
+
+6. New account confirmation: a page is displayed that confirms the account, and says that the user will be sent an email and text to confirm as well. See [User Communication] for additional details on the notifications.
+
+7. Dashboard: The user can then continue to the dashboard, where all income-qualified programs ([IQ Programs](#iq-programs)) the user is eligible for are displayed in the 'Available Programs' section (those that the user doesn't qualify for are not included at all), along with a News section and a simple user-feedback mechanism.
+
+    The user can select 'Apply Now' next to any displayed program, at which point the system will display a confirmation page and that program will be moved to the 'Pending Approval' section. Once the user is enrolled for a program, it will be displayed in the 'Active Programs' section.
+
+This was designed to be synchronous for the user; all steps can be completed in one sitting, without needing input from the organization. The organization will, of course, need to verify that the provided information is complete and correct, but this is done after the user has completed the entire application.
+
+The system assumes that the Eligibility Address and Eligibility Programs (from Steps 2 and 4) are correct in order to filter IQ Programs for geographical location and income level. This allows the user to immediately see all available programs in their dashboard and make their selections.
+
+After the application is completed by the user, the organization begins the process of verifying all uploads match the ID and Eligibility Programs they're supposed to. If more information is need or if there's a discrepancy, this can be handled manually by the [Platform Administrator](#platform-administrator) (by reaching out to the applicant).
+
+## Verification Staff Process
+This process doesn't begin until after the [user process](#user-process) is complete, in part so that the user process isn't interrupted by staff activity.
+
+### User list view
+The Get-Your 'user list' can be accessed from the 'Users' menu in the Get-Your [administration portal]. From here, [verification staff](#verification-staff) can access all newly-completed applicants by selecting the 'New Needs Verification' filter on the right sidenav. This limits the users to only those who are newly awaiting identification / Eligibility Program verification.
+
+> ![NOTE]
+> Other filter options are 'Awaiting Response' (only users who staff have marked as 'awaiting user response' (see [below](#administration-section))), 'All Needs Verification' (all users who needs verification, regardless of 'awaiting user response'), 'Has Been Verified' (only users who are marked as 'income has been verified'), and 'All' (no verification filter). See [Administration Portal] for additional details.
+
+> ![NOTE]
+> The default filter for the user list is 'By account disabled' > 'Not disabled', so all filters mentioned here are limited to only active accounts.
+
+From the user list, staff will select a user via their hyperlink email address.
+
+### User view
+The resulting view contains pertinent information from the user. Only the user-verification ["happy path"](https://en.wikipedia.org/wiki/Happy_path) is included in this section; other cases can be found in [Troubleshooting].
+
+> ![NOTE]
+> Verification staff are part of a specific [authorization group] on the platform, and therefore will have the minimum privileges necessary to perform verifications. See [Authorization groups] for more details.
+
+Once [Household Member section](#household-member-section) and [User Eligibility Programs section](#user-eligibility-programs-section) have been completed, verification staff will select the checkbox under 'INCOME HAS BEEN VERIFIED' in the 'HOUSEHOLD' section and save changes (via the 'SAVE' button at the bottom of the page). This will make the user visible for the [Program Coordinator process](#program-coordinator-process).
+
+#### Administration section
+The section titled 'ADMINISTRATION' is for use by internal staff, and will not be viewable by the user. Here, notes can be made about an account, as well as an account flagged as 'awaiting user response' (to be excluded from some user-list filters).
+
+#### Household Member section
+The section titled 'HOUSEHOLD MEMBER' shows all individuals in the user's household. Below each person is a link to the uploaded identification documentation for that person (or 'no document available' if it somehow doesn't exist); verification staff should verify that each ID matches the person it's linked to, that the birthdate is correct, and that at least one person's address matches the Eligibility Address in the 'ADDRESS' section (unless other accomodations have been made).
+
+#### User Eligibility Programs section
+The section titled 'USER ELIGIBILITY PROGRAMS' shows each program the user has selected, with link(s) to uploaded documents for each. Verification staff should verify that each uploaded document matches a member of the household.
+
+## Program Coordinator Process
+This process doesn't begin until after the [verification staff process](#verification-staff-process) is complete, so that [Program Coordinators](#program-coordinator) are using accurate user information.
+
+This process doesn't exist on the platform yet (it's currently executed in the form of downloading data extracts and emailing them as CSVs to each Program Coordinator, via [a script in the `Get-Your-utils` repo](https://github.com/Get-Your/Get-Your-utils/blob/main/get_your_utils/python/run_extracts.py)), but it's planned to be similar to the [Verification Staff process](#verification-staff-process) but with each Program Coordinator having access only to enroll/unenroll users from their own program (using an as-yet-undefined Program Coordinator [authorization group]).
