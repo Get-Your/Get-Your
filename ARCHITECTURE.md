@@ -42,6 +42,8 @@ This was created for the City of Fort Collins, so references will be to their ve
         1. [app.tasks](#apptasks)
         1. [app.views](#appviews)
     1. [`logger`](#logger)
+        1. [logger.admin](#loggeradmin)
+        1. [logger.handlers](#loggerhandlers)
 
 # Background
 
@@ -345,3 +347,11 @@ This view uses the logic in [`app.backend.what_page()`](#what_page) to notify th
 
 ## `logger`
 This part of the project handles project logging.
+
+### logger.admin
+...
+
+### logger.handlers
+
+#### DatabaseLogHandler
+A custom handler for database logging. This includes additional useful information, such as 'process ID' and 'thread ID'.
