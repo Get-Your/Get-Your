@@ -32,6 +32,9 @@ This was created for the City of Fort Collins, so references will be to their ve
     1. [Program Coordinator Process](#program-coordinator-process)
 1. [Project Code Map](#project-code-map)
     1. [Configuration Files](#configuration-files)
+        1. [requirements.txt](#requirementstxt)
+        1. [redis.conf](#redisconf)
+        1. [supervisord.conf](#supervisordconf)
     1. [`app`](#app)
     1. [`logger`](#logger)
 
@@ -210,6 +213,17 @@ After the [Configuration Files](#configuration-files) definitions are the portio
 
 ## Configuration Files
 These are the non-Django configurations files, such as for [Redis](https://github.com/redis/redis) and [Docker](https://docs.docker.com) containerization.
+
+### requirements.txt
+While the pyproject.toml file in the repo root governs the local-developement (`uv`) environment, the requirements.txt file here ('getyour/requirements.txt') is just for the Django project; the dependencies in this file are used to define the Docker container for deployment.
+
+### redis.conf
+The configuration file for Redis, as used by all Get-Your environments.
+
+It's unclear at this writing what has been changed from the defaults, if anything.
+
+### supervisord.conf
+The configuration for [Supervisor](https://supervisord.org) process control system, used with Docker containers.
 
 ## `app`
 The entirety of the project is currently 
