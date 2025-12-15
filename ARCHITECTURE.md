@@ -52,7 +52,9 @@ This was created for the City of Fort Collins, so references will be to their ve
         1. [monitor.admin](#monitoradmin)
         1. [monitor.handlers](#monitorhandlers)
     1. [`ref`](#ref)
+        1. [ref.admin](#refadmin)
     1. [`users`](#users)
+        1. [get_your.users.fields](#get_yourusersfields)
 
 # Background
 
@@ -396,8 +398,17 @@ A custom handler for database logging. This includes additional useful informati
 ## `ref`
 All reference data are within this part of the project.
 
+### ref.admin
+...
+
 ## `users`
 This part of the project handles users; it's a custom user model, created by `cookiecutter-django` and modified for use by Get-Your.
 
 > ![IMPORTANT]
 > This app is within the 'get_your' subdirectory, so the app name is actually `get_your.users`; it's shortened in the header for simplicity only.
+
+### get_your.users.fields
+This has the infrastructure for field(s) that must be case-insensitive, such as the user email (so that a user can log in to their account if they capitalize a different letter than account creation).
+
+> ![IMPORTANT]
+> This methodology is still being tested; a different (less-robust) method is currently used in Production code.
