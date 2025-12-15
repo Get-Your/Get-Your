@@ -30,6 +30,14 @@ This was created for the City of Fort Collins, so references will be to their ve
         1. [User list view](#user-list-view)
         1. [User view](#user-view)
     1. [Program Coordinator Process](#program-coordinator-process)
+1. [Project Code Map](#project-code-map)
+    1. [Configuration Files](#configuration-files)
+    1. [`app`](#app)
+    1. [`dashboard`](#dashboard)
+    1. [`files`](#files)
+    1. [`monitor`](#monitor)
+    1. [`ref`](#ref)
+    1. [`users`](#users)
 
 # Background
 
@@ -192,3 +200,43 @@ The section titled 'USER ELIGIBILITY PROGRAMS' shows each program the user has s
 This process doesn't begin until after the [verification staff process](#verification-staff-process) is complete, so that [Program Coordinators](#program-coordinator) are using accurate user information.
 
 This process doesn't exist on the platform yet (it's currently executed in the form of downloading data extracts and emailing them as CSVs to each Program Coordinator, via [a script in the `Get-Your-utils` repo](https://github.com/Get-Your/Get-Your-utils/blob/main/get_your_utils/python/run_extracts.py)), but it's planned to be similar to the [Verification Staff process](#verification-staff-process) but with each Program Coordinator having access only to enroll/unenroll users from their own program (using an as-yet-undefined Program Coordinator [authorization group]).
+
+# Project Code Map
+Here you will find architecture decisions around files and functions. All relative paths are in reference to the root repo folder (where this file is located).
+
+> ![NOTE]
+> Starting with v7.0.0, the code is formatted around the [`cookiecutter-django`](https://cookiecutter-django.readthedocs.io/en/latest) project. The structure differs significantly from the v6- code, although the function-level architecture is similar (if not exact).
+
+After the [Configuration Files](#configuration-files) definitions are the portions of the Django project, which are separated into apps for responsibility segregation. Each subsection is an app in the project (located within 'get_your'), with further subsections as scripts within that app, then functions/classes (e.g. `app` > views > programs() is accessible to Django at `app.views.programs()` and can be found in the file tree at 'get_your/app/views.py > `programs()`')
+
+> ![NOTE]
+> Only the pertinent scripts/functions are called out here.
+
+> ![NOTE]
+> `models.py` for each app are not included here. The purpose of this document is to detail why the project is designed how it is; the models follow those design decisions.
+
+## Configuration Files
+These are the non-Django configurations files, such as for [Redis](https://github.com/redis/redis) and [Docker](https://docs.docker.com) containerization.
+
+## `app`
+This is the user-application part of the project.
+
+## `dashboard`
+This is the post-application user dashboard, which contains [IQ Program](#iq-programs) enrollment details, organization news, and user access to update (some of*) their information.
+
+\* See [??????] for more details on what information can be updated after the application process and why.
+
+## `files`
+This is the portion of the project that handles file uploads.
+
+## `monitor`
+This part of the project handles project monitoring, specifically logging.
+
+## `ref`
+All reference data are within this part of the project.
+
+## `users`
+This part of the project handles users; it's a custom user model, created by `cookiecutter-django` and modified for use by Get-Your.
+
+> ![IMPORTANT]
+> This app is within the 'get_your' subdirectory, so the app name is actually `get_your.users`; it's shortened in the header for simplicity only.
