@@ -214,7 +214,7 @@ After the [Configuration Files](#configuration-files) definitions are the portio
 > Only the pertinent scripts/functions are called out here.
 
 > ![NOTE]
-> `models.py` for each app are not included here. The purpose of this document is to detail why the project is designed how it is; the models follow those design decisions.
+> `models.py` are not included here, with the exception of a standalone files function stored in `app.models`. The purpose of this document is to detail why the project is designed how it is; the models follow those design decisions.
 
 ## Configuration Files
 These are the non-Django configurations files, such as for [Redis](https://github.com/redis/redis) and [Docker](https://docs.docker.com) containerization.
@@ -301,6 +301,11 @@ This will be run directly by Django-Q2 at a scheduled interval. It loops through
 
 #### send_generic_email()
 This will allow sending any Sendgrid template (via a template name (from the environment variables) or the Sendgrid template ID) to a list of users on the platform. The idea is that a user on the admin portal (with the proper privileges) would be able to just select a subset of users and an email template, without requiring code changes for that specific case, although it hasn't been created.
+
+### app.models
+
+#### userfiles_path()
+This sets the path to the file in blob storage.
 
 ### app.views
 
