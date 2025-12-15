@@ -1609,6 +1609,8 @@ def programs(request, **kwargs):
 @login_required()
 def files(request, **kwargs):
     """
+    Determine what files the user needs to upload for their selected programs.
+
     Variables:
     fileNames - used to name the files in the database and file upload
     fileAmount - number of file uploads per income verified documentation
