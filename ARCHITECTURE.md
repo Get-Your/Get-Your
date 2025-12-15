@@ -38,6 +38,11 @@ This was created for the City of Fort Collins, so references will be to their ve
         1. [redis.conf](#redisconf)
         1. [supervisord.conf](#supervisordconf)
     1. [`app`](#app)
+        1. [app.admin](#appadmin)
+        1. [app.backend](#appbackend)
+        1. [app.context_processors](#appcontext_processors)
+        1. [app.tasks](#apptasks)
+        1. [app.views](#appviews)
     1. [`dashboard`](#dashboard)
     1. [`files`](#files)
     1. [`monitor`](#monitor)
@@ -245,6 +250,111 @@ The configuration for [Supervisor](https://supervisord.org) process control syst
 
 ## `app`
 This is the user-application part of the project.
+
+### app.admin
+...
+
+### app.backend
+> ![NOTE]
+> The functions in this app are split into separate files within the 'get_your/app/backend/' directory.
+
+#### file_validation()
+This validation function uses the `python-magic` utility to determine the type of the (user-uploaded) file. This is done so that the filetype can be confirmed without relying on the file extension, which could be manually changed for malicious purposes.
+
+The check for a minimum `django.core.files.File.DEFAULT_CHUNK_SIZE` in 'get_your/config/settings/base.py' ensures that the instance follows `python-magic` recommendations.
+
+#### finalize_application()
+This is the final step in the automated workflow for the user's application/renewal. A big part of this step is auto-enrolling a renewal user in programs they were already enrolled in (if they're still eligible).
+
+This function is largely necessary because of the decision to not modify data outside a function/view's working model (and, before this, the data model setup itself). For example, a portion of this function finds the minimum AMI from the selected Eligibility Programs and sets `income_as_fraction_of_ami` in the `Household` model; if `income_as_fraction_of_ami` existed in a different model or the 'Eligibility Programs' view was updated to modify the `Household` model, this functionality would be unnecessary to have in a dedicated step.
+
+#### get_eligible_iq_programs()
+This function retrieves all IQ Programs for which the user is geographically eligible. To keep Get-Your as extensible as possible regarding program requirements, it's set up to match a '\<field name\>' Boolean with 'requires_\<field name\>' (e.g. matching 'is_in_gma' with 'requires_is_in_gma') so that new requirements necessitate adding new fields only, not additional logic.
+
+Each requirement is compared with the corresponding field, then they're all chained together to determine the overall user eligibility for a specified program. Fields beginning with `requires_` permissively specify whether the matching field (in the `AddressRef` model) is a filter for the program, so a True value in the `requires_` field requires the corresponding address Boolean to also be True to be eligible. Because it's permissive, a False value in the `requires_` field means that all addresses are eligible, regardless of the value of the corresponding Boolean. Or as a truth table:
+
+An address is eligible for benefits under the following conditions:
+
+![Truth table for 'requires_' variables](./media/requires_truth_table.png)
+
+    === ( (corresponding Boolean) OR NOT(`requires_`) )
+
+Due to the permissive nature of the individual `requires_` fields,
+multiple `requires_` criteria are then ANDed together for the overall
+eligibility. For example, if no `requires_` fields are enabled, *all*
+addresses are eligible (eligibility = True AND True AND True AND ... ==
+True), but if any one of the `requires_` fields are enabled, an address is
+ineligible if it doesn't meet that criteria (eligibility = True AND False
+AND True AND ... == False).
+
+> ![NOTE]
+> The 'requires_' fields could be named more clearly to show that they are specific to geographical (address) requirements.
+
+#### get_iq_program_requires_fields()
+This function collects all `requires_` fields for comparison with the corresponding Boolean fields.
+
+#### what_page()
+This function is used to check a user's place in the application on login. It uses to the existence of key objects to infer a user's application state; this is caused issues with the renewal workflow, for example when the 'renewal mode' isn't set correctly and this implicit state assumes the user is filling out the application for the first time. This needs to be an explicit check rather than relying on existence (a la [`what_page_renewal()`](#what_page_renewal), although JSON isn't the ideal data storage method).
+
+#### what_page_renewal()
+This is the 'renewal' version of [`what_page()`](#what_page), with a key improvement that it uses explicit definitions when a user has completed certain steps. It has room for further improvements, however, namely that if the data were stored in a M2M table the completed steps could be modified by staff in the admin portal.
+
+### app.context_processors
+
+#### global_template_variables()
+These are variables that are passed to all templates, due to their use in multiple (if not all) templates.
+
+### app.tasks
+The purpose of this file is to define the properties of scheduled tasks that are* run by [Django-Q2](https://django-q2.readthedocs.io/en/master), a native-Django task queue and scheduler. The tasks here also make use of [Redis](https://github.com/redis/redis) for caching.
+
+\* These scheduled tasks have not yet been approved for production; for Get FoCo, the functions in this file have been run locally when needed, and don't include any Redis caching.
+
+#### populate_cache_task()
+This will be run directly by Django-Q2 at a scheduled interval. It's meant to loop through all users and create a Django-Q2 asynchonous task for each, to update or add to the Redis cache (via `populate_redis_cache()`), although it appears to currently just create a single async task for the entire loop. These async tasks are automatically distributed amongst the defined number of Django-Q2 'workers', which all process independently and concurrently (therefore, a single async task doesn't actually run anything asynchronously).
+
+#### run_renewal_task()
+This will be run directly by Django-Q2 at a scheduled interval. It loops through applicable users to decide who should receive a renewal notification email (based on the cache value for that user), then creates a Django-Q2 asynchronous task to send the email. These async tasks are automatically distributed amongst the defined number of Django-Q2 'workers', which all process independently and concurrently.
+
+`send_renewal_email()` is the function used by each worker to send the email, if applicable.
+
+#### send_generic_email()
+This will allow sending any Sendgrid template (via a template name (from the environment variables) or the Sendgrid template ID) to a list of users on the platform. The idea is that a user on the admin portal (with the proper privileges) would be able to just select a subset of users and an email template, without requiring code changes for that specific case, although it hasn't been created.
+
+### app.views
+
+#### address()
+This is the first view in the address flow - a user inputs their Eligibility Address (prefaced as "where do you live?") and, optionally, a separate Mailing Address. When the user selects the 'submit' button, the app sends them to [`address_correction()`](#address_correction).
+
+#### address_correction()
+This function takes the user-input address from `address()` (or each address, one at a time) and attempts to coerce it so that the USPS API can properly identify it. The current incarnation has up to three loop iterations; each loop iteration ends with an attempted USPS identification, so this isn't included here (the loop exits if the USPS identification is successful):
+
+1. Format the input address into a string, removing any '#' signs (this doesn't play well with the following methods), then pass it into the `usaddress` utility to attempt to "tag" each part properly (tags are things like 'StreetName' and 'PlaceName' (city); see `app.backend.address.tag_mapping` for all available tags).
+2. ??? - how is this different than the first iteration?
+3. For the last loop, proceed to identification with the input address with no changes
+
+After completion of the loop, the user is prompted to confirm the identified address or directed to go back and modify the input if more information is needed. If the user confirms the identified address, the flow proceeds to [`take_usps_address()`](#take_usps_address).
+
+Known issues:
+- The tag mapping for `usaddress` is quite primitive and is the probable reason for address issues we've seen. Better yet, `usaddress` should probably be replaced as it has since become stale
+- This method can't identify units with a letter/number combination if the letter is on the wrong end
+- ...
+- For the case where the user is sent back to modify their input, the 'back' button on the page clears the address form. The browser 'back' button accurately retains the previously-input information, however, which is the functionality that needs to be on the page
+
+#### take_usps_address()
+This function uses the identified address, determines if the address is in the GMA and whether Connexion* is available, then saves the address to the database (creates/updates the address in `AddressRef` and uses that value in the user's `Address` entry).
+
+\* 'Connexion' is the branding for the fiber utility operated by the City of Fort Collins. This check was set up specifically for Get FoCo and should be removed from future iterations of Get-Your. 
+
+#### index()
+The majority of this page is static (or pseudo-static, e.g. the Available Income Eligible Programs that are dynamically generated server-side then delivered to the client as static), but the bottom of the page has a 'Check Availability' section with a POST action to the address-parsing code.
+
+#### household_definition()
+The 'household definition' (as spelled out in 'get_your/get_your/templates/application/household_definition.html') is detailed in the [Household definition](#household).
+
+#### notify_remaining()
+This view uses the logic in [`app.backend.what_page()`](#what_page) to notify the user that they have an in-progress application. This is currently its own page and gives the user the option to 'continue' or 'go back' (log out), but this is a superfluous page with an illusion of choice* - this should be converted to an informational modal on the page that the user will be redirected to in order to complete their application.
+
+\* The user has come back to the platform and logged in, so why would they want to immediately log out? Therefore 'go back' is unnecessary, leaving a single option to 'continue', which isn't a choice. The user shouldn't have to perform an action to select an option that isn't an option at all.
 
 ## `dashboard`
 This is the post-application user dashboard, which contains [IQ Program](#iq-programs) enrollment details, organization news, and user access to update (some of*) their information.

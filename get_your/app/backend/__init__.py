@@ -143,15 +143,18 @@ def changed_modelfields_to_dict(
     pre_delete=False,
 ):
     """
-    Convert a model object to a dictionary. If a property is a datetime object,
-    it will be converted to a string. If there is a nested model, it will be
-    excluded from the dictionary. If pre_delete is True, the previous instance
-    is returned as a dictionary.
+    Convert a model object to a dictionary. This is used specifically for
+    writing to history tables.
+
+    If a property is a datetime object, it will be converted to a string. If
+    there is a nested model, it will be excluded from the dictionary. If
+    pre_delete is True, the previous instance is returned as a dictionary.
+
     :param previous_instance: model object
     :param current_instance: model object
     :param pre_delete: boolean
-    """
 
+    """
     # Initialize output
     model_dict = {}
 
@@ -312,37 +315,15 @@ def get_eligible_iq_programs(
         ami_threshold__gte=user.household.income_as_fraction_of_ami or 1,
     ).order_by("id")
 
+    # Filter programs further based on address requirements
+
     # Gather all `requires_` fields in the IQProgramRef model along with their
     # corresponding AddressRef Boolean
     req_fields = get_iqprogram_requires_fields()
 
-    # Filter programs further based on address requirements. Fields beginning
-    # with `requires_` permissively specify whether the matching field in
-    # AddressRef is a filter for the program, so a True value in the `requires_`
-    # field requires the corresponding address Boolean to also be True to be
-    # eligible, but because it's permissive, a False value in the `requires_`
-    # field means that all addresses are eligible, regardless of the value of
-    # the corresponding Boolean. Or as a truth table:
-
-    # An address is eligible for benefits under the following conditions:
-    #
-    #                         ``requires_`` field
-    #                         *TRUE*        *FALSE*
-    # corresponding  *TRUE*    TRUE         TRUE
-    #    Boolean     *FALSE*   FALSE        TRUE
-    #
-    # === ( (corresponding Boolean) OR NOT(`requires_`) )
-
-    # Due to the permissive nature of the individual `requires_` fields,
-    # multiple `requires_` criteria are then ANDed together for the overall
-    # eligibility. For example, if no `requires_` fields are enabled, *all*
-    # addresses are eligible (eligibility = True AND True AND True AND ... ==
-    # True), but if any one of the `requires_` fields are enabled, an address is
-    # ineligible if it doesn't meet that criteria (eligibility = True AND False
-    # AND True AND ... == False)
-
     # For each program, take (<address Boolean> or not <requires_>) for all
-    # `requires_` fields, and AND them together (via all())
+    # `requires_` fields (see ARCHITECTURE.md for details), and AND them
+    # together (via all())
     eligible_iq_programs = [
         prog
         for prog in income_eligible_iq_programs
