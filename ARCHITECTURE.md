@@ -32,6 +32,11 @@ This was created for the City of Fort Collins, so references will be to their ve
     1. [Program Coordinator Process](#program-coordinator-process)
 1. [Project Code Map](#project-code-map)
     1. [Configuration Files](#configuration-files)
+        1. [docker-compose.*.yml](#docker-compose-yml)
+        1. [LICENSE](#license)
+        1. [pyproject.toml](#pyprojecttoml)
+        1. [redis.conf](#redisconf)
+        1. [supervisord.conf](#supervisordconf)
     1. [`app`](#app)
     1. [`dashboard`](#dashboard)
     1. [`files`](#files)
@@ -217,6 +222,26 @@ After the [Configuration Files](#configuration-files) definitions are the portio
 
 ## Configuration Files
 These are the non-Django configurations files, such as for [Redis](https://github.com/redis/redis) and [Docker](https://docs.docker.com) containerization.
+
+### docker-compose.*.yml
+These docker-compose files configure the container/docs for distribution. **They have not yet been modified beyond the definition set up by cookiecutter-django.**
+
+### LICENSE
+The [GPLv3](https://choosealicense.com/licenses/gpl-3.0) license was selected for all code in this repo because of the broad allowed usage of this software, while ensuring all modified copies remain copyleft (with the same license).
+
+> ![NOTE]
+> The [Affero version](https://choosealicense.com/licenses/agpl-3.0) of this license (AGPLv3) was considered, but the source-code-availability clause was deemed too restrictive for the consumer-facing portion of this app.
+
+### pyproject.toml
+There are two pyproject.toml files in this repo. The higher-level is in the repo root and is specifically for the containing `uv` definitions ('pyproject.toml'); it isn't pertinent to this section. The pyproject.toml here ('get_your/pyproject.toml') governs only the Django project; this hasn't been modified from the definition set up by cookiecutter-django (and likely won't need to be).
+
+### redis.conf
+The configuration file for Redis, as used by all Get-Your environments.
+
+It's unclear at this writing what has been changed from the defaults, if anything.
+
+### supervisord.conf
+The configuration for [Supervisor](https://supervisord.org) process control system, used with Docker containers. This is currently marked with ' - Copy' because it's in the same state as it was in Get-Your v6; it hasn't been determined if cookiecutter-django has a built-in method that would/should replace this.
 
 ## `app`
 This is the user-application part of the project.
