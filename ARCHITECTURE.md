@@ -44,6 +44,8 @@ This was created for the City of Fort Collins, so references will be to their ve
         1. [app.tasks](#apptasks)
         1. [app.views](#appviews)
     1. [`dashboard`](#dashboard)
+        1. [dashboard.admin](#dashboardadmin)
+        1. [dashboard.views](#dashboardviews)
     1. [`files`](#files)
     1. [`monitor`](#monitor)
     1. [`ref`](#ref)
@@ -360,6 +362,14 @@ This view uses the logic in [`app.backend.what_page()`](#what_page) to notify th
 This is the post-application user dashboard, which contains [IQ Program](#iq-programs) enrollment details, organization news, and user access to update (some of*) their information.
 
 \* See [??????] for more details on what information can be updated after the application process and why.
+
+### dashboard.admin
+...
+
+### dashboard.views
+
+#### apply_now_modal()
+This is a test for an HTMX modal that could be used for programs that require an additional vendor-specific privacy policy that must be accepted for the user to proceed. It's not currently in use in a Production environment.
 
 ## `files`
 This is the portion of the project that handles file uploads.
