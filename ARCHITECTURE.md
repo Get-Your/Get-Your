@@ -47,6 +47,7 @@ This was created for the City of Fort Collins, so references will be to their ve
         1. [dashboard.admin](#dashboardadmin)
         1. [dashboard.views](#dashboardviews)
     1. [`files`](#files)
+        1. [files.backend](#filesbackend)
     1. [`monitor`](#monitor)
     1. [`ref`](#ref)
     1. [`users`](#users)
@@ -373,6 +374,11 @@ This is a test for an HTMX modal that could be used for programs that require an
 
 ## `files`
 This is the portion of the project that handles file uploads.
+
+### files.backend
+
+#### userfiles_path()
+This sets the path to the file in blob storage.
 
 ## `monitor`
 This part of the project handles project monitoring, specifically logging.
