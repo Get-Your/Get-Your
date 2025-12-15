@@ -49,6 +49,8 @@ This was created for the City of Fort Collins, so references will be to their ve
     1. [`files`](#files)
         1. [files.backend](#filesbackend)
     1. [`monitor`](#monitor)
+        1. [monitor.admin](#monitoradmin)
+        1. [monitor.handlers](#monitorhandlers)
     1. [`ref`](#ref)
     1. [`users`](#users)
 
@@ -382,6 +384,14 @@ This sets the path to the file in blob storage.
 
 ## `monitor`
 This part of the project handles project monitoring, specifically logging.
+
+### monitor.admin
+...
+
+### monitor.handlers
+
+#### DatabaseLogHandler
+A custom handler for database logging. This includes additional useful information, such as 'process ID' and 'thread ID'.
 
 ## `ref`
 All reference data are within this part of the project.
