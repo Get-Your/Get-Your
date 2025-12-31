@@ -166,6 +166,7 @@ class IQProgramRDForm(forms.ModelForm):
             'friendly_supplemental_info',
             'learn_more_link',
             'friendly_eligibility_review_period',
+            'additional_external_form_link',
         ]
         address_fields = [x[0] for x in req_fields]
 

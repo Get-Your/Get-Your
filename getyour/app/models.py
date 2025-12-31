@@ -555,7 +555,8 @@ class IQProgramRD(GenericTimeStampedModel):
     learn_more_link = models.CharField(
         max_length=5000,
         help_text=_(
-            "Link for the user to learn more about the program."
+            "Link for the user to learn more about the program. "
+            "Note that this must start with 'https://' or 'http://'."
         ),
     )
     # Estimated time period for the eligibility review (in readable text, e.g.
@@ -609,6 +610,19 @@ class IQProgramRD(GenericTimeStampedModel):
         help_text=_(
             "The frequency at which a user needs to renew their application for this IQ program. "
             "Leave blank for a non-renewing (lifetime-enrollment) program."
+        ),
+    )
+
+    # Define a link to an external form the user will fill out after applying
+    # via Get FoCo. This is used when the program needs more information than
+    # collected by Get FoCo (such as number of pets for assistance with pet
+    # licensing). If unused, this should be left as blank
+    additional_external_form_link = models.CharField(
+        max_length=5000,
+        blank=True,
+        help_text=_(
+            "Link to an external form for additional information needed by the program, if applicable (leave blank for no form). "
+            "Note that this must start with 'https://' or 'http://', and the target form needs to have a way for the program coordinator to link its information to the Get FoCo user."
         ),
     )
 
