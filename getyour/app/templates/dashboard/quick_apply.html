@@ -22,8 +22,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     {% if 'grocery' in program_name|lower %}
         <h1><b>Thank you for applying to the {{ program_name }} program!</b></h1>
     {% else %}
-        <h1><b>Thank you for applying to the {{ program_name }} program! We'll let you know when you've been
+        {% if form_link %}
+            <h1><b>Thank you for applying to the {{ program_name }} program!</b></h1><br />
+            <h2><b>We need some additional information for this program, so the final step is to <a href="{{ form_link }}" target="_blank">click or tap here and fill out the form</a>. We'll let you know when you've been enrolled.</b></h2>
+        {% else %}
+            <h1><b>Thank you for applying to the {{ program_name }} program! We'll let you know when you've been
                 enrolled.</b></h1>
+        {% endif %}
         {% if in_gma_with_no_service %}
             <p style="color:red">Connexion isn't quite available at your address, but your reduced rate will be applied once the service is ready and you call to activate it. In the meantime, please go to the Connexion site and fill out the <a href="https://fcconnexion.com/service-availability/#notify" target="_blank">service notification form</a>.
             </p>
