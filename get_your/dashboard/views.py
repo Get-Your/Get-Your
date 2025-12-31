@@ -272,6 +272,8 @@ def quick_apply(request, iq_program, **kwargs):
             {
                 "program_name": iq_program.program_name.title(),
                 "title": f"{iq_program.program_name.title()} Application Complete",
+                # Pass the external form link
+                "form_link": iq_program.additional_external_form_link,
                 "in_gma_with_no_service": in_gma_with_no_service,
             },
         )
