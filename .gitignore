@@ -66,8 +66,8 @@ db_analytics.sqlite3
 db_analytics.sqlite3-journal
 db_monitor.sqlite3
 db_monitor.sqlite3-journal
-# Ignore any variation of manage.py except the base and for tests (negated at the end of this file)
-**/*manage*.py
+# Ignore any variation of manage_*.py except the base and for tests (negated at the end of this file)
+**/manage[!a-z0-9A-Z]*.py
 
 # Credentials files
 *settings.json

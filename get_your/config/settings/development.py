@@ -47,7 +47,9 @@ ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]  # noqa: S104
 # Create the Postgres URI from individual parameters in secrets file
 DATABASES = {
     "default": env.db(
-        "postgres://{usr}:{pwd}@{hst}:{prt}/{dbn}".format(
+        # env.db expects a DATABASE_URL environment var; using the 'default'
+        # kwarg allows building the connection string here
+        default="postgres://{usr}:{pwd}@{hst}:{prt}/{dbn}".format(
             usr=env("POSTGRES_USER"),
             pwd=env("POSTGRES_PASSWORD"),
             hst=env("POSTGRES_HOST"),
@@ -56,7 +58,9 @@ DATABASES = {
         ),
     ),
     "monitor": env.db(
-        "postgres://{usr}:{pwd}@{hst}:{prt}/{dbn}".format(
+        # env.db expects a DATABASE_URL environment var; using the 'default'
+        # kwarg allows building the connection string here
+        default="postgres://{usr}:{pwd}@{hst}:{prt}/{dbn}".format(
             usr=env("POSTGRES_USER"),
             pwd=env("POSTGRES_PASSWORD"),
             hst=env("POSTGRES_HOST"),
