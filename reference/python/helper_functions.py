@@ -21,7 +21,6 @@ from sqlalchemy.engine.base import Engine
 
 # Use Postgres-specific insert
 from sqlalchemy.sql.selectable import Select
-from sqlalchemy.sql.sqltypes import TEXT
 
 
 class DBMetadata:
@@ -369,8 +368,11 @@ class FieldMapping:
 
         """
 
-        # If source_field is not a string, set a placeholder and define the value
-        if isinstance(source_field, str):
+        # If source_field is not a string or is an empty string, set a
+        # placeholder and define the value
+        if isinstance(source_field, str) and source_field != "":
+            # # If source_field is not a string, set a placeholder and define the value
+            # if isinstance(source_field, str):
             source_name = source_field
             source_value = None
         else:
@@ -758,6 +760,12 @@ def process_data(
                 break
             df = pd.concat([df, itm], ignore_index=True)
 
+    # Update all None values to '' for dtype 'str' (to follow Django guidelines
+    # for using blank instead of NULL for CHAR fields)
+    char_fields = [fd for fd, tp in field_mapping.target_types.items() if tp == "str"]
+    for field in char_fields:
+        df[field] = df[field].apply(lambda x: "" if x is None else x)
+
     # Rename the fields (if field_mapping exists)
     if field_mapping:
         df = df.rename(mapper=field_mapping.target_fields, axis=1)
@@ -795,8 +803,12 @@ def finalize_df_for_database(
                 "db_fields must be the same length as the columns in the input DataFrame"
             )
         for nm, col in zip(df_data.columns, db_fields):
-            if isinstance(col.type, (JSON, JSONB)) or isinstance(col.type, TEXT):
-                df_data[nm] = df_data[nm].apply(json.dumps)
+            try:
+                if isinstance(col.type, (JSON, JSONB)):
+                    df_data[nm] = df_data[nm].apply(json.dumps)
+            except AttributeError:
+                # Case where there is not 'type' attribute; ignore
+                pass
 
     # Replace all NaN and NaT with Python None
     df_data = df_data.replace({np.nan: None})

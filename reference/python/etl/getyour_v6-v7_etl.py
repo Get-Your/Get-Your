@@ -32,6 +32,7 @@ from typing import Union
 import pandas as pd
 from psycopg.errors import FeatureNotSupported
 from sqlalchemy import (
+    Column,
     Integer,
     Table,
     bindparam,
@@ -59,6 +60,18 @@ from helper_functions import (
 
 # Return the directory of this file
 FILE_DIR = Path(__file__).parent
+
+# Define the mapping from Postgres datatypes to Python. This is a regex from
+# the Postgres dtypes
+DTYPE_MAPPING = {
+    "(.*?INT.*?)": "Int64",
+    "(.*?TIMESTAMP.*?)": "str",
+    "(.*?CHAR.*?)": "str",
+    "(.*?TEXT.*?)": "str",
+    "(.*?JSON.*?)": "str",
+    "(BOOLEAN)": "bool",
+    "(NUMERIC.*?)": "float",
+}
 
 
 class TableFunctions:
@@ -625,9 +638,51 @@ class ETLToNew:
             # Gather the field if source_value is None, otherwise use the
             # (literal) source_value labeled as the field name
             source_table_fields = [
-                source_table.c.get(fd) if not vl else literal_column(str(vl)).label(fd)
+                source_table.c.get(fd)
+                if vl is None
+                else literal_column("NULL").label(fd)
+                if vl == ""
+                else literal_column(str(vl)).label(fd)
                 for fd, vl in field_mapping.source_values.items()
             ]
+
+            # If field_mapping.target_types DNE, define it as the types in
+            # source_table_fields, using the DTYPE_MAPPING defined at the top
+            # of this file (this is to resolve the issue of 'int' dtypes in
+            # pandas not being about to store NULL values)
+            if not field_mapping.target_types:
+                # Convert each Postgres dtype to Python
+                python_dtypes = [
+                    next(
+                        ptype
+                        for dbtype, ptype in DTYPE_MAPPING.items()
+                        if re.match(dbtype, str(x.type))
+                    )
+                    if isinstance(x, Column)
+                    else "str"
+                    for x in source_table_fields
+                ]
+
+                # Just recreate field_mapping rather than do a bunch of update()
+                field_mapping = FieldMapping(
+                    mappings=[
+                        {"source_field": src, "target_field": trg, "target_type": typ}
+                        for src, trg, typ in zip(
+                            source_fields, target_fields, python_dtypes
+                        )
+                    ]
+                )
+
+            # Overwrite the source fields, given any new data from field_mapping
+            source_table_fields = [
+                source_table.c.get(fd)
+                if vl is None
+                else literal_column("NULL").label(fd)
+                if vl == ""
+                else literal_column(str(vl)).label(fd)
+                for fd, vl in field_mapping.source_values.items()
+            ]
+
             # Define the SELECT statement
             stmt = select(*source_table_fields)
 
@@ -948,6 +1003,12 @@ class ETLToNew:
         """
 
         table_defs = {
+            # Truncate (only) tables that FK to users_user (or themselves)
+            "django_admin_log": {},
+            "mfa_authenticator": {},
+            "socialaccount_socialtoken": {},
+            "socialaccount_socialaccount": {},
+            "users_user_user_completed_pages": {},
             "users_user": {
                 "source_table": "app_user",
                 "source_fields": [
@@ -991,6 +1052,8 @@ class ETLToNew:
                     },
                 ],
             },
+            # This table has an FK on account_emailaddress
+            "account_emailconfirmation": {},
             "account_emailaddress": {
                 "source_table": "app_user",
                 "source_fields": [
@@ -1044,6 +1107,7 @@ class ETLToNew:
                     "requires_is_city_covered",
                     "requires_is_in_gma",
                     "is_active",
+                    "",
                 ],
                 "target_fields": [
                     "id",
@@ -1062,6 +1126,7 @@ class ETLToNew:
                     "requires_is_city_covered",
                     "requires_is_in_gma",
                     "is_active",
+                    "additional_external_form_link",
                 ],
             },
             "ref_eligibilityprogram": {
@@ -1294,8 +1359,9 @@ class ETLToNew:
                     target_table,
                     target_db=tbldef["target_db"] if "target_db" in tbldef else None,
                 )
-            except AttributeError:
-                # Case for if there is no 'id' column
+            except (UnboundLocalError, AttributeError):
+                # Case for if target_table was not defined or if there is no
+                # 'id' column
                 pass
 
             print(f"'{tblnm}' fill successful!")
