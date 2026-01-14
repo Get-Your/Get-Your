@@ -76,7 +76,7 @@ Unless otherwise noted, the following commands must be run from the 'get_your' d
 3. Set your terminal to use the virtual environment that uv set up in [Dependency Installation](#dependency-installation); the Python executable should be at `.venv/Scripts/python.exe`.
 
 If an initialization error is thrown when loading `magic`:
-- On Windows: `python-magic-bin` may have been installed in the wrong order. If the error is 'ImportError: failed to find libmagic.  Check your installation', try running `uv remove python-magic-bin; uv add python-magic-bin~=0.4`
+- On Windows: `python-magic-bin` may have been installed in the wrong order. If the error is 'ImportError: failed to find libmagic.  Check your installation', try running `uv remove python-magic-bin && uv add python-magic-bin~=0.4`
 - On all other platforms, or if `magic` still isn't working, follow the instructions at https://github.com/pidydx/libmagicwin64
 
 Run the following to start the app. This will create the SQLite database and populate it with the database schema and sample data (coming soon - see https://github.com/Get-Your/Get-Your/issues/63).
@@ -171,7 +171,7 @@ Major-version releases will likely involve updates to the database structure or 
 
 2. Drop and recreate the `public` schema in the STAGE database. This ensures a clean slate for the data transfer.
 
-    **WARNING: MAKE SURE THE CORRENT (STAGE) DATABASE IS USED OR UNEXPECTED DATA LOSS WILL OCCUR**
+    **WARNING: MAKE SURE THE CORRECT (STAGE) DATABASE IS USED OR UNEXPECTED DATA LOSS WILL OCCUR**
 
         psql --host=<hostname> --port=5432 --username=<username> --dbname=<STAGE_database_name> --command="DROP SCHEMA public CASCADE;" --command="CREATE SCHEMA public;"
         <Enter password>
