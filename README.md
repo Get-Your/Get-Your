@@ -439,6 +439,12 @@ Connect to the primary (`getyour_<env>`) database and complete the following ste
         CREATE USER <username> WITH LOGIN PASSWORD '<password>' INHERIT;
         GRANT base_role TO <username>;
 
+        CREATE USER <username> WITH LOGIN PASSWORD '<password>' INHERIT;
+        GRANT privileged_role TO <username>;
+
+        CREATE USER <username> WITH LOGIN PASSWORD '<password>' INHERIT;
+        GRANT analytics_role TO <username>;
+
 6. Grant all users to the admin user
 
     Since superuser privileges in Azure PostgreSQL are reserved only for Azure services, performing administrator-like duties (killing user processes, etc) requires all users being granted to <admin_user>.
