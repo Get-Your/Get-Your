@@ -109,11 +109,7 @@ Local development is completely on the developer's computer. The Django app will
 
     python3 manage_local.py runserver
     
-(see the [manage.py](#managepy) section on using `manage_local.py` instead of the typical `manage.py`) or
-
-    launch.json
-
-and database operations/migrations will apply to SQLite database files in the repo folder (which will be created if they don't exist). Any SQLite database(s) will be ignored by Git.
+(see the [manage.py](#managepy) section on using `manage_local.py` instead of the typical `manage.py`) or `launch.json` and database operations/migrations will apply to SQLite database files in the repo folder (which will be created if they don't exist). Any SQLite database(s) will be ignored by Git.
 
 Local development uses `.env` and `.dev.env` for [app secrets](#app-secrets). The SQLite database configuration is hardcoded in `local.py`, so associated variables must exist but won't be used.
 
@@ -128,11 +124,7 @@ Hybrid development is for running the webapp locally on the developer's computer
 
 and database operations/migrations will apply to the target remote database.
 
-The primary benefit of this is that these `*local_*.py` scripts have
-
-    DEBUG = True
-
-so that full error messages are displayed on the webpage, rather than the minimal error messaging displayed on the live site.
+The primary benefit of this is that these `*local_*.py` scripts define `DEBUG = True` so that full error messages are displayed on the webpage, rather than the minimal error messaging displayed on the live site.
 
 > Note that `DEBUG` must *always* be set to `False` when the site is viewable on the web.
 
@@ -174,7 +166,6 @@ Major-version releases will likely involve updates to the database structure or 
     **WARNING: MAKE SURE THE CORRECT (STAGE) DATABASE IS USED OR UNEXPECTED DATA LOSS WILL OCCUR**
 
         psql --host=<hostname> --port=5432 --username=<username> --dbname=<STAGE_database_name> --command="DROP SCHEMA public CASCADE;" --command="CREATE SCHEMA public;"
-        <Enter password>
 
     Troubleshooting - if this command hangs, try disabling long-running idle queries:
 
@@ -346,7 +337,6 @@ Database administration can be completed in any applicable application, but `psq
 Use the following connection string to connect to the target database. The hostname and admin username can be found under the 'Essentials' section at the top of the Overview page on the Azure Portal as 'Server name' and 'Server admin login name', respectively.
 
     psql --host=<hostname> --port=5432 --username=<username> --dbname=<database_name>
-    <Enter password>
 
 `pg_dump` and `pg_restore` are PostgreSQL utilities used from the local command line (e.g. not from within the `psql` connection).
 
@@ -385,15 +375,11 @@ Connect to the primary (`getyour_<env>`) database and complete the following ste
 
 1. Admin role
 
-    a. Create
+    a. Create an admin user role (named `admin_role`) without login privileges
 
-        Create an admin user role (named `admin_role`) without login privileges.
+        CREATE ROLE admin_role INHERIT;
 
-            CREATE ROLE admin_role INHERIT;
-
-    b. Grant permissions
-
-        Assign permissions to `admin_role` and grant this role to the PostgreSQL admin account.
+    b. Grant permissions: assign permissions to `admin_role` and grant this role to the PostgreSQL admin account
 
         GRANT ALL ON SCHEMA public TO admin_role;
         GRANT ALL ON DATABASE <database_name> TO admin_role;
@@ -404,9 +390,7 @@ Connect to the primary (`getyour_<env>`) database and complete the following ste
 
 2. Base role
 
-    a. Create 
-
-        Create a base role (named `base_role`, for use via Django) without login privileges.
+    a. Create a base role (named `base_role`, for use via Django) without login privileges
 
         CREATE ROLE base_role INHERIT;
 
@@ -419,16 +403,12 @@ Connect to the primary (`getyour_<env>`) database and complete the following ste
 
 3. Privileged role
 
-    a. Create and assign role
-
-        Create a privileged role (named `privileged_role`, for local developer use) without login privileges. Start by granting `base_role` permissions.
+    a. Create a privileged role (named `privileged_role`, for local developer use) without login privileges. Start by granting `base_role` permissions
 
         CREATE ROLE privileged_role INHERIT;
         GRANT base_role TO privileged_role;
 
-    b. Grant permissions
-
-        Grant additions permissions for this privileged role.
+    b. Grant additions permissions for this privileged role
 
         GRANT CREATE ON SCHEMA public TO privileged_role;
 
@@ -438,9 +418,7 @@ Connect to the primary (`getyour_<env>`) database and complete the following ste
 
     It's set up so that `user_id` can be used to connect tables, but no specific names are available.
 
-    a. Create
-    
-        Create an analytics user role (named `analytics_role`, for use with reporting and analytics) without login privileges.
+    a. Create an analytics user role (named `analytics_role`, for use with reporting and analytics) without login privileges
 
         CREATE ROLE analytics_role INHERIT;
 
@@ -456,12 +434,10 @@ Connect to the primary (`getyour_<env>`) database and complete the following ste
         -- Grant this role to admin user (permanently, but to no material affect) to alter default privileges
         GRANT analytics_role TO <admin_user>;
 
-5. Create and assign users
-
-    Create users as needed (with passwords and login privileges). Assign the proper role to each user (`base_role` for Django users, `privileged_role` for local developers, `analytics_role` for analysts).
+5. Create and assign users as needed (with passwords and login privileges). The following commands provide for one user for each role created above (`base_role` for Django users, `privileged_role` for local developers, `analytics_role` for analysts, respectively)
 
         CREATE USER <username> WITH LOGIN PASSWORD '<password>' INHERIT;
-        GRANT <role> TO <username>;
+        GRANT base_role TO <username>;
 
 6. Grant all users to the admin user
 
