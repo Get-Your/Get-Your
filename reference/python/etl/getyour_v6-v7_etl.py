@@ -625,7 +625,11 @@ class ETLToNew:
             # Gather the field if source_value is None, otherwise use the
             # (literal) source_value labeled as the field name
             source_table_fields = [
-                source_table.c.get(fd) if not vl else literal_column(str(vl)).label(fd)
+                source_table.c.get(fd)
+                if vl is None
+                else literal_column("NULL").label(fd)
+                if vl == ""
+                else literal_column(str(vl)).label(fd)
                 for fd, vl in field_mapping.source_values.items()
             ]
             # Define the SELECT statement
@@ -1044,6 +1048,7 @@ class ETLToNew:
                     "requires_is_city_covered",
                     "requires_is_in_gma",
                     "is_active",
+                    "",
                 ],
                 "target_fields": [
                     "id",
@@ -1062,6 +1067,7 @@ class ETLToNew:
                     "requires_is_city_covered",
                     "requires_is_in_gma",
                     "is_active",
+                    "additional_external_form_link",
                 ],
             },
             "ref_eligibilityprogram": {
@@ -1294,8 +1300,9 @@ class ETLToNew:
                     target_table,
                     target_db=tbldef["target_db"] if "target_db" in tbldef else None,
                 )
-            except AttributeError:
-                # Case for if there is no 'id' column
+            except (UnboundLocalError, AttributeError):
+                # Case for if target_table was not defined or if there is no
+                # 'id' column
                 pass
 
             print(f"'{tblnm}' fill successful!")
