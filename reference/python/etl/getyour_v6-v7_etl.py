@@ -1003,6 +1003,12 @@ class ETLToNew:
         """
 
         table_defs = {
+            # Truncate (only) tables that FK to users_user (or themselves)
+            "django_admin_log": {},
+            "mfa_authenticator": {},
+            "socialaccount_socialtoken": {},
+            "socialaccount_socialaccount": {},
+            "users_user_user_completed_pages": {},
             "users_user": {
                 "source_table": "app_user",
                 "source_fields": [
@@ -1046,6 +1052,8 @@ class ETLToNew:
                     },
                 ],
             },
+            # This table has an FK on account_emailaddress
+            "account_emailconfirmation": {},
             "account_emailaddress": {
                 "source_table": "app_user",
                 "source_fields": [
