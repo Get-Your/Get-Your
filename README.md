@@ -228,11 +228,11 @@ Major-version releases will likely involve updates to the database structure or 
 
         SELECT pg_terminate_backend(pid) from pg_stat_activity
         WHERE state in ('<IDLE> in transaction', 'idle in transaction')
-        AND now()-xact_start>interval '1 minute';
+        AND now()-*start timestamp* interval '1 minute';
 
 3. Restore the structure and data of the STAGE database from PROD.
 
-    Use the `pg_restore` command in [Transferring Between Databases](#transferring-between-databases), with the STAGE database name as \<target_database_name\>.
+    Use the `pg_restore` command in [Transferring Between Databases](#transferring-between-databases), with the STAGE database name as \<database_name\>.
 
 4. Continue with Steps 5-7 using STAGE as the 'target' environment.
 
@@ -400,12 +400,12 @@ Use the following connection string to connect to the target database. The hostn
 ### Creating a Database
 On a freshly-deployed Azure instance, only the admin user (assigned during server setup) and the `postgres` database exist. Use the following code to create the `getyour_<env>` database and its 'monitor' counterpart.
 
-    psql --host=<hostname> --port=5432 --username=<admin_user> --dbname=postgres --command="CREATE DATABASE <target_database_name>;"
+    psql --host=<hostname> --port=5432 --username=<admin_user> --dbname=postgres --command="CREATE DATABASE <database_name>;"
 
 ### Transferring Between Databases
 During the setup phase, there was much experimentation of Azure instance types; Azure tenant selection; and database naming conventions before settling on the final version, so transferring structure and data was necessary. The following code can be used to transfer existing data to the new database.
 
-If there isn't yet existing data, just run Django migrations to the new \<target_database_name\>.
+If there isn't yet existing data, just run Django migrations to the new \<database_name\>.
 
 > If the same users aren't present in the target database as there are in the source, the `pg_restore` command will throw errors. To ignore object owners specified in the backup file and instead use the input username as the owner of all objects, add the flag `--no-owner` to the `pg_restore` command. **This is not recommended because the permissions structure for Get-Your is strictly defined.**
 
@@ -504,7 +504,7 @@ Connect to the primary (`getyour_<env>`) database and complete the following ste
 
 6. Grant all users to the admin user
 
-    Since superuser privileges in Azure PostgreSQL are reserved only for Azure services, performing administrator-like duties (killing user processes, etc) requires all users being granted to <admin_user>.
+    Since superuser privileges in Azure PostgreSQL are reserved only for Azure services, performing administrator-like duties (killing user processes, etc) requires all users being granted to \<admin_user\>.
 
         GRANT <base_user> TO <admin_user>;
         GRANT <privileged_user> TO <admin_user>;
