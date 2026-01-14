@@ -803,8 +803,12 @@ def finalize_df_for_database(
                 "db_fields must be the same length as the columns in the input DataFrame"
             )
         for nm, col in zip(df_data.columns, db_fields):
-            if isinstance(col.type, (JSON, JSONB)) or isinstance(col.type, TEXT):
-                df_data[nm] = df_data[nm].apply(json.dumps)
+            try:
+                if isinstance(col.type, (JSON, JSONB)):
+                    df_data[nm] = df_data[nm].apply(json.dumps)
+            except AttributeError:
+                # Case where there is not 'type' attribute; ignore
+                pass
 
     # Replace all NaN and NaT with Python None
     df_data = df_data.replace({np.nan: None})

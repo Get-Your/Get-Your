@@ -32,6 +32,7 @@ from typing import Union
 import pandas as pd
 from psycopg.errors import FeatureNotSupported
 from sqlalchemy import (
+    Column,
     Integer,
     Table,
     bindparam,
@@ -59,6 +60,18 @@ from helper_functions import (
 
 # Return the directory of this file
 FILE_DIR = Path(__file__).parent
+
+# Define the mapping from Postgres datatypes to Python. This is a regex from
+# the Postgres dtypes
+DTYPE_MAPPING = {
+    "(.*?INT.*?)": "Int64",
+    "(.*?TIMESTAMP.*?)": "str",
+    "(.*?CHAR.*?)": "str",
+    "(.*?TEXT.*?)": "str",
+    "(.*?JSON.*?)": "str",
+    "(BOOLEAN)": "bool",
+    "(NUMERIC.*?)": "float",
+}
 
 
 class TableFunctions:
@@ -632,6 +645,44 @@ class ETLToNew:
                 else literal_column(str(vl)).label(fd)
                 for fd, vl in field_mapping.source_values.items()
             ]
+
+            # If field_mapping.target_types DNE, define it as the types in
+            # source_table_fields, using the DTYPE_MAPPING defined at the top
+            # of this file (this is to resolve the issue of 'int' dtypes in
+            # pandas not being about to store NULL values)
+            if not field_mapping.target_types:
+                # Convert each Postgres dtype to Python
+                python_dtypes = [
+                    next(
+                        ptype
+                        for dbtype, ptype in DTYPE_MAPPING.items()
+                        if re.match(dbtype, str(x.type))
+                    )
+                    if isinstance(x, Column)
+                    else "str"
+                    for x in source_table_fields
+                ]
+
+                # Just recreate field_mapping rather than do a bunch of update()
+                field_mapping = FieldMapping(
+                    mappings=[
+                        {"source_field": src, "target_field": trg, "target_type": typ}
+                        for src, trg, typ in zip(
+                            source_fields, target_fields, python_dtypes
+                        )
+                    ]
+                )
+
+            # Overwrite the source fields, given any new data from field_mapping
+            source_table_fields = [
+                source_table.c.get(fd)
+                if vl is None
+                else literal_column("NULL").label(fd)
+                if vl == ""
+                else literal_column(str(vl)).label(fd)
+                for fd, vl in field_mapping.source_values.items()
+            ]
+
             # Define the SELECT statement
             stmt = select(*source_table_fields)
 
