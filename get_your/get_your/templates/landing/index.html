@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 <body>
     {% include "partials/environment_banner.html" with is_prod=is_prod db_env_str=db_env_str %}
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
         <div class="container">
             <a class="navbar-brand" href="#"><img width="100" height="40" src="{% static 'images/CityLogoGold-01.png' %}"></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -130,6 +130,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                             <label class="form-label fs-4" for="{{ form.address.id_for_label }}">Address</label>
                             <input class="form-control shadow-sm" name="{{ form.address.name }}" id="{{ form.address.id_for_label }}" maxlength="{{ form.address.max_length }}" type="text" required autocomplete="off">
                         </div>
+                        <hr>
                         <div>
                             <button class="btn btn-primary" type="submit">Enter</button>
                         </div>
@@ -142,7 +143,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
     </main>
-    <footer class="py-3 text-center bg-light">
+    <footer class="py-3 text-center bg-light border-top">
         Get FoCo - Copyright<sup>{% bs_icon 'c-circle' size='0.7em' %}</sup> {% now 'Y' %}
     </footer>
 
