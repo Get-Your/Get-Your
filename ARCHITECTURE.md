@@ -275,28 +275,6 @@ This is the final step in the automated workflow for the user's application/rene
 
 This function is largely necessary because of the decision to not modify data outside a function/view's working model (and, before this, the data model setup itself). For example, a portion of this function finds the minimum AMI from the selected Eligibility Programs and sets `income_as_fraction_of_ami` in the `Household` model; if `income_as_fraction_of_ami` existed in a different model or the 'Eligibility Programs' view was updated to modify the `Household` model, this functionality would be unnecessary to have in a dedicated step.
 
-#### get_eligible_iq_programs()
-This function retrieves all IQ Programs for which the user is geographically eligible. To keep Get-Your as extensible as possible regarding program requirements, it's set up to match a '\<field name\>' Boolean with 'requires_\<field name\>' (e.g. matching 'is_in_gma' with 'requires_is_in_gma') so that new requirements necessitate adding new fields only, not additional logic.
-
-Each requirement is compared with the corresponding field, then they're all chained together to determine the overall user eligibility for a specified program. Fields beginning with `requires_` permissively specify whether the matching field (in the `AddressRef` model) is a filter for the program, so a True value in the `requires_` field requires the corresponding address Boolean to also be True to be eligible. Because it's permissive, a False value in the `requires_` field means that all addresses are eligible, regardless of the value of the corresponding Boolean. Or as a truth table:
-
-An address is eligible for benefits under the following conditions:
-
-![Truth table for 'requires_' variables](./media/requires_truth_table.png)
-
-    === ( (corresponding Boolean) OR NOT(`requires_`) )
-
-Due to the permissive nature of the individual `requires_` fields,
-multiple `requires_` criteria are then ANDed together for the overall
-eligibility. For example, if no `requires_` fields are enabled, *all*
-addresses are eligible (eligibility = True AND True AND True AND ... ==
-True), but if any one of the `requires_` fields are enabled, an address is
-ineligible if it doesn't meet that criteria (eligibility = True AND False
-AND True AND ... == False).
-
-> ![NOTE]
-> The 'requires_' fields could be named more clearly to show that they are specific to geographical (address) requirements.
-
 #### get_iq_program_requires_fields()
 This function collects all `requires_` fields for comparison with the corresponding Boolean fields.
 
@@ -370,6 +348,30 @@ This is the post-application user dashboard, which contains [IQ Program](#iq-pro
 
 ### dashboard.admin
 ...
+
+### dashboard.backend
+
+#### get_eligible_iq_programs()
+This function retrieves all IQ Programs for which the user is geographically eligible. To keep Get-Your as extensible as possible regarding program requirements, it's set up to match a '\<field name\>' Boolean with 'requires_\<field name\>' (e.g. matching 'is_in_gma' with 'requires_is_in_gma') so that new requirements necessitate adding new fields only, not additional logic.
+
+Each requirement is compared with the corresponding field, then they're all chained together to determine the overall user eligibility for a specified program. Fields beginning with `requires_` permissively specify whether the matching field (in the `AddressRef` model) is a filter for the program, so a True value in the `requires_` field requires the corresponding address Boolean to also be True to be eligible. Because it's permissive, a False value in the `requires_` field means that all addresses are eligible, regardless of the value of the corresponding Boolean. Or as a truth table:
+
+An address is eligible for benefits under the following conditions:
+
+![Truth table for 'requires_' variables](./media/requires_truth_table.png)
+
+    === ( (corresponding Boolean) OR NOT(`requires_`) )
+
+Due to the permissive nature of the individual `requires_` fields,
+multiple `requires_` criteria are then ANDed together for the overall
+eligibility. For example, if no `requires_` fields are enabled, *all*
+addresses are eligible (eligibility = True AND True AND True AND ... ==
+True), but if any one of the `requires_` fields are enabled, an address is
+ineligible if it doesn't meet that criteria (eligibility = True AND False
+AND True AND ... == False).
+
+> ![NOTE]
+> The 'requires_' fields could be named more clearly to show that they are specific to geographical (address) requirements.
 
 ### dashboard.views
 

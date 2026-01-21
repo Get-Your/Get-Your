@@ -74,6 +74,61 @@ def map_iq_enrollment_status(program, needs_renewal=False):
         return ""
 
 
+def get_iqprogram_requires_fields():
+    """
+    Gather all `requires_` fields in the IQProgramRef model along with their
+    corresponding AddressRef Boolean.
+
+    """
+    field_prefix = "requires_"
+    req_fields = [
+        (x.name, x.name.replace(field_prefix, ""))
+        for x in IQProgramRef._meta.fields
+        if x.name.startswith(field_prefix)
+    ]
+
+    return req_fields
+
+
+def get_eligible_iq_programs(
+    user,
+    eligibility_address,
+):
+    """
+    Return IQ Programs that the user is eligible for, without accounting for
+    current enrollment or program-specific application.
+
+    """
+
+    # Get all active IQ Programs with an AMI Threshold >= the user's income
+    # fraction
+    income_eligible_iq_programs = IQProgramRef.objects.filter(
+        is_active=True,
+        # If income_as_fraction_of_ami is None, set to 100% to exclude all programs
+        ami_threshold__gte=user.household.income_as_fraction_of_ami or 1,
+    ).order_by("id")
+
+    # Filter programs further based on address requirements
+
+    # Gather all `requires_` fields in the IQProgramRef model along with their
+    # corresponding AddressRef Boolean
+    req_fields = get_iqprogram_requires_fields()
+
+    # For each program, take (<address Boolean> or not <requires_>) for all
+    # `requires_` fields (see ARCHITECTURE.md for details), and AND them
+    # together (via all())
+    eligible_iq_programs = [
+        prog
+        for prog in income_eligible_iq_programs
+        if all(
+            (getattr(eligibility_address, cor) or not getattr(prog, req))
+            for req, cor in req_fields
+        )
+    ]
+
+    return eligible_iq_programs
+
+
 def get_users_iq_programs(
     user_id,
     users_income_as_fraction_of_ami,

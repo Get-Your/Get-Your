@@ -44,8 +44,6 @@ from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 
 from app.backend import finalize_application
-from app.backend import get_eligible_iq_programs
-from app.backend import get_iqprogram_requires_fields
 from app.backend import remove_ineligible_programs_for_user
 from app.constants import application_pages
 from app.models import Address
@@ -53,6 +51,8 @@ from app.models import EligibilityProgram
 from app.models import Household
 from app.models import HouseholdMembers
 from app.models import IQProgram
+from dashboard.backend import get_eligible_iq_programs
+from dashboard.backend import get_iqprogram_requires_fields
 from dashboard.backend import get_users_iq_programs
 from get_your.users.models import UserNote
 from monitor.wrappers import LoggerWrapper
