@@ -1348,9 +1348,7 @@ class ETLToNew:
             if "after_port" in tbldef.keys():
                 for aftritm in tbldef["after_port"]:
                     print(f"Running '{aftritm['function'].__name__}()'...")
-                    # Note that all 'after_port' functions must return
-                    # target_table
-                    target_table = aftritm["function"](**aftritm["kwargs"])
+                    aftritm["function"](**aftritm["kwargs"])
                     print("Run complete")
 
             # Update auto-increment to be the value after the max, if applicable
