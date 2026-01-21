@@ -205,7 +205,7 @@ def index(request, **kwargs):
                 {
                     "form": AddressLookupForm(),
                     "in_progress_app_saved": in_progress_app_saved,
-                    "iq_programs": IQProgramRef.objects.filter(is_active=True),
+                    "iq_programs": IQProgramRef.objects.filter(is_active=True).order_by('friendly_name'),
                 },
             )
 
