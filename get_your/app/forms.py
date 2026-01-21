@@ -29,6 +29,7 @@ from ref.models import Address as AddressRef
 
 from .constants import duration_at_address_choices
 from .constants import rent_own_choices
+from .constants import supported_content_types
 from .models import Household
 from .models import HouseholdMembers
 
@@ -99,7 +100,11 @@ class HouseholdMembersForm(forms.ModelForm):
         }
         widgets = {
             "birthdate": DateInput(attrs={"type": "date"}),
-            "identification_path": UploadedFileInput,
+            "identification_path": UploadedFileInput(
+                attrs={
+                    "accept": ", ".join(set(supported_content_types.values())),
+                },
+            ),
         }
 
 
