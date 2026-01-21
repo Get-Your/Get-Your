@@ -289,21 +289,23 @@ class TableFunctions:
         with self.etlo.new.engine.begin() as conn:
             conn.execute(insert_stmt, df_completed.to_dict("records"))
 
+    def convert_household_from_json(self):
+        """
+        For each account, convert `app_householdmembers.household_info` from
+        JSON into the new field-separated `birthdate`, `full_name`, and
+        `identification_path`.
+
+        """
+
+        print("FINISH CONVERTING HOUSEHOLDMEMBERS")
+
 
 class ETLToNew:
     def __init__(
         self,
         # Use the path to the default SQLite database as the default newdb_profile
-        newdb_profile: str = str(
-            Path(FILE_DIR)
-            .joinpath("..", "..", "..", "get_your", "db.sqlite3")
-            .resolve()
-        ),
-        newdb_monitor_profile: str = str(
-            Path(FILE_DIR)
-            .joinpath("..", "..", "..", "get_your", "db_monitor.sqlite3")
-            .resolve()
-        ),
+        newdb_profile: str = "getfoco_dev_v7",
+        newdb_monitor_profile: str = "getfoco_dev_monitor_v7",
         olddb_profile: str = "getfoco_prod_v6",
         olddb_analytics_profile: str = "getfoco_dev_analytics_v6",
         ignore_errors: bool = True,
@@ -434,7 +436,7 @@ class ETLToNew:
         Update the specified table's auto-increment ``id`` value, if applicable.
         The auto-increment must be on a field named ``id``.
 
-        Note that this is only for Postgres (target) tables.
+        Note that this is only for Postgres and SQLite (target) tables.
 
         Parameters
         ----------
@@ -1167,7 +1169,6 @@ class ETLToNew:
                     "is_updated",
                     "is_income_verified",
                     "duration_at_address",
-                    "number_persons_in_household",
                     "income_as_fraction_of_ami",
                     "rent_own",
                 ],
@@ -1178,27 +1179,33 @@ class ETLToNew:
                     "user_has_updated",
                     "is_income_verified",
                     "duration_at_address",
-                    "number_persons_in_household",
                     "income_as_fraction_of_ami",
                     "rent_own",
                 ],
             },
             "app_householdmembers": {
-                "source_table": "app_householdmembers",
-                "source_fields": [
-                    "created_at",
-                    "modified_at",
-                    "user_id",
-                    "household_info",
-                    "is_updated",
-                ],
-                "target_fields": [
-                    "created_at",
-                    "modified_at",
-                    "user_id",
-                    "household_info",
-                    "user_has_updated",
-                ],
+                # # Temporarily commented out because we can't have null values;
+                # # this will need to be ported and converted simultaneously (in
+                # # convert_household_from_json())
+                # "source_table": "app_householdmembers",
+                # "source_fields": [
+                #     "created_at",
+                #     "modified_at",
+                #     "user_id",
+                #     "is_updated",
+                # ],
+                # "target_fields": [
+                #     "created_at",
+                #     "modified_at",
+                #     "user_id",
+                #     "user_has_updated",
+                # ],
+                # "after_port": [
+                #     {
+                #         "function": self.table_functions.convert_household_from_json,
+                #         "kwargs": {},
+                #     },
+                # ],
             },
             "app_eligibilityprogram": {
                 "source_table": "app_eligibilityprogram",
