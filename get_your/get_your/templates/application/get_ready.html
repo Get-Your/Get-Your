@@ -52,7 +52,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                             {% if renewal_mode %}
                             <a href="{% url 'users:detail' pk=request.user.pk %}?next=account" class="btn btn-primary">Continue</a>
                             {% else %}
-                            <a href="{% url 'users:signup' %}" class="btn btn-primary">Apply</a>
+                            <a href="{% url 'app:address' %}" class="btn btn-primary">Apply</a>
                             {% endif %}
                         </div>
                     </div>
