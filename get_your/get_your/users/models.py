@@ -22,12 +22,12 @@ from typing import ClassVar
 from django.contrib import admin
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.functions import Lower
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_case_insensitive_field import CaseInsensitiveFieldMixin
 from phonenumber_field.modelfields import PhoneNumberField
 
-from .fields import LowerEmailModelField
 from .managers import UserManager
 
 
@@ -49,7 +49,7 @@ class User(AbstractUser):
     # name = CharField(_("Name of User"), blank=True, max_length=255)
     first_name = models.CharField(_("first name"), max_length=255)
     last_name = models.CharField(_("last name"), max_length=255)
-    email = LowerEmailModelField(_("email address"), unique=True)
+    email = models.EmailField(_("email address"), unique=True)
     username = None  # type: ignore[assignment]
 
     phone_number = PhoneNumberField()
@@ -98,6 +98,14 @@ class User(AbstractUser):
     def full_name(self):
         """Display 'full name' in the admin portal."""
         return self.first_name + " " + self.last_name
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                Lower("email"),
+                name="user_email_ci_uniqueness",
+            ),
+        ]
 
 
 class UserNote(models.Model):

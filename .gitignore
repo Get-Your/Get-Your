@@ -339,7 +339,7 @@ tags
 dump.rdb
 
 ### Project template
-get_your/media/
+get_your/get_your/media/
 
 .pytest_cache/
 .ipython/

@@ -1,0 +1,62 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% load static %}
+<head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SL59NNQRH0"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-SL59NNQRH0');
+    </script>
+    
+    <meta charset="utf-8">
+
+    <!-- Viewport -->
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
+
+
+    <title>{{ title }}</title>
+
+    <!-- Webmanifest + Favicon / App icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'app-icons/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'app-icons/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'app-icons/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'app-icons/site.webmanifest' %}">
+    <link rel="mask-icon" href="{% static 'app-icons/safari-pinned-tab.svg' %}" color="#13467d">
+    <meta name="msapplication-TileColor" content="#13467d">
+    <meta name="theme-color" content="#ffffff">
+    <!-- Import Google font (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
+        rel="stylesheet" id="google-font">
+
+    <!-- Font icons -->
+    <link rel="stylesheet" href="{% static 'icons/gy-icons.min.css' %}?cache_breaker={% now 'YmdHmmss' %}">
+
+    <!-- Theme styles + Bootstrap -->
+    <link rel="stylesheet" media="screen" href="{% static 'css/theme.min.css' %}?cache_breaker={% now 'YmdHmmss' %}">
+
+    <!-- django-formset styles -->
+    <script type="module" src="{% static 'formset/js/django-formset.js' %}"></script>
+</head>

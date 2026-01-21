@@ -47,6 +47,24 @@ urlpatterns = [
         kwargs={"allow_direct_user": True},
     ),
     path(
+        "account_overview",
+        views.account_overview,
+        name="account_overview",
+        kwargs={"allow_direct_user": True},
+    ),
+    path(
+        "account_settings",
+        views.account_settings,
+        name="account_settings",
+        kwargs={"allow_direct_user": True},
+    ),
+    path(
+        "account_programs",
+        views.account_programs,
+        name="account_programs",
+        kwargs={"allow_direct_user": True},
+    ),
+    path(
         "qualified_programs",
         views.qualified_programs,
         name="qualified_programs",

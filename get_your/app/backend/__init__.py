@@ -47,6 +47,7 @@ from app.models import EligibilityProgram
 from app.models import Household
 from app.models import HouseholdMembers
 from app.models import IQProgram
+from dashboard.backend import get_eligible_iq_programs
 from dashboard.backend import get_users_iq_programs
 from monitor.wrappers import LoggerWrapper
 from ref.models import Address as AddressRef
@@ -297,45 +298,6 @@ def what_page(user, request):
     return "app:account"
 
 
-def get_eligible_iq_programs(
-    user,
-    eligibility_address,
-):
-    """
-    Return IQ Programs that the user is eligible for, without accounting for
-    current enrollment or program-specific application.
-
-    """
-
-    # Get all active IQ Programs with an AMI Threshold >= the user's income
-    # fraction
-    income_eligible_iq_programs = IQProgramRef.objects.filter(
-        is_active=True,
-        # If income_as_fraction_of_ami is None, set to 100% to exclude all programs
-        ami_threshold__gte=user.household.income_as_fraction_of_ami or 1,
-    ).order_by("id")
-
-    # Filter programs further based on address requirements
-
-    # Gather all `requires_` fields in the IQProgramRef model along with their
-    # corresponding AddressRef Boolean
-    req_fields = get_iqprogram_requires_fields()
-
-    # For each program, take (<address Boolean> or not <requires_>) for all
-    # `requires_` fields (see ARCHITECTURE.md for details), and AND them
-    # together (via all())
-    eligible_iq_programs = [
-        prog
-        for prog in income_eligible_iq_programs
-        if all(
-            (getattr(eligibility_address, cor) or not getattr(prog, req))
-            for req, cor in req_fields
-        )
-    ]
-
-    return eligible_iq_programs
-
-
 def get_in_progress_eligiblity_file_uploads(request):
     """Returns a list of eligibility programs that are in progress. This is just a shim for now
     and will eventually be replaced by a call to the database through Django's ORM
@@ -352,13 +314,17 @@ def get_in_progress_eligiblity_file_uploads(request):
     return users_in_progress_file_uploads
 
 
-def save_renewal_action(request, action, status="completed", data={}):
+def save_renewal_action(request_or_user, action, status="completed", data={}):
     """Saves a renewal action to the database
     Args:
-        request (HttpRequest): The request object
+        request_or_user (HttpRequest or User object): The request object or User
         action (str): The action to save
     """
-    user = UserModel.objects.get(id=request.user.id)
+    if isinstance(request_or_user, http.HttpRequest):
+        user = UserModel.objects.get(id=request_or_user.user.id)
+    else:
+        user = request_or_user
+
     if hasattr(user, "last_renewal_action"):
         last_renewal_action = (
             user.last_renewal_action if user.last_renewal_action else {}
@@ -544,22 +510,6 @@ def finalize_application(user, renewal_mode=False, update_user=True):
 
     # Return the target page and an (empty) dictionary of <session var>: <value>
     return ("app:broadcast", {})
-
-
-def get_iqprogram_requires_fields():
-    """
-    Gather all `requires_` fields in the IQProgramRef model along with their
-    corresponding AddressRef Boolean.
-
-    """
-    field_prefix = "requires_"
-    req_fields = [
-        (x.name, x.name.replace(field_prefix, ""))
-        for x in IQProgramRef._meta.fields
-        if x.name.startswith(field_prefix)
-    ]
-
-    return req_fields
 
 
 def file_validation(

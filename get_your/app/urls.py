@@ -73,7 +73,8 @@ urlpatterns = [
         "address",
         views.address,
         name="address",
-        kwargs={"allow_direct_user": False},
+        # TODO: Change this back to 'False' prior to release
+        kwargs={"allow_direct_user": True},
     ),
     # path(
     #     "account",
@@ -83,21 +84,17 @@ urlpatterns = [
     # ),
     path(
         "household",
-        views.household,
+        views.HouseholdFormView.as_view(),
         name="household",
-        kwargs={"allow_direct_user": False},
-    ),
-    path(
-        "household_members",
-        views.household_members,
-        name="household_members",
-        kwargs={"allow_direct_user": False},
+        # TODO: Change this back to 'False' prior to release
+        kwargs={"allow_direct_user": True},
     ),
     path(
         "programs",
         views.programs,
         name="programs",
-        kwargs={"allow_direct_user": False},
+        # TODO: Change this back to 'False' prior to release
+        kwargs={"allow_direct_user": True},
     ),
     path(
         "address_correction",
@@ -127,13 +124,15 @@ urlpatterns = [
         "files",
         views.files,
         name="files",
-        kwargs={"allow_direct_user": False},
+        # TODO: Change this back to 'False' prior to release
+        kwargs={"allow_direct_user": True},
     ),
     path(
         "broadcast",
         views.broadcast,
         name="broadcast",
-        kwargs={"allow_direct_user": False},
+        # TODO: Change this back to 'False' prior to release
+        kwargs={"allow_direct_user": True},
     ),
     path(
         "notify_remaining",

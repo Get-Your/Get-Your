@@ -17,8 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import base64
-import io
 import json
 import logging
 from urllib.parse import urlencode
@@ -27,17 +25,16 @@ import pendulum
 import usaddress
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.files.storage import default_storage
-from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.http import QueryDict
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.shortcuts import reverse
+from django.utils.decorators import method_decorator
+from formset.views import EditCollectionView
 
-from files.backend import userfiles_path
 from files.forms import FileUploadForm
 from monitor.wrappers import LoggerWrapper
 from ref.models import Address as AddressRef
@@ -53,17 +50,14 @@ from .backend import form_page_number
 from .backend import get_in_progress_eligiblity_file_uploads
 
 # from .backend import save_renewal_action
-from .backend import serialize_household_members
 from .backend import what_page
 from .backend.address import address_check
 from .backend.address import finalize_address
 from .backend.address import tag_mapping
 from .backend.address import validate_usps
-from .constants import supported_content_types
 from .forms import AddressForm
 from .forms import AddressLookupForm
-from .forms import HouseholdForm
-from .forms import HouseholdMembersForm
+from .forms import HouseholdFormCollection
 from .models import Address
 from .models import EligibilityProgram
 from .models import Household
@@ -1058,27 +1052,36 @@ def take_usps_address(request, **kwargs):
             ]
             if eligibility_addresses:
                 try:
-                    # Create and save a record for the user's address using
+                    # Create/get and save a record for the user's address using
                     # the Address object
+                    # TODO: Since this no longer errors when a record already
+                    # exists, ensure that new vs existing is accounted for
+                    # elsewhere in this view (this function returns a Boolean
+                    # designating whether it's a new record), and also setting
+                    # 'user_has_updated' if the user changes their mailing address
                     if mailing_addresses:
-                        Address.objects.create(
+                        Address.objects.get_or_create(
                             user=request.user,
-                            eligibility_address=AddressRef.objects.get(
+                            defaults={
+                                "eligibility_address": AddressRef.objects.get(
                                 id=eligibility_addresses[0]["instance"],
                             ),
-                            mailing_address=AddressRef.objects.get(
+                                "mailing_address": AddressRef.objects.get(
                                 id=mailing_addresses[0]["instance"],
                             ),
+                            },
                         )
                     else:
-                        Address.objects.create(
+                        Address.objects.get_or_create(
                             user=request.user,
-                            eligibility_address=AddressRef.objects.get(
+                            defaults={
+                                "eligibility_address": AddressRef.objects.get(
                                 id=eligibility_addresses[0]["instance"],
                             ),
-                            mailing_address=AddressRef.objects.get(
+                                "mailing_address": AddressRef.objects.get(
                                 id=eligibility_addresses[0]["instance"],
                             ),
+                            },
                         )
                 except IntegrityError:
                     # Update the user's address record if it already exists
@@ -1157,346 +1160,129 @@ def take_usps_address(request, **kwargs):
         raise
 
 
-@login_required()
-def household(request, **kwargs):
-    try:
-        if request.session.get("application_addresses"):
-            del request.session["application_addresses"]
+@method_decorator(login_required, name="dispatch")
+# @method_decorator([login_required, set_update_mode], name="dispatch")
+class HouseholdFormView(LoginRequiredMixin, EditCollectionView):
+    model = Household
+    collection_class = HouseholdFormCollection
+    template_name = "application/household.html"
 
-        # Check the boolean value of update_mode session var
-        # Set as false if session var DNE
-        update_mode = (
-            request.session.get("update_mode")
-            if request.session.get("update_mode")
-            else False
-        )
-        renewal_mode = (
-            request.session.get("renewal_mode")
-            if request.session.get("renewal_mode")
-            else False
-        )
+    extra_context = None
 
-        if request.method == "POST":
-            log.debug(
-                "Leaving function (POST)",
-                function="household",
-                user_id=request.user.id,
-            )
+    def get_initial(self):
+        """
+        Return initial values for form elements. Note that the dictionary must
+        be the same shape as the form collection(s), although not all elements
+        need to be defined.
 
-            try:
-                existing = request.user.household
-                form = HouseholdForm(request.POST, instance=existing)
-            except (AttributeError, ObjectDoesNotExist):
-                form = HouseholdForm(request.POST or None)
+        """
+        initial = super().get_initial()
 
-            instance = form.save(commit=False)
-            instance.user_id = request.user.id
+        # If 'household members' have been defined, return the full form
+        if "members" in initial:
+            return initial
 
-            # Initialize is_income_verified (if first time through the application)
-            if not update_mode:
-                instance.is_income_verified = False
-
-            # Set the attributes to let pre_save know to save history
-            # instance.update_mode = update_mode
-            # instance.renewal_mode = renewal_mode
-
-            instance.save()
-
-            if renewal_mode:
-                # Call save_renewal_action after .save() so as not to save
-                # renewal metadata as data updates
-                # save_renewal_action(request, "household")
-                pass
-
-            if update_mode:
-                return redirect(f"{reverse('app:household_members')}?update_mode=1")
-
-            # Add 'app:household' to `user_completed_pages`
-            request.user.user_completed_pages.add(
-                ApplicationPage.objects.get(page_url="app:household"),
-            )
-
-            return redirect(reverse("app:household_members"))
-
-        log.debug(
-            "Entering function (GET)",
-            function="household",
-            user_id=request.user.id,
-        )
-
-        try:
-            # Query the users table for the user's data
-            eligibility = Household.objects.get(user_id=request.user.id)
-            form = HouseholdForm(instance=eligibility)
-        except Exception:
-            form = HouseholdForm()
-
-        return render(
-            request,
-            "application/household.html",
-            {
-                "form": form,
-                "step": 3,
-                "form_page_number": form_page_number,
-                "title": "Household",
-                "update_mode": update_mode,
-                "renewal_mode": renewal_mode,
-            },
-        )
-
-    # General view-level exception catching
-    except Exception:
-        try:
-            user_id = request.user.id
-        except Exception:
-            user_id = None
-        log.exception(
-            "Uncaught view-level exception",
-            function="household",
-            user_id=user_id,
-        )
-        raise
-
-
-@login_required()
-def household_members(request, **kwargs):
-    try:
-        # Check the boolean value of update_mode session var
-        # Set as false if session var DNE
-        update_mode = (
-            request.session.get("update_mode")
-            if request.session.get("update_mode")
-            else False
-        )
-        renewal_mode = (
-            request.session.get("renewal_mode")
-            if request.session.get("renewal_mode")
-            else False
-        )
-
-        if request.method == "POST":
-            log.debug(
-                "Leaving function (POST)",
-                function="household_members",
-                user_id=request.user.id,
-            )
-
-            try:
-                existing = request.user.householdmembers
-
-                form = HouseholdMembersForm(request.POST, instance=existing)
-            except (AttributeError, ObjectDoesNotExist):
-                form = HouseholdMembersForm(request.POST or None)
-
-            file_paths = []
-            if form.is_valid():
-                instance = form.save(commit=False)
-
-                # Loop 1: scans files
-                # Loop 2: saves file(s) if valid
-                identification_paths = request.POST.getlist("identification_path")
-                updated_identification_paths = []
-
-                for _, base64_content in enumerate(identification_paths):
-                    # Decode the Base64 string
-                    decoded_bytes = base64.b64decode(base64_content)
-                    # Create a buffer from the decoded bytes
-                    buffer = io.BytesIO(decoded_bytes).getvalue()
-
-                    file_validated, failure_message_or_file_extension = file_validation(
-                        buffer,
-                        request.user.id,
-                        calling_function="household_members",
-                    )
-                    if not file_validated:
-                        # Attempt to define household_info to load
-                        try:
-                            household_info = (
-                                request.user.householdmembers.household_info
-                            )
-                        except AttributeError:
-                            household_info = None
-
-                        return render(
-                            request,
-                            "application/household_members.html",
-                            {
-                                "step": 3,
-                                "message": failure_message_or_file_extension,
-                                "dependent": str(
-                                    request.user.household.number_persons_in_household,
-                                ),
-                                "list": list(
-                                    range(
-                                        request.user.household.number_persons_in_household,
-                                    ),
-                                ),
-                                "form": form,
-                                "form_page_number": form_page_number,
-                                "title": "Household Members",
-                                "update_mode": update_mode,
-                                "form_data": json.dumps(household_info)
-                                if household_info
-                                else [],
-                            },
-                        )
-
-                    # File was successfully validated; file_validation() output
-                    # will be the file extension
-                    file_name = (
-                        f"household_member_id.{failure_message_or_file_extension}"
-                    )
-                    # Assuming file_name is already defined
-                    updated_base64_content = base64_content + "," + file_name
-                    updated_identification_paths.append(updated_base64_content)
-
-                fileAmount = 0
-                for f in updated_identification_paths:
-                    file_name = f.split(",")[1]
-                    file_contents = f.split(",")[0]
-                    content_type = supported_content_types.get(
-                        file_name.split(".")[1],
-                        "text/plain",
-                    )
-
-                    # Decode the Base64 string
-                    decoded_bytes = base64.b64decode(file_contents)
-
-                    # Create a buffer from the decoded bytes
-                    buffer = io.BytesIO(decoded_bytes)
-                    fileAmount += 1
-
-                    file_path = userfiles_path(
-                        request.user,
-                        pendulum.now(
-                            "utc",
-                        ).format(
-                            f"YYYY-MM-DD[T]HHmmss[Z_{fileAmount}_{file_name}]",
-                        ),
-                    )
-
-                    uploaded_file = SimpleUploadedFile(
-                        file_name,
-                        buffer.read(),
-                        content_type,
-                    )
-                    file_paths.append(file_path)
-                    default_storage.save(file_path, uploaded_file)
-                    log.debug(
-                        f"Identification file {file_path} saved successfully",
-                        function="household_members",
-                        user_id=request.user.id,
-                    )
-
-                if fileAmount > 0:
-                    log.info(
-                        "Identification file(s) saved successfully",
-                        function="household_members",
-                        user_id=request.user.id,
-                    )
-                else:
-                    log.info(
-                        "No identification files to upload were found",
-                        function="household_members",
-                        user_id=request.user.id,
-                    )
-            else:
-                errors = form.errors
-                error_message = "The following errors occurred: "
-                for field, error_messages in errors.items():
-                    for error_message in error_messages:
-                        error_message += (
-                            f"Field: {field} errored because of {error_message}\n"
-                        )
-                return render(
-                    request,
-                    "application/household_members.html",
-                    {
-                        "step": 3,
-                        "message": error_message,
-                        "dependent": str(
-                            request.user.household.number_persons_in_household,
-                        ),
-                        "list": list(
-                            range(request.user.household.number_persons_in_household),
-                        ),
-                        "form": form,
-                        "form_page_number": form_page_number,
-                        "title": "Household Members",
-                        "update_mode": update_mode,
-                        "form_data": json.dumps(household_info)
-                        if household_info
-                        else [],
+        # If no 'household members' exist, fill the first element with the
+        # name of the primary applicant
+        return {
+            "members": [
+                {
+                    "person": {
+                        "full_name": f"{self.request.user.first_name} {self.request.user.last_name}",
                     },
-                )
+                },
+            ],
+        }
 
-            instance.user_id = request.user.id
-            instance.household_info = serialize_household_members(request, file_paths)
+    def dispatch(self, *args, **kwargs):
+        """Dispatch the view (and set update_mode/renewal_mode)."""
 
-            # Set the attribute to let pre_save know to save history
-            # instance.update_mode = update_mode
-            # instance.renewal_mode = renewal_mode
+        if self.request.session.get("application_addresses"):
+            del self.request.session["application_addresses"]
 
-            instance.save()
+        # Check the boolean value of update_mode session var
+        # Set as false if session var DNE
+        self.update_mode = self.request.session.get("update_mode", False)
+        self.renewal_mode = self.request.session.get("renewal_mode", False)
 
-            if renewal_mode:
-                # Call save_renewal_action after .save() so as not to save
-                # renewal metadata as data updates
-                # save_renewal_action(request, "household_members")
-                pass
+        return super().dispatch(*args, **kwargs)
 
-            if update_mode:
-                return redirect(
-                    f"{reverse('users:detail', kwargs={'pk': request.user.id})}?page_updated=household",
-                )
+    def get_context_data(self, **kwargs):
+        """Add additional context data to the view."""
 
-            # Add 'app:household_members' to `user_completed_pages`
-            request.user.user_completed_pages.add(
-                ApplicationPage.objects.get(page_url="app:household_members"),
-            )
-
-            return redirect(reverse("app:programs"))
-
-        log.debug(
-            "Entering function (GET)",
-            function="household_members",
-            user_id=request.user.id,
-        )
-
-        form = HouseholdMembersForm(request.POST or None)
-        try:
-            household_info = request.user.householdmembers.household_info
-        except AttributeError:
-            household_info = None
-
-        return render(
-            request,
-            "application/household_members.html",
+        ctx = super().get_context_data(**kwargs)
+        ctx.update(
             {
-                "step": 3,
-                "dependent": str(request.user.household.number_persons_in_household),
-                "list": list(range(request.user.household.number_persons_in_household)),
-                "form": form,
-                "form_page_number": form_page_number,
-                "title": "Household Members",
-                "update_mode": update_mode,
-                "form_data": json.dumps(household_info) if household_info else [],
-                "renewal_mode": renewal_mode,
+                "title": "Household",
+                "update_mode": self.update_mode,
+                "renewal_mode": self.renewal_mode,
             },
         )
 
-    # General view-level exception catching
-    except Exception:
-        try:
-            user_id = request.user.id
-        except Exception:
-            user_id = None
-        log.exception(
-            "Uncaught view-level exception",
-            function="household_members",
-            user_id=user_id,
+        return ctx
+
+    def get_object(self, queryset=None):
+        """
+        Get or create the household object from request attributes, so we don't
+        have to pass it in the URL parameters.
+
+        """
+        # Use this to convert the user from SimpleLazyObject, as applicable
+        user = (
+            self.request.user._wrapped
+            if hasattr(self.request.user, "_wrapped")
+            else self.request.user
         )
-        raise
+
+        # Return a Household object from the User object
+        obj, created = Household.objects.get_or_create(
+            user=user,
+            # Use `defaults` to set initial values without affecting the 'get'
+            # after these are updated with proper values
+            defaults={
+                "user_has_updated": False,
+                "is_income_verified": False,
+                "duration_at_address": "",
+                "rent_own": "",
+            },
+        )
+        return obj
+
+    def get(self, request, *args, **kwargs):
+        log.debug(
+            "Entering function (GET)",
+            function="household",
+            user_id=request.user.id,
+        )
+
+        return super().get(request, *args, **kwargs)
+
+    def form_collection_valid(self, form_collection):
+        response = super().form_collection_valid(form_collection)
+
+        # if self.renewal_mode:
+        #     # Call save_renewal_action after models have been saved so as not to
+        #     # save renewal metadata as data updates
+        #     save_renewal_action(self.object.user, 'household')
+
+        return response
+
+    def post(self, request, *args, **kwargs):
+        log.debug(
+            "Leaving function (POST)",
+            function="household",
+            user_id=request.user.id,
+        )
+
+        return super().post(request, *args, **kwargs)
+
+    def get_success_url(self):
+        """Return the URL for a successful POST."""
+
+        # The target changes based on update_mode
+        if self.update_mode:
+            return f"{reverse('app:user_settings')}?page_updated=household"
+        return reverse("app:programs")
 
 
 @login_required()

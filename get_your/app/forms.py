@@ -17,13 +17,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import pendulum
 from django import forms
 from django.contrib.auth import get_user_model
+from formset.collection import FormCollection
+from formset.renderers.bootstrap import FormRenderer
+from formset.utils import FormMixin
+from formset.widgets import UploadedFileInput
 
 from ref.models import Address as AddressRef
 
 from .constants import duration_at_address_choices
 from .constants import rent_own_choices
+from .constants import supported_content_types
 from .models import Household
 from .models import HouseholdMembers
 
@@ -45,11 +51,16 @@ class AddressForm(forms.ModelForm):
 
 
 class HouseholdForm(forms.ModelForm):
-    rent_own = forms.ChoiceField(choices=rent_own_choices, widget=forms.RadioSelect())
+    rent_own = forms.ChoiceField(
+        label="Do you rent or own your current residence?",
+        choices=rent_own_choices,
+        widget=forms.RadioSelect,
+    )
 
     duration_at_address = forms.ChoiceField(
+        label="How long have you lived at this address?",
         choices=duration_at_address_choices,
-        widget=forms.RadioSelect(),
+        widget=forms.RadioSelect,
     )
 
     class Meta:
@@ -57,12 +68,10 @@ class HouseholdForm(forms.ModelForm):
         fields = [
             "rent_own",
             "duration_at_address",
-            "number_persons_in_household",
         ]
         labels = {
             "rent_own": "Do you rent or own your current residence?",
             "duration_at_address": "How long have you lived at this address?",
-            "number_persons_in_household": "How many individuals are in your household?",
         }
 
 
@@ -71,20 +80,81 @@ class DateInput(forms.DateInput):
 
 
 class HouseholdMembersForm(forms.ModelForm):
-    name = forms.CharField(label="First & Last Name of Individual")
-    birthdate = forms.DateField(
-        label="Their Birthdate",
-        widget=forms.widgets.DateInput(attrs={"type": "date"}),
-    )
-    identification_path = forms.CharField(widget=forms.HiddenInput())
+    """Form for user-input 'individuals in household' data."""
+
+    # Create (hidden) field to track objects in this form
+    id = forms.IntegerField(required=False, widget=forms.widgets.HiddenInput)
 
     class Meta:
         model = HouseholdMembers
         fields = [
-            "name",
+            "id",
+            "full_name",
             "birthdate",
             "identification_path",
         ]
+        labels = {
+            "full_name": "First & Last Name of Individual",
+            "birthdate": "Their Birthdate",
+            "identification_path": "Upload ID",
+        }
+        widgets = {
+            "birthdate": DateInput(attrs={"type": "date"}),
+            "identification_path": UploadedFileInput(
+                attrs={
+                    "accept": ", ".join(set(supported_content_types.values())),
+                },
+            ),
+        }
+
+
+class HouseholdMembersFormCollection(FormCollection):
+    """
+    Form Collection to allow users to add/remove 'siblings' to define each
+    individuals in their household.
+
+    """
+
+    default_renderer = FormRenderer(
+        field_css_classes="mb-0",
+        collection_css_classes="mb-0 col-12",
+    )
+
+    person = HouseholdMembersForm()
+    legend = "Tell us about the individuals in your household"
+    min_siblings = 1  # minimum number that are required
+    add_label = "Add another person"
+    related_field = "household"
+    is_sortable = True
+
+    def retrieve_instance(self, data):
+        if data := data.get("person"):
+            try:
+                return self.instance.members.get(id=data.get("id") or 0)
+            except (AttributeError, HouseholdMembers.DoesNotExist, ValueError):
+                return HouseholdMembers(
+                    household=self.instance,
+                    full_name=data.get("full_name"),
+                    birthdate=pendulum.parse(data.get("birthdate")).date(),
+                    identification_path=data.get("identification_path"),
+                )
+
+
+class HouseholdFormCollection(FormCollection, FormMixin):
+    """
+    Form Collection to render the 'household' and 'individuals in household' on
+    a single page.
+
+    """
+
+    default_renderer = FormRenderer(
+        field_css_classes="col-12",
+        fieldset_css_classes="col-12",
+    )
+    household = HouseholdForm()
+    # Note that the linked collections must be defined with the related_name to
+    # the parent model
+    members = HouseholdMembersFormCollection()
 
 
 class AddressLookupForm(forms.Form):

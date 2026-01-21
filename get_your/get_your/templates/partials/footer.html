@@ -1,0 +1,142 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% load static %}
+
+<!-- Footer-->
+<footer class="footer bg-dark position-relative pb-4 pt-md-3 py-lg-4 py-xl-5">
+    <div class="container position-relative z-2 pt-5 pb-2" data-bs-theme="dark">
+
+        <!-- Columns with links -->
+        <div class="row" id="links">
+            <div class="col-md-3 col-xl-2 pb-2 pb-md-0">
+                <h3 class="h6 text-uppercase d-none d-md-block">Useful links</h3>
+                <a class="btn-more h6 mb-1 text-uppercase text-decoration-none d-flex align-items-center collapsed d-md-none"
+                    href="#useful" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="useful"
+                    data-show-label="Useful links" data-hide-label="Useful links" aria-label="Useful links"></a>
+                <div class="collapse d-md-block" id="useful" data-bs-parent="#links">
+                    <ul class="nav flex-column pb-2 pb-md-0">
+                        {% for program in footer_iq_programs %}
+                        <li class="nav-item">
+                            <a class="nav-link fw-normal px-0 py-1" href="{{program.learn_more_link}}">{{program.friendly_name}}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-xl-2 pb-2 pb-md-0">
+                <h3 class="h6 text-uppercase d-none d-md-block">Contact</h3>
+                <a class="btn-more h6 mb-1 text-uppercase text-decoration-none d-flex align-items-center collapsed d-md-none"
+                    href="#contact" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="Contact" data-show-label="Contact" data-hide-label="Contact"
+                    aria-label="Contact"></a>
+                <div class="collapse d-md-block" id="contact" data-bs-parent="#links">
+                    <ul class="nav flex-column pb-3">
+                        <li class="nav-item">
+                            <a class="nav-link fw-normal px-0 py-1" href="#">300 Laporte Ave<br>Fort Collins, CO
+                                80521</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-normal px-0 py-1" href="mailto:contact_email">{{contact_email}}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-normal px-0 py-1" href="{{contact_number}}">{{contact_number}}</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-xl-2 pb-2 pb-md-0">
+                <h3 class="h6 text-uppercase d-none d-md-block">Hours</h3>
+                <a class="btn-more h6 mb-1 text-uppercase text-decoration-none d-flex align-items-center collapsed d-md-none"
+                    href="#categories" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="categories" data-show-label="Categories" data-hide-label="Categories"
+                    aria-label="Categories"></a>
+                <div class="collapse d-md-block" id="categories" data-bs-parent="#links">
+                    <ul class="list-unstyled mb-0 pb-3 pb-md-0">
+                        <li class="text-light opacity-90 mb-2">Mon-Fri: 8:00 AM - 5:00 PM</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-12 col-xl-3 mt-md-2 mt-xl-0 pt-2 pt-md-4 pt-xl-0">
+                <h3 class="h6 text-uppercase mb-1 pb-1">Service brought to you by</h3>
+                <div class="d-flex d-xl-block d-xxl-flex">
+                    <div class="navbar-brand d-inline-flex align-items-center me-sm-5 mb-4 mb-sm-0">
+                        <img src="{% static 'img/CityLogoWhite-01.png' %}" alt="Get Your Logo" width="128" height="128">
+                    </div>
+                </div>
+                <p class="text-white fs-sm fw-normal ps-0 pe-2 py-2 me-4">{{code_version}}</p>
+            </div>
+        </div>
+
+        <!-- Nav -->
+        <div class="d-sm-flex align-items-end justify-content-between border-bottom mt-2 mt-sm-1 pt-4 pt-sm-5">
+
+            <!-- Nav -->
+            <nav class="nav d-flex mb-3 mb-sm-4">
+                <a class="nav-link text-body-secondary fs-sm fw-normal ps-0 pe-2 py-2 me-4" type="button" data-bs-toggle="modal" data-bs-target="#footerPrivacyModal">Privacy</a>
+            </nav>
+        </div>
+
+        <!-- Logo -->
+        <div class="d-sm-flex align-items-center pt-4">
+            <div class="navbar-brand d-inline-flex align-items-center me-sm-5 mb-4 mb-sm-0">
+                <img src="{% static 'img/logo/svg/gy-horizontal-white.svg' %}" alt="Get Your Logo" width="128"
+                    height="128">
+            </div>
+        </div>
+
+    </div>
+    <div class="pt-5 pt-lg-0"></div>
+</footer>
+
+
+<!-- Back to top button -->
+<a class="btn-scroll-top" href="#top" data-scroll aria-label="Scroll back to top">
+    <svg viewBox="0 0 40 40" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10">
+        </circle>
+    </svg>
+    <i class="gi-arrow-up"></i>
+</a>
+
+<!-- Privacy Modal -->
+<div id="footerPrivacyModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Privacy Statement</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Your privacy is important to us. We will only share your information, without your consent,
+                with other City of Fort Collins income eligible services to evaluate your eligibility and
+                make applying for these programs easier.</p>
+            </div>
+            <div class="modal-footer flex-column flex-sm-row">
+                <button type="button" class="btn btn-secondary w-100 w-sm-auto mb-3 mb-sm-0"
+                    data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap + Theme scripts -->
+<script src="{% static 'js/theme.min.js' %}?cache_breaker={% now 'YmdHmmss' %}"></script>

@@ -1,0 +1,204 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+{% include "partials/static-imports.html" with title="Get Your | Account - Overview" %}
+
+
+<!-- Body -->
+
+<body class="bg-secondary">
+
+
+    <!-- Page loading spinner -->
+    <div class="page-loading active">
+        <div class="page-loading-inner">
+            <div class="page-spinner"></div>
+            <span>Loading...</span>
+        </div>
+    </div>
+
+
+    <!-- Page wrapper -->
+    <main class="page-wrapper">
+
+        {% include "partials/header.html" %}
+
+        <!-- Page container -->
+        <div class="container py-5 mt-4 mt-lg-5 mb-lg-4 my-xl-5">
+            <div class="row pt-sm-2 pt-lg-0">
+
+                {% include "partials/sidebar.html" %}
+
+                <!-- Page content -->
+                <div class="col-lg-12 pt-4 pb-2 pb-sm-4">
+                    <h1 class="h2 mb-4">Overview</h1>
+
+                    <!-- Basic info -->
+                    <section class="card border-0 py-1 p-md-2 p-xl-3 p-xxl-4 mb-4">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mt-sm-n1 pb-4 mb-0 mb-lg-1 mb-xl-3">
+                                <i class="gi-user text-primary lead pe-1 me-2"></i>
+                                <h2 class="h4 mb-0">Account info</h2>
+                                <a class="btn btn-sm btn-secondary ms-auto" href="{% url 'dashboard:account_settings' %}">
+                                    <i class="gi-edit ms-n1 me-2"></i>
+                                    Edit info
+                                </a>
+                            </div>
+                            <div class="d-md-flex align-items-center">
+                                <div class="d-sm-flex align-items-center">
+                                    <div class="pt-3 pt-sm-0">
+                                        <h3 class="h5 mb-2">{{ user.first_name }} {{ user.last_name }}</h3>
+                                        <div
+                                            class="text-body-secondary fw-medium d-flex flex-wrap flex-sm-nowrap align-iteems-center">
+                                            <div class="d-flex align-items-center me-3">
+                                                <i class="gi-mail me-1"></i>
+                                                {{ user.email }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- <div class="w-100 pt-3 pt-md-0 ms-md-auto" style="max-width: 212px;">
+                                    <div class="d-flex justify-content-between fs-sm pb-1 mb-2">
+                                        Profile completion
+                                        <strong class="ms-2">62%</strong>
+                                    </div>
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar" role="progressbar" style="width: 62%"
+                                            aria-valuenow="62" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div> -->
+                            </div>
+                            <div class="row py-4 mb-2 mb-sm-3">
+                                <div class="col-md-6 mb-4 mb-md-0">
+                                    <table class="table mb-0">
+                                        <tbody>
+                                            <tr>
+                                                <td class="border-0 text-body-secondary py-1 px-0">Phone</td>
+                                                <td class="border-0 text-dark fw-medium py-1 ps-3">{{ user.phone_number }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border-0 text-body-secondary py-1 px-0">Language</td>
+                                                <td class="border-0 text-dark fw-medium py-1 ps-3">English</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border-0 text-body-secondary py-1 px-0">Communication</td>
+                                                <td class="border-0 text-dark fw-medium py-1 ps-3">Email, Phone</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% if user.household.is_income_verified %}
+                                <div class="col-md-6 d-md-flex justify-content-end">
+                                    <div class="w-100 border rounded-3 p-4" style="max-width: 212px;">
+                                        <img class="d-block mb-2" src="{% static 'img/account/gift-icon.svg' %}" width="24"
+                                            alt="Gift icon">
+                                        <h4 class="h5 lh-base mb-0">Get Your ID</h4>
+                                        <p class="fs-sm text-body-secondary mb-0">Accepted Everywhere</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="alert alert-info d-flex mb-0" role="alert">
+                                <i class="gi-circle-info fs-xl"></i>
+                                <div class="ps-2">Keep your information up-to-date.<a class="alert-link ms-1"
+                                        href="{% url 'dashboard:account_settings' %}">Go to settings!</a></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+
+
+                        <!-- Address -->
+                        <section class="col">
+                            <div class="card h-100 border-0 py-1 p-md-2 p-xl-3 p-xxl-4">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mt-sm-n1 pb-4 mb-1 mb-lg-2">
+                                        <i class="gi-map-pin text-primary lead pe-1 me-2"></i>
+                                        <h2 class="h4 mb-0">Address</h2>
+                                        <a class="btn btn-sm btn-secondary ms-auto" href="{{routes.address}}?update_mode=1">
+                                            <i class="gi-edit ms-n1 me-2"></i>
+                                            Edit info
+                                        </a>
+                                    </div>
+                                    <div class="d-flex align-items-center pb-1 mb-2">
+                                        <h3 class="h6 mb-0 me-3">Eligibility Address <i class="gi-circle-info fs-base text-info ms-1" type="button" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Please contact us if you need your eligibility address changed"></i></h3>
+                                    </div>
+                                    <p class="mb-0">{{user.address.eligibility_address.address1}} {{user.address.eligibility_address.address2}}
+                                        <br>{{user.address.eligibility_address.city}}, {{user.address.eligibility_address.state}} {{user.address.eligibility_address.zip_code}}</p>
+                                    <div class="d-flex align-items-center pt-4 pb-1 my-2">
+                                        <h3 class="h6 mb-0 me-3">Mailing Address</h3>
+                                    </div>
+                                    <p class="mb-0">{{user.address.mailing_address.address1}} {{user.address.mailing_address.address2}}
+                                        <br>{{user.address.mailing_address.city}}, {{user.address.mailing_address.state}} {{user.address.mailing_address.zip_code}}</p>
+                                </div>
+                            </div>
+                        </section>
+
+
+                        <!-- Household -->
+                        <section class="col">
+                            <div class="card h-100 border-0 py-1 p-md-2 p-xl-3 p-xxl-4">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mt-sm-n1 pb-4 mb-1 mb-lg-2">
+                                        <i class="gi-home text-primary lead pe-1 me-2"></i>
+                                        <h2 class="h4 mb-0">Household</h2>
+                                        <a class="btn btn-sm btn-secondary ms-auto" href="{{routes.household}}?update_mode=1">
+                                            <i class="gi-edit ms-n1 me-2"></i>
+                                            Edit info
+                                        </a>
+                                    </div>
+                                    
+                                    {% for person in request.user.household.members.all %}
+                                        <div class="d-flex align-items-center">
+                                            <h3 class="h6 mb-0 me-3">{{ person.full_name }}</h3>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-2 mb-sm-3">
+                                            <div class="fs-sm">
+                                                <div class="text-body-secondary">Date of Birth: <strong>{{ person.birthdate }}</strong></div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar toggle button -->
+        <button class="d-lg-none btn btn-sm fs-sm btn-primary w-100 rounded-0 fixed-bottom" type="button"
+            data-bs-toggle="offcanvas" data-bs-target="#sidebarAccount">
+            <i class="gi-menu me-2"></i>
+            Account menu
+        </button>
+    </main>
+
+
+    {% include "partials/footer.html" %}
+</body>
+
+</html>
