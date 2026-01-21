@@ -124,10 +124,10 @@ class Household(TimeStampedModel):
 
 
 class HouseholdMembers(TimeStampedModel):
-    user = models.OneToOneField(
-        User,
+    household = models.ForeignKey(
+        Household,
+        related_name="members",
         on_delete=models.CASCADE,
-        primary_key=True,
     )
 
     full_name = models.CharField(max_length=200)

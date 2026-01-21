@@ -147,6 +147,8 @@ class HouseholdFormCollection(FormCollection, FormMixin):
         fieldset_css_classes="col-12",
     )
     household = HouseholdForm()
+    # Note that the linked collections must be defined with the related_name to
+    # the parent model
     members = HouseholdMembersFormCollection()
 
 
