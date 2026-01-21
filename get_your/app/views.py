@@ -1169,8 +1169,10 @@ class HouseholdFormView(LoginRequiredMixin, EditCollectionView):
         """
         initial = super().get_initial()
 
-        if initial["members"]:
+        # If 'household members' have been defined, return the full form
+        if "members" in initial:
             return initial
+
         # If no 'household members' exist, fill the first element with the
         # name of the primary applicant
         return {
