@@ -1231,7 +1231,7 @@ class HouseholdFormView(LoginRequiredMixin, EditCollectionView):
             # Use `defaults` to set initial values without affecting the 'get'
             # after these are updated with proper values
             defaults={
-                "is_updated": False,
+                "user_has_updated": False,
                 "is_income_verified": False,
                 "duration_at_address": "",
                 "rent_own": "",
@@ -1273,7 +1273,7 @@ class HouseholdFormView(LoginRequiredMixin, EditCollectionView):
         # The target changes based on update_mode
         if self.update_mode:
             return f"{reverse('app:user_settings')}?page_updated=household"
-        return reverse("app:eligibility_programs")
+        return reverse("app:programs")
 
 
 @login_required()
