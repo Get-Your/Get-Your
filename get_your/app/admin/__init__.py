@@ -49,11 +49,13 @@ from app.constants import application_pages
 from app.models import Address
 from app.models import EligibilityProgram
 from app.models import Household
-from app.models import HouseholdMembers
+
+# from app.models import HouseholdMembers
 from app.models import IQProgram
 from dashboard.backend import get_eligible_iq_programs
 from dashboard.backend import get_iqprogram_requires_fields
-from dashboard.backend import get_users_iq_programs
+
+# from dashboard.backend import get_users_iq_programs
 from get_your.users.models import UserNote
 from monitor.wrappers import LoggerWrapper
 from ref.models import Address as AddressRef
@@ -269,54 +271,54 @@ class HouseholdInline(admin.TabularInline):
     extra = 0
 
 
-class HouseholdMembersInline(admin.TabularInline):
-    model = HouseholdMembers
+# class HouseholdMembersInline(admin.TabularInline):
+#     model = HouseholdMembers
 
-    fk_name = "user"
+#     fk_name = "household"
 
-    fields = readonly_fields = [
-        "created_at",
-        "modified_at",
-        "household_info_parsed",
-    ]
+#     fields = readonly_fields = [
+#         "created_at",
+#         "modified_at",
+#         "household_info_parsed",
+#     ]
 
-    # Adding/deleting directly from this inline is always disabled since these
-    # data are currently stored as JSON
-    def has_add_permission(self, request, obj=None):
-        return False
+#     # Adding/deleting directly from this inline is always disabled since these
+#     # data are currently stored as JSON
+#     def has_add_permission(self, request, obj=None):
+#         return False
 
-    def has_delete_permission(self, request, obj=None):
-        return False
+#     def has_delete_permission(self, request, obj=None):
+#         return False
 
-    @admin.display(description="individuals in household")
-    def household_info_parsed(self, obj):
-        person_list = []
-        if obj.household_info is not None:
-            for itm in obj.household_info["persons_in_household"]:
-                # Add information, then path to identification file and a blank line
-                person_list.append(f"{itm['name']} (DOB: {itm['birthdate']})")
+#     @admin.display(description="individuals in household")
+#     def household_info_parsed(self, obj):
+#         person_list = []
+#         if obj.household_info is not None:
+#             for itm in obj.household_info["persons_in_household"]:
+#                 # Add information, then path to identification file and a blank line
+#                 person_list.append(f"{itm['name']} (DOB: {itm['birthdate']})")
 
-                # Parse each document_path into a link that can be used to view the
-                # file
-                if (
-                    "identification_path" in itm
-                    and itm["identification_path"] is not None
-                ):
-                    document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
-                        trg=reverse(
-                            "app:admin_view_blob",
-                            kwargs={"blob_name": itm["identification_path"]},
-                        ),
-                    )
-                else:
-                    document_link = "No identification available"
-                person_list.append(document_link)
-                person_list.append("")
+#                 # Parse each document_path into a link that can be used to view the
+#                 # file
+#                 if (
+#                     "identification_path" in itm
+#                     and itm["identification_path"] is not None
+#                 ):
+#                     document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
+#                         trg=reverse(
+#                             "app:admin_view_blob",
+#                             kwargs={"blob_name": itm["identification_path"]},
+#                         ),
+#                     )
+#                 else:
+#                     document_link = "No identification available"
+#                 person_list.append(document_link)
+#                 person_list.append("")
 
-        return format_html("<br />".join(person_list))
+#         return format_html("<br />".join(person_list))
 
-    # Show zero extra (unfilled) options
-    extra = 0
+#     # Show zero extra (unfilled) options
+#     extra = 0
 
 
 class EligibilityProgramInline(admin.TabularInline):
@@ -716,7 +718,7 @@ class UserAdmin(admin.ModelAdmin):
         UserNoteInline,
         AddressInline,
         HouseholdInline,
-        HouseholdMembersInline,
+        # HouseholdMembersInline,
         EligibilityProgramInline,
         IQProgramInline,
     ]
