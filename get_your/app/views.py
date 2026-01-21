@@ -1052,27 +1052,36 @@ def take_usps_address(request, **kwargs):
             ]
             if eligibility_addresses:
                 try:
-                    # Create and save a record for the user's address using
+                    # Create/get and save a record for the user's address using
                     # the Address object
+                    # TODO: Since this no longer errors when a record already
+                    # exists, ensure that new vs existing is accounted for
+                    # elsewhere in this view (this function returns a Boolean
+                    # designating whether it's a new record), and also setting
+                    # 'user_has_updated' if the user changes their mailing address
                     if mailing_addresses:
-                        Address.objects.create(
+                        Address.objects.get_or_create(
                             user=request.user,
-                            eligibility_address=AddressRef.objects.get(
+                            defaults={
+                                "eligibility_address": AddressRef.objects.get(
                                 id=eligibility_addresses[0]["instance"],
                             ),
-                            mailing_address=AddressRef.objects.get(
+                                "mailing_address": AddressRef.objects.get(
                                 id=mailing_addresses[0]["instance"],
                             ),
+                            },
                         )
                     else:
-                        Address.objects.create(
+                        Address.objects.get_or_create(
                             user=request.user,
-                            eligibility_address=AddressRef.objects.get(
+                            defaults={
+                                "eligibility_address": AddressRef.objects.get(
                                 id=eligibility_addresses[0]["instance"],
                             ),
-                            mailing_address=AddressRef.objects.get(
+                                "mailing_address": AddressRef.objects.get(
                                 id=eligibility_addresses[0]["instance"],
                             ),
+                            },
                         )
                 except IntegrityError:
                     # Update the user's address record if it already exists
