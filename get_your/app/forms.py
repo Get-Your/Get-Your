@@ -22,7 +22,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from formset.collection import FormCollection
 from formset.renderers.bootstrap import FormRenderer
-from formset.utils import FormMixin
+from formset.forms import FormMixin
 from formset.widgets import UploadedFileInput
 
 from ref.models import Address as AddressRef
