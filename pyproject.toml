@@ -14,6 +14,7 @@ dependencies = [
     "django==5.2.7",
     "django-allauth[mfa]==65.11.1",
     "django-anymail[sendgrid]==13.0.1",
+    "django-bootstrap-icons==0.9.0",
     "django-case-insensitive-field==1.0.7",
     "django-coverage-plugin==3.1.1",
     "django-crispy-forms==2.4",
