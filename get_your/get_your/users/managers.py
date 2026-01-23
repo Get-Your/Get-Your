@@ -29,6 +29,31 @@ if TYPE_CHECKING:
 class UserManager(DjangoUserManager["User"]):
     """Custom manager for the User model."""
 
+    def _ci_email_transfrom(self, kwargs):
+        """Convert all lookups that include 'email' to be case-insensitive.
+
+        'Email' must be case-insensitive-unique, but is not coerced to a
+        specific case (to be in full compliance with RFC 5321, which allows
+        for case-sensitive addresses
+        (https://www.rfc-editor.org/rfc/rfc5321#section-2.3.11)); this
+        replaces any lookups on 'email' with their corresponding
+        case-insensitive version.
+
+        """
+        if "email" in kwargs:
+            # When no lookup type is included, 'exact' is implied
+            kwargs["email__iexact"] = kwargs.pop("email")
+        if "email__contains" in kwargs:
+            kwargs["email__icontains"] = kwargs.pop("email__contains")
+        if "email__startswith" in kwargs:
+            kwargs["email__istartswith"] = kwargs.pop("email__startswith")
+        if "email__endswith" in kwargs:
+            kwargs["email__iendswith"] = kwargs.pop("email__endswith")
+        if "email__regex" in kwargs:
+            kwargs["email__iregex"] = kwargs.pop("email__regex")
+
+        return kwargs
+
     def _create_user(self, email: str, password: str | None, **extra_fields):
         """
         Create and save a user with the given email and password.
@@ -59,3 +84,18 @@ class UserManager(DjangoUserManager["User"]):
             raise ValueError(msg)
 
         return self._create_user(email, password, **extra_fields)
+
+    def get(self, *args, **kwargs):
+        """Updates get() to use case-insensitive email."""
+        kwargs = self._ci_email_transfrom(kwargs)
+        return super().get_queryset().get(*args, **kwargs)
+
+    def filter(self, *args, **kwargs):
+        """Updates filter() to use case-insensitive email."""
+        kwargs = self._ci_email_transfrom(kwargs)
+        return super().get_queryset().filter(*args, **kwargs)
+
+    def exclude(self, *args, **kwargs):
+        """Updates exclude() to use case-insensitive email."""
+        kwargs = self._ci_email_transfrom(kwargs)
+        return super().get_queryset().exclude(*args, **kwargs)
