@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 class UserManager(DjangoUserManager["User"]):
     """Custom manager for the User model."""
 
-    def _ci_email_transfrom(self, kwargs):
+    def _ci_email_transform(self, kwargs):
         """Convert all lookups that include 'email' to be case-insensitive.
 
         'Email' must be case-insensitive-unique, but is not coerced to a
@@ -87,15 +87,15 @@ class UserManager(DjangoUserManager["User"]):
 
     def get(self, *args, **kwargs):
         """Updates get() to use case-insensitive email."""
-        kwargs = self._ci_email_transfrom(kwargs)
+        kwargs = self._ci_email_transform(kwargs)
         return super().get_queryset().get(*args, **kwargs)
 
     def filter(self, *args, **kwargs):
         """Updates filter() to use case-insensitive email."""
-        kwargs = self._ci_email_transfrom(kwargs)
+        kwargs = self._ci_email_transform(kwargs)
         return super().get_queryset().filter(*args, **kwargs)
 
     def exclude(self, *args, **kwargs):
         """Updates exclude() to use case-insensitive email."""
-        kwargs = self._ci_email_transfrom(kwargs)
+        kwargs = self._ci_email_transform(kwargs)
         return super().get_queryset().exclude(*args, **kwargs)
