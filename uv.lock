@@ -265,8 +265,8 @@ wheels = [
 
 [[package]]
 name = "coftc-cred-man"
-version = "4.0.2"
-source = { path = "../dist/coftc_cred_man-4.0.2-py3-none-any.whl" }
+version = "4.1.0"
+source = { path = "../dist/coftc_cred_man-4.1.0-py3-none-any.whl" }
 dependencies = [
     { name = "coftc-file-utils" },
     { name = "coftc-logging-utils" },
@@ -278,18 +278,18 @@ dependencies = [
     { name = "typer", extra = ["all"] },
 ]
 wheels = [
-    { filename = "coftc_cred_man-4.0.2-py3-none-any.whl", hash = "sha256:cac204cdc6bdfb0ff8e19d932392235db9745ec8ab98d973a1acbf7f4a747c24" },
+    { filename = "coftc_cred_man-4.1.0-py3-none-any.whl", hash = "sha256:2ea44b09106660e85b5b4205414158a768211652249a7d01f0437b64ec80dc61" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "coftc-file-utils" },
     { name = "coftc-logging-utils" },
-    { name = "configparser", specifier = "~=5.0" },
-    { name = "keyring", specifier = "~=23.13" },
-    { name = "keyrings-alt", marker = "sys_platform == 'linux'", specifier = "~=4.2" },
-    { name = "pendulum", specifier = "~=3.1" },
-    { name = "tomlkit", specifier = "~=0.11" },
+    { name = "configparser", specifier = "~=5.0.0" },
+    { name = "keyring", specifier = "~=23.13.0" },
+    { name = "keyrings-alt", marker = "sys_platform == 'linux'", specifier = "~=4.2.0" },
+    { name = "pendulum", specifier = "~=3.1.0" },
+    { name = "tomlkit", specifier = "~=0.13.2" },
     { name = "typer", extras = ["all"], specifier = "~=0.9.4" },
 ]
 
@@ -338,11 +338,11 @@ wheels = [
 
 [[package]]
 name = "configparser"
-version = "5.3.0"
+version = "5.0.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/4b/c0/3a47084aca7a940ed1334f89ed2e67bcb42168c4f40c486e267fe71e7aa0/configparser-5.3.0.tar.gz", hash = "sha256:8be267824b541c09b08db124917f48ab525a6c3e837011f3130781a224c57090", size = 67737, upload-time = "2022-08-19T17:45:18.257Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c9/9c/c1ac39b3c72a70e93479cb4b7f1123f693293c5e4c40fdb3e1242f740665/configparser-5.0.2.tar.gz", hash = "sha256:85d5de102cfe6d14a5172676f09d19c465ce63d6019cf0a4ef13385fc535e828", size = 71248, upload-time = "2021-02-28T20:21:44.981Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e0/7a/9d0f52bf4923b2e410c7d6fda472c32d9b728284e89ec99074820226102f/configparser-5.3.0-py3-none-any.whl", hash = "sha256:b065779fd93c6bf4cee42202fa4351b4bb842e96a3fb469440e484517a49b9fa", size = 19835, upload-time = "2022-08-19T17:45:17.053Z" },
+    { url = "https://files.pythonhosted.org/packages/fd/01/ff260a18caaf4457eb028c96eeb405c4a230ca06c8ec9c1379f813caa52e/configparser-5.0.2-py3-none-any.whl", hash = "sha256:af59f2cdd7efbdd5d111c1976ecd0b82db9066653362f0962d7bf1d3ab89a1fa", size = 19581, upload-time = "2021-02-28T20:21:43.861Z" },
 ]
 
 [[package]]
@@ -867,7 +867,7 @@ wheels = [
 
 [[package]]
 name = "get-your"
-version = "7.0.0"
+version = "7.0.1"
 source = { virtual = "." }
 dependencies = [
     { name = "argon2-cffi" },
@@ -929,7 +929,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "argon2-cffi", specifier = "==25.1.0" },
-    { name = "coftc-cred-man", path = "../dist/coftc_cred_man-4.0.2-py3-none-any.whl" },
+    { name = "coftc-cred-man", path = "../dist/coftc_cred_man-4.1.0-py3-none-any.whl" },
     { name = "coftc-file-utils", path = "../dist/coftc_file_utils-3.0.1-py3-none-any.whl" },
     { name = "coftc-logging-utils", path = "../dist/coftc_logging_utils-2.0.2-py3-none-any.whl" },
     { name = "coverage", specifier = "==7.10.6" },

@@ -1,6 +1,6 @@
 [project]
 name = "get-your"
-version = "7.0.0"
+version = "7.0.1"
 description = "Platform for the universal online application for income-qualified programs"
 readme = "README.md"
 requires-python = "~=3.12.11"
@@ -63,5 +63,5 @@ dependencies = [
 
 [tool.uv.sources]
 coftc-file-utils = { path = "../dist/coftc_file_utils-3.0.1-py3-none-any.whl" }
-coftc-cred-man = { path = "../dist/coftc_cred_man-4.0.2-py3-none-any.whl" }
 coftc-logging-utils = { path = "../dist/coftc_logging_utils-2.0.2-py3-none-any.whl" }
+coftc-cred-man = { path = "../dist/coftc_cred_man-4.1.0-py3-none-any.whl" }
