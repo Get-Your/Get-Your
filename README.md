@@ -1,4 +1,4 @@
-# Get FoCo
+# Get-Your
 
 The universal income-qualified application for the City of Fort Collins, Colorado.
 
@@ -26,10 +26,11 @@ The universal income-qualified application for the City of Fort Collins, Colorad
 1. [Azure Database Backend](#azure-database-backend)
     1. [Database Setup Summary](#database-setup-summary)
     1. [Database Setup Description](#database-setup-description)
+        1. [Reporting Data Store Setup](#reporting-data-store-setup)
     1. [Database Administration](#database-administration)
         1. [Connectivity](#connectivity)
         1. [Creating a Database](#creating-a-database)
-        1. [Transferring Between Databases](#transferring-between-databases)
+        1. [Populating the Database](#populating-the-database)
         1. [Set Up Database Users](#set-up-database-users)
 1. [User Administration](#user-administration)
 1. [Analytics Settings](#analytics-settings)
@@ -322,6 +323,15 @@ In order to properly separate the DEV and STAGE/PROD databases as well as use le
 > [!NOTE]
 > Each database instance should be created with some form of 'PostgreSQL Authentication' (either PostgreSQL-only or combined with Entra); the 'admin user' created with the database instance is referenced in all proceeding steps as `<admin_user>`
 
+### Reporting Data Store Setup
+Having a separate data store specifically for reporting/analytics is useful for 
+
+- Keeping reporting from impacting the performance of the production database
+- Anonymizing the user data as much as possible
+- Having a schema design more performant for the types of queries used in reporting or analytics (vs the Django schema design, which is best suited for user I/O)
+
+The Get-Your team doesn't yet have the resources to design and stand up a full reporting platform, so this uses the next best thing: a separate schema in the target database that has a pared-down version of the production data. This schema holds only 'materialized views', which have the benefits of regular views (e.g. fields can be excluded) but are stored on disk so that the production tables aren't affected by any analytics requests. Because they're on disk, the materialized views will need to be periodically refreshed with source data. The commands to create/update this platform can be found in [Populating the Database](#populating-the-database).
+
 ## Database Administration
 This section relies on the administrator having PostgreSQL installed locally (the same version used in the Azure instance, for proper utility compatibility).
 
@@ -345,10 +355,138 @@ On a freshly-deployed Azure instance, only the admin user (assigned during serve
 
     psql --host=<hostname> --port=5432 --username=<admin_user> --dbname=postgres --command="CREATE DATABASE <database_name>;"
 
-### Transferring Between Databases
-During the setup phase, there was much experimentation of Azure instance types; Azure tenant selection; and database naming conventions before settling on the final version, so transferring structure and data was necessary. The following code can be used to transfer existing data to the new database.
+### Populating the Database
+> ![IMPORTANT]
+> [Creating a Database](#creating-a-database) must be completed before starting this section
 
-If there isn't yet existing data, just run Django migrations to the new \<database_name\>.
+In order to execute the subsequent steps in this section, the database structure must exist (namely the `public` and `reporting` schemas). For a fresh setup, continue with the steps below; if transferring data from a different (previously-setup) database, use the [transferring database](#transferring-between-databases) subsection.
+
+1. Run Django migrations against the target database, \<database_name\> (from [Creating a Database](#creating-a-database))
+
+> ![NOTE]
+> The following steps are manual SQL scripts for the reporting/analytics setup. See [Reporting Data Store Setup](#reporting-data-store-setup) for details
+
+2. In the target database, create a new schema `reporting`. This will be used specifically for data reporting by the analyst user (created below)
+
+        CREATE SCHEMA reporting;
+
+    > [!NOTE]
+    > The `analyst_role` will be given read permissions only to this newly-created schema (in [Set Up Database Users](#set-up-database-users), below)
+
+3. Create the materialized views in the `reporting` schema
+
+    > [!IMPORTANT]
+    > These views are created from the Get-Your v6.0.5 data model
+
+        -- The app_user view ignores first_name, last_name, email, password, and phone_number
+        -- and is_active??
+        CREATE MATERIALIZED VIEW vw_app_user AS
+        SELECT id,
+            last_login,
+            is_superuser,
+            is_staff,
+            -- is_active,
+            date_joined,
+            has_viewed_dashboard,
+            is_archived,
+            is_updated,
+            last_renewal_action,
+            last_completed_at,
+            last_action_notification_at
+        FROM public.app_user;
+        
+        -- The app_userhist view ignores historical_values
+        CREATE MATERIALIZED VIEW vw_app_userhist AS
+        SELECT
+            id,
+            created,
+            user_id
+        FROM public.app_userhist;
+        
+        CREATE MATERIALIZED VIEW vw_app_addressrd AS
+        SELECT *
+        FROM public.app_addressrd;
+        
+        CREATE MATERIALIZED VIEW vw_app_addresshist AS
+        SELECT *
+        FROM public.app_addresshist;
+        
+        CREATE MATERIALIZED VIEW vw_app_eligibilityprogram AS
+        SELECT *
+        FROM public.app_eligibilityprogram;
+        
+        CREATE MATERIALIZED VIEW vw_app_eligibilityprogramhist AS
+        SELECT *
+        FROM public.app_eligibilityprogramhist;
+        
+        CREATE MATERIALIZED VIEW vw_app_eligibilityprogramrd AS
+        SELECT *
+        FROM public.app_eligibilityprogramrd;
+        
+        CREATE MATERIALIZED VIEW vw_app_feedback AS
+        SELECT *
+        FROM public.app_feedback;
+        
+        CREATE MATERIALIZED VIEW vw_app_household AS
+        SELECT *
+        FROM public.app_household;
+        
+        CREATE MATERIALIZED VIEW vw_app_householdhist AS
+        SELECT *
+        FROM public.app_householdhist;
+        
+        -- The app_householdmembers view ignores household_info
+        CREATE MATERIALIZED VIEW vw_app_householdmembers AS
+        SELECT
+            created_at,
+            modified_at,
+            user_id,
+            is_updated
+        FROM public.app_householdmembers;
+        
+        -- The app_householdmembershist view ignores historical_values
+        CREATE MATERIALIZED VIEW vw_app_householdmembershist AS
+        SELECT
+            id,
+            created,
+            user_id
+        FROM public.app_householdmembershist;
+        
+        CREATE MATERIALIZED VIEW vw_app_iqprogram AS
+        SELECT *
+        FROM public.app_iqprogram;
+        
+        CREATE MATERIALIZED VIEW vw_app_iqprogramhist AS
+        SELECT *
+        FROM public.app_iqprogramhist;
+        
+        CREATE MATERIALIZED VIEW vw_app_iqprogramrd AS
+        SELECT *
+        FROM public.app_iqprogramrd;
+        
+        -- Create a 'metadata' view to give details about the views (this should be updated last, after all other updates are successful)
+        -- last_refreshed will show a timestamp when the updates were last run
+        CREATE MATERIALIZED VIEW vw_metadata AS
+        SELECT
+            now() as "last_refreshed";
+
+4. Periodically update the data in the materialized views (preferably on a schedule)
+
+        -- Find all materialized views that were created in the previous step (except vw_metadata; see below for explanation)
+        SELECT matviewname
+        FROM pg_matviews
+        WHERE schemaname = 'reporting'
+        AND matviewname != 'vw_metadata'
+        ORDER BY matviewname;
+
+        -- Update each non-metadata view (found via the previous query)
+        REFRESH MATERIALIZED VIEW <view name>;
+
+        -- Finally, update the metadata view. This is completed last so that any errors will interrupt the process and keep the metadata from updating
+        REFRESH MATERIALIZED VIEW vw_metadata;
+
+#### Transferring Between Databases
+During the setup phase, there was much experimentation of Azure instance types; Azure tenant selection; and database naming conventions before settling on the final version, so transferring structure and data was necessary. The following code can be used to transfer existing data to the new database.
 
 > If the same users aren't present in the target database as there are in the source, the `pg_restore` command will throw errors. To ignore object owners specified in the backup file and instead use the input username as the owner of all objects, add the flag `--no-owner` to the `pg_restore` command. **This is not recommended because the permissions structure for Get-Your is strictly defined.**
 
@@ -360,6 +498,9 @@ If there isn't yet existing data, just run Django migrations to the new \<databa
     pg_restore -v --host=<target_hostname> --port=5432 --username=<target_admin_user> --dbname=<target_database_name> <target_local_backup_file>
 
 ### Set Up Database Users
+> ![IMPORTANT]
+> [Populating the Database](#populating-the-database) must be completed before starting this section
+
 This section details the order of steps to set up users, roles, and proper permissions. Roles are used for generic permissions so that future users can be added without having to re-grant all permissions.
 
 The admin user shouldn't be used for development or live database connections; a privileged user should instead be created for local development access and a base user created with minimal privileges for the webapp. The privileged user will be stored in each environment's `.*.env` file and the base user will be in the `.*.deploy` file (see [App Secrets](#app-secrets)).
@@ -414,23 +555,21 @@ Connect to the primary (`getyour_<env>`) database and complete the following ste
 
 4. Analytics role
 
-    This role is slightly different in that it removes as much access as possible from tables with names (`app_user` and `app_householdmembers`) and gives read-only access to all other existing and new tables. This isn't quite possible, since timestamps in `app_user` are important for reporting, so the `app_user` are *not* excluded for now. **There is a planned update to move to schema-level permissions instead of table-level, although Django makes this difficult.**
-
-    It's set up so that `user_id` can be used to connect tables, but no specific names are available.
+    This role is slightly different in that it gives read-only access only to the `reporting` schema (created in [Populating the Database](#populating-the-database)). It's set up so that `user_id` (and its parent `vw_app_user.id`) can be used to connect tables, but no specific names are available.
 
     a. Create an analytics user role (named `analytics_role`, for use with reporting and analytics) without login privileges
 
         CREATE ROLE analytics_role INHERIT;
 
-    b. Grant permissions
+    b. Grant permissions to the `reporting` schema
 
         GRANT CONNECT ON DATABASE <database_name> TO analytics_role;
-        GRANT USAGE ON SCHEMA public TO analytics_role;
+        GRANT USAGE ON SCHEMA reporting TO analytics_role;
+
         -- Note that REFERENCES is necessary for table relations (and implicit in INSERT, UPDATE, and DELETE privileges)
-        GRANT SELECT, REFERENCES ON ALL TABLES IN SCHEMA public TO analytics_role;
-        GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO analytics_role;
-        -- Revoke privileges for this role to specified tables
-        REVOKE ALL PRIVILEGES ON app_householdmembers FROM analytics_role;
+        GRANT SELECT, REFERENCES ON ALL TABLES IN SCHEMA reporting TO analytics_role;
+        GRANT SELECT ON ALL SEQUENCES IN SCHEMA reporting TO analytics_role;
+
         -- Grant this role to admin user (permanently, but to no material affect) to alter default privileges
         GRANT analytics_role TO <admin_user>;
 
