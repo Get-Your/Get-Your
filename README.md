@@ -378,14 +378,13 @@ In order to execute the subsequent steps in this section, the database structure
     > [!IMPORTANT]
     > These views are created from the Get-Your v6.0.5 data model
 
-        -- The app_user view ignores first_name, last_name, email, password, and phone_number
-        -- and is_active??
+        -- The app_user view ignores first_name, last_name, email, password, phone_number, and is_active
+        -- is_active is ignored to prevent confusion; this field is a Django mechanism, so Get-Your uses is_archived to have custom 'disabled' functionality
         CREATE MATERIALIZED VIEW vw_app_user AS
         SELECT id,
             last_login,
             is_superuser,
             is_staff,
-            -- is_active,
             date_joined,
             has_viewed_dashboard,
             is_archived,
