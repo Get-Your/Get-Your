@@ -213,6 +213,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <p style="margin: 0;color:var(--lightblue); font-size: 15px;">
                         {{program.eligibility_review_time_period}}</p>
                 </div>
+                {% if program.additional_form %}
+                <div class="row" style="margin:0;width:100%">
+                    <p style="margin: 0; font-size: 15px;">
+                    <a style="margin: 0; font-size: 15px;" href="{{ program.additional_form }}" target="_blank">Additional information needed (click/tap here)</a>, if you haven't already
+                    </p>
+                </div>
+                {% endif %}
 
                 {% endif %}
                 {% endfor %}

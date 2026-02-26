@@ -768,6 +768,8 @@ def get_users_iq_programs(
             program, 'program') else program.ami_threshold
         program.id = program.program.id if hasattr(
             program, 'program') else program.id
+        program.additional_form = program.program.additional_external_form_link if hasattr(
+            program, 'program') else program.additional_external_form_link
     return programs
 
 
