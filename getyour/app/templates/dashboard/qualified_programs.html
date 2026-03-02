@@ -80,12 +80,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             {% endif %}
             {% endif %}
         </div>
-        {% if program.status_for_user == 'PENDING' and program.additional_form %}
+        {% if program.additional_form %}
+        {% if program.status_for_user == 'PENDING' or program.status_for_user == 'ACTIVE' %}
         <div class="row" style="margin:0;width:100%">
             <p style="margin-top:3px;">
             <a style="margin-top:3px;" href="{{ program.additional_form }}" target="_blank">Additional information needed (tap here)</a>, if you haven't already
             </p>
         </div>
+        {% endif %}
         {% endif %}
         <div class="row" style="margin:0;width:100%">
             <a class="row" href="{{ program.learn_more_link }}" target="_blank"
