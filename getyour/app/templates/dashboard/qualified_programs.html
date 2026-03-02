@@ -1,7 +1,7 @@
 <!--
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
-Copyright (C) 2022-2024
+Copyright (C) 2022-2026
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -80,6 +80,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             {% endif %}
             {% endif %}
         </div>
+        {% if program.additional_form %}
+        {% if program.status_for_user == 'PENDING' or program.status_for_user == 'ACTIVE' %}
+        <div class="row" style="margin:0;width:100%">
+            <p style="margin-top:3px;">
+            <a style="margin-top:3px;" href="{{ program.additional_form }}" target="_blank">Submit additional information here</a> (only needs to be completed once)
+            </p>
+        </div>
+        {% endif %}
+        {% endif %}
         <div class="row" style="margin:0;width:100%">
             <a class="row" href="{{ program.learn_more_link }}" target="_blank"
                 style="text-decoration: none;justify-content: start;align-items: center;margin:0">

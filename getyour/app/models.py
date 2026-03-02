@@ -1,7 +1,7 @@
 """
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
-Copyright (C) 2022-2024
+Copyright (C) 2022-2026
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -622,7 +622,8 @@ class IQProgramRD(GenericTimeStampedModel):
         blank=True,
         help_text=_(
             "Link to an external form for additional information needed by the program, if applicable (leave blank for no form). "
-            "Note that this must start with 'https://' or 'http://', and the target form needs to have a way for the program coordinator to link its information to the Get FoCo user."
+            "The program coordinator is responsible for this form and for linking form submissions to Get FoCo applicants. "
+            "Note that this must start with 'https://' or 'http://'."
         ),
     )
 
