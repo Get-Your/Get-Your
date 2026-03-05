@@ -23,6 +23,5 @@ dependencies = [
     "sendgrid==6.6.0",
     "twilio==8.1.0",
     "usaddress==0.5.10",
-    "usps-api==0.5",
     "whitenoise==6.4.0",
 ]
