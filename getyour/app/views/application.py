@@ -499,150 +499,128 @@ def address_correction(request, **kwargs):
             q_orig = QueryDict(
                 urlencode(in_progress_address['address']), mutable=True)
 
-            # Loop through maxLoopIdx+1 times to try different methods of
+            # Loop through total_iterations times to try different methods of
             # parsing the address
-            # Loop 0: as-entered > usaddress > USPS API
-            # Loop 1: as-entered with apt/suite keywords replaced with 'unit' >
-            # usaddress > USPS API
-            # Loop 2: an-entered with keyword replacements > USPS API
-            maxLoopIdx = 2
-            idx = 0     # starting idx
-            flag_needMoreInfo = False   # flag for previous iter needing more info
-            while 1:
+            # Loop 0: user input > usaddress > USPS API
+            # Loop 1: user input with apt/suite keywords replaced with 'unit' >
+            #   usaddress > USPS API
+            # Loop 2: user input with keyword replacements > USPS API
+            total_iterations = 3  # Loop index 0 -> 2
+            max_loop_idx = total_iterations - 1
+            validation_msg = ''
+            for idx in range(total_iterations):
                 log.info(
-                    f"Start loop {idx}",
+                    f"Starting address loop {idx}...",
                     function='address_correction',
                     user_id=request.user.id,
                 )
+                validationResult = None
 
-                try:
-                    if idx in (0, 1):
-                        addressStr = "{ad1} {ad2}, {ct}, {st} {zp}".format(
-                            ad1=q['address1'].replace('#', ''),
-                            ad2=q['address2'].replace('#', ''),
-                            ct=q['city'],
-                            st=q['state'],
-                            zp=q['zipcode'])
-
-                        try:
-                            rawAddressDict, _ = usaddress.tag(
-                                addressStr,
-                                tag_mapping,
-                            )
-
-                        # Go directly to the QueryDict version if there's a usaddress
-                        # issue
-                        except usaddress.RepeatedLabelError:
-                            log.warning(
-                                f"Loop index {idx}; Issue found in usaddress labels - continuing as loop 2",
-                                function='address_correction',
-                                user_id=request.user.id,
-                            )
-                            idx = 2
-                            raise AttributeError
-
-                        # Ensure the necessary keys for USPS validation are included
-                        uspsKeys = [
-                            'name',
-                            'address_1',
-                            'address_2',
-                            'city',
-                            'state',
-                            'zipcode']
-                        rawAddressDict.update(
-                            {key: '' for key in uspsKeys if key not in rawAddressDict.keys()}
-                        )
-
-                    # Validate to USPS address - use usaddress first, then try
-                    # with input QueryDict
-                    try:
-                        if idx == 2:
-                            log.info(
-                                f"Loop index {idx}; Attempting USPS validation with input QueryDict: {q}",
-                                function='address_correction',
-                                user_id=request.user.id,
-                            )
-                            dict_address = validate_usps(q)
-                        else:
-                            log.info(
-                                f"Loop index {idx}; Attempting USPS validation with rawAddressDict: {rawAddressDict}",
-                                function='address_correction',
-                                user_id=request.user.id,
-                            )
-                            dict_address = validate_usps(rawAddressDict)
-                        validationAddress = dict_address['AddressValidateResponse']['Address']
+                # If this is the second iteration and 'address2' is not blank,
+                # replace the apt/suite keywords with "unit"
+                if idx == 1:
+                    if q['address2'] != '':
                         log.info(
-                            f"USPS Validation returned {validationAddress}",
+                            "Attempting keyword replacement for the secondary address",
                             function='address_correction',
                             user_id=request.user.id,
                         )
+                        removeList = ['apt', 'unit', '#']
+                        for wrd in removeList:
+                            q['address2'] = q['address2'].lower().replace(wrd, '')
 
-                    except KeyError:
-                        if idx == maxLoopIdx:
-                            if flag_needMoreInfo:
-                                raise TypeError(str_needMoreInfo)
-                            raise
-                        idx += 1
-                        raise AttributeError
-
-                    # Ensure 'Address1' is a valid key
-                    if 'Address1' not in validationAddress.keys():
-                        validationAddress['Address1'] = ''
-
-                    # Kick back to the user if the USPS API needs more information
-                    if 'ReturnText' in validationAddress.keys():
-                        if idx == maxLoopIdx:
-                            log.info(
-                                "Address not found - end of loop",
-                                function='address_correction',
-                                user_id=request.user.id,
-                            )
-                            raise TypeError(validationAddress['ReturnText'])
-
-                        # Continue checking, but flag that this was a result from
-                        # the USPS API and store the text
-                        else:
-                            flag_needMoreInfo = True
-                            str_needMoreInfo = validationAddress['ReturnText']
-
-                    else:   # success!
-                        break
-
-                    if idx == maxLoopIdx:   # this is just here for safety
-                        break
+                        q['address2'] = 'Unit {}'.format(
+                            q['address2'].lstrip())
+                        
                     else:
-                        idx += 1
-                        raise AttributeError
+                        # Otherwise if 'address2' is blank, skip this iteration
+                        # (it would be the same as idx==0)
+                        log.info(
+                            "No 'address2' to update; continuing to next iteration",
+                            function='address_correction',
+                            user_id=request.user.id,
+                        )
+                        continue
 
-                except AttributeError:
-                    # Use AttributeError to skip to the end of the loop
-                    # Note that idx has already been iterated before this point
+                if idx in (0, 1):
+                    # Combine the address into a string so that it can then be
+                    # parsed by usaddress
+                    addressStr = "{ad1} {ad2}, {ct}, {st} {zp}".format(
+                        ad1=q['address1'].replace('#', ''),
+                        ad2=q['address2'].replace('#', ''),
+                        ct=q['city'],
+                        st=q['state'],
+                        zp=q['zipcode'])
+
+                    try:
+                        rawAddressDict, _ = usaddress.tag(
+                            addressStr,
+                            tag_mapping,
+                        )
+
+                    # Continue to the next loop iteration if there's a usaddress
+                    # issue
+                    except usaddress.RepeatedLabelError:
+                        log.warning(
+                            "Issue found in usaddress labels - continuing to next iteration",
+                            function='address_correction',
+                            user_id=request.user.id,
+                        )
+                        continue
+
+                # Validate to USPS - use usaddress first, then try with input
+                # QueryDict
+                try:
+                    if idx in (0, 1):
+                        log.info(
+                            f"Attempting USPS validation with rawAddressDict: {rawAddressDict}",
+                            function='address_correction',
+                            user_id=request.user.id,
+                        )
+                        validationResult = validate_usps(rawAddressDict)
+                    else:
+                        log.info(
+                            f"Attempting USPS validation with input QueryDict: {q}",
+                            function='address_correction',
+                            user_id=request.user.id,
+                        )
+                        validationResult = validate_usps(q)
                     log.info(
-                        f"Loop index {idx}; AttributeError raised to skip to end of loop",
+                        f"USPS Validation returned {validationResult}",
                         function='address_correction',
                         user_id=request.user.id,
                     )
-                    if q['address2'] != '':
-                        if idx == 1:
-                            # For loop 1: if 'ReturnText' is not found and address2 is
-                            # not None, remove possible keywords and try again
-                            # Note that this will affect later loop iterations
-                            log.info(
-                                f"Loop index {idx}; Address not found - try to remove/replace keywords",
-                                function='address_correction',
-                                user_id=request.user.id,
-                            )
-                            removeList = ['apt', 'unit', '#']
-                            for wrd in removeList:
-                                q['address2'] = q['address2'].lower().replace(wrd, '')
+                except:
+                    # There was an error with the USPS API. Continue with the
+                    # next iteration, if there is one (otherwise keep going)
+                    if idx < max_loop_idx:
+                        continue
 
-                            q['address2'] = 'Unit {}'.format(
-                                q['address2'].lstrip())
+                # Break from this loop if validationResult has a value and a
+                # match is found
+                if validationResult:
+                    if validationResult['matches'][0]['code'] != '':
+                        break
 
+                    # If no match is found, store the validation message if it
+                    # exists (and overwrite any prior message)
+                    if validationResult['corrections'][0]['code'] != '':
+                        validation_msg = validationResult['corrections'][0]['text']
+
+                # If this is the final iteration, raise an exception that a
+                # match wasn't found
+                if idx == max_loop_idx:
+                    log.info(
+                        "Address not found - end of loop",
+                        function='address_correction',
+                        user_id=request.user.id,
+                    )
+                    # If no validation message from USPS exists, raise KeyError;
+                    # else raise TypeError with the message
+                    if validation_msg == '':
+                        raise KeyError
                     else:
-                        # This whole statement updates address2, so if it's blank,
-                        # iterate through idx prematurely
-                        idx = 2
+                        raise TypeError(validation_msg)
 
             # Link to the next page from address_correction.html
             link_next_page = True
