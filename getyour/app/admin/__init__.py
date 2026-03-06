@@ -33,6 +33,7 @@ from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
+from django_json_widget.widgets import JSONEditorWidget
 
 from app.models import (
     User,
@@ -314,10 +315,19 @@ class HouseholdMembersInline(admin.TabularInline):
 
     fk_name = "user"
 
-    fields = readonly_fields = [
+    fields = [
+        'household_info',
+        'id_link',
+    ]
+
+    widgets = {
+        'household_info': JSONEditorWidget()
+    }
+    
+    readonly_fields = [
         'created_at',
         'modified_at',
-        'household_info_parsed',
+        'id_link',
     ]
 
     # Adding/deleting directly from this inline is always disabled since these
@@ -327,29 +337,46 @@ class HouseholdMembersInline(admin.TabularInline):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    @admin.display(description='individuals in household')
-    def household_info_parsed(self, obj):
-        person_list = []
-        if obj.household_info is not None:
-            for itm in obj.household_info['persons_in_household']:
-                # Add information, then path to identification file and a blank line
-                person_list.append(f"{itm['name']} (DOB: {itm['birthdate']})")
+    def id_link(self, obj):
+        id_list = []
+        for itm in obj.household_info['persons_in_household']:
+            # Parse each document_path into a link that can be used to view the file
+            if 'identification_path' in itm and itm['identification_path'] is not None:
+                document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
+                    trg=reverse(
+                        'app:admin_view_blob',
+                        kwargs={'blob_name': itm['identification_path']},
+                    ),
+                )
+            else:
+                document_link = "No identification available"
 
-                # Parse each document_path into a link that can be used to view the
-                # file
-                if 'identification_path' in itm and itm['identification_path'] is not None:
-                    document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
-                        trg=reverse(
-                            'app:admin_view_blob',
-                            kwargs={'blob_name': itm['identification_path']},
-                        ),
-                    )
-                else:
-                    document_link = "No identification available"
-                person_list.append(document_link)
-                person_list.append('')
+            id_list.append(document_link)
 
-        return format_html('<br />'.join(person_list))
+        return format_html('<br/>'.join( id_list))
+    # @admin.display(description='individuals in household')
+    # def household_info_parsed(self, obj):
+    #     person_list = []
+    #     if obj.household_info is not None:
+    #         for itm in obj.household_info['persons_in_household']:
+    #             # Add information, then path to identification file and a blank line
+    #             person_list.append(f"{itm['name']} (DOB: {itm['birthdate']})")
+
+    #             # Parse each document_path into a link that can be used to view the
+    #             # file
+    #             if 'identification_path' in itm and itm['identification_path'] is not None:
+    #                 document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
+    #                     trg=reverse(
+    #                         'app:admin_view_blob',
+    #                         kwargs={'blob_name': itm['identification_path']},
+    #                     ),
+    #                 )
+    #             else:
+    #                 document_link = "No identification available"
+    #             person_list.append(document_link)
+    #             person_list.append('')
+
+    #     return format_html('<br />'.join(person_list))
 
     # Show zero extra (unfilled) options
     extra = 0
