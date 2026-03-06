@@ -624,9 +624,10 @@ def address_correction(request, **kwargs):
 
             # Link to the next page from address_correction.html
             link_next_page = True
-            address_feedback = [validationAddress['Address2'],
-                                validationAddress['Address1'],
-                                validationAddress['City'] + " " + validationAddress['State'] + " " + validationAddress['Zip5']]
+            validated_address = validationResult['address']
+            address_feedback = [validated_address['streetAddress'],
+                                validated_address['secondaryAddress'],
+                                validated_address['city'] + " " + validated_address['state'] + " " + validated_address['ZIPCode']]
             log.info(
                 f"address_feedback is: {address_feedback}",
                 function='address_correction',
@@ -635,31 +636,19 @@ def address_correction(request, **kwargs):
 
         except TypeError as msg:
             log.info(
-                "More address information is needed from user",
+                f"More address information is needed from user: {msg}",
                 function='address_correction',
                 user_id=request.user.id,
             )
             # Don't link to the next page from address_correction.html
             link_next_page = False
-            # Only pass to the user for the 'more information is needed' case
-            # --This is all that has been tested--
-            msg = str(msg)
-            if 'more information is needed' in msg:
-                address_feedback = [
-                    msg.replace('Default address: ', ''),
-                    "Please press 'back' and re-enter.",
-                ]
 
-            else:
-                log.info(
-                    "Some other issue than 'more information is needed'",
-                    function='address_correction',
-                    user_id=request.user.id,
-                )
-                address_feedback = [
-                    "Sorry, we couldn't verify this address through USPS.",
-                    "Please press 'back' and re-enter.",
-                ]
+            # Pass the validation message directly to the user
+            msg = str(msg)
+            address_feedback = [
+                msg.replace('Default address: ', ''),
+                "Please press 'back' and re-enter.",
+            ]
 
         except KeyError:
             # Don't link to the next page from address_correction.html
@@ -668,13 +657,14 @@ def address_correction(request, **kwargs):
                 "Sorry, we couldn't verify this address through USPS.",
                 "Please press 'back' and re-enter.",
             ]
-            log.warning(
-                "USPS couldn't figure it out!",
+            log.warning(    
+                "USPS couldn't figure it out; no validation message for additional information was returned",
                 function='address_correction',
                 user_id=request.user.id,
             )
 
         else:
+            dict_address = validationResult['address']
             request.session['usps_address_validate'] = dict_address
             log.info(
                 f"Address match found: {dict_address}",
@@ -682,22 +672,17 @@ def address_correction(request, **kwargs):
                 user_id=request.user.id,
             )
 
-            # If validation was successful and all address parts are case-insensitive
-            # exact matches between entered and validation, skip addressCorrection()
+            # If validation was successful and all address parts are
+            # case-insensitive exact matches between entered and validation,
+            # skip addressCorrection()
 
             # Run the QueryDict 'q' to get just dict
-            # If just a string input was used (loop idx == 2), use '-' for blanks
-            if idx == 2:
-                q_orig = {key: q_orig[key] if q[key] !=
-                        '' else '-' for key in q_orig.keys()}
-            else:
-                q_orig = {key: q_orig[key] for key in q_orig.keys()}
             if 'usps_address_validate' in request.session.keys() and \
-                dict_address['AddressValidateResponse']['Address']['Address2'].lower() == q_orig['address1'].lower() and \
-                dict_address['AddressValidateResponse']['Address']['Address1'].lower() == q_orig['address2'].lower() and \
-                dict_address['AddressValidateResponse']['Address']['City'].lower() == q_orig['city'].lower() and \
-                dict_address['AddressValidateResponse']['Address']['State'].lower() == q_orig['state'].lower() and \
-                str(dict_address['AddressValidateResponse']['Address']['Zip5']).lower() == q_orig['zipcode'].lower():
+                dict_address['streetAddress'].lower() == q_orig['address1'].lower() and \
+                dict_address['secondaryAddress'].lower() == q_orig['address2'].lower() and \
+                dict_address['city'].lower() == q_orig['city'].lower() and \
+                dict_address['state'].lower() == q_orig['state'].lower() and \
+                str(dict_address['ZIPCode']).lower() == q_orig['zipcode'].lower():
 
                 log.info(
                     "Exact (case-insensitive) address match found",
@@ -707,7 +692,7 @@ def address_correction(request, **kwargs):
                 return redirect(reverse("app:take_usps_address"))
 
         log.info(
-            "Proceeding to user verification of the matched address",
+            "Proceeding to user verification of the address result",
             function='address_correction',
             user_id=request.user.id,
         )
@@ -767,26 +752,24 @@ def take_usps_address(request, **kwargs):
             # Check if an AddressRD object exists by using the
             # dict_address. If the address is not found, create a new one.
             try:
-                dict_ref = dict_address['AddressValidateResponse']['Address']
                 field_map = [
-                    ('Address2', 'address1'),
-                    ('Address1', 'address2'),
-                    ('City', 'city'),
-                    ('State', 'state'),
-                    ('Zip5', 'zip_code'),
+                    ('streetAddress', 'address1'),
+                    ('secondaryAddress', 'address2'),
+                    ('city', 'city'),
+                    ('state', 'state'),
+                    ('ZIPCode', 'zip_code'),
                 ]
                 instance = AddressRD.objects.get(
                     address_sha1=AddressRD.hash_address(
-                        {key: dict_ref[ref_key] for ref_key, key in field_map})
+                        {key: dict_address[ref_key] for ref_key, key in field_map})
                 )
             except AddressRD.DoesNotExist:
                 instance = AddressRD(
-                    address1=dict_address['AddressValidateResponse']['Address']['Address2'],
-                    address2=dict_address['AddressValidateResponse']['Address']['Address1'],
-                    city=dict_address['AddressValidateResponse']['Address']['City'],
-                    state=dict_address['AddressValidateResponse']['Address']['State'],
-                    zip_code=int(
-                        dict_address['AddressValidateResponse']['Address']['Zip5']),
+                    address1=dict_address['streetAddress'],
+                    address2=dict_address['secondaryAddress'],
+                    city=dict_address['city'],
+                    state=dict_address['state'],
+                    zip_code=int(dict_address['ZIPCode']),
                 )
                 instance.clean()
 

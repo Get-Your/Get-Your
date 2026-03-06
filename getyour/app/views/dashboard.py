@@ -224,12 +224,8 @@ def quick_apply(request, iq_program, **kwargs):
             # Check for Connexion services
             # Recreate the relevant parts of addressDict as if from validate_usps()
             address_dict = {
-                'AddressValidateResponse': {
-                    'Address': {
-                        'Address2': addr.address1,
-                        'Zip5': addr.zip_code,
-                    },
-                },
+                'streetAddress': addr.address1,
+                'ZIPCode': addr.zip_code,
             }
             is_in_gma, has_isp_service = address_check(address_dict)
             # Connexion (Internet Service Provider) status unknown, but since isInGMA==True at this point in

@@ -71,31 +71,31 @@ form_page_number = 6
 # Use the following tag mapping for USPS standards for all functions
 tag_mapping = {
     'Recipient': 'recipient',
-    'AddressNumber': 'address_2',
-    'AddressNumberPrefix': 'address_2',
-    'AddressNumberSuffix': 'address_2',
-    'StreetName': 'address_2',
-    'StreetNamePreDirectional': 'address_2',
-    'StreetNamePreModifier': 'address_2',
-    'StreetNamePreType': 'address_2',
-    'StreetNamePostDirectional': 'address_2',
-    'StreetNamePostModifier': 'address_2',
-    'StreetNamePostType': 'address_2',
-    'CornerOf': 'address_2',
-    'IntersectionSeparator': 'address_2',
-    'LandmarkName': 'address_2',
-    'USPSBoxGroupID': 'address_2',
-    'USPSBoxGroupType': 'address_2',
-    'USPSBoxID': 'address_2',
-    'USPSBoxType': 'address_2',
-    'BuildingName': 'address_1',
-    'OccupancyType': 'address_1',
-    'OccupancyIdentifier': 'address_1',
-    'SubaddressIdentifier': 'address_1',
-    'SubaddressType': 'address_1',
+    'AddressNumber': 'streetAddress',
+    'AddressNumberPrefix': 'streetAddress',
+    'AddressNumberSuffix': 'streetAddress',
+    'StreetName': 'streetAddress',
+    'StreetNamePreDirectional': 'streetAddress',
+    'StreetNamePreModifier': 'streetAddress',
+    'StreetNamePreType': 'streetAddress',
+    'StreetNamePostDirectional': 'streetAddress',
+    'StreetNamePostModifier': 'streetAddress',
+    'StreetNamePostType': 'streetAddress',
+    'CornerOf': 'streetAddress',
+    'IntersectionSeparator': 'streetAddress',
+    'LandmarkName': 'streetAddress',
+    'USPSBoxGroupID': 'streetAddress',
+    'USPSBoxGroupType': 'streetAddress',
+    'USPSBoxID': 'streetAddress',
+    'USPSBoxType': 'streetAddress',
+    'BuildingName': 'secondaryAddress',
+    'OccupancyType': 'secondaryAddress',
+    'OccupancyIdentifier': 'secondaryAddress',
+    'SubaddressIdentifier': 'secondaryAddress',
+    'SubaddressType': 'secondaryAddress',
     'PlaceName': 'city',
     'StateName': 'state',
-    'ZipCode': 'zipcode',
+    'ZipCode': 'ZIPCode',
 }
 
 
@@ -127,8 +127,7 @@ def address_check(address_dict):
     Parameters
     ----------
     instance : dict
-        Post-USPS-validation dictionary. Usable data for this script are in
-        ['AddressValidateResponse']['Address'][...].
+        Post-USPS-validation dictionary.
 
     Returns
     -------
@@ -143,8 +142,8 @@ def address_check(address_dict):
         # Gather the coordinate string for future queries
         # Parse the 'instance' data for proper 'address_parts'
         address_parts = "{}, {}".format(
-            address_dict['AddressValidateResponse']['Address']['Address2'],
-            address_dict['AddressValidateResponse']['Address']['Zip5'],
+            address_dict['streetAddress'],
+            address_dict['ZIPCode'],
         )
         coord_string = address_lookup(address_parts)
 
@@ -154,10 +153,10 @@ def address_check(address_dict):
         # service area
 
         # Log a potential error if the city is 'Fort Collins'
-        if address_dict['AddressValidateResponse']['Address']['City'].lower() == 'fort collins':    
+        if address_dict['city'].lower() == 'fort collins':    
             log.error(
                 "Potential issue: Fort Collins address marked 'not in GMA': {}".format(
-                    address_dict['AddressValidateResponse']['Address'],
+                    address_dict,
                 ),
                 function='address_check',
             )
@@ -186,7 +185,7 @@ def address_lookup(address_parts):
     ----------
     address_parts : str
         The address parts to use for the lookup (specifically in the format
-        <address_2>, <zip code>) (e.g. "300 LAPORTE AVE, 80521", sans quotes).
+        <streetAddress>, <ZIPCode>) (e.g. "300 LAPORTE AVE, 80521", sans quotes).
 
     Raises
     ------
