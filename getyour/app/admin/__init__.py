@@ -26,7 +26,7 @@ from django.shortcuts import render, reverse
 from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.html import format_html
 from django.utils.translation import ngettext
-from django.db import transaction
+from django.db import transaction, models
 from django.db.models.functions import Lower
 from django.db.models.query import QuerySet
 from django.contrib import admin, messages
@@ -320,8 +320,8 @@ class HouseholdMembersInline(admin.TabularInline):
         'id_link',
     ]
 
-    widgets = {
-        'household_info': JSONEditorWidget()
+    formfield_overrides = {
+        models.JSONField: {'widget': JSONEditorWidget},
     }
     
     readonly_fields = [
