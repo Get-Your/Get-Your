@@ -228,10 +228,10 @@ def quick_apply(request, iq_program, **kwargs):
                 'ZIPCode': addr.zip_code,
             }
             is_in_gma, has_isp_service = address_check(address_dict)
-            # Connexion (Internet Service Provider) status unknown, but since isInGMA==True at this point in
-            # the application, Connexion will be available at some point
-            if is_in_gma and not has_isp_service:    # this covers both None and False
-                in_gma_with_no_service = True
+            
+            # The Connexion API isn't working, so hardcoding this will permanently disable the "Connexion isn't available yet" message
+            # TODO: Remove anything associated with this variable
+            in_gma_with_no_service = False
 
         return render(
             request,

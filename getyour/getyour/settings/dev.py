@@ -45,14 +45,14 @@ DATABASES = {
         'NAME': 'getyour_dev',
         'USER': env("DB_USER"),
         'PASSWORD': env("DB_PASS"),
-        'HOST': 'getfoco-postgres-dev.postgres.database.usgovcloudapi.net'
+        'HOST': env("DB_HOST"),
     },
     'analytics': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'getyour_dev_analytics',
         'USER': env("DB_USER"),
         'PASSWORD': env("DB_PASS"),
-        'HOST': 'getfoco-postgres-dev.postgres.database.usgovcloudapi.net'
+        'HOST': env("DB_HOST"),
     }
 }
 

@@ -47,14 +47,14 @@ DATABASES = {
         'NAME': 'getyour_prod',
         'USER': env("DB_USER"),
         'PASSWORD': env("DB_PASS"),
-        'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'
+        'HOST': env("DB_HOST"),
     },
     'analytics': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'getyour_prod_analytics',
         'USER': env("DB_USER"),
         'PASSWORD': env("DB_PASS"),
-        'HOST': 'getfoco-postgres-no-vnet.postgres.database.usgovcloudapi.net'
+        'HOST': env("DB_HOST"),
     }
 }
 
