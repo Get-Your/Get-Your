@@ -25,11 +25,11 @@ from itertools import chain
 import logging
 import httpagentparser
 import magic
+from urllib.parse import quote, urlencode
 
 from twilio.rest import Client
 from sendgrid.helpers.mail import Mail
 from sendgrid import SendGridAPIClient
-from usps import USPSApi, Address
 
 from python_http_client.exceptions import HTTPError as SendGridHTTPError
 from twilio.base.exceptions import TwilioRestException
@@ -397,42 +397,92 @@ def gma_lookup(coord_string):
 
     except requests.exceptions.HTTPError:
         return False
+    
+
+def get_usps_token():
+    """Get the bearer token for the USPS v3 API."""
+
+    # Gather the token with the 'addresses' scope
+    response = requests.post(
+        'https://apis.usps.com/oauth2/v3/token',
+        data={
+            'grant_type': 'client_credentials',
+            'scope': 'addresses',
+            'client_id': settings.USPS_KEY,
+            'client_secret': settings.USPS_SECRET,
+        },
+        timeout=10,
+    )
+
+    response_dict = response.json()
+    if not response.ok or 'access_token' not in response_dict:
+        log.exception(
+            response.text,
+            function='get_usps_token',
+        )
+        response.raise_for_status()
+    return response_dict['access_token']
 
 
 def validate_usps(inobj):
     if isinstance(inobj, http.request.QueryDict):
-        # Combine fields into Address
-        address = Address(
-            name=" ",
-            address_1=inobj['address'],
-            address_2=inobj['address2'],
-            city=inobj['city'],
-            state=inobj['state'],
-            zipcode=inobj['zipcode'],
-        )
+        # Define the mapper of inobj keys to arguments used in the USPS v3 API
+        key_map = {
+            'address1': 'streetAddress',
+            'address2': 'secondaryAddress',
+            'city': 'city',
+            'state': 'state',
+            'zipcode': 'ZIPCode',
+        }
+        # Create address, using only non-blank values
+        address = {key_map[key]: val for key, val in inobj.items() if val!=''}
 
     elif isinstance(inobj, dict):
-        address = Address(**inobj)
+        # Create address, using only non-blank values
+        address = {key: val for key, val in inobj.items() if val!=''}
 
     else:
         raise AttributeError('Unknown validation input')
 
-    usps = USPSApi(settings.USPS_SID, test=True)
-    validation = usps.validate_address(address)
-    outDict = validation.result
-    try:
-        log.info(
-            f"Address dict found: {outDict}",
-            function='validate_usps',
-        )
-        return outDict
+    # Ensure 'state' is uppercase (otherwise the API will error)
+    address['state'] = address['state'].upper()
+    
+    # TODO: Update this to use an existing token, if still valid (rather than
+    # calling this each time)
+    access_token = get_usps_token()
+    
+    # Call the USPS 'addresses' API with the parsed input. urljoin(),
+    # urlencode(), and quote are used so that spaces are escaped with '%20'
+    # instead of '+' (as requests-native functionality does)
+    response = requests.get(
+        "https://apis.usps.com/addresses/v3/address?{}".format(
+            urlencode(
+                address,
+                quote_via=quote,
+            ),
+        ),
+        timeout=10,
+        headers={
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/json",
+        },
+    )
 
-    except KeyError:
+    # Log then raise an error and raise if status_code != 200
+    if not response.ok:
         log.exception(
-            "Address could not be found - no guesses",
+            f"Address could not be found; error {response.text}",
             function='validate_usps',
         )
-        raise
+        response.raise_for_status()
+
+    # Log and return the dictionary
+    response_dict = response.json()
+    log.info(
+        f"Address dict found: {response_dict}",
+        function='validate_usps',
+    )
+    return response_dict
 
 
 def broadcast_email(email):
