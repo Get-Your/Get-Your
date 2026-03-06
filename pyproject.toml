@@ -1,6 +1,6 @@
 [project]
 name = "Get-Your"
-version = "7.0.1"
+version = "7.1.0"
 description = "Platform for Get-Your income-qualified program universal application"
 readme = "README.md"
 requires-python = "~=3.8.0"
