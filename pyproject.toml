@@ -1,6 +1,6 @@
 [project]
 name = "Get-Your"
-version = "7.0.1"
+version = "7.0.2"
 description = "Platform for Get-Your income-qualified program universal application"
 readme = "README.md"
 requires-python = "~=3.8.0"
@@ -23,6 +23,5 @@ dependencies = [
     "sendgrid==6.6.0",
     "twilio==8.1.0",
     "usaddress==0.5.10",
-    "usps-api==0.5",
     "whitenoise==6.4.0",
 ]

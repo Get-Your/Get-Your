@@ -81,22 +81,11 @@ def index(request, **kwargs):
                         user_id=request.user.id,
                     )
 
-                    # Ensure the necessary keys for USPS validation are included
-                    usps_keys = [
-                        'name',
-                        'address_1',
-                        'address_2',
-                        'city',
-                        'state',
-                        'zipcode']
-                    raw_address_dict.update(
-                        {key: '' for key in usps_keys if key not in raw_address_dict.keys()}
-                    )
-
                     # Validate to USPS address
-                    address_dict = validate_usps(raw_address_dict)
+                    validation_result = validate_usps(raw_address_dict)
 
                     # Check for IQ and Connexion (Internet Service Provider) services
+                    address_dict = validation_result['address']
                     is_in_gma, has_isp_service = address_check(address_dict)
 
                     if not is_in_gma:
@@ -106,8 +95,8 @@ def index(request, **kwargs):
                         # Connexion status unknown, but since is_in_gma==True, it
                         # will be available at some point
                         request.session['address_dict'] = {
-                            'address': address_dict['AddressValidateResponse']['Address']['Address2'],
-                            'zipCode': address_dict['AddressValidateResponse']['Address']['Zip5'],
+                            'address': address_dict['streetAddress'],
+                            'zipCode': address_dict['ZIPCode'],
                         }
 
                         # TODO: This is a quick fix for Connexion availability not
