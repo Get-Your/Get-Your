@@ -26,13 +26,14 @@ from django.shortcuts import render, reverse
 from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.html import format_html
 from django.utils.translation import ngettext
-from django.db import transaction
+from django.db import transaction, models
 from django.db.models.functions import Lower
 from django.db.models.query import QuerySet
 from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
+from django_json_widget.widgets import JSONEditorWidget
 
 from app.models import (
     User,
@@ -314,42 +315,53 @@ class HouseholdMembersInline(admin.TabularInline):
 
     fk_name = "user"
 
-    fields = readonly_fields = [
+    fields = [
+        'household_info',
+        'view_id_link',
+    ]
+
+    formfield_overrides = {
+        models.JSONField: {'widget': JSONEditorWidget(
+            options={
+                'mainMenuBar': False,
+            }
+        )},
+    }
+    
+    readonly_fields = [
         'created_at',
         'modified_at',
-        'household_info_parsed',
+        'view_id_link',
     ]
 
     # Adding/deleting directly from this inline is always disabled since these
     # data are currently stored as JSON
     def has_add_permission(self, request, obj=None):
         return False
+    
     def has_delete_permission(self, request, obj=None):
         return False
 
-    @admin.display(description='individuals in household')
-    def household_info_parsed(self, obj):
-        person_list = []
-        if obj.household_info is not None:
-            for itm in obj.household_info['persons_in_household']:
-                # Add information, then path to identification file and a blank line
-                person_list.append(f"{itm['name']} (DOB: {itm['birthdate']})")
+    #callable to render View Identification links
+    @admin.display(description='Identification Links')
+    def view_id_link(self, obj):
+        id_list = []
+        for itm in obj.household_info['persons_in_household']:
+            # Parse each document_path into a link that can be used to view the file
+            if 'identification_path' in itm and itm['identification_path'] is not None:
+                document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View '{name}' ID</a>""".format(
+                    trg=reverse(
+                        'app:admin_view_blob',
+                        kwargs={'blob_name': itm['identification_path']},
+                    ),
+                    name=itm['name']
+                )
+            else:
+                document_link = "No ID available"
 
-                # Parse each document_path into a link that can be used to view the
-                # file
-                if 'identification_path' in itm and itm['identification_path'] is not None:
-                    document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
-                        trg=reverse(
-                            'app:admin_view_blob',
-                            kwargs={'blob_name': itm['identification_path']},
-                        ),
-                    )
-                else:
-                    document_link = "No identification available"
-                person_list.append(document_link)
-                person_list.append('')
+            id_list.append(document_link)
 
-        return format_html('<br />'.join(person_list))
+        return format_html('<br/>'.join( id_list))
 
     # Show zero extra (unfilled) options
     extra = 0
