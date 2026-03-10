@@ -317,66 +317,51 @@ class HouseholdMembersInline(admin.TabularInline):
 
     fields = [
         'household_info',
-        'id_link',
+        'view_id_link',
     ]
 
     formfield_overrides = {
-        models.JSONField: {'widget': JSONEditorWidget},
+        models.JSONField: {'widget': JSONEditorWidget(
+            options={
+                'mainMenuBar': False,
+            }
+        )},
     }
     
     readonly_fields = [
         'created_at',
         'modified_at',
-        'id_link',
+        'view_id_link',
     ]
 
     # Adding/deleting directly from this inline is always disabled since these
     # data are currently stored as JSON
     def has_add_permission(self, request, obj=None):
         return False
+    
     def has_delete_permission(self, request, obj=None):
         return False
 
-    def id_link(self, obj):
+    #callable to render View Identification links
+    @admin.display(description='Identification Links')
+    def view_id_link(self, obj):
         id_list = []
         for itm in obj.household_info['persons_in_household']:
             # Parse each document_path into a link that can be used to view the file
             if 'identification_path' in itm and itm['identification_path'] is not None:
-                document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
+                document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View '{name}' ID</a>""".format(
                     trg=reverse(
                         'app:admin_view_blob',
                         kwargs={'blob_name': itm['identification_path']},
                     ),
+                    name=itm['name']
                 )
             else:
-                document_link = "No identification available"
+                document_link = "No ID available"
 
             id_list.append(document_link)
 
         return format_html('<br/>'.join( id_list))
-    # @admin.display(description='individuals in household')
-    # def household_info_parsed(self, obj):
-    #     person_list = []
-    #     if obj.household_info is not None:
-    #         for itm in obj.household_info['persons_in_household']:
-    #             # Add information, then path to identification file and a blank line
-    #             person_list.append(f"{itm['name']} (DOB: {itm['birthdate']})")
-
-    #             # Parse each document_path into a link that can be used to view the
-    #             # file
-    #             if 'identification_path' in itm and itm['identification_path'] is not None:
-    #                 document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
-    #                     trg=reverse(
-    #                         'app:admin_view_blob',
-    #                         kwargs={'blob_name': itm['identification_path']},
-    #                     ),
-    #                 )
-    #             else:
-    #                 document_link = "No identification available"
-    #             person_list.append(document_link)
-    #             person_list.append('')
-
-    #     return format_html('<br />'.join(person_list))
 
     # Show zero extra (unfilled) options
     extra = 0
