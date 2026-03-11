@@ -13,16 +13,24 @@ RUN apt-get update && apt-get install -y curl gpg && \
     && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 10 \
     && rm -rf /var/lib/apt/lists/* && apt-get remove -y curl
 
+# Layer for uv. This always installs the newest version
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # Layers for the django app
 
-# Create target dir and copy requirements.txt ONLY first, so we don't break the
-# docker cache with non-requirements.txt changes
+# Copy uv files into the root dir
+# Do only this, so we don't break the docker cache with non-dependency changes
+COPY ../pyproject.toml /
+COPY ../uv.lock /
+# Sync uv, excluding 'dev' dependencies
+WORKDIR /
+RUN uv sync --no-dev
+
+# Create target dir and set as the working directory
 RUN mkdir /code
 WORKDIR /code
-COPY requirements.txt /code
-RUN pip install --quiet -r requirements.txt
 
-# Add the rest of the files
+# Add the rest of the files to the /code dir
 ADD . /code/
 
 # Gather the code version from build var. Set to '' if DNE.
