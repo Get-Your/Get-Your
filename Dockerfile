@@ -39,14 +39,14 @@ RUN --mount=type=cache,target=/root/.cache/uv uv sync
 
 # Layers for the Django app
 
-# Create target dir and set as the working directory
+# Create target code directory and set as the working directory
 RUN mkdir /proj/code
 WORKDIR /proj/code
 
 # Add the files in getyour/ to the current (/proj/code/) dir
 COPY getyour/ ./
 
-# Gather the code version from build var. Set to '' if DNE.
+# Gather the code version from build vars. Set to '' if DNE.
 ARG CODE_VERSION=''
 # Save the code version to a runtime env var
 ENV CODE_VERSION=$CODE_VERSION
@@ -58,8 +58,8 @@ RUN /opt/venv/bin/python manage.py collectstatic --noinput
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY redis.conf /etc/redis/redis.conf
 
-# Layer for exposing the Django app
+# Expose the Django app for use
 EXPOSE 8000
 
-# Run supervisord
+# Run supervisord, which executes Django, Redis, and Django-Q
 CMD ["/usr/bin/supervisord"]
