@@ -13,20 +13,33 @@ RUN apt-get update && apt-get install -y curl gpg && \
     && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 10 \
     && rm -rf /var/lib/apt/lists/* && apt-get remove -y curl
 
-# Layer for uv. This always installs the newest version
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+# Layer for uv
 
-# Layers for the django app
+# Copy files from the official uv container (latest version)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Copy uv files into the root dir
-# Do only this, so we don't break the docker cache with non-dependency changes
+# Create project directory, set as the working directory (for uv sync steps),
+# and copy the uv definitions files
 RUN mkdir /proj
 WORKDIR /proj
 COPY pyproject.toml uv.lock ./
 
-# Sync uv, excluding 'dev' dependencies
-WORKDIR /proj
-RUN uv sync --no-dev
+# Configure uv to
+#   - compile Python to bytecode (for runtime efficiency)
+#   - copy files instead of hardlinking (to avoid link issues)
+#   - not install 'dev' dependencies
+#   - use an explicitly-define PATH
+#   - use an explicitly-defined 'project environment' (used below)
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_NO_DEV=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    UV_PROJECT_ENVIRONMENT="/opt/venv"
+
+# Run uv sync
+RUN --mount=type=cache,target=/root/.cache/uv uv sync
+
+# Layers for the Django app
 
 # Create target dir and set as the working directory
 RUN mkdir /proj/code
@@ -41,7 +54,7 @@ ARG CODE_VERSION=''
 ENV CODE_VERSION=$CODE_VERSION
 
 # Collect static files
-RUN python manage.py collectstatic --noinput
+RUN /opt/venv/bin/python manage.py collectstatic --noinput
 
 # Copy supervisor and redis conf files to the appropriate locations
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
