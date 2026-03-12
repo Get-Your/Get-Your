@@ -20,18 +20,20 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Copy uv files into the root dir
 # Do only this, so we don't break the docker cache with non-dependency changes
-COPY ../pyproject.toml /
-COPY ../uv.lock /
+RUN mkdir /proj
+WORKDIR /proj
+COPY pyproject.toml uv.lock ./
+
 # Sync uv, excluding 'dev' dependencies
-WORKDIR /
+WORKDIR /proj
 RUN uv sync --no-dev
 
 # Create target dir and set as the working directory
-RUN mkdir /code
-WORKDIR /code
+RUN mkdir /proj/code
+WORKDIR /proj/code
 
-# Add the rest of the files to the /code dir
-ADD . /code/
+# Add the files in getyour/ to the current (/proj/code/) dir
+COPY getyour/ ./
 
 # Gather the code version from build var. Set to '' if DNE.
 ARG CODE_VERSION=''
