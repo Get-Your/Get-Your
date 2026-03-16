@@ -354,16 +354,22 @@ class HouseholdMembersInline(admin.TabularInline):
     
     @admin.display(description='Edit Record')
     def record_edit(self, obj):
+        #custom implementation of get_admin_url(), to use the user_id as PK
+        url = reverse(
+            "admin:{al}_{md}_{tp}".format(
+                al=obj._meta.app_label,
+                md=obj._meta.model_name,
+                tp="change",
+            ),
+            args=(obj.user_id,),
+        )
+
         return format_html(
-            f'<a href="{get_admin_url(obj)}">Edit Household Members</a>'
+            f'<a href="{url}">Edit Household Members</a>'
         )
 
     # Show zero extra (unfilled) options
     extra = 0
-
-
-class HouseholdMembersAdmin(admin.ModelAdmin):
-    model = HouseholdMembers
 
 
 class EligibilityProgramInline(admin.TabularInline):
@@ -1724,6 +1730,18 @@ class FeedbackAdmin(admin.ModelAdmin):
     ]
 
     list_per_page = 100
+
+    def has_add_permission(self, request, obj=None):
+        # Adding directly from the admin panel is disallowed for everyone
+        return False
+
+
+class HouseholdMembersAdmin(admin.ModelAdmin):
+    fields = readonly_fields = [
+        'modified_at',
+        'user_id',
+        'household_info',
+    ]
 
     def has_add_permission(self, request, obj=None):
         # Adding directly from the admin panel is disallowed for everyone
