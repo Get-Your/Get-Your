@@ -1740,12 +1740,14 @@ class FeedbackAdmin(admin.ModelAdmin):
 
 class HouseholdMembersAdmin(admin.ModelAdmin):
     fields = [
+        'user_id',
+        'modified_at',
         'household_info',
     ]
-    
+
     readonly_fields = [
-        'modified_at',
         'user_id',
+        'modified_at',
     ]
 
     formfield_overrides = {
@@ -1760,6 +1762,16 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
         # Adding directly from the admin panel is disallowed for everyone
         return False
     
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        # validate the birthdays, and file paths
+        
+
+        return super().change_view(
+            request,
+            object_id,
+            form_url,
+            extra_context,
+        )
 
 # Register the models
 
