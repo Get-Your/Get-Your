@@ -17,9 +17,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import logging
-from django.http.response import HttpResponse
+import json
 import pendulum
 
+from django.http.response import HttpResponse
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, reverse
@@ -1763,15 +1764,45 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
         return False
     
     def change_view(self, request, object_id, form_url='', extra_context=None):
+        # pass
         # validate the birthdays, and file paths
-        
+# print(request.POST)
+        #TODO  Log household member changes
+        # if 'household_info' in request.POST:
+        #     household_json = json.loads(request.POST['household_info'])
+        #     household_members = household_json['persons_in_household']
+        #     for person in household_members:
+        #         #validate birthdate as date
+        #         #validate identification_path as existing
+        #         # if name/bdate/path changed, log the old one..
+        #         pass
 
+        #     # return self.notifyAndRedirect(request, 'blah')
+
+        #If it all validated, send to superclass
         return super().change_view(
             request,
             object_id,
             form_url,
             extra_context,
         )
+        
+    def notifyAndRedirect(self, request, message):
+        pass
+        # Form is not valid; notify the user
+        self.message_user(
+            request,
+            message,
+            messages.ERROR,
+        )
+
+        redirect_url = reverse(
+            f"admin:{self.model._meta.app_label}_{self.model._meta.model_name}_change",
+            args=(self.model.user_id,),
+            current_app=self.admin_site.name,
+        )
+
+        return HttpResponseRedirect(redirect_url)
 
 # Register the models
 
