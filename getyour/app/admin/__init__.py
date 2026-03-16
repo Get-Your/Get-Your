@@ -1768,16 +1768,21 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
         # validate the birthdays, and file paths
 # print(request.POST)
         #TODO  Log household member changes
-        # if 'household_info' in request.POST:
-        #     household_json = json.loads(request.POST['household_info'])
-        #     household_members = household_json['persons_in_household']
-        #     for person in household_members:
+        if 'household_info' in request.POST:
+            household_json = json.loads(request.POST['household_info'])
+            household_members = household_json['persons_in_household']
+            for person in household_members:
         #         #validate birthdate as date
+                try:
+                    date = pendulum.parse(person['birthdate'])
+                except pendulum.parsing.ParserError:
+                    return self.notifyAndRedirect(request, 'Household Member birth date was not valid')
+
         #         #validate identification_path as existing
+                id = 
         #         # if name/bdate/path changed, log the old one..
         #         pass
 
-        #     # return self.notifyAndRedirect(request, 'blah')
 
         #If it all validated, send to superclass
         return super().change_view(
@@ -1788,7 +1793,7 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
         )
         
     def notifyAndRedirect(self, request, message):
-        pass
+        # pass
         # Form is not valid; notify the user
         self.message_user(
             request,
@@ -1796,13 +1801,15 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
             messages.ERROR,
         )
 
-        redirect_url = reverse(
-            f"admin:{self.model._meta.app_label}_{self.model._meta.model_name}_change",
+        url = reverse(
+            "admin:{al}_{md}_{tp}".format(
+                al=self.model._meta.app_label,
+                md=self.model._meta.model_name,
+                tp="change",
+            ),
             args=(self.model.user_id,),
-            current_app=self.admin_site.name,
         )
-
-        return HttpResponseRedirect(redirect_url)
+        return HttpResponseRedirect(url)
 
 # Register the models
 
