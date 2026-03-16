@@ -1759,30 +1759,43 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
         )},
     }
 
+    # Bring in existing template with custom button support
+    change_form_template = 'admin/custom_button_change_form.html'
+
     def has_add_permission(self, request, obj=None):
         # Adding directly from the admin panel is disallowed for everyone
         return False
     
-    def change_view(self, request, object_id, form_url='', extra_context=None):
+    def change_view(self, request, object_id, form_url='', extra_context={}):
         # pass
-        # validate the birthdays, and file paths
-# print(request.POST)
-        #TODO  Log household member changes
+        # user = User.objects.get(pk=object_id)
+
+        # add custom button to upload/replace an ID
+        #TODO create the upload/replace ID template based off ADd Elig Prog
+        extra_context['custom_buttons'] = [
+            {
+                'title': 'Replace An ID',
+                'link': reverse(
+                    'app:admin_add_elig_program',
+                    kwargs={'user_id': object_id},
+                ),
+            },
+        ] 
+
+        # validate birthdates and file paths
         if 'household_info' in request.POST:
             household_json = json.loads(request.POST['household_info'])
             household_members = household_json['persons_in_household']
             for person in household_members:
-        #         #validate birthdate as date
+                # validate birthdate as date
                 try:
                     date = pendulum.parse(person['birthdate'])
                 except pendulum.parsing.ParserError:
-                    return self.notifyAndRedirect(request, 'Household Member birth date was not valid')
+                    return self.notifyAndRedirect(request, 'A birth date was not valid')
 
-        #         #validate identification_path as existing
-                id = 
-        #         # if name/bdate/path changed, log the old one..
-        #         pass
-
+                # validate identification_path as existing
+                
+                # if name/bdate/path changed, log the old one..
 
         #If it all validated, send to superclass
         return super().change_view(
@@ -1800,7 +1813,7 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
             message,
             messages.ERROR,
         )
-
+        #TODO make sure this goes back to the appropriate page
         url = reverse(
             "admin:{al}_{md}_{tp}".format(
                 al=self.model._meta.app_label,
