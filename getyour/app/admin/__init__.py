@@ -27,12 +27,14 @@ from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.html import format_html
 from django.utils.translation import ngettext
 from django.db import transaction
+from django.db.models import JSONField
 from django.db.models.functions import Lower
 from django.db.models.query import QuerySet
 from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
+from django_json_widget.widgets import JSONEditorWidget
 
 from app.models import (
     User,
@@ -1737,16 +1739,27 @@ class FeedbackAdmin(admin.ModelAdmin):
 
 
 class HouseholdMembersAdmin(admin.ModelAdmin):
-    fields = readonly_fields = [
-        'modified_at',
-        'user_id',
+    fields = [
         'household_info',
     ]
+    
+    readonly_fields = [
+        'modified_at',
+        'user_id',
+    ]
+
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget(
+            options = {
+                'mainMenuBar': False,
+            }
+        )},
+    }
 
     def has_add_permission(self, request, obj=None):
         # Adding directly from the admin panel is disallowed for everyone
         return False
-
+    
 
 # Register the models
 
