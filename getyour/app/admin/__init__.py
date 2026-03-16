@@ -317,7 +317,8 @@ class HouseholdMembersInline(admin.TabularInline):
     fields = readonly_fields = [
         'created_at',
         'modified_at',
-        'household_info_parsed',
+        'record_edit',
+        'household_info_parsed'
     ]
 
     # Adding/deleting directly from this inline is always disabled since these
@@ -350,9 +351,19 @@ class HouseholdMembersInline(admin.TabularInline):
                 person_list.append('')
 
         return format_html('<br />'.join(person_list))
+    
+    @admin.display(description='Edit Record')
+    def record_edit(self, obj):
+        return format_html(
+            f'<a href="{get_admin_url(obj)}">Edit Household Members</a>'
+        )
 
     # Show zero extra (unfilled) options
     extra = 0
+
+
+class HouseholdMembersAdmin(admin.ModelAdmin):
+    model = HouseholdMembers
 
 
 class EligibilityProgramInline(admin.TabularInline):
@@ -1735,3 +1746,4 @@ admin.site.register(EligibilityProgram, EligibilityProgramAdmin)
 admin.site.register(EligibilityProgramRD, EligibilityProgramRDAdmin)
 admin.site.register(IQProgramRD, IQProgramRDAdmin)
 admin.site.register(Feedback, FeedbackAdmin)
+admin.site.register(HouseholdMembers, HouseholdMembersAdmin)
