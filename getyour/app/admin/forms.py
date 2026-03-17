@@ -188,3 +188,23 @@ class IQProgramRDForm(forms.ModelForm):
             label_list[-1] = f"{label_list[-1]}'"
 
             labels[req] = ' '.join(label_list)
+
+
+class HouseholdMembersReplaceIDForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        # Initialize the form
+        super().__init__(*args, **kwargs)
+
+        #TODO Return the available Household Member names
+
+        # Prepend empty (and unusable) option
+        self.fields['program_name'].choices = [('', '')] + list(map(
+            [] #Put household member names here
+        ))
+
+    program_name = forms.ChoiceField(
+        label='Select household member',
+        choices=(),
+    )
+
+    document_path = forms.FileField(label='Choose file')

@@ -1813,7 +1813,7 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
             message,
             messages.ERROR,
         )
-        #TODO make sure this goes back to the appropriate page
+        #TODO make sure this goes back to the HouseholdMembers page
         url = reverse(
             "admin:{al}_{md}_{tp}".format(
                 al=self.model._meta.app_label,

@@ -311,3 +311,17 @@ def add_elig_program(request, **kwargs):
             user_id=user_id,
         )
         raise
+
+@staff_member_required
+def replace_household_member_id(request, **kwargs):
+    try:
+        log.debug(
+            "Entering function",
+            function='add_elig_program',
+            user_id=request.user.id,
+        )
+
+         # Define the application user (not the admin)
+        user = User.objects.get(id=kwargs['user_id'])
+    except Exception:
+        pass
