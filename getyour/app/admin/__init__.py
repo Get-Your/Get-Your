@@ -73,10 +73,8 @@ from app.admin.forms import (
     EligibilityProgramRDForm,
     IQProgramRDForm,
 )
-from app.admin.views import add_elig_program
 
 from logger.wrappers import LoggerWrapper
-
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -1759,7 +1757,7 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
         )},
     }
 
-    # Bring in existing template with custom button support
+    # Bring in template with custom button support
     change_form_template = 'admin/custom_button_change_form.html'
 
     def has_add_permission(self, request, obj=None):
@@ -1768,7 +1766,6 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
     
     def change_view(self, request, object_id, form_url='', extra_context={}):
         # pass
-        # user = User.objects.get(pk=object_id)
 
         # add custom button to upload/replace an ID
         #TODO create the upload/replace ID template based off ADd Elig Prog
@@ -1776,11 +1773,15 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
             {
                 'title': 'Replace An ID',
                 'link': reverse(
-                    'app:admin_add_elig_program',
+                    'app:admin_replace_household_member_id',
                     kwargs={'user_id': object_id},
                 ),
+                # Open in new window for proper request methods
+                'target': 'new',
             },
         ] 
+
+        #TODO instantiate and use the HouseholdMembersReplaceIDForm maybe?
 
         # validate birthdates and file paths
         if 'household_info' in request.POST:

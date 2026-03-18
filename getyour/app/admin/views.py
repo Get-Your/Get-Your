@@ -32,7 +32,7 @@ from azure.core.exceptions import ResourceNotFoundError
 from app.models import User, EligibilityProgram, EligibilityProgramRD
 from app.constants import supported_content_types
 from app.backend import file_validation, finalize_application
-from app.admin.forms import EligProgramAddForm
+from app.admin.forms import EligProgramAddForm, HouseholdMembersReplaceIDForm
 
 from logger.wrappers import LoggerWrapper
 
@@ -315,13 +315,25 @@ def add_elig_program(request, **kwargs):
 @staff_member_required
 def replace_household_member_id(request, **kwargs):
     try:
+        print(request.user)
+
         log.debug(
             "Entering function",
-            function='add_elig_program',
+            function='replace_household_member_id',
             user_id=request.user.id,
         )
 
-         # Define the application user (not the admin)
-        user = User.objects.get(id=kwargs['user_id'])
+        return render(
+            request,
+            "admin/replace_household_member_id.html", 
+            {
+                'form': HouseholdMembersReplaceIDForm(user_id=request.user.id),
+                # Set some page-specific text
+                'site_header': 'Get FoCo administration',
+                'title': f"Replace Household Member ID for {request.user.id}",
+                'site_title': 'Get FoCo administration',
+            },
+        )
+        #TODO handle POST request
     except Exception:
         pass
