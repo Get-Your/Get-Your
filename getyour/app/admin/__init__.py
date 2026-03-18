@@ -1766,7 +1766,7 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
     
     def change_view(self, request, object_id, form_url='', extra_context={}):
         # pass
-
+        print(object_id)
         # add custom button to upload/replace an ID
         #TODO create the upload/replace ID template based off ADd Elig Prog
         extra_context['custom_buttons'] = [

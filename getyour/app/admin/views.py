@@ -313,10 +313,8 @@ def add_elig_program(request, **kwargs):
         raise
 
 @staff_member_required
-def replace_household_member_id(request, **kwargs):
+def replace_household_member_id(request, user_id, **kwargs):
     try:
-        print(request.user)
-
         log.debug(
             "Entering function",
             function='replace_household_member_id',
@@ -327,10 +325,10 @@ def replace_household_member_id(request, **kwargs):
             request,
             "admin/replace_household_member_id.html", 
             {
-                'form': HouseholdMembersReplaceIDForm(user_id=request.user.id),
+                'form': HouseholdMembersReplaceIDForm(user_id=user_id),
                 # Set some page-specific text
                 'site_header': 'Get FoCo administration',
-                'title': f"Replace Household Member ID for {request.user.id}",
+                'title': f"Replace Household Member ID for {user_id}",
                 'site_title': 'Get FoCo administration',
             },
         )
