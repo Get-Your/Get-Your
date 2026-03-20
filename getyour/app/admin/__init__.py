@@ -35,7 +35,9 @@ from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
+from django.core.files.storage import default_storage
 from django_json_widget.widgets import JSONEditorWidget
+from azure.core.exceptions import ResourceNotFoundError
 
 from app.models import (
     User,
@@ -1766,7 +1768,8 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
     
     def change_view(self, request, object_id, form_url='', extra_context={}):
         # pass
-        print(object_id)
+        # print(object_id)
+
         # add custom button to upload/replace an ID
         #TODO create the upload/replace ID template based off ADd Elig Prog
         extra_context['custom_buttons'] = [
@@ -1779,24 +1782,38 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
                 # Open in new window for proper request methods
                 'target': 'new',
             },
-        ] 
+        ]
 
-        #TODO instantiate and use the HouseholdMembersReplaceIDForm maybe?
+        if request.method == "POST":
+            # validate name, birthdate, identification_path
+            if 'household_info' in request.POST:
+                household_json = json.loads(request.POST['household_info'])
+                household_members = household_json['persons_in_household']
+                for person in household_members:
+                    # validate birthdate as date
+                    try:
+                        date = pendulum.parse(person['birthdate'])
+                    except pendulum.parsing.ParserError:
+                        return self.notifyAndRedirect(request, object_id, 'A birth date was not valid')
 
-        # validate birthdates and file paths
-        if 'household_info' in request.POST:
-            household_json = json.loads(request.POST['household_info'])
-            household_members = household_json['persons_in_household']
-            for person in household_members:
-                # validate birthdate as date
-                try:
-                    date = pendulum.parse(person['birthdate'])
-                except pendulum.parsing.ParserError:
-                    return self.notifyAndRedirect(request, 'A birth date was not valid')
-
-                # validate identification_path as existing
-                
-                # if name/bdate/path changed, log the old one..
+                    # validate identification_path as existing file
+                    file = default_storage.open(person['identification_path'])
+                    try:
+                        blob_data = b''
+                        for chunk in file.chunks():
+                            blob_data += chunk
+                    except ResourceNotFoundError as e:
+                        log.exception(
+                            f"ResourceNotFoundError: {e}",
+                            function='admin.views.HouseholdMembersAdmin:change_view',
+                            user_id=request.user.id,
+                        )
+                        
+                        return self.notifyAndRedirect(request, object_id, 'An identification_path was not a valid file')
+                #TODO if name/bdate/path changed, log the old one..     
+            else:
+                raise Exception('No BLAH field was received')
+            
 
         #If it all validated, send to superclass
         return super().change_view(
@@ -1805,8 +1822,9 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
             form_url,
             extra_context,
         )
-        
-    def notifyAndRedirect(self, request, message):
+
+    def notifyAndRedirect(self, request, user_id, message):
+        opts = self.model._meta
         # pass
         # Form is not valid; notify the user
         self.message_user(
@@ -1814,15 +1832,13 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
             message,
             messages.ERROR,
         )
-        #TODO make sure this goes back to the HouseholdMembers page
+        #TODO make sure this goes back to the HouseholdMembersAdmin page
         url = reverse(
-            "admin:{al}_{md}_{tp}".format(
-                al=self.model._meta.app_label,
-                md=self.model._meta.model_name,
-                tp="change",
-            ),
-            args=(self.model.user_id,),
-        )
+                f"admin:{opts.app_label}_{opts.model_name}_change",
+                args=(user_id,),
+                current_app=self.admin_site.name,
+            )
+        
         return HttpResponseRedirect(url)
 
 # Register the models

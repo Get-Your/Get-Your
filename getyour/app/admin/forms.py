@@ -205,11 +205,11 @@ class HouseholdMembersReplaceIDForm(forms.Form):
             household_members.append((person['identification_path'], person['name']))
 
         # Prepend empty (and unusable) option
-        self.fields['program_name'].choices = [('', '')] + household_members
+        self.fields['member_name'].choices = [('', '')] + household_members
         # append user household member names
 
     #Form fields
-    program_name = forms.ChoiceField(
+    member_name = forms.ChoiceField(
         label='Select household member',
         choices=(),
         required=True
