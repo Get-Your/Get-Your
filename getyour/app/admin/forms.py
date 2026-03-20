@@ -193,26 +193,26 @@ class IQProgramRDForm(forms.ModelForm):
 
 class HouseholdMembersReplaceIDForm(forms.Form):
     def __init__(self, user_id, *args, **kwargs):
-        # Initialize the form
         super().__init__(*args, **kwargs)
 
-        #TODO Return the available Household Member names
         household = HouseholdMembers.objects.get(
             user_id=user_id
         )
-        household_info = household.household_info
-        persons = household_info['persons_in_household']
+        persons = household.household_info['persons_in_household']
         
         household_members = []
         for person in persons:
             household_members.append((person['identification_path'], person['name']))
+
         # Prepend empty (and unusable) option
         self.fields['program_name'].choices = [('', '')] + household_members
-        #TODO append user household member names
+        # append user household member names
 
+    #Form fields
     program_name = forms.ChoiceField(
         label='Select household member',
         choices=(),
+        required=True
     )
 
-    document_path = forms.FileField(label='Choose file')
+    document_path = forms.FileField(label='Choose file', required=True, widget=forms.FileInput(attrs={'accept': '.jpg, .png, .pdf'}))
