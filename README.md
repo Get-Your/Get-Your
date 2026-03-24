@@ -352,7 +352,7 @@ The Get-Your team doesn't yet have the resources to design and stand up a full r
 The materialized views provide the proper separation between raw production data and somewhat-anonymized reporting data, so these feed the standard views. Because the materialized views are on disk, they will need to be periodically refreshed with source data. The commands to create/update this platform can be found in [Populating the Database](#populating-the-database).
 
 ## Database Administration
-This section relies on the administrator having PostgreSQL installed locally (the same version used in the Azure instance, for proper utility compatibility).
+This section relies on the administrator having PostgreSQL (or at least PostgreSQL utilities) installed locally (the same version used in the Azure instance, for proper utility compatibility).
 
 For the following sections,
 
@@ -646,12 +646,12 @@ Connect to the primary (`getyour_<env>`) database and complete the following ste
         -- Alter the default privileges for each lesser role on schemas created by <admin_user>
         ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT USAGE ON SCHEMAS TO base_role;
         ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT CREATE ON SCHEMAS TO privileged_role;
-        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> IN SCHEMA public GRANT SELECT ON TABLES TO analytics_role;  
+        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> IN SCHEMA reporting GRANT SELECT ON TABLES TO analytics_role;  
 
         -- Alter the default privileges for each lesser role on tables and sequences created by <privileged_user>
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
-        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> IN SCHEMA public GRANT SELECT ON TABLES TO analytics_role;  
+        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> IN SCHEMA reporting GRANT SELECT ON TABLES TO analytics_role;  
 
 #### Configure Other Databases
 This section should be used for all other databases on the same server (such as the 'analytics' database used for logging). It relies on the roles that were created in the [previous section](#configure-the-primary-database).
