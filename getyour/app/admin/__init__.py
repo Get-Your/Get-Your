@@ -1767,11 +1767,7 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
         return False
     
     def change_view(self, request, object_id, form_url='', extra_context={}):
-        # pass
-        # print(object_id)
-
         # add custom button to upload/replace an ID
-        #TODO create the upload/replace ID template based off ADd Elig Prog
         extra_context['custom_buttons'] = [
             {
                 'title': 'Replace An ID',
@@ -1785,7 +1781,8 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
         ]
 
         if request.method == "POST":
-            # validate name, birthdate, identification_path
+            # validate birthdate, identification_path
+            #TODO validate non-empty name?
             if 'household_info' in request.POST:
                 household_json = json.loads(request.POST['household_info'])
                 household_members = household_json['persons_in_household']
@@ -1793,7 +1790,12 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
                     # validate birthdate as date
                     try:
                         date = pendulum.parse(person['birthdate'])
-                    except pendulum.parsing.ParserError:
+                    except pendulum.parsing.ParserError as e:
+                        log.exception(
+                            f"Pendulum parsing error: {e}",
+                            function='admin.views.HouseholdMembersAdmin:change_view',
+                            user_id=request.user.id,
+                        )
                         return self.notifyAndRedirect(request, object_id, 'A birth date was not valid')
 
                     # validate identification_path as existing file
@@ -1809,10 +1811,10 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
                             user_id=request.user.id,
                         )
                         
-                        return self.notifyAndRedirect(request, object_id, 'An identification_path was not a valid file')
+                        return self.notifyAndRedirect(request, object_id, 'An identification_path was not valid')
                 #TODO if name/bdate/path changed, log the old one..     
             else:
-                raise Exception('No BLAH field was received')
+                raise Exception('No household_info field was received')
             
 
         #If it all validated, send to superclass

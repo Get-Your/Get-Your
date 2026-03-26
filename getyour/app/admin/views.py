@@ -321,8 +321,44 @@ def replace_household_member_id(request, user_id, **kwargs):
             user_id=request.user.id,
         )
 
+        #TODO handle POST request
         if request.method == "POST":
-            pass
+            # file_validation() checks file extensions
+            file_validated, validation_message = file_validation(
+                request.FILES.getlist('document_path')[0],
+                request.user.id,
+                calling_function='replace_household_member_id',
+            )
+            if not file_validated:
+                return render(
+                    request,
+                    "admin/replace_household_member_id.html",
+                    {
+                        'form': HouseholdMembersReplaceIDForm(user_id=user_id),
+                        'error_message': validation_message,
+                        # Set some page-specific text
+                        'site_header': 'Get FoCo administration',
+                        'title': f"Replace Household Member ID for {user_id}",
+                        'site_title': 'Get FoCo administration',
+                    },
+                )
+
+            # request.POST['member_name'] is the existing document_path
+            fileobj = request.FILES['document_path'] #django.core.files.uploadedfile.InMemoryUploadedFile
+            default_storage.save(request.POST['member_name'], fileobj)
+
+            return render(
+                request,
+                "admin/replace_household_member_id.html", 
+                {
+                    'form': HouseholdMembersReplaceIDForm(user_id=user_id),
+                    'success_message': "Household Member ID replaced. Close this window and refresh the HouseholdMembers page to view it.",
+                    # Set some page-specific text
+                    'site_header': 'Get FoCo administration',
+                    'title': f"Replace Household Member ID for {user_id}",
+                    'site_title': 'Get FoCo administration',
+                },
+            )
         else:
             return render(
                 request,
@@ -335,6 +371,14 @@ def replace_household_member_id(request, user_id, **kwargs):
                     'site_title': 'Get FoCo administration',
                 },
             )
-        #TODO handle POST request
-    except Exception:
-        pass
+    except:
+        try:
+            user_id = request.user.id
+        except Exception:
+            user_id = None
+        log.exception(
+            'Uncaught view-level exception',
+            function='replace_household_member_id',
+            user_id=user_id,
+        )
+        raise

@@ -205,8 +205,8 @@ class HouseholdMembersReplaceIDForm(forms.Form):
             household_members.append((person['identification_path'], person['name']))
 
         # Prepend empty (and unusable) option
-        self.fields['member_name'].choices = [('', '')] + household_members
         # append user household member names
+        self.fields['member_name'].choices = [('', '')] + household_members
 
     #Form fields
     member_name = forms.ChoiceField(
@@ -215,4 +215,4 @@ class HouseholdMembersReplaceIDForm(forms.Form):
         required=True
     )
 
-    document_path = forms.FileField(label='Choose file', required=True, widget=forms.FileInput(attrs={'accept': '.jpg, .png, .pdf'}))
+    document_path = forms.FileField(label='Choose file', required=True, widget=forms.FileInput(attrs={'accept': '.jpg, .jpeg, .png, .pdf'}))
