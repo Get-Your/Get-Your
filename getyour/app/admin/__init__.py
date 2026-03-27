@@ -1812,10 +1812,8 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
                         )
                         
                         return self.notifyAndRedirect(request, object_id, 'An identification_path was not valid')
-                #TODO if name/bdate/path changed, log the old one..     
             else:
                 raise Exception('No household_info field was received')
-            
 
         #If it all validated, send to superclass for storage and redirection
         return super().change_view(
@@ -1825,23 +1823,25 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
             extra_context,
         )
 
+
     def notifyAndRedirect(self, request, user_id, message):
         opts = self.model._meta
-        # pass
+
         # Form is not valid; notify the user
         self.message_user(
             request,
             message,
             messages.ERROR,
         )
-        #TODO make sure this goes back to the HouseholdMembersAdmin page
+
         url = reverse(
-                f"admin:{opts.app_label}_{opts.model_name}_change",
-                args=(user_id,),
-                current_app=self.admin_site.name,
-            )
+            f"admin:{opts.app_label}_{opts.model_name}_change",
+            args=(user_id,),
+            current_app=self.admin_site.name,
+        )
         
         return HttpResponseRedirect(url)
+
 
 # Register the models
 

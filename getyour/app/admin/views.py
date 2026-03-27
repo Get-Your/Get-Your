@@ -347,13 +347,12 @@ def replace_household_member_id(request, user_id, **kwargs):
             file_obj = request.FILES['document_path'] #django.core.files.uploadedfile.InMemoryUploadedFile
             new_filename = default_storage.save(request.POST['member_name'], file_obj)
 
-            # Update file path for any matching existing household members
+            # Update file path for any existing household members with matching file path
             household_members = HouseholdMembers.objects.get(user_id=user_id)
             for person in household_members.household_info['persons_in_household']:
                 # request.POST['member_name'] is the existing document_path
                 if person['identification_path'] == request.POST['member_name']:
                     person['identification_path'] = new_filename
-                    # household_members.household_info['persons_in_household']['identification_path'] = new_filename
 
             # Save changes to household member object
             household_members.save()
