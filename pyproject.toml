@@ -18,7 +18,7 @@ dependencies = [
     "pendulum==2.1.2",
     "psycopg2-binary==2.9.6",
     "python-magic==0.4.27",
-    "python-magic-bin~=0.4",
+    "python-magic-bin~=0.4.14 ; (platform_machine == 'x86_64' and sys_platform == 'darwin') or sys_platform == 'win32'",
     "redis==5.0.3",
     "rich==13.9.4",
     "sendgrid==6.6.0",
