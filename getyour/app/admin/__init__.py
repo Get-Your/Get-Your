@@ -1796,7 +1796,7 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
                             function='admin.views.HouseholdMembersAdmin:change_view',
                             user_id=request.user.id,
                         )
-                        return self.notifyAndRedirect(request, object_id, 'A birth date was not valid')
+                        return self.notifyAndRedirect(request, object_id, 'A birthdate was not valid')
 
                     # validate identification_path as existing file
                     file = default_storage.open(person['identification_path'])
@@ -1817,7 +1817,7 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
                 raise Exception('No household_info field was received')
             
 
-        #If it all validated, send to superclass
+        #If it all validated, send to superclass for storage and redirection
         return super().change_view(
             request,
             object_id,

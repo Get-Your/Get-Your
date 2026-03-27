@@ -20,6 +20,7 @@ import logging
 import re
 import base64
 import pendulum
+import json
 from pathlib import PurePosixPath
 
 from django.shortcuts import render
@@ -29,7 +30,7 @@ from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from azure.core.exceptions import ResourceNotFoundError
 
-from app.models import User, EligibilityProgram, EligibilityProgramRD
+from app.models import User, EligibilityProgram, EligibilityProgramRD, HouseholdMembers
 from app.constants import supported_content_types
 from app.backend import file_validation, finalize_application
 from app.admin.forms import EligProgramAddForm, HouseholdMembersReplaceIDForm
@@ -321,7 +322,7 @@ def replace_household_member_id(request, user_id, **kwargs):
             user_id=request.user.id,
         )
 
-        #TODO handle POST request
+        #TODO maybe show more user info than just an ID, fetch user and show name
         if request.method == "POST":
             # file_validation() checks file extensions
             file_validated, validation_message = file_validation(
@@ -343,9 +344,19 @@ def replace_household_member_id(request, user_id, **kwargs):
                     },
                 )
 
-            # request.POST['member_name'] is the existing document_path
-            fileobj = request.FILES['document_path'] #django.core.files.uploadedfile.InMemoryUploadedFile
-            default_storage.save(request.POST['member_name'], fileobj)
+            file_obj = request.FILES['document_path'] #django.core.files.uploadedfile.InMemoryUploadedFile
+            new_filename = default_storage.save(request.POST['member_name'], file_obj)
+
+            # Update file path for any matching existing household members
+            household_members = HouseholdMembers.objects.get(user_id=user_id)
+            for person in household_members.household_info['persons_in_household']:
+                # request.POST['member_name'] is the existing document_path
+                if person['identification_path'] == request.POST['member_name']:
+                    person['identification_path'] = new_filename
+                    # household_members.household_info['persons_in_household']['identification_path'] = new_filename
+
+            # Save changes to household member object
+            household_members.save()
 
             return render(
                 request,
