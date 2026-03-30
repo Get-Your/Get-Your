@@ -238,9 +238,13 @@ def address_lookup(street_address, zip_code):
         raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
 
     # Ensure candidate(s) exist and they have a decent match score
+    # The endpoint has smart matching and even exact inputs result in fairly
+    # low scores; set the 'minimum score' somewhat low to avoid missing accurate
+    # matches
+
     # Because this is how the Sales Tax lookup is architected, it should be
     # safe to assume these are returned sorted, with best candidate first
-    if len(outVal['candidates']) > 0 and outVal['candidates'][0]['score'] > 85:
+    if len(outVal['candidates']) > 0 and outVal['candidates'][0]['score'] > 75:
         # Define the coordinate string to be used in future queries
         coord_string = '{x},{y}'.format(
             x=outVal['candidates'][0]['location']['x'],
