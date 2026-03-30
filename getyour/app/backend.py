@@ -249,7 +249,7 @@ def address_lookup(street_address, zip_code):
 
     # Because this is how the Sales Tax lookup is architected, it should be
     # safe to assume these are returned sorted, with best candidate first
-    if len(outVal['candidates']) > 0 and outVal['candidates'][0]['score'] > 75:
+    if len(outVal['candidates']) > 0 and outVal['candidates'][0]['score'] > 69.9:
         # Define the coordinate string to be used in future queries
         coord_string = '{x},{y}'.format(
             x=outVal['candidates'][0]['location']['x'],
