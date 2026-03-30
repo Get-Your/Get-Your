@@ -347,10 +347,12 @@ Having a separate data store specifically for reporting/analytics is useful for
 - Anonymizing the user data as much as possible
 - Having a schema design more performant for the types of queries used in reporting or analytics (vs the Django schema design, which is best suited for user I/O)
 
-The Get-Your team doesn't yet have the resources to design and stand up a full reporting platform, so this uses the next best thing: a separate schema in the target database that has a pared-down version of the production data. This schema holds only 'materialized views', which have the benefits of regular views (e.g. fields can be excluded) but are stored on disk so that the production tables aren't affected by any analytics requests. Because they're on disk, the materialized views will need to be periodically refreshed with source data. The commands to create/update this platform can be found in [Populating the Database](#populating-the-database).
+The Get-Your team doesn't yet have the resources to design and stand up a full reporting platform, so this uses the next best thing: a separate schema in the target database that has a pared-down version of the production data. This schema doesn't hold any raw data; instead, it has 'materialized views', which have the benefits of standard views (e.g. fields can be excluded) but are stored on disk so that the production tables aren't affected by any analytics requests, and standard views that can be parsed by BI software (such as Power BI, which [as of this writing only fully supports standard views](https://community.fabric.microsoft.com/t5/Desktop/Power-BI-support-for-materialized-view-built-on-PostgreSQL/m-p/524214)).
+
+The materialized views provide the proper separation between raw production data and somewhat-anonymized reporting data, so these feed the standard views. Because the materialized views are on disk, they will need to be periodically refreshed with source data. The commands to create/update this platform can be found in [Populating the Database](#populating-the-database).
 
 ## Database Administration
-This section relies on the administrator having PostgreSQL installed locally (the same version used in the Azure instance, for proper utility compatibility).
+This section relies on the administrator having PostgreSQL (or at least PostgreSQL utilities) installed locally (the same version used in the Azure instance, for proper utility compatibility).
 
 For the following sections,
 
@@ -393,11 +395,11 @@ In order to execute the subsequent steps in this section, the database structure
 3. Create the materialized views in the `reporting` schema
 
     > [!IMPORTANT]
-    > These views are created from the Get-Your v6.0.5 data model
+    > These views are created from the Get-Your v7 data model
 
         -- The app_user view ignores first_name, last_name, email, password, phone_number, and is_active
         -- is_active is ignored to prevent confusion; this field is a Django mechanism, so Get-Your uses is_archived to have custom 'disabled' functionality
-        CREATE MATERIALIZED VIEW vw_app_user AS
+        CREATE MATERIALIZED VIEW matvw_app_user AS
         SELECT id,
             last_login,
             is_superuser,
@@ -410,96 +412,123 @@ In order to execute the subsequent steps in this section, the database structure
             last_completed_at,
             last_action_notification_at
         FROM public.app_user;
-        
+
         -- The app_userhist view ignores historical_values
-        CREATE MATERIALIZED VIEW vw_app_userhist AS
+        CREATE MATERIALIZED VIEW matvw_app_userhist AS
         SELECT
             id,
             created,
             user_id
         FROM public.app_userhist;
-        
-        CREATE MATERIALIZED VIEW vw_app_addressrd AS
+
+        CREATE MATERIALIZED VIEW matvw_app_address AS
+        SELECT *
+        FROM public.app_address;
+
+        CREATE MATERIALIZED VIEW matvw_app_addressrd AS
         SELECT *
         FROM public.app_addressrd;
-        
-        CREATE MATERIALIZED VIEW vw_app_addresshist AS
+
+        CREATE MATERIALIZED VIEW matvw_app_addresshist AS
         SELECT *
         FROM public.app_addresshist;
-        
-        CREATE MATERIALIZED VIEW vw_app_eligibilityprogram AS
+
+        CREATE MATERIALIZED VIEW matvw_app_eligibilityprogram AS
         SELECT *
         FROM public.app_eligibilityprogram;
-        
-        CREATE MATERIALIZED VIEW vw_app_eligibilityprogramhist AS
+
+        CREATE MATERIALIZED VIEW matvw_app_eligibilityprogramhist AS
         SELECT *
         FROM public.app_eligibilityprogramhist;
-        
-        CREATE MATERIALIZED VIEW vw_app_eligibilityprogramrd AS
+
+        CREATE MATERIALIZED VIEW matvw_app_eligibilityprogramrd AS
         SELECT *
         FROM public.app_eligibilityprogramrd;
-        
-        CREATE MATERIALIZED VIEW vw_app_feedback AS
+
+        CREATE MATERIALIZED VIEW matvw_app_feedback AS
         SELECT *
         FROM public.app_feedback;
-        
-        CREATE MATERIALIZED VIEW vw_app_household AS
+
+        CREATE MATERIALIZED VIEW matvw_app_household AS
         SELECT *
         FROM public.app_household;
-        
-        CREATE MATERIALIZED VIEW vw_app_householdhist AS
+
+        CREATE MATERIALIZED VIEW matvw_app_householdhist AS
         SELECT *
         FROM public.app_householdhist;
-        
+
         -- The app_householdmembers view ignores household_info
-        CREATE MATERIALIZED VIEW vw_app_householdmembers AS
+        CREATE MATERIALIZED VIEW matvw_app_householdmembers AS
         SELECT
             created_at,
             modified_at,
             user_id,
             is_updated
         FROM public.app_householdmembers;
-        
+
         -- The app_householdmembershist view ignores historical_values
-        CREATE MATERIALIZED VIEW vw_app_householdmembershist AS
+        CREATE MATERIALIZED VIEW matvw_app_householdmembershist AS
         SELECT
             id,
             created,
             user_id
         FROM public.app_householdmembershist;
-        
-        CREATE MATERIALIZED VIEW vw_app_iqprogram AS
+
+        CREATE MATERIALIZED VIEW matvw_app_iqprogram AS
         SELECT *
         FROM public.app_iqprogram;
-        
-        CREATE MATERIALIZED VIEW vw_app_iqprogramhist AS
+
+        CREATE MATERIALIZED VIEW matvw_app_iqprogramhist AS
         SELECT *
         FROM public.app_iqprogramhist;
-        
-        CREATE MATERIALIZED VIEW vw_app_iqprogramrd AS
+
+        CREATE MATERIALIZED VIEW matvw_app_iqprogramrd AS
         SELECT *
         FROM public.app_iqprogramrd;
-        
+
         -- Create a 'metadata' view to give details about the views (this should be updated last, after all other updates are successful)
         -- last_refreshed will show a timestamp when the updates were last run
-        CREATE MATERIALIZED VIEW vw_metadata AS
+        CREATE MATERIALIZED VIEW matvw_metadata AS
         SELECT
             now() as "last_refreshed";
 
-4. Periodically update the data in the materialized views (preferably on a schedule)
+4. Create the standard views in the `reporting` schema
+
+    > [!NOTE]
+    > These are the objects to be used with BI reporting software
+
+        CREATE VIEW vw_app_user AS (select * from matvw_app_user);
+        CREATE VIEW vw_app_userhist AS (select * from matvw_app_userhist);
+        CREATE VIEW vw_app_address AS (select * from matvw_app_address);
+        CREATE VIEW vw_app_addressrd AS (select * from matvw_app_addressrd);
+        CREATE VIEW vw_app_addresshist AS (select * from matvw_app_addresshist);
+        CREATE VIEW vw_app_eligibilityprogram AS (select * from matvw_app_eligibilityprogram);
+        CREATE VIEW vw_app_eligibilityprogramhist AS (select * from matvw_app_eligibilityprogramhist);
+        CREATE VIEW vw_app_eligibilityprogramrd AS (select * from matvw_app_eligibilityprogramrd);
+        CREATE VIEW vw_app_feedback AS (select * from matvw_app_feedback);
+        CREATE VIEW vw_app_household AS (select * from matvw_app_household);
+        CREATE VIEW vw_app_householdhist AS (select * from matvw_app_householdhist);
+        CREATE VIEW vw_app_householdmembers AS (select * from matvw_app_householdmembers);
+        CREATE VIEW vw_app_householdmembershist AS (select * from matvw_app_householdmembershist);
+        CREATE VIEW vw_app_iqprogram AS (select * from matvw_app_iqprogram);
+        CREATE VIEW vw_app_iqprogramhist AS (select * from matvw_app_iqprogramhist);
+        CREATE VIEW vw_app_iqprogramrd AS (select * from matvw_app_iqprogramrd);
+        CREATE VIEW vw_metadata AS (select * from matvw_metadata);
+
+5. Periodically update the data in the materialized views (preferably on a schedule)
 
         -- Find all materialized views that were created in the previous step (except vw_metadata; see below for explanation)
         SELECT matviewname
         FROM pg_matviews
         WHERE schemaname = 'reporting'
-        AND matviewname != 'vw_metadata'
+        AND matviewname != 'matvw_metadata'
         ORDER BY matviewname;
 
         -- Update each non-metadata view (found via the previous query)
         REFRESH MATERIALIZED VIEW <view name>;
 
         -- Finally, update the metadata view. This is completed last so that any errors will interrupt the process and keep the metadata from updating
-        REFRESH MATERIALIZED VIEW vw_metadata;
+        REFRESH MATERIALIZED VIEW matvw_metadata;
 
 #### Transferring Between Databases
 During the setup phase, there was much experimentation of Azure instance types; Azure tenant selection; and database naming conventions before settling on the final version, so transferring structure and data was necessary. The following code can be used to transfer existing data to the new database.
@@ -617,12 +646,12 @@ Connect to the primary (`getyour_<env>`) database and complete the following ste
         -- Alter the default privileges for each lesser role on schemas created by <admin_user>
         ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT USAGE ON SCHEMAS TO base_role;
         ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT CREATE ON SCHEMAS TO privileged_role;
-        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> IN SCHEMA public GRANT SELECT ON TABLES TO analytics_role;  
+        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> IN SCHEMA reporting GRANT SELECT ON TABLES TO analytics_role;  
 
         -- Alter the default privileges for each lesser role on tables and sequences created by <privileged_user>
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
         ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
-        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> IN SCHEMA public GRANT SELECT ON TABLES TO analytics_role;  
+        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> IN SCHEMA reporting GRANT SELECT ON TABLES TO analytics_role;  
 
 #### Configure Other Databases
 This section should be used for all other databases on the same server (such as the 'analytics' database used for logging). It relies on the roles that were created in the [previous section](#configure-the-primary-database).
