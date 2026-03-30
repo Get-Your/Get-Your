@@ -1816,13 +1816,15 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
                 raise Exception('No household_info field was received')
 
         #If it all validated, send to superclass for storage and redirection
+        #TODO figure out how to redirect to the user view instead
+        # user_edit_url = blah
+        # extra_context['next'] = user_edit_url
         return super().change_view(
             request,
             object_id,
             form_url,
             extra_context,
         )
-
 
     def notifyAndRedirect(self, request, user_id, message):
         opts = self.model._meta

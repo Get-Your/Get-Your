@@ -215,4 +215,10 @@ class HouseholdMembersReplaceIDForm(forms.Form):
         required=True
     )
 
-    document_path = forms.FileField(label='Choose file', required=True, widget=forms.FileInput(attrs={'accept': '.jpg, .jpeg, .png, .pdf'}))
+    document_path = forms.FileField(
+        label='Choose file',
+        required=True,
+        widget=forms.FileInput(
+            attrs={'accept': '.jpg, .jpeg, .png, .pdf'}
+        )
+    )
