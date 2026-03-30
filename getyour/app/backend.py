@@ -235,6 +235,11 @@ def address_lookup(street_address, zip_code):
             f"API error {errDict['code']}: {errDict['message']}",
             function='address_lookup',
         )
+        # TODO: Allow this error message to populate a custom HTTP error page
+        # that has select messages for the user (e.g. this one could be
+        # something like "There was an error and your application can't be
+        # completed right now. Your information has been saved; please try again
+        # later")
         raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
 
     # Ensure candidate(s) exist and they have a decent match score
