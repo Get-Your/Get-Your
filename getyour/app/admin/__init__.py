@@ -1824,7 +1824,7 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
     # Custom redirect, to user view
     def response_change(self, request, object):
         if "_continue" in request.POST:
-            msg = "The household members object was changed successfully. You may edit it again below."
+            msg = "Successfully updated the household members for this user. You may edit it again below."
             self.message_user(request, msg, messages.SUCCESS)
             redirect_url = request.path
             return HttpResponseRedirect(redirect_url)
