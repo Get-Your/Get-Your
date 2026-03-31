@@ -1815,19 +1815,22 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
                 raise Exception('No household_info field was received')
 
         # If it all validated, send to superclass for storage and redirection
-        # except redirect to the user view instead
-        user_edit_url = reverse(
-            f"admin:app_user_change",
-            args=(object_id,),
-            current_app=self.admin_site.name,)
-        extra_context['next'] = user_edit_url
-
         return super().change_view(
             request,
             object_id,
             form_url,
             extra_context,
         )
+
+    # Custom redirect, to user view
+    def response_change(self, request, object):
+        # redirect to the user view instead on save
+        user_edit_url = reverse(
+            f"admin:app_user_change",
+            args=(object.user_id,),
+            current_app=self.admin_site.name
+        )
+        return HttpResponseRedirect(user_edit_url)
 
     def notifyAndRedirect(self, request, user_id, message):
         opts = self.model._meta
@@ -1840,7 +1843,7 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
         )
 
         url = reverse(
-            f"admin:{opts.app_label}_{opts.model_name}_change",
+            f"admin:app_{opts.model_name}_change",
             args=(user_id,),
             current_app=self.admin_site.name,
         )
