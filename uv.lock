@@ -374,7 +374,7 @@ wheels = [
 
 [[package]]
 name = "get-your"
-version = "7.1.1"
+version = "7.2.0"
 source = { virtual = "." }
 dependencies = [
     { name = "django" },
@@ -403,7 +403,7 @@ dependencies = [
 requires-dist = [
     { name = "django", specifier = "==4.1.8" },
     { name = "django-environ", specifier = "==0.10.0" },
-    { name = "django-json-widget", specifier = ">=2.1.1" },
+    { name = "django-json-widget", specifier = "~=2.1.1" },
     { name = "django-phonenumber-field", extras = ["phonenumbers"], specifier = "==7.1.0" },
     { name = "django-q2", specifier = "==1.6.1" },
     { name = "django-redis", specifier = "==5.4.0" },
