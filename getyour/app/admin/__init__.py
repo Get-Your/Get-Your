@@ -16,13 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import logging
 import json
+import logging
 import pendulum
 
 from django.http.response import HttpResponse
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.storage import default_storage
 from django.shortcuts import render, reverse
 from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.html import format_html
@@ -35,7 +36,6 @@ from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
-from django.core.files.storage import default_storage
 from django_json_widget.widgets import JSONEditorWidget
 from azure.core.exceptions import ResourceNotFoundError
 
@@ -71,7 +71,6 @@ from app.admin.filters import (
 from app.admin.forms import (
     ProgramChangeForm,
     IQProgramAddForm,
-    EligProgramAddForm,
     EligibilityProgramRDForm,
     IQProgramRDForm,
 )
@@ -1815,10 +1814,14 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
             else:
                 raise Exception('No household_info field was received')
 
-        #If it all validated, send to superclass for storage and redirection
-        #TODO figure out how to redirect to the user view instead
-        # user_edit_url = blah
-        # extra_context['next'] = user_edit_url
+        # If it all validated, send to superclass for storage and redirection
+        # except redirect to the user view instead
+        user_edit_url = reverse(
+            f"admin:app_user_change",
+            args=(object_id,),
+            current_app=self.admin_site.name,)
+        extra_context['next'] = user_edit_url
+
         return super().change_view(
             request,
             object_id,
@@ -1841,7 +1844,7 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
             args=(user_id,),
             current_app=self.admin_site.name,
         )
-        
+
         return HttpResponseRedirect(url)
 
 
