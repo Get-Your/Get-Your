@@ -1823,13 +1823,26 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
 
     # Custom redirect, to user view
     def response_change(self, request, object):
-        # redirect to the user view instead on save
-        user_edit_url = reverse(
-            f"admin:app_user_change",
-            args=(object.user_id,),
-            current_app=self.admin_site.name
-        )
-        return HttpResponseRedirect(user_edit_url)
+        if "_continue" in request.POST:
+            msg = "The household members object was changed successfully. You may edit it again below."
+            self.message_user(request, msg, messages.SUCCESS)
+            redirect_url = request.path
+            return HttpResponseRedirect(redirect_url)
+        else:
+            # Add a message to the user when complete
+            self.message_user(
+                request,
+                "Successfully updated the household members for this user.",
+                messages.SUCCESS,
+            )
+
+            # redirect to the user view instead on save
+            user_edit_url = reverse(
+                f"admin:app_user_change",
+                args=(object.user_id,),
+                current_app=self.admin_site.name
+            )
+            return HttpResponseRedirect(user_edit_url)
 
     def notifyAndRedirect(self, request, user_id, message):
         opts = self.model._meta
