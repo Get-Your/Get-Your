@@ -221,4 +221,10 @@ urlpatterns = [
         name='admin_add_elig_program',
         kwargs={'allow_direct_user': False},
     ),
+    path(
+        'app_admin/replace_household_member_id/<int:user_id>',
+        admin_views.replace_household_member_id,
+        name='admin_replace_household_member_id',
+        kwargs={'allow_direct_user': False},
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

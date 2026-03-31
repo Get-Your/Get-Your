@@ -16,23 +16,28 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import json
 import logging
-from django.http.response import HttpResponse
 import pendulum
 
+from django.http.response import HttpResponse
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.storage import default_storage
 from django.shortcuts import render, reverse
 from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.html import format_html
 from django.utils.translation import ngettext
 from django.db import transaction
+from django.db.models import JSONField
 from django.db.models.functions import Lower
 from django.db.models.query import QuerySet
 from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
+from django_json_widget.widgets import JSONEditorWidget
+from azure.core.exceptions import ResourceNotFoundError
 
 from app.models import (
     User,
@@ -66,14 +71,11 @@ from app.admin.filters import (
 from app.admin.forms import (
     ProgramChangeForm,
     IQProgramAddForm,
-    EligProgramAddForm,
     EligibilityProgramRDForm,
     IQProgramRDForm,
 )
-from app.admin.views import add_elig_program
 
 from logger.wrappers import LoggerWrapper
-
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -257,11 +259,10 @@ class HouseholdInline(admin.TabularInline):
         admin_remove = income_remove + [
             'rent_own',
             'duration_at_address',
-        ]
-        # superuser_remove extends admin_remove
-        superuser_remove = admin_remove + [
             'number_persons_in_household',
         ]
+        # superuser_remove extends admin_remove
+        superuser_remove = admin_remove
 
         readonly_remove = []
         if request.user.is_superuser:
@@ -317,7 +318,8 @@ class HouseholdMembersInline(admin.TabularInline):
     fields = readonly_fields = [
         'created_at',
         'modified_at',
-        'household_info_parsed',
+        'record_edit',
+        'household_info_parsed'
     ]
 
     # Adding/deleting directly from this inline is always disabled since these
@@ -350,6 +352,22 @@ class HouseholdMembersInline(admin.TabularInline):
                 person_list.append('')
 
         return format_html('<br />'.join(person_list))
+    
+    @admin.display(description='Edit Record')
+    def record_edit(self, obj):
+        #custom implementation of get_admin_url(), to use the user_id as PK
+        url = reverse(
+            "admin:{al}_{md}_{tp}".format(
+                al=obj._meta.app_label,
+                md=obj._meta.model_name,
+                tp="change",
+            ),
+            args=(obj.user_id,),
+        )
+
+        return format_html(
+            f'<a href="{url}">Edit Household Members</a>'
+        )
 
     # Show zero extra (unfilled) options
     extra = 0
@@ -1719,6 +1737,132 @@ class FeedbackAdmin(admin.ModelAdmin):
         return False
 
 
+class HouseholdMembersAdmin(admin.ModelAdmin):
+    fields = [
+        'user_id',
+        'modified_at',
+        'household_info',
+    ]
+
+    readonly_fields = [
+        'user_id',
+        'modified_at',
+    ]
+
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget(
+            options = {
+                'mainMenuBar': False,
+            }
+        )},
+    }
+
+    # Bring in template with custom button support
+    change_form_template = 'admin/custom_button_change_form.html'
+
+    def has_add_permission(self, request, obj=None):
+        # Adding directly from the admin panel is disallowed for everyone
+        return False
+    
+    def change_view(self, request, object_id, form_url='', extra_context={}):
+        # add custom button to upload/replace an ID
+        extra_context['custom_buttons'] = [
+            {
+                'title': 'Replace An ID',
+                'link': reverse(
+                    'app:admin_replace_household_member_id',
+                    kwargs={'user_id': object_id},
+                ),
+                # Open in new window for proper request methods
+                'target': 'new',
+            },
+        ]
+
+        if request.method == "POST":
+            # validate birthdate, identification_path
+            #TODO validate non-empty name?
+            if 'household_info' in request.POST:
+                household_json = json.loads(request.POST['household_info'])
+                household_members = household_json['persons_in_household']
+                for person in household_members:
+                    # validate birthdate as date
+                    try:
+                        date = pendulum.parse(person['birthdate'])
+                    except pendulum.parsing.ParserError as e:
+                        log.exception(
+                            f"Pendulum parsing error: {e}",
+                            function='admin.views.HouseholdMembersAdmin:change_view',
+                            user_id=request.user.id,
+                        )
+                        return self.notifyAndRedirect(request, object_id, 'A birthdate was not valid')
+
+                    # validate identification_path as existing file
+                    file = default_storage.open(person['identification_path'])
+                    try:
+                        blob_data = b''
+                        for chunk in file.chunks():
+                            blob_data += chunk
+                    except ResourceNotFoundError as e:
+                        log.exception(
+                            f"ResourceNotFoundError: {e}",
+                            function='admin.views.HouseholdMembersAdmin:change_view',
+                            user_id=request.user.id,
+                        )
+                        
+                        return self.notifyAndRedirect(request, object_id, 'An identification_path was not valid')
+            else:
+                raise Exception('No household_info field was received')
+
+        # If it all validated, send to superclass for storage and redirection
+        return super().change_view(
+            request,
+            object_id,
+            form_url,
+            extra_context,
+        )
+
+    # Custom redirect, to user view
+    def response_change(self, request, object):
+        if "_continue" in request.POST:
+            msg = "Successfully updated the household members for this user. You may edit it again below."
+            self.message_user(request, msg, messages.SUCCESS)
+            redirect_url = request.path
+            return HttpResponseRedirect(redirect_url)
+        else:
+            # Add a message to the user when complete
+            self.message_user(
+                request,
+                "Successfully updated the household members for this user.",
+                messages.SUCCESS,
+            )
+
+            # redirect to the user view instead on save
+            user_edit_url = reverse(
+                f"admin:app_user_change",
+                args=(object.user_id,),
+                current_app=self.admin_site.name
+            )
+            return HttpResponseRedirect(user_edit_url)
+
+    def notifyAndRedirect(self, request, user_id, message):
+        opts = self.model._meta
+
+        # Form is not valid; notify the user
+        self.message_user(
+            request,
+            message,
+            messages.ERROR,
+        )
+
+        url = reverse(
+            f"admin:app_{opts.model_name}_change",
+            args=(user_id,),
+            current_app=self.admin_site.name,
+        )
+
+        return HttpResponseRedirect(url)
+
+
 # Register the models
 
 # # Create the proxy model and register it
@@ -1735,3 +1879,4 @@ admin.site.register(EligibilityProgram, EligibilityProgramAdmin)
 admin.site.register(EligibilityProgramRD, EligibilityProgramRDAdmin)
 admin.site.register(IQProgramRD, IQProgramRDAdmin)
 admin.site.register(Feedback, FeedbackAdmin)
+admin.site.register(HouseholdMembers, HouseholdMembersAdmin)
