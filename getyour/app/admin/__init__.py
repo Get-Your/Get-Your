@@ -259,11 +259,10 @@ class HouseholdInline(admin.TabularInline):
         admin_remove = income_remove + [
             'rent_own',
             'duration_at_address',
-        ]
-        # superuser_remove extends admin_remove
-        superuser_remove = admin_remove + [
             'number_persons_in_household',
         ]
+        # superuser_remove extends admin_remove
+        superuser_remove = admin_remove
 
         readonly_remove = []
         if request.user.is_superuser:
