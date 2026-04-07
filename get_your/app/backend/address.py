@@ -18,15 +18,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import logging
-
 import requests
+
 from django import http
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from usps import Address
-from usps import USPSApi
-
 from monitor.wrappers import LoggerWrapper
+from urllib.parse import quote, urlencode
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -34,35 +32,34 @@ log = LoggerWrapper(logging.getLogger(__name__))
 # Get the user model
 User = get_user_model()
 
-
 # Use the following tag mapping for USPS standards for all functions
 tag_mapping = {
-    "Recipient": "recipient",
-    "AddressNumber": "address_2",
-    "AddressNumberPrefix": "address_2",
-    "AddressNumberSuffix": "address_2",
-    "StreetName": "address_2",
-    "StreetNamePreDirectional": "address_2",
-    "StreetNamePreModifier": "address_2",
-    "StreetNamePreType": "address_2",
-    "StreetNamePostDirectional": "address_2",
-    "StreetNamePostModifier": "address_2",
-    "StreetNamePostType": "address_2",
-    "CornerOf": "address_2",
-    "IntersectionSeparator": "address_2",
-    "LandmarkName": "address_2",
-    "USPSBoxGroupID": "address_2",
-    "USPSBoxGroupType": "address_2",
-    "USPSBoxID": "address_2",
-    "USPSBoxType": "address_2",
-    "BuildingName": "address_1",
-    "OccupancyType": "address_1",
-    "OccupancyIdentifier": "address_1",
-    "SubaddressIdentifier": "address_1",
-    "SubaddressType": "address_1",
-    "PlaceName": "city",
-    "StateName": "state",
-    "ZipCode": "zipcode",
+    'Recipient': 'recipient',
+    'AddressNumber': 'streetAddress',
+    'AddressNumberPrefix': 'streetAddress',
+    'AddressNumberSuffix': 'streetAddress',
+    'StreetName': 'streetAddress',
+    'StreetNamePreDirectional': 'streetAddress',
+    'StreetNamePreModifier': 'streetAddress',
+    'StreetNamePreType': 'streetAddress',
+    'StreetNamePostDirectional': 'streetAddress',
+    'StreetNamePostModifier': 'streetAddress',
+    'StreetNamePostType': 'streetAddress',
+    'CornerOf': 'streetAddress',
+    'IntersectionSeparator': 'streetAddress',
+    'LandmarkName': 'streetAddress',
+    'USPSBoxGroupID': 'streetAddress',
+    'USPSBoxGroupType': 'streetAddress',
+    'USPSBoxID': 'streetAddress',
+    'USPSBoxType': 'streetAddress',
+    'BuildingName': 'secondaryAddress',
+    'OccupancyType': 'secondaryAddress',
+    'OccupancyIdentifier': 'secondaryAddress',
+    'SubaddressIdentifier': 'secondaryAddress',
+    'SubaddressType': 'secondaryAddress',
+    'PlaceName': 'city',
+    'StateName': 'state',
+    'ZipCode': 'ZIPCode',
 }
 
 
@@ -73,8 +70,7 @@ def address_check(address_dict):
     Parameters
     ----------
     instance : dict
-        Post-USPS-validation dictionary. Usable data for this script are in
-        ['AddressValidateResponse']['Address'][...].
+        Post-USPS-validation dictionary.
 
     Returns
     -------
@@ -89,8 +85,8 @@ def address_check(address_dict):
         # Gather the coordinate string for future queries
         # Parse the 'instance' data for proper 'address_parts'
         address_parts = "{}, {}".format(
-            address_dict["AddressValidateResponse"]["Address"]["Address2"],
-            address_dict["AddressValidateResponse"]["Address"]["Zip5"],
+            address_dict['streetAddress'],
+            address_dict['ZIPCode'],
         )
         coord_string = address_lookup(address_parts)
 
@@ -100,13 +96,10 @@ def address_check(address_dict):
         # service area
 
         # Log a potential error if the city is 'Fort Collins'
-        if (
-            address_dict["AddressValidateResponse"]["Address"]["City"].lower()
-            == "fort collins"
-        ):
+        if address_dict['city'].lower() == 'fort collins':
             log.error(
                 "Potential issue: Fort Collins address marked 'not in GMA': {}".format(
-                    address_dict["AddressValidateResponse"]["Address"],
+                    address_dict,
                 ),
                 function="address_check",
             )
@@ -139,7 +132,7 @@ def address_lookup(address_parts):
     ----------
     address_parts : str
         The address parts to use for the lookup (specifically in the format
-        <address_2>, <zip code>) (e.g. "300 LAPORTE AVE, 80521", sans quotes).
+        <streetAddress>, <ZIPCode>) (e.g. "300 LAPORTE AVE, 80521", sans quotes).
 
     Raises
     ------
@@ -346,40 +339,90 @@ def gma_lookup(coord_string):
         return False
 
 
+def get_usps_token():
+    """Get the bearer token for the USPS v3 API."""
+
+    # Gather the token with the 'addresses' scope
+    response = requests.post(
+        'https://apis.usps.com/oauth2/v3/token',
+        data={
+            'grant_type': 'client_credentials',
+            'scope': 'addresses',
+            'client_id': settings.USPS_KEY,
+            'client_secret': settings.USPS_SECRET,
+        },
+        timeout=10,
+    )
+
+    response_dict = response.json()
+    if not response.ok or 'access_token' not in response_dict:
+        log.exception(
+            response.text,
+            function='get_usps_token',
+        )
+        response.raise_for_status()
+    return response_dict['access_token']
+
+
 def validate_usps(inobj):
     if isinstance(inobj, http.request.QueryDict):
-        # Combine fields into Address
-        address = Address(
-            name=" ",
-            address_1=inobj["address"],
-            address_2=inobj["address2"],
-            city=inobj["city"],
-            state=inobj["state"],
-            zipcode=inobj["zipcode"],
-        )
+        # Define the mapper of inobj keys to arguments used in the USPS v3 API
+        key_map = {
+            'address1': 'streetAddress',
+            'address2': 'secondaryAddress',
+            'city': 'city',
+            'state': 'state',
+            'zipcode': 'ZIPCode',
+        }
+        # Create address, using only non-blank values
+        address = {key_map[key]: val for key, val in inobj.items() if val!=''}
 
     elif isinstance(inobj, dict):
-        address = Address(**inobj)
+        # Create address, using only non-blank values
+        address = {key: val for key, val in inobj.items() if val!=''}
 
     else:
-        raise AttributeError("Unknown validation input")
+        raise AttributeError('Unknown validation input')
 
-    usps = USPSApi(settings.USPS_SID, test=True)
-    validation = usps.validate_address(address)
-    outDict = validation.result
-    try:
-        log.info(
-            f"Address dict found: {outDict}",
-            function="validate_usps",
-        )
-        return outDict
+    # Ensure 'state' is uppercase (otherwise the API will error)
+    address['state'] = address['state'].upper()
 
-    except KeyError:
+    # TODO: Update this to use an existing token, if still valid (rather than
+    # calling this each time)
+    access_token = get_usps_token()
+
+    # Call the USPS 'addresses' API with the parsed input. urljoin(),
+    # urlencode(), and quote are used so that spaces are escaped with '%20'
+    # instead of '+' (as requests-native functionality does)
+    response = requests.get(
+        "https://apis.usps.com/addresses/v3/address?{}".format(
+            urlencode(
+                address,
+                quote_via=quote,
+            ),
+        ),
+        timeout=10,
+        headers={
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/json",
+        },
+    )
+
+    # Log then raise an error and raise if status_code != 200
+    if not response.ok:
         log.exception(
-            "Address could not be found - no guesses",
-            function="validate_usps",
+            f"Address could not be found; error {response.text}",
+            function='validate_usps',
         )
-        raise
+        response.raise_for_status()
+
+    # Log and return the dictionary
+    response_dict = response.json()
+    log.info(
+        f"Address dict found: {response_dict}",
+        function='validate_usps',
+    )
+    return response_dict
 
 
 def finalize_address(instance, is_in_gma, has_connexion):
