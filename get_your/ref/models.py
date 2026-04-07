@@ -243,7 +243,9 @@ class IQProgram(TimeStampedModel):
         blank=True,
         help_text=_(
             "Link to an external form for additional information needed by the program, if applicable (leave blank for no form). "
-            "Note that this must start with 'https://' or 'http://', and the target form needs to have a way for the program coordinator to link its information to the Get FoCo user.",
+            "The program coordinator is responsible for this form and for linking form submissions to Get FoCo applicants. "
+            "Note that this must start with 'https://' or 'http://'."
+
         ),
     )
 
