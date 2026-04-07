@@ -6,9 +6,6 @@ readme = "README.md"
 requires-python = "~=3.12.11"
 dependencies = [
     "argon2-cffi==25.1.0",
-    "coftc-cred-man",
-    "coftc-file-utils",
-    "coftc-logging-utils",
     "coverage==7.10.6",
     "crispy-bootstrap5==2025.6",
     "django==5.2.7",
@@ -65,3 +62,10 @@ dependencies = [
 coftc-file-utils = { path = "../dist/coftc_file_utils-3.0.1-py3-none-any.whl" }
 coftc-logging-utils = { path = "../dist/coftc_logging_utils-2.0.2-py3-none-any.whl" }
 coftc-cred-man = { path = "../dist/coftc_cred_man-4.1.0-py3-none-any.whl" }
+
+[dependency-groups]
+dev = [
+    "coftc-cred-man>=4.1.0",
+    "coftc-file-utils>=3.0.1",
+    "coftc-logging-utils>=2.0.2",
+]
