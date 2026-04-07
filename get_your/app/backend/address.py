@@ -83,12 +83,10 @@ def address_check(address_dict):
 
     try:
         # Gather the coordinate string for future queries
-        # Parse the 'instance' data for proper 'address_parts'
-        address_parts = "{}, {}".format(
+        coord_string = address_lookup(
             address_dict['streetAddress'],
             address_dict['ZIPCode'],
         )
-        coord_string = address_lookup(address_parts)
 
     except NameError:
         # NameError specifies that the address is not found
@@ -124,15 +122,17 @@ def address_check(address_dict):
         return (is_in_gma, has_connexion)
 
 
-def address_lookup(address_parts):
+def address_lookup(street_address, zip_code):
     """
     Look up the coordinates for an address to input into future queries.
 
     Parameters
     ----------
-    address_parts : str
-        The address parts to use for the lookup (specifically in the format
-        <streetAddress>, <ZIPCode>) (e.g. "300 LAPORTE AVE, 80521", sans quotes).
+    street_address : str
+        The 'street address' (line 1 of the address) to use for the lookup.
+    zip_code : str
+        The 5-digit ZIP code (as a string, from the USPS API) to use for the
+        lookup.
 
     Raises
     ------
@@ -149,11 +149,17 @@ def address_lookup(address_parts):
 
     """
 
-    url = "https://gisweb.fcgov.com/arcgis/rest/services/Geocode/Fort_Collins_Area_Address_Point_Geocoding_Service/GeocodeServer/findAddressCandidates"
+    # API documentation at
+    # https://developers.arcgis.com/rest/geocode/find-address-candidates
+    url = 'https://gis.fortcollins.gov/arcgis/rest/services/Geocode/Fort_CollinsAddress_Point_Locator_Pro_New_/GeocodeServer/findAddressCandidates'
 
+    # While there are many more options than the prior endpoint, it seems the
+    # best results are garnered with the minimum input
     payload = {
-        "f": "pjson",
-        "Street": address_parts,
+        'f': 'pjson',
+        'address': street_address,
+        'postal': zip_code,
+        'outFields': 'location',
     }
 
     # Gather response
@@ -161,31 +167,40 @@ def address_lookup(address_parts):
     if response.status_code != requests.codes.ok:
         log.error(
             f"API error {response.status_code}: {response.reason}; {response.content}",
-            function="address_lookup",
+            function='address_lookup',
         )
         raise requests.exceptions.HTTPError(response.reason, response.content)
 
     # Parse response
     outVal = response.json()
 
-    # Since the gisweb endpoint seems to always return an HTTP 200, also check
-    # the JSON for an 'error' key
-    if "error" in outVal:
-        errDict = outVal["error"]
+    # An HTTP 200 still could have an error output; check the JSON for an
+    # 'error' key
+    if 'error' in outVal:
+        errDict = outVal['error']
         log.error(
             f"API error {errDict['code']}: {errDict['message']}",
-            function="address_lookup",
+            function='address_lookup',
         )
-        raise requests.exceptions.HTTPError(errDict["code"], errDict["message"])
+        # TODO: Allow this error message to populate a custom HTTP error page
+        # that has select messages for the user (e.g. this one could be
+        # something like "There was an error and your application can't be
+        # completed right now. Your information has been saved; please try again
+        # later")
+        raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
 
     # Ensure candidate(s) exist and they have a decent match score
+    # The endpoint has smart matching and even exact inputs result in fairly
+    # low scores; set the 'minimum score' somewhat low to avoid missing accurate
+    # matches
+
     # Because this is how the Sales Tax lookup is architected, it should be
     # safe to assume these are returned sorted, with best candidate first
-    if len(outVal["candidates"]) > 0 and outVal["candidates"][0]["score"] > 85:
+    if len(outVal['candidates']) > 0 and outVal['candidates'][0]['score'] > 69.9:
         # Define the coordinate string to be used in future queries
-        coord_string = "{x},{y}".format(
-            x=outVal["candidates"][0]["location"]["x"],
-            y=outVal["candidates"][0]["location"]["y"],
+        coord_string = '{x},{y}'.format(
+            x=outVal['candidates'][0]['location']['x'],
+            y=outVal['candidates'][0]['location']['y'],
         )
 
     else:
