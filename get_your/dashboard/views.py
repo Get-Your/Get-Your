@@ -477,8 +477,8 @@ def quick_apply(request, iq_program, **kwargs):
                 in_gma_with_no_service = True
 
         quick_apply_result = {
-            "program_name": iq_program.program_name.title(),
-            "title": f"{iq_program.program_name.title()} Application Complete",
+            "program_name": iq_program.friendly_name.title(),
+            "title": "Program Application Complete",
             "in_gma_with_no_service": in_gma_with_no_service,
         }
 
