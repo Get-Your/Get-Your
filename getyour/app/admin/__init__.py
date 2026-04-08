@@ -39,6 +39,8 @@ from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django_json_widget.widgets import JSONEditorWidget
 from azure.core.exceptions import ResourceNotFoundError
 
+from get_your_utils.python.run_extracts import Extract
+
 from app.models import (
     User,
     Address,
@@ -529,7 +531,7 @@ class UserAdmin(admin.ModelAdmin):
         AccountDisabledListFilter,
     )
     date_hierarchy = 'last_completed_at'
-    actions = ('export_users', 'mark_awaiting_response', 'mark_verified')
+    actions = ('export_users', 'mark_awaiting_response', 'mark_verified', 'run_extracts')
 
     user_fields = [
         'full_name',
@@ -946,6 +948,19 @@ class UserAdmin(admin.ModelAdmin):
         return response
 
     list_per_page = 100
+
+    @admin.action(
+        description="Run extracts",
+    )
+    def run_extracts(self, request, queryset):
+        # print(self.interactive)
+        Extract(
+            export_type='program',
+            #ids_to_warn=[834, 266]+mustCompleteRenewalBeforeBeingEnrolled,
+            # reset_updates=False,
+            # mark_enrolled=False,
+            # interactive=True,
+        )
 
     # Add custom buttons to the save list in the admin template (from
     # https://stackoverflow.com/a/34899874/5438550 and
