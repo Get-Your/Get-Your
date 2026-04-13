@@ -413,7 +413,8 @@ class Extract:
         for idxitm,itm in enumerate(record_list):
             # Gather the table(s) that were updated
             tableCheckList = list(set([x[0] for x in field_list]))
-            tableCheckOut = User.objects.select_related(
+            
+            tableCheckOut = list(User.objects.select_related(
                 'householdmembers',
                 'household',
                 'address__mailing_address'
@@ -421,8 +422,10 @@ class Extract:
                 is_archived=False,
                 id=itm[idFieldIdx] # user id in list
             ).values_list(
-                'is_updated'
-            )
+                'is_updated',
+                'householdmembers__is_updated',
+                'address__is_updated'
+            ))[0]
             # test = self.select_framework.format(
             #         additionalJoin="",
             #         wherePlaceholder=self.where_framework + """ and u."id"={}""".format(itm[idFieldIdx]),
@@ -448,12 +451,14 @@ class Extract:
                     tableRef = next(iter(x for x in self.hist_tables if x[0]==tableCheckList[updidx]))
                     modelName = tableRef[4]
                     modelClass = getattr(models, modelName)
-                    # print(itm[idFieldIdx])
+
                     histOut = modelClass.objects.filter(
                         user_id=itm[idFieldIdx]
-                    ).values().order_by(
+                    ).values(
+                        tableRef[2]
+                    ).order_by(
                         '-id'
-                    ).first()
+                    ).first()['historical_values']
                     
                     # TODO: ask Tim about the catch block here...what is it doing and does it need to be mimicked
                     # cursor.execute(
@@ -469,7 +474,7 @@ class Extract:
                     # except TypeError:
                     #     histOut = {"mailing_address_id": 0, "eligibility_address_id": 0}
                     
-                    if histOut is not None and len(histOut) < 1:
+                    if modelName=='AddressHist' and histOut is None:
                         histOut = {"mailing_address_id": 0, "eligibility_address_id": 0}
                     
                     # raise Exception('breakpoint')
@@ -524,7 +529,6 @@ class Extract:
             for iteridx,iteritm in enumerate(itm):
                 try:
                     updatedFieldVal = next(iter(x for x in updatedFields if x[0]==iteridx))
-                    # print(updatedFieldVal)
                 except StopIteration:   # index is not in updatedFields
                     if iteridx in nonUpdatedIdxToKeep:
                         updatedVals.append(iteritm)
@@ -533,7 +537,6 @@ class Extract:
                 else:
                     # If this is the JSON value, insert 'NEW VALUE' as a key
                     if isinstance(iteritm, dict):
-                        
                         ############
                         # Workaround to account for is_updated being set
                         # each time /household_members is visited (see
@@ -551,12 +554,12 @@ class Extract:
                         # Re-gather the historical values
                         histOut = HouseholdMembersHist.objects.filter(
                             user_id=itm[idFieldIdx]
-                        ).values_list(
+                        ).values(
                             'historical_values'
                         ).order_by(
-                            '-id'
-                        ).first()
-
+                            'created'
+                        )[0]
+                    
                         # cursor.execute(
                         #     # Use only the *latest* historical record
                         #     """select "historical_values" from "public"."app_householdmembershist" where "user_id"={usr} order by "created" desc limit 1""".format(
@@ -575,12 +578,11 @@ class Extract:
                             for listitm in iteritm['persons_in_household']
                             ]
                         
-                        # print(histOut)
                         histCheck = [
                             {
                                 key: listitm[key] for key in ['name', 'birthdate']
                                 }
-                            for listitm in histOut['household_info']['persons_in_household']
+                            for listitm in histOut['historical_values']['household_info']['persons_in_household']
                             ]
                         if iterCheck == histCheck:
                             if iteridx in nonUpdatedIdxToKeep:
@@ -607,7 +609,7 @@ class Extract:
                 isUpdatedList.append(True)
                 
             assert len(outputList) == len(isUpdatedList)
-                
+            
         return (outputList, isUpdatedList)
     
     def run_all(self):
@@ -928,7 +930,6 @@ class Extract:
         activePrograms = IQProgramRD.objects.filter(is_active=True).values_list('id', 'program_name', 'friendly_name')
         allAffectedUsers = []
         for programId,programname,friendlyname in activePrograms:
-            print(programId)
             # Initialize dbOut (there will be multiple queries) and their
             # respective 'notes' (to be combined in the extract)
             dbOut = []
@@ -1115,15 +1116,14 @@ class Extract:
                 fieldsToUse,
                 updateOut,
                 )
-            print(recordsOut)
+
             # Use updatedBools to remove records with erroneous is_updated val
             updateList = [x for x,y in zip(recordsOut, updatedBools) if y]
             
             dbOut.extend(updateList)
             notesList.extend(['UPDATE ONLY']*len(updateList))
             alreadyProcessedUsers.extend([x[idFieldIdx] for x in updateList])
-            # print(dbOut)
-            # self.getUserIds(dbOut)
+           
             if len(dbOut)>0:
                 # Convert to dataframe, using the friendly field names in outFieldList
                 # Append each element of notesList to the end of each dbOut element
@@ -1161,7 +1161,7 @@ class Extract:
                 # ).exclude(
                 #     count__gt=1
                 # ))
-                # print(renewalCheckOut)
+                
                 # renewalCheckQuery = "select user_id, program_id, count(*) from public.app_iqprogram where user_id in ({}) group by user_id, program_id".format(
                 #     ','.join(['%s']*len(userIds)),
                 # )
@@ -1285,7 +1285,6 @@ class Extract:
                 # Determine output
                 outMsg = []
                 if save_file:
-                    # print(type(self.output_file_dir))
                     # Write to file
                     df.to_csv(
                         self.output_file_dir.joinpath(
@@ -1389,26 +1388,27 @@ class Extract:
             print("Don't delete the new exports! Exports created from this script in the future won't include the same 'updated' user(s)")
             
             # Reset all is_updated values in all applicable tables from self.hist_tables[3]
-            User.objects.filter(
-                id__in=allAffectedUsers
-            ).update(
-                is_updated=False
-            )
-            Address.objects.filter(
-                user_id__in=allAffectedUsers
-            ).update(
-                is_updated=False
-            )
-            Household.objects.filter(
-                user_id__in=allAffectedUsers
-            ).update(
-                is_updated=False
-            )
-            HouseholdMembers.objects.filter(
-                user_id__in=allAffectedUsers
-            ).update(
-                is_updated=False
-            )
+            # TODO: make this a loop
+            # User.objects.filter(
+            #     id__in=allAffectedUsers
+            # ).update(
+            #     is_updated=False
+            # )
+            # Address.objects.filter(
+            #     user_id__in=allAffectedUsers
+            # ).update(
+            #     is_updated=False
+            # )
+            # Household.objects.filter(
+            #     user_id__in=allAffectedUsers
+            # ).update(
+            #     is_updated=False
+            # )
+            # HouseholdMembers.objects.filter(
+            #     user_id__in=allAffectedUsers
+            # ).update(
+            #     is_updated=False
+            # )
 
 
             # Reset all is_updated values in all applicable tables
