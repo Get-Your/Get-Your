@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import io
+import zipfile
 import os
 import pendulum
 import json
@@ -40,6 +42,7 @@ from rich import print
 import ast
 import warnings
 
+from django.http import FileResponse
 from django.db.models import Count, Func, F, Value
 from app import models
 from app.models import IQProgramRD, IQProgram, User, UserHist, HouseholdMembersHist, Household, HouseholdHist, HouseholdMembers, Address, AddressHist
@@ -254,10 +257,10 @@ class Extract:
             ]
 
         self.hist_tables = [
-            ('u', 'app_userhist', 'historical_values', 'app_user', 'UserHist'),
-            ('am', 'app_addresshist', 'historical_values', 'app_address', 'AddressHist'),
-            ('h', 'app_householdhist', 'historical_values', 'app_household', 'HouseholdHist'),
-            ('m', 'app_householdmembershist', 'historical_values', 'app_householdmembers', 'HouseholdMembersHist'),
+            ('u', 'UserHist', 'historical_values', 'app_user', 'User'),
+            ('am', 'AddressHist', 'historical_values', 'app_address', 'Address'),
+            ('h', 'HouseholdHist', 'historical_values', 'app_household', 'Household'),
+            ('m', 'HouseholdMembersHist', 'historical_values', 'app_householdmembers', 'HouseholdMembers'),
             ]
 
         if self.output_file_dir is None:
@@ -449,7 +452,7 @@ class Extract:
                     # If updated, get the fields that changed and add the 
                     # new values to the output
                     tableRef = next(iter(x for x in self.hist_tables if x[0]==tableCheckList[updidx]))
-                    modelName = tableRef[4]
+                    modelName = tableRef[1]
                     modelClass = getattr(models, modelName)
 
                     histOut = modelClass.objects.filter(
@@ -1387,30 +1390,26 @@ class Extract:
             allAffectedUsers = list(set(allAffectedUsers))
             print("Don't delete the new exports! Exports created from this script in the future won't include the same 'updated' user(s)")
             
-            # Reset all is_updated values in all applicable tables from self.hist_tables[3]
-            # TODO: make this a loop
-            # User.objects.filter(
-            #     id__in=allAffectedUsers
-            # ).update(
-            #     is_updated=False
-            # )
-            # Address.objects.filter(
-            #     user_id__in=allAffectedUsers
-            # ).update(
-            #     is_updated=False
-            # )
-            # Household.objects.filter(
-            #     user_id__in=allAffectedUsers
-            # ).update(
-            #     is_updated=False
-            # )
-            # HouseholdMembers.objects.filter(
-            #     user_id__in=allAffectedUsers
-            # ).update(
-            #     is_updated=False
-            # )
+            # Reset all is_updated values in all applicable tables from self.hist_tables[4]
+            # TODO: uncomment this when done with testing
+            # for tableitm in self.hist_tables:
+            #     modelName = tableitm[4]
+            #     modelClass = getattr(models, modelName)
 
+            #     allModelsOfClass = modelClass.objects.all()
+                
+            #     if modelName == 'User':
+            #         filteredClassModels = allModelsOfClass.filter(
+            #             id__in=allAffectedUsers
+            #         )
+            #     else:
+            #         filteredClassModels = allModelsOfClass.filter(
+            #             user_id__in=allAffectedUsers
+            #         )
 
+            #     filteredClassModels.update(
+            #         is_updated=False
+            #     )
             # Reset all is_updated values in all applicable tables
             # for tableitm in self.hist_tables:
             #     # tableitm[3] is the live table name
@@ -1418,7 +1417,6 @@ class Extract:
             #         fieldName = 'id'
             #     else:
             #         fieldName = 'user_id'
-            #     # TODO: make this a django query
             #     cursor.execute(
             #         """update public.{tbl} set is_updated=false where "{fdn}" in ({vls})""".format(
             #             tbl=tableitm[3],
@@ -1432,7 +1430,23 @@ class Extract:
         else:
             print("Update designations in the database were not reset")
 
-        # cursor.close()
+        fileList = [x for x in os.listdir(self.output_file_dir) if x.startswith(str(pendulum.today().year))]
+        memoryFile = io.BytesIO()
+        with zipfile.ZipFile(memoryFile, 'w') as zf:
+            for file in fileList:
+                zf.write(file, arcname=file)
+                # os.remove(file)
+        
+        memoryFile.seek(0)
+        # response = HttpResponse(memoryFile.getvalue(), content_type='application/zip')
+        # response['Content-Disposition'] = 'attachment; filename="extracts.zip"'
+        # return response
+        return FileResponse(
+            memoryFile.getvalue(), 
+            as_attachment=True, 
+            filename='extracts.zip', 
+            content_type='application/zip'
+        )
 
     def export_incomplete(self):
         """
