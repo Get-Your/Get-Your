@@ -17,8 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import io
-import zipfile
 import os
 import pendulum
 import json
@@ -42,10 +40,9 @@ from rich import print
 import ast
 import warnings
 
-from django.http import FileResponse
 from django.db.models import Count, Func, F, Value
 from app import models
-from app.models import IQProgramRD, IQProgram, User, UserHist, HouseholdMembersHist, Household, HouseholdHist, HouseholdMembers, Address, AddressHist
+from app.models import IQProgramRD, IQProgram, User, HouseholdMembersHist
 # import coftc_cred_man as crd
 # import coftc_file_utils
 
@@ -276,24 +273,24 @@ class Extract:
         # self.user_files_dir = Path(user_files_dir)
         self.kwargs = kwargs
         
-        if not self.interactive:
-            try:
+        # if not self.interactive:
+        #     try:
                 
-                if export_type == 'INCOME':
-                    # Run income verification extract
-                    self.export_income()
-                elif export_type == 'PROGRAM':
-                    # Run program extracts
-                    self.export_programs()
-                elif export_type == 'INCOMPLETE':
-                    # Run list of incomplete applications
-                    # self.export_incomplete()
-                    warnings.warn("WARNING: export_incomplete() should be run here, but isn't complete yet")
-                elif export_type == 'ALL':
-                    self.run_all()
+        #         if export_type == 'INCOME':
+        #             # Run income verification extract
+        #             self.export_income()
+        #         elif export_type == 'PROGRAM':
+        #             # Run program extracts
+        #             return self.export_programs()
+        #         elif export_type == 'INCOMPLETE':
+        #             # Run list of incomplete applications
+        #             # self.export_incomplete()
+        #             warnings.warn("WARNING: export_incomplete() should be run here, but isn't complete yet")
+        #         elif export_type == 'ALL':
+        #             self.run_all()
             
-            except:
-                raise
+        #     except:
+        #         raise
                 
         #     finally:
         #         self.getfoco.conn.close()
@@ -1154,16 +1151,6 @@ class Extract:
                 # Ensure none of the users have more than one record per
                 # program. This would likely signify a renewal process that got
                 # stuck short of completing
-                # renewalCheckOut = list(IQProgram.objects.filter(
-                #     user_id__in=userIds
-                # ).values_list(
-                #     'user_id',
-                #     'program_id'
-                # ).annotate(
-                #     count=Count('*')
-                # ).exclude(
-                #     count__gt=1
-                # ))
                 
                 # renewalCheckQuery = "select user_id, program_id, count(*) from public.app_iqprogram where user_id in ({}) group by user_id, program_id".format(
                 #     ','.join(['%s']*len(userIds)),
@@ -1430,23 +1417,7 @@ class Extract:
         else:
             print("Update designations in the database were not reset")
 
-        fileList = [x for x in os.listdir(self.output_file_dir) if x.startswith(str(pendulum.today().year))]
-        memoryFile = io.BytesIO()
-        with zipfile.ZipFile(memoryFile, 'w') as zf:
-            for file in fileList:
-                zf.write(file, arcname=file)
-                # os.remove(file)
-        
-        memoryFile.seek(0)
-        # response = HttpResponse(memoryFile.getvalue(), content_type='application/zip')
-        # response['Content-Disposition'] = 'attachment; filename="extracts.zip"'
-        # return response
-        return FileResponse(
-            memoryFile.getvalue(), 
-            as_attachment=True, 
-            filename='extracts.zip', 
-            content_type='application/zip'
-        )
+        return [x for x in os.listdir(self.output_file_dir) if x.startswith(str(pendulum.today().year))]
 
     def export_incomplete(self):
         """
