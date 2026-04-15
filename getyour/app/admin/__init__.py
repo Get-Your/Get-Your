@@ -16,6 +16,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import io
+import zipfile
+import os
 import logging
 from django.http.response import HttpResponse
 import pendulum
@@ -23,7 +26,7 @@ import pendulum
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, reverse
-from django.http import HttpRequest, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponseRedirect, FileResponse
 from django.utils.html import format_html
 from django.utils.translation import ngettext
 from django.db import transaction
@@ -935,14 +938,26 @@ class UserAdmin(admin.ModelAdmin):
         description="Run extracts",
     )
     def run_extracts(self, request, queryset):
-        # print(self.interactive)
-        Extract(
+        extract = Extract(
             export_type='program',
             #ids_to_warn=[834, 266]+mustCompleteRenewalBeforeBeingEnrolled,
             # reset_updates=False,
             # mark_enrolled=False,
             # interactive=True,
         )
+
+        extractFiles = extract.export_programs()
+
+        memoryFile = io.BytesIO()
+        with zipfile.ZipFile(memoryFile, 'w') as zf:
+            for file in extractFiles:
+                zf.write(file, arcname=file)
+                os.remove(file)
+        
+        memoryFile.seek(0)
+        response = HttpResponse(memoryFile.getvalue(), content_type='application/zip')
+        response['Content-Disposition'] = 'attachment; filename="extracts.zip"'
+        return response        
 
     # Add custom buttons to the save list in the admin template (from
     # https://stackoverflow.com/a/34899874/5438550 and
