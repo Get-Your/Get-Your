@@ -719,67 +719,11 @@ class Extract:
                         iqprogramRecord = IQProgram.objects.filter(
                             user_id=id,
                             program_id=programId
-                        )
-                        # TODO: uncomment the lines below to save the record
-                        # iqprogramRecord.is_enrolled = True
-                        # iqprogramRecord.enrolled_at = pendulum.now()
-                        # iqprogramRecord.save()
+                        ).get()
+                        iqprogramRecord.is_enrolled = True
+                        iqprogramRecord.enrolled_at = pendulum.now()
+                        iqprogramRecord.save()
                     
-                    # TODO: remove this code...a lot of this is probably not needed, but leaving here for a second look
-                    # # Mark all users enrolled in the current program by
-                    # # executing the setenrolled function
-                    # try:
-                    #     # Only 100 elements can be input to a function, so
-                    #     # limit this to 99 users at a time (plus programname
-                    #     # == 100)
-                    #     iterLimit = 99
-                    #     functionIdx = 0
-                    #     numberEnrolled = 0
-                    #     while 1:
-                    #         functionUsers = userIds[iterLimit*functionIdx:iterLimit*(functionIdx+1)]
-                    #         # concatenatedTest = [programname]+functionUsers
-                    #         # placeholders = ','.join(['%s']*len(functionUsers))
-                    #         # functionQuery = "SELECT public.app_iqprogram_setenrolled(%s,{})".format(
-                    #         #     ','.join(['%s']*len(functionUsers)),
-                    #         # )
-                    #         # cursor.execute(
-                    #         #     functionQuery,
-                    #         #     [programname]+functionUsers,
-                    #         # )
-                    #         # functionMsg = cursor.fetchone()[0]
-
-                    #         # iqprogramRecord = IQProgram.objects.get(user_id)
-                    #         functionMsg = IQProgram.objects.raw(
-                    #             "SELECT app_iqprogram_setenrolled(" + ','.join(['%s']*len(functionUsers)) + ")", [programname, functionUsers]
-                    #         )
-                        
-                    #         # Raise exception if the number enrolled from the
-                    #         # function is different than the number of new
-                    #         # applicants found above
-                    #         numberEnrolled += int(
-                    #             re.match(
-                    #                 r'Once transaction is committed: (\d*) users? enrolled.*',
-                    #                 functionMsg
-                    #             ).group(1)
-                    #         )
-
-                    #         # Break the loop if all userIds have been input,
-                    #         # else iterate functionIdx
-                    #         if iterLimit*(functionIdx+1)>=len(userIds):
-                    #             break
-                    #         functionIdx += 1
-                            
-                    #     # Take the total enrolled and compare it to the extract
-                    #     if int(numberEnrolled) != len(newOut):
-                    #         raise AssertionError('Number enrolled is different than new applicants')
-                            
-                    # except:
-                    #     # self.getfoco.conn.rollback()
-                    #     raise
-                    # else:
-                    #     # self.getfoco.conn.commit()
-                    #     outMsg.append("users enrolled")
-                        
                 else:
                     outMsg.append("users were not enrolled")
                     
@@ -796,40 +740,24 @@ class Extract:
             print("Don't delete the new exports! Exports created from this script in the future won't include the same 'updated' user(s)")
             
             # Reset all is_updated values in all applicable tables from self.hist_tables[4]
-            # TODO: uncomment this when done with testing
-            # for tableitm in self.hist_tables:
-            #     modelName = tableitm[4]
-            #     modelClass = getattr(models, modelName)
+            for tableitm in self.hist_tables:
+                modelName = tableitm[4]
+                modelClass = getattr(models, modelName)
 
-            #     allModelsOfClass = modelClass.objects.all()
+                allModelsOfClass = modelClass.objects.all()
                 
-            #     if modelName == 'User':
-            #         filteredClassModels = allModelsOfClass.filter(
-            #             id__in=allAffectedUsers
-            #         )
-            #     else:
-            #         filteredClassModels = allModelsOfClass.filter(
-            #             user_id__in=allAffectedUsers
-            #         )
+                if modelName == 'User':
+                    filteredClassModels = allModelsOfClass.filter(
+                        id__in=allAffectedUsers
+                    )
+                else:
+                    filteredClassModels = allModelsOfClass.filter(
+                        user_id__in=allAffectedUsers
+                    )
 
-            #     filteredClassModels.update(
-            #         is_updated=False
-            #     )
-            # Reset all is_updated values in all applicable tables
-            # for tableitm in self.hist_tables:
-            #     # tableitm[3] is the live table name
-            #     if tableitm[3] == 'app_user':
-            #         fieldName = 'id'
-            #     else:
-            #         fieldName = 'user_id'
-            #     cursor.execute(
-            #         """update public.{tbl} set is_updated=false where "{fdn}" in ({vls})""".format(
-            #             tbl=tableitm[3],
-            #             fdn=fieldName,
-            #             vls=', '.join(['%s']*len(allAffectedUsers)),
-            #             ),
-            #         allAffectedUsers,
-            #         )
+                filteredClassModels.update(
+                    is_updated=False
+                )
             
         else:
             print("Update designations in the database were not reset")
