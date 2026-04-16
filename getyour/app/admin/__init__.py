@@ -27,7 +27,7 @@ import pendulum
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, reverse
-from django.http import HttpRequest, HttpResponseRedirect, FileResponse
+from django.http import HttpResponseRedirect
 from django.utils.html import format_html
 from django.utils.translation import ngettext
 from django.db import transaction
