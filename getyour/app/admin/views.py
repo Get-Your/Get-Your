@@ -20,6 +20,7 @@ import logging
 import re
 import base64
 import pendulum
+import json
 from pathlib import PurePosixPath
 
 from django.shortcuts import render
@@ -29,10 +30,10 @@ from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from azure.core.exceptions import ResourceNotFoundError
 
-from app.models import User, EligibilityProgram, EligibilityProgramRD
+from app.models import User, EligibilityProgram, EligibilityProgramRD, HouseholdMembers
 from app.constants import supported_content_types
 from app.backend import file_validation, finalize_application
-from app.admin.forms import EligProgramAddForm
+from app.admin.forms import EligProgramAddForm, HouseholdMembersReplaceIDForm
 
 from logger.wrappers import LoggerWrapper
 
@@ -308,6 +309,86 @@ def add_elig_program(request, **kwargs):
         log.exception(
             'Uncaught view-level exception',
             function='add_elig_program',
+            user_id=user_id,
+        )
+        raise
+
+@staff_member_required
+def replace_household_member_id(request, user_id, **kwargs):
+    try:
+        log.debug(
+            "Entering function",
+            function='replace_household_member_id',
+            user_id=request.user.id,
+        )
+
+        #TODO maybe show more user info than just an ID, fetch user and show name
+        if request.method == "POST":
+            # file_validation() checks file extensions
+            file_validated, validation_message = file_validation(
+                request.FILES.getlist('document_path')[0],
+                request.user.id,
+                calling_function='replace_household_member_id',
+            )
+            if not file_validated:
+                return render(
+                    request,
+                    "admin/replace_household_member_id.html",
+                    {
+                        'form': HouseholdMembersReplaceIDForm(user_id=user_id),
+                        'error_message': validation_message,
+                        # Set some page-specific text
+                        'site_header': 'Get FoCo administration',
+                        'title': f"Replace Household Member ID for {user_id}",
+                        'site_title': 'Get FoCo administration',
+                    },
+                )
+
+            file_obj = request.FILES['document_path'] #django.core.files.uploadedfile.InMemoryUploadedFile
+            new_filename = default_storage.save(request.POST['member_name'], file_obj)
+
+            # Update file path for any existing household members with matching file path
+            household_members = HouseholdMembers.objects.get(user_id=user_id)
+            for person in household_members.household_info['persons_in_household']:
+                # request.POST['member_name'] is the existing document_path
+                if person['identification_path'] == request.POST['member_name']:
+                    person['identification_path'] = new_filename
+
+            # Save changes to household member object
+            household_members.save()
+
+            return render(
+                request,
+                "admin/replace_household_member_id.html", 
+                {
+                    'form': HouseholdMembersReplaceIDForm(user_id=user_id),
+                    'success_message': "Household Member ID replaced. Close this window and refresh the HouseholdMembers page to view it.",
+                    # Set some page-specific text
+                    'site_header': 'Get FoCo administration',
+                    'title': f"Replace Household Member ID for {user_id}",
+                    'site_title': 'Get FoCo administration',
+                },
+            )
+        else:
+            return render(
+                request,
+                "admin/replace_household_member_id.html", 
+                {
+                    'form': HouseholdMembersReplaceIDForm(user_id=user_id),
+                    # Set some page-specific text
+                    'site_header': 'Get FoCo administration',
+                    'title': f"Replace Household Member ID for {user_id}",
+                    'site_title': 'Get FoCo administration',
+                },
+            )
+    except:
+        try:
+            user_id = request.user.id
+        except Exception:
+            user_id = None
+        log.exception(
+            'Uncaught view-level exception',
+            function='replace_household_member_id',
             user_id=user_id,
         )
         raise

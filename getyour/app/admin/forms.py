@@ -24,6 +24,7 @@ from django.forms.widgets import Textarea
 from app.models import (
     User,
     Household,
+    HouseholdMembers,
     AddressRD,
     EligibilityProgram,
     EligibilityProgramRD,
@@ -188,3 +189,36 @@ class IQProgramRDForm(forms.ModelForm):
             label_list[-1] = f"{label_list[-1]}'"
 
             labels[req] = ' '.join(label_list)
+
+
+class HouseholdMembersReplaceIDForm(forms.Form):
+    def __init__(self, user_id, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        household = HouseholdMembers.objects.get(
+            user_id=user_id
+        )
+        persons = household.household_info['persons_in_household']
+        
+        household_members = []
+        for person in persons:
+            household_members.append((person['identification_path'], person['name']))
+
+        # Prepend empty (and unusable) option
+        # append user household member names
+        self.fields['member_name'].choices = [('', '')] + household_members
+
+    #Form fields
+    member_name = forms.ChoiceField(
+        label='Select household member',
+        choices=(),
+        required=True
+    )
+
+    document_path = forms.FileField(
+        label='Choose file',
+        required=True,
+        widget=forms.FileInput(
+            attrs={'accept': '.jpg, .jpeg, .png, .pdf'}
+        )
+    )

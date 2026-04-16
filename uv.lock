@@ -258,6 +258,15 @@ wheels = [
 ]
 
 [[package]]
+name = "django-json-widget"
+version = "2.1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f9/30/923ff229ee284bf2fac7a289ca446fb2725d94b2a34c7cb006c4f811e6c0/django_json_widget-2.1.1.tar.gz", hash = "sha256:dc8102e2fa9accd0f661ea1988c9389f8fbbcb8a4bb9cbfb8fa0525b3c1265c1", size = 384026, upload-time = "2025-12-12T11:22:05.953Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/19/6a/bdbcc079d11d312e463565819089fe83ae6c7f17f274effa4777ca069f64/django_json_widget-2.1.1-py2.py3-none-any.whl", hash = "sha256:2fa3d6fb6dba9436a29ad2cee23fa794381f54a6678ec7d74e990ae081d9800b", size = 293721, upload-time = "2025-12-12T11:22:04.195Z" },
+]
+
+[[package]]
 name = "django-phonenumber-field"
 version = "7.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -365,11 +374,12 @@ wheels = [
 
 [[package]]
 name = "get-your"
-version = "7.1.0"
+version = "7.2.0"
 source = { virtual = "." }
 dependencies = [
     { name = "django" },
     { name = "django-environ" },
+    { name = "django-json-widget" },
     { name = "django-phonenumber-field", extra = ["phonenumbers"] },
     { name = "django-q2" },
     { name = "django-redis" },
@@ -381,6 +391,7 @@ dependencies = [
     { name = "pendulum" },
     { name = "psycopg2-binary" },
     { name = "python-magic" },
+    { name = "python-magic-bin", marker = "(platform_machine == 'x86_64' and sys_platform == 'darwin') or sys_platform == 'win32'" },
     { name = "redis" },
     { name = "rich" },
     { name = "sendgrid" },
@@ -394,6 +405,7 @@ dependencies = [
 requires-dist = [
     { name = "django", specifier = "==4.1.8" },
     { name = "django-environ", specifier = "==0.10.0" },
+    { name = "django-json-widget", specifier = "~=2.1.1" },
     { name = "django-phonenumber-field", extras = ["phonenumbers"], specifier = "==7.1.0" },
     { name = "django-q2", specifier = "==1.6.1" },
     { name = "django-redis", specifier = "==5.4.0" },
@@ -405,6 +417,7 @@ requires-dist = [
     { name = "pendulum", specifier = "==2.1.2" },
     { name = "psycopg2-binary", specifier = "==2.9.6" },
     { name = "python-magic", specifier = "==0.4.27" },
+    { name = "python-magic-bin", marker = "(platform_machine == 'x86_64' and sys_platform == 'darwin') or sys_platform == 'win32'", specifier = "~=0.4.14" },
     { name = "redis", specifier = "==5.0.3" },
     { name = "rich", specifier = "==13.9.4" },
     { name = "sendgrid", specifier = "==6.6.0" },

@@ -60,7 +60,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <div class="input" style="width:100%">
             <!--TODO: Save input-->
             <input class="fill" value="{{ field.value|default:'' }}" name="{{ field.name }}" id="state"
-                maxlength="{{ field.max_length }}" type="text" style="width:80%;" autocomplete="off" required>
+                maxlength="{{ field.field.max_length }}" type="text" style="width:80%;" autocomplete="off" required>
             <label class="label">{{field.label}}</label>
         </div>
         <div class="input" style="width:100%">
@@ -105,7 +105,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <div class="input" style="width:100%">
                 <!--TODO: Save input-->
                 <input class="fill" value="{{ field.value|default:'' }}" name="mailing_{{ field.name }}"
-                    id="mailing_state" maxlength="{{ field.max_length }}" type="text" style="width:80%;"
+                    id="mailing_state" maxlength="{{ field.field.max_length }}" type="text" style="width:80%;"
                     autocomplete="off" required>
                 <label class="label">{{field.label}}</label>
             </div>
