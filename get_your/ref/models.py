@@ -205,7 +205,7 @@ class IQProgram(TimeStampedModel):
     )
 
     # All fields beginning with `requires_` are Boolean and specify whether the
-    # matching field in AddressRD is a filter for the program. See
+    # matching field in AddressRef is a filter for the program. See
     # backend.get_eligible_iq_programs() for more detail
     requires_is_in_gma = models.BooleanField(
         # Default to True for safety
