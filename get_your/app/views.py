@@ -905,7 +905,7 @@ def take_usps_address(request, **kwargs):
             # Check for and store GMA and Connexion status
             is_in_gma, has_connexion = address_check(dict_address)
 
-            # Check if an AddressRD object exists by using the
+            # Check if an AddressRef object exists by using the
             # dict_address. If the address is not found, create a new one.
             try:
                 field_map = [
@@ -915,12 +915,12 @@ def take_usps_address(request, **kwargs):
                     ('state', 'state'),
                     ('ZIPCode', 'zip_code'),
                 ]
-                instance = AddressRD.objects.get(
-                    address_sha1=AddressRD.hash_address(
+                instance = AddressRef.objects.get(
+                    address_sha1=AddressRef.hash_address(
                         {key: dict_address[ref_key] for ref_key, key in field_map})
                 )
-            except AddressRD.DoesNotExist:
-                instance = AddressRD(
+            except AddressRef.DoesNotExist:
+                instance = AddressRef(
                     address1=dict_address['streetAddress'],
                     address2=dict_address['secondaryAddress'],
                     city=dict_address['city'],
@@ -958,71 +958,85 @@ def take_usps_address(request, **kwargs):
                 address for address in addresses if address['type'] == 'mailing']
             if eligibility_addresses:
                 try:
-                    # Create and save a record for the user's address using
+                     # Create/get and save a record for the user's address using
                     # the Address object
+                    # TODO: Since this no longer errors when a record already
+                    # exists, ensure that new vs existing is accounted for
+                    # elsewhere in this view (this function returns a Boolean
+                    # designating whether it's a new record), and also setting
+                    # 'user_has_updated' if the user changes their mailing address
                     if mailing_addresses:
-                        Address.objects.create(
+                        Address.objects.get_or_create(
                             user=request.user,
-                            eligibility_address=AddressRD.objects.get(
-                                id=eligibility_addresses[0]['instance']),
-                            mailing_address=AddressRD.objects.get(
-                                id=mailing_addresses[0]['instance']
+                            defaults={
+                                "eligibility_address": AddressRef.objects.get(
+                                id=eligibility_addresses[0]["instance"],
                             ),
+                                "mailing_address": AddressRef.objects.get(
+                                id=mailing_addresses[0]["instance"],
+                            ),
+                            },
                         )
                     else:
-                        Address.objects.create(
+                        Address.objects.get_or_create(
                             user=request.user,
-                            eligibility_address=AddressRD.objects.get(
-                                id=eligibility_addresses[0]['instance']),
-                            mailing_address=AddressRD.objects.get(
-                                id=eligibility_addresses[0]['instance']),
+                            defaults={
+                                "eligibility_address": AddressRef.objects.get(
+                                id=eligibility_addresses[0]["instance"],
+                            ),
+                                "mailing_address": AddressRef.objects.get(
+                                id=eligibility_addresses[0]["instance"],
+                            ),
+                            },
                         )
                 except IntegrityError:
                     # Update the user's address record if it already exists
                     # (e.g. if the user is updating their address)
                     if mailing_addresses:
                         address = Address.objects.get(user=request.user)
-                        address.eligibility_address = AddressRD.objects.get(
+                        address.eligibility_address = AddressRef.objects.get(
                             id=eligibility_addresses[0]['instance']
                         )
-                        address.mailing_address = AddressRD.objects.get(
+                        address.mailing_address = AddressRef.objects.get(
                             id=mailing_addresses[0]['instance']
                         )
                     else:
                         address = Address.objects.get(user=request.user)
-                        address.eligibility_address = AddressRD.objects.get(
+                        address.eligibility_address = AddressRef.objects.get(
                             id=eligibility_addresses[0]['instance']
                         )
-                        address.mailing_address = AddressRD.objects.get(
+                        address.mailing_address = AddressRef.objects.get(
                             id=eligibility_addresses[0]['instance']
                         )
 
-                    # Set the attributes to let pre_save know to save history
-                    address.update_mode = update_mode
-                    address.renewal_mode = renewal_mode
-
-                    address.save()
+                address.save()
 
                 if renewal_mode:
                     # Call save_renewal_action after .save() so as not to save
                     # renewal metadata as data updates
-                    save_renewal_action(request, 'address')
+                    # save_renewal_action(request, "address")
+                    pass
 
-                return redirect(reverse('app:household'))
-            else:
-                # We're in update_mode here, so we're only updating the users
-                # mailing address. Then redirecting them to their settings page.
-                address = Address.objects.get(user=request.user)
-                address.mailing_address = AddressRD.objects.get(
-                    id=mailing_addresses[0]['instance']
+                # Add 'app:address' to `user_completed_pages`
+                request.user.user_completed_pages.add(
+                    ApplicationPage.objects.get(page_url="app:address"),
                 )
 
-                # Set the attributes to let pre_save know to save history
-                address.update_mode = update_mode
+                return redirect(reverse("app:household"))
+            # We're in update_mode here, so we're only updating the users
+            # mailing address. Then redirecting them to their settings page.
+            address = Address.objects.get(user=request.user)
+            address.mailing_address = AddressRef.objects.get(
+                id=mailing_addresses[0]["instance"],
+            )
 
-                address.save()
-                return redirect(f"{reverse('app:user_settings')}?page_updated=address")
+            # Set the attributes to let pre_save know to save history
+            # address.update_mode = update_mode
 
+            address.save()
+            return redirect(
+                f"{reverse('users:detail', kwargs={'pk': request.user.id})}?page_updated=address",
+            )
         except (KeyError, TypeError):
             log.warning(
                 f"USPS couldn't out the address: {dict_address}",
