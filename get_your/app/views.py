@@ -637,7 +637,7 @@ def address(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name='auth_next')
+@login_required()
 def address_correction(request, **kwargs):
 
     try:
@@ -880,7 +880,7 @@ def address_correction(request, **kwargs):
         raise
 
 
-@login_required(redirect_field_name='auth_next')
+@login_required()
 def take_usps_address(request, **kwargs):
 
     try:
