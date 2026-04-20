@@ -974,7 +974,7 @@ class UserAdmin(admin.ModelAdmin):
             self.message_user(
                 request,
                 gettext.gettext('Nothing to extract.'),
-                messages.INFO # this shows up with a green background just like the success message?
+                messages.WARNING # this shows up with a green background just like the success message?
                 )
             return self.get_empty_value_display()
 
