@@ -463,12 +463,8 @@ def quick_apply(request, iq_program, **kwargs):
             # Check for Connexion services
             # Recreate the relevant parts of addressDict as if from validate_usps()
             address_dict = {
-                "AddressValidateResponse": {
-                    "Address": {
-                        "Address2": addr.address1,
-                        "Zip5": addr.zip_code,
-                    },
-                },
+                'streetAddress': addr.address1,
+                'ZIPCode': addr.zip_code,
             }
             is_in_gma, has_isp_service = address_check(address_dict)
             # Connexion (Internet Service Provider) status unknown, but since isInGMA==True at this point in
@@ -477,8 +473,8 @@ def quick_apply(request, iq_program, **kwargs):
                 in_gma_with_no_service = True
 
         quick_apply_result = {
-            "program_name": iq_program.program_name.title(),
-            "title": f"{iq_program.program_name.title()} Application Complete",
+            "program_name": iq_program.friendly_name.title(),
+            "title": "Program Application Complete",
             "in_gma_with_no_service": in_gma_with_no_service,
         }
 

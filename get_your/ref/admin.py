@@ -196,16 +196,11 @@ class AddressRefAdmin(admin.ModelAdmin):
             # Format for address_check. All addresses in the database have been
             # through USPS, so no need to re-validate (just copy formatting)
             address_dict = {
-                "AddressValidateResponse": {
-                    "Address": {
-                        # Note 1 & 2 are swapped
-                        "Address1": obj.address2,
-                        "Address2": obj.address1,
-                        "City": obj.city,
-                        "State": obj.state,
-                        "Zip5": obj.zip_code,
-                    },
-                },
+                'streetAddress': obj.address1,
+                'secondaryAddress': obj.address2,
+                'city': obj.city,
+                'state': obj.state,
+                'ZIPCode': obj.zip_code,
             }
 
             # Run the address check and make the final adjustments

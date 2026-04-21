@@ -65,9 +65,26 @@ Once uv is installed, run `uv sync` from the repo's root directory to install al
 
 > The repo's root directory is the reference point for all relative directories in this document.
 
-On **Ubuntu only**, run the following to match the `libmagic1` dependency installed in the Docker container:
+`python-magic-bin` is only installed via `uv` on Windows and Intel Mac systems; other systems require an OS-level installation. Use one of the following methods, based on the system:
 
-    apt-get install libmagic1
+- Linux
+    - Alpine (CAUTION: untested)
+
+            apk add --update libmagic
+    - Debian/Ubuntu
+
+            apt-get update && apt-get install -y libmagic1
+    - RHEL (CAUTION: untested)
+
+            dnf install file-libs
+
+- OSX **(ARM only)**
+    - Via homebrew
+
+            brew install libmagic
+    - Via macports
+    
+            port install file
 
 ## Running the App
 Unless otherwise noted, the following commands must be run from the 'get_your' directory within this repo (e.g. `get_your`).
