@@ -45,56 +45,68 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                                 </div>
                                 <div class="col-7">
                                     <div class="row g-3">
-                                    {% csrf_token %}
-                                    <h5 class="h5">Home Address</h5>
-                                    {% for field in eligibility_address_form %}
-                                    {% if form.errors %}
-                                    {% for error in field.errors %}
-                                    <div class="alert alert-danger">
-                                        <strong>{{ error|escape }}</strong>
-                                    </div>
-                                    {% endfor %}
-                                    {% endif %}
+                                        {% csrf_token %}
+                                        <h5 class="h5">Home Address</h5>
+                                        {% for field in eligibility_address_form %}
+                                            {% if form.errors %}
+                                                {% for error in field.errors %}
+                                                <div class="alert alert-danger">
+                                                    <strong>{{ error|escape }}</strong>
+                                                </div>
+                                                {% endfor %}
+                                            {% endif %}
 
 
-                                        {% if not update_mode %}
-                                        {% if field.label == "State" %}
-                                        <!-- Add inputs for State and Zip Code -->
-                                        <div class="col-md-6">
-                                            <label for="{{ field.name }}" class="form-label">{{field.label}}</label>
-                                            <input type="text" class="form-control" id="state"
-                                                maxlength="{{ field.max_length }}" type="text"
-                                                value="{{ field.value|default:'' }}" name="{{ field.name }}"
-                                                autocomplete="off" required>
-                                            <div class="invalid-feedback">
-                                                Please provide a valid {{field.label}}.
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="{{ eligibility_address_form.zip_code.name }}"
-                                                class="form-label">Zip Code</label>
-                                            <input type="text" class="form-control" id="zip_code"
-                                                name="{{ eligibility_address_form.zip_code.name }}"
-                                                value="{{ eligibility_address_form.zip_code.value|default:'' }}"
-                                                pattern="[0-9]{5}" maxlength="5" required autocomplete="off">
-                                            <div class="invalid-feedback">
-                                                Please provide a valid Zip Code.
-                                            </div>
-                                        </div>
-                                        {% elif field.label == "Zip Code" %}
-                                        {% else %}
-                                        <div class="col-12">
-                                            <label for="{{ field.name }}" class="form-label">{{field.label}}</label>
-                                            <input type="text" class="form-control" id="{{ field.id_for_label }}"
-                                                maxlength="{{ field.max_length }}" type="text"
-                                                value="{{ field.value|default:'' }}" name="{{ field.name }}"
-                                                autocomplete="off" required>
-                                            <div class="invalid-feedback">
-                                                Please provide a valid {{field.label}}.
-                                            </div>
-                                        </div>
-                                        {% endif %}
-                                        {% endif %}
+                                            {% if not update_mode %}
+                                                {% if field.label == "State" %}
+                                                <!-- Add inputs for State and Zip Code -->
+                                                <div class="col-md-6">
+                                                    <label for="{{ field.name }}" class="form-label">{{field.label}}</label>
+                                                    <input type="text" class="form-control" id="state"
+                                                        maxlength="{{ field.max_length }}" type="text"
+                                                        value="{{ field.value|default:'' }}" name="{{ field.name }}"
+                                                        autocomplete="off" required>
+                                                    <div class="invalid-feedback">
+                                                        Please provide a valid {{field.label}}.
+                                                    </div>
+                                                </div>
+                                                {% elif field.label == "Zip Code" %}
+                                                <div class="col-md-6">
+                                                    <label for="{{ eligibility_address_form.zip_code.name }}"
+                                                        class="form-label">Zip Code</label>
+                                                    <input type="text" class="form-control" id="zip_code"
+                                                        name="{{ eligibility_address_form.zip_code.name }}"
+                                                        value="{{ eligibility_address_form.zip_code.value|default:'' }}"
+                                                        pattern="[0-9]{5}" maxlength="5" required autocomplete="off">
+                                                    <div class="invalid-feedback">
+                                                        Please provide a valid Zip Code.
+                                                    </div>
+                                                </div>
+                                                {% elif field.label == "Apt, Suite, etc." %}
+                                                <div class="col-6">
+                                                    <label for="{{ field.name }}" class="form-label">{{field.label}}</label>
+                                                    <input type="text" class="form-control" id="{{ field.id_for_label }}"
+                                                        maxlength="{{ field.max_length }}" type="text"
+                                                        value="{{ field.value|default:'' }}" name="{{ field.name }}"
+                                                        autocomplete="off">
+                                                    {{ field.help_text }}
+                                                    <div class="invalid-feedback">
+                                                        Please provide a valid {{field.label}}.
+                                                    </div>
+                                                </div>
+                                                {% else %}
+                                                <div class="col-12">
+                                                    <label for="{{ field.name }}" class="form-label">{{field.label}}</label>
+                                                    <input type="text" class="form-control" id="{{ field.id_for_label }}"
+                                                        maxlength="{{ field.max_length }}" type="text"
+                                                        value="{{ field.value|default:'' }}" name="{{ field.name }}"
+                                                        autocomplete="off" required>
+                                                    <div class="invalid-feedback">
+                                                        Please provide a valid {{field.label}}.
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                            {% endif %}
                                         {% endfor %}
 
                                         {% if not update_mode %}
