@@ -168,16 +168,18 @@ class Extract:
             fileDir = Path(__file__).parent
         except NameError:   # dev
             fileDir = Path.cwd()
+
+        self.output_file_dir = fileDir
         
-        with open(
-                fileDir.parent.parent.joinpath('.env.deploy'),
-                'r',
-                encoding='utf-8',
-                ) as f:
-            secrets_dict = loads(f.read())
+        # with open(
+        #         fileDir.parent.parent.joinpath('.env.deploy'),
+        #         'r',
+        #         encoding='utf-8',
+        #         ) as f:
+        #     secrets_dict = loads(f.read())
             
-        for key in secrets_dict.keys():
-            setattr(self, key, secrets_dict[key])
+        # for key in secrets_dict.keys():
+        #     setattr(self, key, secrets_dict[key])
             
     def _mark_updates(
             self,
@@ -223,7 +225,12 @@ class Extract:
         for idxitm,itm in enumerate(record_list):
             # Gather the table(s) that were updated
             tableCheckList = list(set([x[0] for x in field_list]))
-            
+
+            valueListFields = ['is_updated', 'householdmembers__is_updated', 'address__is_updated']
+
+            if (len(tableCheckList) == 1 and 'u' in tableCheckList):
+                valueListFields = ['id', 'first_name', 'last_name', 'email']
+            #TODO: need to figure out if this will work.  Not sure if [0], at the end, will be needed
             tableCheckOut = list(User.objects.select_related(
                 'householdmembers',
                 'household',
@@ -232,9 +239,7 @@ class Extract:
                 is_archived=False,
                 id=itm[idFieldIdx] # user id in list
             ).values_list(
-                'is_updated',
-                'householdmembers__is_updated',
-                'address__is_updated'
+                *valueListFields
             ))[0]
             
             # Initialize list of updated fields and define the identifying
@@ -254,7 +259,7 @@ class Extract:
                     modelName = tableRef[1]
                     modelClass = getattr(models, modelName)
 
-                    histOut = modelClass.objects.filter(
+                    histQuerySet = modelClass.objects.filter(
                         user_id=itm[idFieldIdx]
                     ).values(
                         tableRef[2]
@@ -262,8 +267,13 @@ class Extract:
                         '-id'
                     ).first()['historical_values']
                     
-                    if modelName=='AddressHist' and histOut is None:
-                        histOut = {"mailing_address_id": 0, "eligibility_address_id": 0}
+                    if histQuerySet is not None:
+                        histOut = histQuerySet['historical_values']
+                    else:
+                        if modelName == 'AddressHist':
+                            histOut = {"mailing_address_id": 0, "eligibility_address_id": 0}
+                        else:
+                            histOut = {}
                     
                     # Define updatedFields as (index of record_list, 
                     # historical value) (if the historical value is an 
@@ -343,8 +353,8 @@ class Extract:
                         ).values(
                             'historical_values'
                         ).order_by(
-                            'created'
-                        )[0]
+                            '-created'
+                        ).first()
                     
                         # Build new dicts with just name and birthdate
                         # (since that's what we care about for the updates)
@@ -720,9 +730,9 @@ class Extract:
                             user_id=id,
                             program_id=programId
                         ).get()
-                        iqprogramRecord.is_enrolled = True
-                        iqprogramRecord.enrolled_at = pendulum.now()
-                        iqprogramRecord.save()
+                        # iqprogramRecord.is_enrolled = True
+                        # iqprogramRecord.enrolled_at = pendulum.now()
+                        # iqprogramRecord.save()
                     
                 else:
                     outMsg.append("users were not enrolled")
@@ -740,27 +750,27 @@ class Extract:
             print("Don't delete the new exports! Exports created from this script in the future won't include the same 'updated' user(s)")
             
             # Reset all is_updated values in all applicable tables from self.hist_tables[4]
-            for tableitm in self.hist_tables:
-                modelName = tableitm[4]
-                modelClass = getattr(models, modelName)
+            # for tableitm in self.hist_tables:
+            #     modelName = tableitm[4]
+            #     modelClass = getattr(models, modelName)
 
-                allModelsOfClass = modelClass.objects.all()
+            #     allModelsOfClass = modelClass.objects.all()
                 
-                if modelName == 'User':
-                    filteredClassModels = allModelsOfClass.filter(
-                        id__in=allAffectedUsers
-                    )
-                else:
-                    filteredClassModels = allModelsOfClass.filter(
-                        user_id__in=allAffectedUsers
-                    )
+            #     if modelName == 'User':
+            #         filteredClassModels = allModelsOfClass.filter(
+            #             id__in=allAffectedUsers
+            #         )
+            #     else:
+            #         filteredClassModels = allModelsOfClass.filter(
+            #             user_id__in=allAffectedUsers
+            #         )
 
-                filteredClassModels.update(
-                    is_updated=False
-                )
+            #     filteredClassModels.update(
+            #         is_updated=False
+            #     )
             
         else:
             print("Update designations in the database were not reset")
 
-        return [x for x in os.listdir(self.output_file_dir) if x.startswith(str(pendulum.today().year))]
+        return [x for x in self.output_file_dir.iterdir() if x.name.startswith(str(pendulum.today().year))]
         
