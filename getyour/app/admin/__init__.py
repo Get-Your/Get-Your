@@ -969,32 +969,26 @@ class UserAdmin(admin.ModelAdmin):
 
         extractFiles = extract.export_programs()
 
-        # if len(extractFiles) < 1:
-        #     # early return to avoid downloading an empty zip
-        #     self.message_user(
-        #         request,
-        #         gettext.gettext('Nothing to extract.'),
-        #         messages.WARNING
-        #         )
-        #     return self.get_empty_value_display()
+        if len(extractFiles) < 1:
+            # early return to avoid downloading an empty zip
+            self.message_user(
+                request,
+                gettext.gettext('Nothing to extract.'),
+                messages.WARNING
+                )
+            return self.get_empty_value_display()
 
-        # memoryFile = io.BytesIO()
-        # with zipfile.ZipFile(memoryFile, 'w') as zf:
-        #     for file in extractFiles:
-        #         zf.write(file, arcname=file.name)
-        #         os.remove(file)
+        memoryFile = io.BytesIO()
+        with zipfile.ZipFile(memoryFile, 'w') as zf:
+            for file in extractFiles:
+                zf.write(file, arcname=file.name)
+                os.remove(file)
         
-        # memoryFile.seek(0)
-        # response = HttpResponse(memoryFile.getvalue(), content_type='application/zip')
-        # response['Content-Disposition'] = 'attachment; filename="extracts.zip"'
+        memoryFile.seek(0)
+        response = HttpResponse(memoryFile.getvalue(), content_type='application/zip')
+        response['Content-Disposition'] = 'attachment; filename="extracts.zip"'
 
-        # self.message_user(
-        #     request,
-        #     gettext.gettext('Extracts zip downloaded successfully.'),
-        #     messages.SUCCESS
-        #     )
-
-        # return response        
+        return response        
 
     # Add custom buttons to the save list in the admin template (from
     # https://stackoverflow.com/a/34899874/5438550 and
