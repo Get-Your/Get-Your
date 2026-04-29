@@ -31,7 +31,7 @@ from rich.table import Table
 from rich.prompt import Confirm
 from rich import print
 
-from django.db.models import Count
+from django.db.models import Count, Q
 from app import models
 from app.models import IQProgramRD, IQProgram, User, HouseholdMembersHist
 
@@ -96,8 +96,8 @@ class Extract:
 
         if self.output_file_dir is None:
             self.output_file_dir = Path(self.OUTPUT_FILES_DIR)
-        if self.user_files_dir is None:
-            self.user_files_dir = Path(self.USER_FILES_SAVE_DIR)
+        # if self.user_files_dir is None:
+        #     self.user_files_dir = Path(self.USER_FILES_SAVE_DIR)
 
         self.filename_suffix = filename_suffix
         self.interactive = interactive      
@@ -229,8 +229,8 @@ class Extract:
             valueListFields = ['is_updated', 'householdmembers__is_updated', 'address__is_updated']
 
             if (len(tableCheckList) == 1 and 'u' in tableCheckList):
-                valueListFields = ['id', 'first_name', 'last_name', 'email']
-            #TODO: need to figure out if this will work.  Not sure if [0], at the end, will be needed
+                valueListFields = ['is_updated']
+            
             tableCheckOut = list(User.objects.select_related(
                 'householdmembers',
                 'household',
@@ -265,7 +265,7 @@ class Extract:
                         tableRef[2]
                     ).order_by(
                         '-id'
-                    ).first()['historical_values']
+                    ).first()
                     
                     if histQuerySet is not None:
                         histOut = histQuerySet['historical_values']
@@ -430,6 +430,7 @@ class Extract:
         activePrograms = IQProgramRD.objects.filter(is_active=True).values_list('id', 'program_name', 'friendly_name')
         allAffectedUsers = []
         for programId,programname,friendlyname in activePrograms:
+            print(programId)
             # Initialize dbOut (there will be multiple queries) and their
             # respective 'notes' (to be combined in the extract)
             dbOut = []
@@ -445,9 +446,22 @@ class Extract:
                     'last_name',
                     'email'
                     )]
+                valueListFields = [x[1] for x in fieldsToUse]
             else:
                 fieldsToUse = self.table_fields
-            
+                valueListFields = [
+                    'id',
+                    'first_name',
+                    'last_name',
+                    'email',
+                    'phone_number',
+                    'address__mailing_address__address1',
+                    'address__mailing_address__address2',
+                    'address__mailing_address__city',
+                    'address__mailing_address__state',
+                    'address__mailing_address__zip_code',
+                    'householdmembers__household_info'
+                ]
             # Define the output fields for the extract
             outFieldList = [('','','Notes'),] + fieldsToUse
             
@@ -495,17 +509,7 @@ class Extract:
                 iq_programs__program__program_name=programname,
                 iq_programs__is_enrolled=False,
             ).values_list(
-                'id',
-                'first_name',
-                'last_name',
-                'email',
-                'phone_number',
-                'address__mailing_address__address1',
-                'address__mailing_address__address2',
-                'address__mailing_address__city',
-                'address__mailing_address__state',
-                'address__mailing_address__zip_code',
-                'householdmembers__household_info',
+                *valueListFields
             ).exclude(
                 # id__in=alreadyProcessedUsers, alreadyProcessedUsers is empty here
                 id__in=usersStuckInRenewalIds,
@@ -543,26 +547,34 @@ class Extract:
                 'iq_programs__program',
                 'address__mailing_address'
             ).filter(
+                Q(address__is_updated=True) |
+                Q(householdmembers__is_updated=True) |
+                Q(is_updated=True),
                 is_archived=False,
                 iq_programs__program__program_name=programname,
                 iq_programs__is_enrolled=True,
-                is_updated=True
+                # is_updated=True,
+                # address__is_updated=True,
+                # householdmembers__is_updated=True
             ).exclude(
                 id__in=alreadyProcessedUsers
             ).values_list(
-                'id',
-                'first_name',
-                'last_name',
-                'email',
-                'phone_number',
-                'address__mailing_address__address1',
-                'address__mailing_address__address2',
-                'address__mailing_address__city',
-                'address__mailing_address__state',
-                'address__mailing_address__zip_code',
-                'householdmembers__household_info'
+                *valueListFields
             ).order_by('id')
-            
+            if programId == 3:
+                print(len(updateOut))
+                # print(self.select_framework.format(
+                #     additionalJoin="""
+                #     right join (select * from public.app_iqprogram ii
+                #         left join public.app_iqprogramrd iir on iir.id=ii.program_id) i on i.user_id=u.id
+                #     """,
+                #     wherePlaceholder=self.where_framework + """ and i."is_enrolled"=true and i."program_name"='{prg}' and ({upd}) {prc}""".format(
+                #         prg=programname,
+                #         upd='or '.join([f"""{x}."is_updated" """ for x in set([x[0] for x in fieldsToUse])]),
+                #         prc=f"""and u."id" not in ({', '.join([str(x) for x in alreadyProcessedUsers])})""" if len(alreadyProcessedUsers)>0 else '',
+                #     ),
+                #     fields=','.join([f'{x[0]}."{x[1]}"' for x in fieldsToUse]),
+                # ))
             # For each user in updateOut, find the information that changed
             # and prepend 'UPDATE ONLY: ' in the extract
             recordsOut, updatedBools = self._mark_updates(
@@ -730,6 +742,7 @@ class Extract:
                             user_id=id,
                             program_id=programId
                         ).get()
+                        # TODO: uncomment this
                         # iqprogramRecord.is_enrolled = True
                         # iqprogramRecord.enrolled_at = pendulum.now()
                         # iqprogramRecord.save()
@@ -750,6 +763,7 @@ class Extract:
             print("Don't delete the new exports! Exports created from this script in the future won't include the same 'updated' user(s)")
             
             # Reset all is_updated values in all applicable tables from self.hist_tables[4]
+            # TODO: uncomment this
             # for tableitm in self.hist_tables:
             #     modelName = tableitm[4]
             #     modelClass = getattr(models, modelName)
