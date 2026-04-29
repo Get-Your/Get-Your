@@ -781,15 +781,14 @@ This is in the event a user needs to be deleted (except the original admin user,
     REVOKE ALL ON SCHEMA public FROM <username>;
     REVOKE ALL ON DATABASE <database_name> FROM <username>;
 
-Then, `DROP USER <username>;` should be able to be executed successfully. If an error is thrown on `DROP USER`, it could be that the user owns objects that aren't allowed to be orphaned. Try one of the following:
+Then, `DROP ROLE <username>;` should be able to be executed successfully. If an error is thrown on `DROP ROLE`, it could be that the user owns objects that aren't allowed to be orphaned. Run the following before dropping the role:
 
-- Reassign any objects owned by the to-be-deleted user
-    
-        REASSIGN OWNED BY <username> TO <new_owner_username>;
+    # Reassign objects owned by the to-be-deleted
+    REASSIGN OWNED BY <username> TO <new_owner_username>;
 
-- OR, drop any objects owned by the to-be-deleted user
-
-        DROP OWNED BY <username>;
+    # Drop any objects owned by the to-be-deleted user
+    # Note that the `ALTER DEFAULT PRIVILEGES` requires this to be run to remove the alterations (unless the removal is done manually)
+    DROP OWNED BY <username>;
 
 [1]: ./media/twilio_quick_deploy_forwarding.png
 [2]: ./media/twilio_pin_functions_and_assets.png
