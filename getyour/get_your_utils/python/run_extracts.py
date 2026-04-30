@@ -540,6 +540,18 @@ class Extract:
             # In the where clause:
                 # - i.is_enrolled=true already covers h.is_income_verified, so
                 # there's no need for this
+
+            # Define the Q filter based on the fields in the extract
+            # Start with the User model (because it's always included)
+            filter_q = Q(is_updated=True)
+            # Get just the linkages from the User model from valueListFields
+            referencedFields = [x for x in valueListFields if '__' in x]
+            linkedTables = set(
+                [x.split('__')[0] for x in referencedFields]
+            )
+            for x in linkedTables:
+                # OR each additional Q(...__is_updated=True)
+                filter_q |= Q(**{f"{x}__is_updated": True})
             
             updateOut = User.objects.select_related(
                 'householdmembers',
@@ -547,13 +559,10 @@ class Extract:
                 'iq_programs__program',
                 'address__mailing_address'
             ).filter(
-                Q(address__is_updated=True) |
-                Q(householdmembers__is_updated=True) |
-                Q(is_updated=True),
+                filter_q,
                 is_archived=False,
                 iq_programs__program__program_name=programname,
                 iq_programs__is_enrolled=True,
-                # is_updated=True,
                 # address__is_updated=True,
                 # householdmembers__is_updated=True
             ).exclude(
@@ -561,8 +570,8 @@ class Extract:
             ).values_list(
                 *valueListFields
             ).order_by('id')
-            if programId == 3:
-                print(len(updateOut))
+            # if programId == 3:
+            #     print(len(updateOut))
                 # print(self.select_framework.format(
                 #     additionalJoin="""
                 #     right join (select * from public.app_iqprogram ii
