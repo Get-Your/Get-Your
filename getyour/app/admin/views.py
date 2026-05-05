@@ -346,10 +346,18 @@ def replace_household_member_id(request, user_id, **kwargs):
                     },
                 )
 
+            # request.POST['member_name'] is the existing document_path
+            # chop off the old filename but leave the user_XXXX prefix
+            new_filename = request.POST['member_name'].split('/')[0] + '/' + pendulum.now(
+                    'utc'
+                ).format(
+                    f"YYYY-MM-DD[T]HHmmss[Z]" # append datetime for uniqueness
+                ) + file_obj.name.replace(' ', '_') # append new filename with no spaces
+            
             # upload new file with user filename
-            new_filename = default_storage.save(file_obj.name, file_obj)
+            new_filename = default_storage.save(new_filename, file_obj)
 
-            # Update file path for any existing household members with matching file path
+            # Update file path for any existing household members with matching old file path
             household_members = HouseholdMembers.objects.get(user_id=user_id)
             for person in household_members.household_info['persons_in_household']:
                 # request.POST['member_name'] is the existing document_path
