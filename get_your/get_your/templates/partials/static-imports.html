@@ -37,6 +37,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     <title>{{ title }}</title>
 
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js"
+        integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+
     <!-- Webmanifest + Favicon / App icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'app-icons/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'app-icons/favicon-32x32.png' %}">
@@ -49,7 +52,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
-        rel="stylesheet" id="google-font">
+        rel="stylesheet" id="google-font" crossorigin="anonymous">
 
     <!-- Font icons -->
     <link rel="stylesheet" href="{% static 'icons/gy-icons.min.css' %}?cache_breaker={% now 'YmdHmmss' %}">
@@ -59,4 +62,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     <!-- django-formset styles -->
     <script type="module" src="{% static 'formset/js/django-formset.js' %}"></script>
+
+    <style>
+        .width-restricted {
+            width: 50em;
+        }
+    </style>
 </head>

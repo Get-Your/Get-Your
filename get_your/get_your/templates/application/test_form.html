@@ -1,0 +1,342 @@
+<!--
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+{% include "partials/static-imports.html" with title="Get FoCo | Test Form" %}
+
+<body class="bg-secondary">
+
+    <!-- Page container -->
+    <div class="container py-5 mt-4 mt-lg-5 mb-lg-4 my-xl-5 width-restricted">
+        <h1>Program Information</h1>
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <form action="" method="post">
+                        <fieldset id="account_information">
+                            <legend class="border-bottom fw-bold">Account Information</legend>
+                            <div class="row">
+                                <div class="mb-3 col-12 col-md-6">
+                                    <label for="first_name" class="form-label">First Name</label>
+                                    <input type="text" name="first_name" id="first_name" class="form-control" value="{% if user is not None %} {{ user.first_name }} {% endif %}" required>
+                                </div>
+                                <div class="mb-3 col-12 col-md-6">
+                                    <label for="last_name" class="form-label">Last Name</label>
+                                    <input type="text" name="last_name" id="last_name" class="form-control" value="{% if user is not None %} {{ user.last_name }} {% endif %}" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="mb-3 col-12 col-md-6">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" name="email" id="email" class="form-control" value="{% if user is not None %} {{ user.email }} {% endif %}" required>
+                                </div>
+                                <div class="mb-3 col-12 col-md-6">
+                                    <label for="phone_number" class="form-label">Phone Number</label>
+                                    <input type="tel" name="phone_number" id="phone_number" class="form-control" value="{% if user is not None %} {{ user.phone_number }} {% endif %}" required>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="home_address_information">
+                            <legend class="border-bottom fw-bold">Home Address Information {% if user.address is None %} <small class="text-danger">Missing!</small> {% endif %}</legend>
+                            <div class="row">
+                                <div class="mb-3 col-12">
+                                    <label for="address1" class="form-label">Street Address</label>
+                                    <input type="text" name="address1" id="home_address1" class="form-control">
+                                </div>
+                                <div class="mb-3 col-12 col-md-6">
+                                    <label for="address2" class="form-label">Apt, Suite, etc.</label>
+                                    <input type="text" name="address2" id="home_address2" class="form-control">
+                                    <p class="mb-0">
+                                        <small>Leave blank if not applicable</small>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="mb-3 col-12 col-md-6">
+                                    <label for="city" class="form-label">City</label>
+                                    <input type="text" name="city" id="home_city" class="form-control">
+                                </div>
+                                <div class="mb-3 col-12 col-md-6">
+                                    <label for="state" class="form-label">State</label>
+                                    <input type="text" name="state" id="home_state" class="form-control">
+                                </div>
+                                <div class="mb-3 col-12 col-md-6">
+                                    <label for="zip_code" class="form-label">Zip Code</label>
+                                    <input type="text" name="zip_code" id="home_zip_code" class="form-control">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="col-12">
+                                    <p class="mb-1">Is your mailing address the same as your home address?</p>
+                                    <div class="form-check">
+                                        {% comment %} TODO: inputs need ids to match the for attributes for accessibility {% endcomment %}
+                                        <input id="mailing_address_yes" class="form-check-input" type="radio" name="mailing_address" value="yes" checked>
+                                        <label class="form-check-label" for="mailing_address_yes">
+                                            Yes
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input id="mailing_address_no" class="form-check-input" type="radio" name="mailing_address" value="no">
+                                        <label class="form-check-label" for="mailing_address_no">
+                                            No
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="mailing_address_information" class="d-none">
+                            <legend class="border-bottom fw-bold">Mailing Address Information</legend>
+                            <div class="row">
+                                <div class="mb-3 col-12">
+                                    <label for="address1" class="form-label">Street Address</label>
+                                    <input type="text" name="address1" id="mailing_address1" class="form-control" required>
+                                </div>
+                                <div class="mb-3 col-12 col-md-6">
+                                    <label for="address2" class="form-label">Apt, Suite, etc.</label>
+                                    <input type="text" name="address2" id="mailing_address2" class="form-control">
+                                    <p class="mb-0">
+                                        <small>Leave blank if not applicable</small>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="mb-3 col-12 col-md-6">
+                                    <label for="city" class="form-label">City</label>
+                                    <input type="text" name="city" id="mailing_city" class="form-control">
+                                </div>
+                                <div class="mb-3 col-12 col-md-6">
+                                    <label for="state" class="form-label">State</label>
+                                    <input type="text" name="state" id="mailing_state" class="form-control">
+                                </div>
+                                <div class="mb-3 col-12 col-md-6">
+                                    <label for="zip_code" class="form-label">Zip Code</label>
+                                    <input type="text" name="zip_code" id="mailing_zip_code" class="form-control">
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="household_information">
+                            <legend class="border-bottom fw-bold">Household Information</legend>
+                            <div class="row">
+                                <div class="mb-3 col-12 col-md-6">
+                                    <p class="mb-1">Do you currently rent or own your residence?</p>
+                                    <div class="form-check">
+                                        {% comment %} TODO: inputs need ids to match the for attributes for accessibility {% endcomment %}
+                                        <input id="rent_own_choices_rent" class="form-check-input" type="radio" name="rent_own_choices" value="rent" checked>
+                                        <label class="form-check-label" for="rent_own_choices_rent">
+                                            Rent
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input id="rent_own_choices_own" class="form-check-input" type="radio" name="rent_own_choices" value="own">
+                                        <label class="form-check-label" for="rent_own_choices_own">
+                                            Own
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-3 col-12 col-md-6">
+                                    <p class="mb-1">How long have you lived at this address?</p>
+                                    <div class="form-check">
+                                        <input id="duration_at_address_more_than_three" class="form-check-input" type="radio" name="duration_at_address" value="more than 3 years" checked>
+                                        <label class="form-check-label" for="duration_at_address_more_than_three">
+                                            More than 3 Years
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input id="duration_at_address_one_to_three" class="form-check-input" type="radio" name="duration_at_address" value="1 to 3 years">
+                                        <label class="form-check-label" for="duration_at_address_one_to_three">
+                                            1 to 3 Years
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input id="duration_at_address_less_than_one" class="form-check-input" type="radio" name="duration_at_address" value="less than 1 year">
+                                        <label class="form-check-label" for="duration_at_address_less_than_one">
+                                            Less than a Year
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            {% comment %} Vue App for Interactivity {% endcomment %}
+                            <div id="app" class="mb-3">
+                                <div v-for="(item, index) in familyMembers" :key="item.id">
+                                    <p class="mb-0 pb-1 d-flex justify-content-between align-items-center border-bottom">Family Member [[ item.id + 1 ]] <span class="badge text-bg-danger" @click="removeFamilyMember(index)">Remove</span></p>
+                                    <input type="hidden" :value="item.id">
+                                    <div class="mb-3">
+                                        <label :for="'full_name_' + item.id" class="form-label">Full Name</label>
+                                        <input type="text" :name="'full_name_' + item.id" :id="'full_name_' + item.id" class="form-control" :value="item.fullName">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label :for="'birth_date_' + item.id" class="form-label">Birth Date</label>
+                                        <input type="date" :name="'birth_date_' + item.id" :id="'birth_date_' + item.id" class="form-control" :value="item.birthDate">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label :for="'identification_path_' + item.id" class="form-label">Upload ID</label>
+                                        <input type="file" :name="'identification_path_' + item.id" :id="'identification_path_' + item.id" class="form-control" :value="item.identificationPath">
+                                    </div>
+                                </div>
+                                <div>
+                                    <hr class="my-3">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary shadow-sm" @click.prevent="addFamilyMember">Add Family Member</button>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="eligibility_programs">
+                            <legend class="border-bottom fw-bold">Eligibility Programs</legend>
+                            <div class="row">
+                                <div class="mb-3 col-12">
+                                    <p class="mb-2">Select programs for which you are already qualified.</p>
+                                    {% for program in elPrograms %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="{{ program.id }}" id="program-{{ program.id }}">
+                                        <label class="form-check-label" for="program-{{ program.id }}">
+                                            {{ program.friendly_name }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-0 col-12">
+                                    <label for="eligibility_file_upload" class="form-label">Upload Documents for Eligibility Verification</label>
+                                    <input type="file" name="eligibility_file_upload" id="eligibility_file_upload" class="form-control" multiple>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary shadow-sm" type="submit">Save Information</button>
+            </div>
+        </div> <!-- card -->
+    </div> <!-- container-->
+
+    {% include "partials/footer.html" %}
+
+    
+    <script type="module">
+        import { createApp, ref } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+        
+        createApp({
+            delimiters: ['[[', ']]'],
+            setup() {
+                const familyMembers = ref([
+                    {
+                        id: 0,
+                        fullName: '',
+                        birthDate: '',
+                        identificationPath: ''
+                    }
+                ]);
+
+                function addFamilyMember() {
+                    familyMembers.value.push({
+                        id: familyMembers.value.length,
+                        fullName: '',
+                        birthDate: '',
+                        identificationPath: ''
+                    })
+                }
+
+                function removeFamilyMember(objIndex) {
+                    if (familyMembers.value.length > 1) {
+                        familyMembers.value.splice(objIndex,1);
+                    }
+                }
+
+                return {
+                    familyMembers,
+                    addFamilyMember,
+                    removeFamilyMember
+                }
+            }
+        }).mount('#app')
+
+        $('input[name~=mailing_address]').on('change', function() {
+            if ($('#mailing_address_yes').prop('checked')) {
+                $('#mailing_address_information').addClass('d-none');
+            } else {
+                $('#mailing_address_information').removeClass('d-none');
+            }
+        });
+        
+        {% comment %} $(function () {
+            $('.step').on('click', function() {
+                let el = $(this),
+                    clickedElementId = el.prop('id'),
+                    fieldsetId = clickedElementId.substring(0, clickedElementId.lastIndexOf('_')),
+                    fieldset = $('#' + fieldsetId);
+                
+                el.addClass('active');
+                el.siblings().removeClass('active');
+                fieldset.removeClass('d-none');
+                fieldset.siblings().addClass('d-none');
+            });
+        }) {% endcomment %}
+        {% comment %} document.addEventListener("DOMContentLoaded", function() {
+            var submitButton = document.querySelector("button[type=submit]");
+            submitButton.addEventListener('click', function (e) {
+                var spinner = document.createElement('div');
+                spinner.classList.add('spinner-border', 'spinner-border-sm', 'ms-2');
+                submitButton.appendChild(spinner);
+            });
+
+            {% if not update_mode %}
+            var sameAddress = "{{ same_address }}" === "True";
+            var mailingAddressWrapper = document.getElementById("mailing_address_wrapper");
+            var mailingAddressHtml = mailingAddressWrapper.innerHTML;
+            mailingAddressWrapper.innerHTML = "";
+
+            var mailingAddressRadios = document.querySelectorAll('input[type=radio][name=mailing_address]');
+            if (sameAddress) {
+                document.querySelector('input[type=radio][name=mailing_address][value=yes]').checked = true;
+            } else {
+                document.querySelector('input[type=radio][name=mailing_address][value=no]').checked = true;
+            }
+
+            // this call and the one on line 218 will probably cause errors if in update mode
+            updateMailingAddressVisibility(mailingAddressHtml);
+
+            mailingAddressRadios.forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    updateMailingAddressVisibility(mailingAddressHtml);
+                });
+            });
+            {% endif %}
+        });
+
+        {% if not update_mode %}
+        function updateMailingAddressVisibility(mailingAddressHtml) {
+            var mailingAddressBtn = document.querySelector('input[type=radio][name=mailing_address]:checked').value;
+            toggleMailingAddressVisibility(mailingAddressBtn, mailingAddressHtml);
+        }
+
+        function toggleMailingAddressVisibility(mailingAddressBtn, mailingAddressHtml) {
+            var mailingAddressWrapper = document.getElementById("mailing_address_wrapper");
+            if (mailingAddressBtn == 'yes') {
+                mailingAddressWrapper.innerHTML = "";
+            } else if (mailingAddressBtn == 'no') {
+                mailingAddressWrapper.innerHTML = mailingAddressHtml;
+            }
+        }
+        {% endif %} {% endcomment %}
+    </script>
+</body>
+
+</html>

@@ -62,6 +62,8 @@ from .models import Address
 from .models import EligibilityProgram
 from .models import Household
 
+from get_your.users.models import User
+
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
 
@@ -503,6 +505,45 @@ def get_ready(request, **kwargs):
         )
         raise
 
+@login_required()
+def test_form(request, **kwargs):
+    el_programs = EligibilityProgramRef.objects.filter(
+        is_active=True
+    ).values(
+        'id',
+        'friendly_name'
+    ).order_by(
+        'friendly_name'
+    )
+
+    user = User.objects.select_related(
+        'address',
+        'household'
+    ).get(
+        email=request.user
+    )
+    print(user.address)
+    if request.method == 'POST':
+        print(request.POST)
+
+    return render(
+            request,
+            "application/test_form.html",
+            {
+                'user': user,
+                'elPrograms': el_programs,
+            },
+        )
+
+@login_required()
+def account(request, **kwargs):
+    return render(
+            request,
+            "application/account.html",
+            {
+                
+            },
+        )
 
 @login_required()
 def address(request, **kwargs):

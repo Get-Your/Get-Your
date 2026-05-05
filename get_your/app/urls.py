@@ -70,18 +70,24 @@ urlpatterns = [
     ),
     # Application URLs
     path(
+        "test_form",
+        views.test_form,
+        name="test_form",
+        kwargs={"allow_direct_user": True},
+    ),
+    path(
         "address",
         views.address,
         name="address",
         # TODO: Change this back to 'False' prior to release
         kwargs={"allow_direct_user": True},
     ),
-    # path(
-    #     "account",
-    #     views.account,
-    #     name="account",
-    #     kwargs={"allow_direct_user": True},
-    # ),
+    path(
+        "account",
+        views.account,
+        name="account",
+        kwargs={"allow_direct_user": True},
+    ),
     path(
         "household",
         views.HouseholdFormView.as_view(),
