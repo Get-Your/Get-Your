@@ -16,6 +16,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import io
+import zipfile
+import os
+import logging
+import gettext
+from django.http.response import HttpResponse
 import json
 import logging
 import pendulum
@@ -25,7 +31,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import default_storage
 from django.shortcuts import render, reverse
-from django.http import HttpRequest, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.utils.html import format_html
 from django.utils.translation import ngettext
 from django.db import transaction
@@ -38,6 +44,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django_json_widget.widgets import JSONEditorWidget
 from azure.core.exceptions import ResourceNotFoundError
+
+from get_your_utils.python.run_extracts import Extract
 
 from app.models import (
     User,
@@ -529,7 +537,7 @@ class UserAdmin(admin.ModelAdmin):
         AccountDisabledListFilter,
     )
     date_hierarchy = 'last_completed_at'
-    actions = ('export_users', 'mark_awaiting_response', 'mark_verified')
+    actions = ('export_users', 'mark_awaiting_response', 'mark_verified', 'run_extracts')
 
     user_fields = [
         'full_name',
@@ -946,6 +954,41 @@ class UserAdmin(admin.ModelAdmin):
         return response
 
     list_per_page = 100
+
+    @admin.action(
+        description="Run extracts",
+    )
+    def run_extracts(self, request, queryset):
+        extract = Extract(
+            export_type='program',
+            #ids_to_warn=[834, 266]+mustCompleteRenewalBeforeBeingEnrolled,
+            # reset_updates=False,
+            # mark_enrolled=False,
+            # interactive=True,
+        )
+
+        extractFiles = extract.export_programs()
+
+        if len(extractFiles) < 1:
+            # early return to avoid downloading an empty zip
+            self.message_user(
+                request,
+                gettext.gettext('Nothing to extract.'),
+                messages.WARNING
+                )
+            return self.get_empty_value_display()
+
+        memoryFile = io.BytesIO()
+        with zipfile.ZipFile(memoryFile, 'w') as zf:
+            for file in extractFiles:
+                zf.write(file, arcname=file.name)
+                os.remove(file)
+        
+        memoryFile.seek(0)
+        response = HttpResponse(memoryFile.getvalue(), content_type='application/zip')
+        response['Content-Disposition'] = 'attachment; filename="extracts.zip"'
+
+        return response        
 
     # Add custom buttons to the save list in the admin template (from
     # https://stackoverflow.com/a/34899874/5438550 and
