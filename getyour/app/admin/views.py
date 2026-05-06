@@ -324,9 +324,11 @@ def replace_household_member_id(request, user_id, **kwargs):
 
         #TODO maybe show more user info than just an ID, fetch user and show name
         if request.method == "POST":
+            file_obj = request.FILES['document_path'] #django.core.files.uploadedfile.InMemoryUploadedFile
+            
             # file_validation() checks file extensions
-            file_validated, validation_message = file_validation(
-                request.FILES.getlist('document_path')[0],
+            file_validated, file_extension = file_validation(
+                file_obj,
                 request.user.id,
                 calling_function='replace_household_member_id',
             )
@@ -336,7 +338,7 @@ def replace_household_member_id(request, user_id, **kwargs):
                     "admin/replace_household_member_id.html",
                     {
                         'form': HouseholdMembersReplaceIDForm(user_id=user_id),
-                        'error_message': validation_message,
+                        'error_message': file_extension,
                         # Set some page-specific text
                         'site_header': 'Get FoCo administration',
                         'title': f"Replace Household Member ID for {user_id}",
@@ -344,10 +346,18 @@ def replace_household_member_id(request, user_id, **kwargs):
                     },
                 )
 
-            file_obj = request.FILES['document_path'] #django.core.files.uploadedfile.InMemoryUploadedFile
-            new_filename = default_storage.save(request.POST['member_name'], file_obj)
+            # request.POST['member_name'] is the existing document_path
+            # chop off the old filename but leave the user_XXXX prefix
+            new_filename = request.POST['member_name'].split('/')[0] + '/' + pendulum.now(
+                    'utc'
+                ).format(
+                    f"YYYY-MM-DD[T]HHmmss[Z]" # append datetime for uniqueness
+                ) + file_obj.name.replace(' ', '_') # append new filename with no spaces
+            
+            # upload new file with user filename
+            new_filename = default_storage.save(new_filename, file_obj)
 
-            # Update file path for any existing household members with matching file path
+            # Update file path for any existing household members with matching old file path
             household_members = HouseholdMembers.objects.get(user_id=user_id)
             for person in household_members.household_info['persons_in_household']:
                 # request.POST['member_name'] is the existing document_path
