@@ -1,6 +1,10 @@
 version = 1
 revision = 3
 requires-python = "==3.14.*"
+resolution-markers = [
+    "sys_platform != 'win32'",
+    "sys_platform == 'win32'",
+]
 
 [[package]]
 name = "alabaster"
@@ -737,7 +741,9 @@ dependencies = [
     { name = "gunicorn" },
     { name = "hiredis" },
     { name = "pillow" },
-    { name = "psycopg", extra = ["c"] },
+    { name = "psycopg" },
+    { name = "psycopg", extra = ["binary"], marker = "sys_platform == 'win32'" },
+    { name = "psycopg", extra = ["c"], marker = "sys_platform != 'win32'" },
     { name = "python-slugify" },
     { name = "redis" },
     { name = "whitenoise" },
@@ -756,7 +762,9 @@ dev = [
     { name = "ipdb" },
     { name = "mypy" },
     { name = "pre-commit" },
-    { name = "psycopg", extra = ["c"] },
+    { name = "psycopg" },
+    { name = "psycopg", extra = ["binary"], marker = "sys_platform == 'win32'" },
+    { name = "psycopg", extra = ["c"], marker = "sys_platform != 'win32'" },
     { name = "pytest" },
     { name = "pytest-django" },
     { name = "pytest-sugar" },
@@ -784,7 +792,8 @@ requires-dist = [
     { name = "gunicorn", specifier = "==26.0.0" },
     { name = "hiredis", specifier = "==3.3.1" },
     { name = "pillow", specifier = "==12.2.0" },
-    { name = "psycopg", extras = ["c"], specifier = "==3.3.4" },
+    { name = "psycopg", extras = ["binary"], marker = "sys_platform == 'win32'", specifier = "==3.3.4" },
+    { name = "psycopg", extras = ["c"], marker = "sys_platform != 'win32'", specifier = "==3.3.4" },
     { name = "python-slugify", specifier = "==8.0.4" },
     { name = "redis", specifier = "==7.4.0" },
     { name = "whitenoise", specifier = "==6.12.0" },
@@ -803,7 +812,8 @@ dev = [
     { name = "ipdb", specifier = "==0.13.13" },
     { name = "mypy", specifier = "==1.20.2" },
     { name = "pre-commit", specifier = "==4.6.0" },
-    { name = "psycopg", extras = ["c"], specifier = "==3.3.4" },
+    { name = "psycopg", extras = ["binary"], marker = "sys_platform == 'win32'", specifier = "==3.3.4" },
+    { name = "psycopg", extras = ["c"], marker = "sys_platform != 'win32'", specifier = "==3.3.4" },
     { name = "pytest", specifier = "==9.0.3" },
     { name = "pytest-django", specifier = "==4.12.0" },
     { name = "pytest-sugar", specifier = "==1.1.1" },
@@ -1197,7 +1207,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess" },
+    { name = "ptyprocess", marker = "sys_platform != 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
 wheels = [
@@ -1318,8 +1328,19 @@ wheels = [
 ]
 
 [package.optional-dependencies]
+binary = [
+    { name = "psycopg-binary", marker = "implementation_name != 'pypy' and sys_platform == 'win32'" },
+]
 c = [
-    { name = "psycopg-c", marker = "implementation_name != 'pypy'" },
+    { name = "psycopg-c", marker = "implementation_name != 'pypy' and sys_platform != 'win32'" },
+]
+
+[[package]]
+name = "psycopg-binary"
+version = "3.3.4"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/eb/e6/5fff07a70d1f945ed90ae131c3bd76cab32beff7c58c6db15ad5820b6d1f/psycopg_binary-3.3.4-cp314-cp314-win_amd64.whl", hash = "sha256:c37e024c07308cd06cf3ec51bfd0e7f6157585a4d84d1bce4a7f5f7913719bf8", size = 3666849, upload-time = "2026-05-01T23:31:51.165Z" },
 ]
 
 [[package]]
