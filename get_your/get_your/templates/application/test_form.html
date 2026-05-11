@@ -31,7 +31,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <div class="card">
             <div class="card-body">
                 <div class="row">
-                    <form action="" method="post">
+                    <form action="{% url 'app:test_form' %}" method="post">
+                        {% csrf_token %}
                         <fieldset id="account_information">
                             <legend class="border-bottom fw-bold">Account Information</legend>
                             <div class="row">
@@ -60,11 +61,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                             <div class="row">
                                 <div class="mb-3 col-12">
                                     <label for="address1" class="form-label">Street Address</label>
-                                    <input type="text" name="address1" id="home_address1" class="form-control">
+                                    <input type="text" name="address1" id="address1" class="form-control">
                                 </div>
                                 <div class="mb-3 col-12 col-md-6">
                                     <label for="address2" class="form-label">Apt, Suite, etc.</label>
-                                    <input type="text" name="address2" id="home_address2" class="form-control">
+                                    <input type="text" name="address2" id="address2" class="form-control">
                                     <p class="mb-0">
                                         <small>Leave blank if not applicable</small>
                                     </p>
@@ -73,15 +74,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                             <div class="row">
                                 <div class="mb-3 col-12 col-md-6">
                                     <label for="city" class="form-label">City</label>
-                                    <input type="text" name="city" id="home_city" class="form-control">
+                                    <input type="text" name="city" id="city" class="form-control">
                                 </div>
                                 <div class="mb-3 col-12 col-md-6">
                                     <label for="state" class="form-label">State</label>
-                                    <input type="text" name="state" id="home_state" class="form-control">
+                                    <input type="text" name="state" id="state" class="form-control">
                                 </div>
                                 <div class="mb-3 col-12 col-md-6">
                                     <label for="zip_code" class="form-label">Zip Code</label>
-                                    <input type="text" name="zip_code" id="home_zip_code" class="form-control">
+                                    <input type="text" name="zip_code" id="zip_code" class="form-control">
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -108,11 +109,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                             <div class="row">
                                 <div class="mb-3 col-12">
                                     <label for="address1" class="form-label">Street Address</label>
-                                    <input type="text" name="address1" id="mailing_address1" class="form-control" required>
+                                    <input type="text" name="mailing_address1" id="mailing_address1" class="form-control">
                                 </div>
                                 <div class="mb-3 col-12 col-md-6">
                                     <label for="address2" class="form-label">Apt, Suite, etc.</label>
-                                    <input type="text" name="address2" id="mailing_address2" class="form-control">
+                                    <input type="text" name="mailing_address2" id="mailing_address2" class="form-control">
                                     <p class="mb-0">
                                         <small>Leave blank if not applicable</small>
                                     </p>
@@ -121,15 +122,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                             <div class="row">
                                 <div class="mb-3 col-12 col-md-6">
                                     <label for="city" class="form-label">City</label>
-                                    <input type="text" name="city" id="mailing_city" class="form-control">
+                                    <input type="text" name="mailing_city" id="mailing_city" class="form-control">
                                 </div>
                                 <div class="mb-3 col-12 col-md-6">
                                     <label for="state" class="form-label">State</label>
-                                    <input type="text" name="state" id="mailing_state" class="form-control">
+                                    <input type="text" name="mailing_state" id="mailing_state" class="form-control">
                                 </div>
                                 <div class="mb-3 col-12 col-md-6">
                                     <label for="zip_code" class="form-label">Zip Code</label>
-                                    <input type="text" name="zip_code" id="mailing_zip_code" class="form-control">
+                                    <input type="text" name="mailing_zip_code" id="mailing_zip_code" class="form-control">
                                 </div>
                             </div>
                         </fieldset>
@@ -174,10 +175,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                                     </div>
                                 </div>
                             </div>
-                            {% comment %} Vue App for Interactivity {% endcomment %}
+                            <!-- Vue App for Interactivity -->
                             <div id="app" class="mb-3">
                                 <div v-for="(item, index) in familyMembers" :key="item.id">
-                                    <p class="mb-0 pb-1 d-flex justify-content-between align-items-center border-bottom">Family Member [[ item.id + 1 ]] <span class="badge text-bg-danger" @click="removeFamilyMember(index)">Remove</span></p>
+                                    <p class="mb-1 pb-1 d-flex justify-content-between align-items-center border-bottom">Family Member [[ item.id + 1 ]] <span v-if="item.id > 0" role="button" class="badge text-bg-danger" @click="removeFamilyMember(index)">Remove</span></p>
                                     <input type="hidden" :value="item.id">
                                     <div class="mb-3">
                                         <label :for="'full_name_' + item.id" class="form-label">Full Name</label>
@@ -189,7 +190,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                                     </div>
                                     <div class="mb-3">
                                         <label :for="'identification_path_' + item.id" class="form-label">Upload ID</label>
-                                        <input type="file" :name="'identification_path_' + item.id" :id="'identification_path_' + item.id" class="form-control" :value="item.identificationPath">
+                                        <input type="file" :name="'identification_path_' + item.id" :id="'identification_path_' + item.id" class="form-control" :value="item.identificationPath" accept="image/*">
                                     </div>
                                 </div>
                                 <div>
@@ -205,7 +206,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                                     <p class="mb-2">Select programs for which you are already qualified.</p>
                                     {% for program in elPrograms %}
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="{{ program.id }}" id="program-{{ program.id }}">
+                                        <input class="form-check-input" type="checkbox" value="{{ program.id }}" id="program-{{ program.id }}" name="iq_programs">
                                         <label class="form-check-label" for="program-{{ program.id }}">
                                             {{ program.friendly_name }}
                                         </label>
@@ -214,32 +215,36 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                                 </div>
                                 <div class="mb-0 col-12">
                                     <label for="eligibility_file_upload" class="form-label">Upload Documents for Eligibility Verification</label>
-                                    <input type="file" name="eligibility_file_upload" id="eligibility_file_upload" class="form-control" multiple>
+                                    <input type="file" name="eligibility_file_upload" id="eligibility_file_upload" class="form-control" accept=".pdf,.docx" multiple>
                                 </div>
                             </div>
                         </fieldset>
+                        <hr class="my-3">
+                        <button class="btn btn-primary shadow-sm" type="submit">Save Information</button>
                     </form>
                 </div>
             </div>
-            <div class="card-footer">
-                <button class="btn btn-primary shadow-sm" type="submit">Save Information</button>
-            </div>
         </div> <!-- card -->
+        
     </div> <!-- container-->
 
     {% include "partials/footer.html" %}
 
-    
+    <!-- make json data accessible for Vue component -->
+    {{ userJson|json_script:"user" }}
     <script type="module">
         import { createApp, ref } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
         
         createApp({
             delimiters: ['[[', ']]'],
             setup() {
+                // hack to get json data from Django response
+                const user = JSON.parse($('#user').text());
+                // hopefully, can do this as user.household.members instead
                 const familyMembers = ref([
                     {
                         id: 0,
-                        fullName: '',
+                        fullName: user.first_name + ' ' + user.last_name,
                         birthDate: '',
                         identificationPath: ''
                     }
@@ -261,6 +266,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 }
 
                 return {
+                    user,
                     familyMembers,
                     addFamilyMember,
                     removeFamilyMember

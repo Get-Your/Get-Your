@@ -55,10 +55,10 @@ from .backend.address import address_check
 from .backend.address import finalize_address
 from .backend.address import tag_mapping
 from .backend.address import validate_usps
-from .forms import AddressForm
+from .forms import AddressForm, UserUpdateForm
 from .forms import AddressLookupForm
 from .forms import HouseholdFormCollection
-from .models import Address
+from .models import Address, AddressCorrection
 from .models import EligibilityProgram
 from .models import Household
 
@@ -507,6 +507,19 @@ def get_ready(request, **kwargs):
 
 @login_required()
 def test_form(request, **kwargs):
+    # Check the boolean value of update_mode session var
+    # Set as false if session var DNE
+    update_mode = (
+        request.session.get("update_mode")
+        if request.session.get("update_mode")
+        else False
+    )
+    renewal_mode = (
+        request.session.get("renewal_mode")
+        if request.session.get("renewal_mode")
+        else False
+    )
+
     el_programs = EligibilityProgramRef.objects.filter(
         is_active=True
     ).values(
@@ -516,22 +529,93 @@ def test_form(request, **kwargs):
         'friendly_name'
     )
 
+    json_data = {
+        "id": request.user.id,
+        "first_name": request.user.first_name,
+        "last_name": request.user.last_name,
+    }
+
     user = User.objects.select_related(
-        'address',
-        'household'
+        'household',
+        'address'
     ).get(
-        email=request.user
+        id=request.user.id
     )
-    print(user.address)
+
+    user_form = UserUpdateForm(instance=user)
+
     if request.method == 'POST':
-        print(request.POST)
+        log.debug(
+            "Leaving function (POST)",
+            function="address",
+            user_id=request.user.id,
+        )
+
+        addresses = []
+
+        if not update_mode:
+            eligibility_address = {
+                "address1": request.POST["address1"],
+                "address2": request.POST["address2"],
+                "city": request.POST["city"],
+                "state": request.POST["state"],
+                "zipcode": request.POST["zip_code"],
+            }
+            addresses.append(
+                {
+                    "address": eligibility_address,
+                    "type": "eligibility",
+                    "processed": False,
+                },
+            )
+
+    
+        # 'no' means the user has a different mailing address
+        # compared to their eligibility address
+        if request.POST.get("mailing_address") == "no" or update_mode:
+            if request.POST.get("mailing_address") == "no":
+                log.info(
+                    "Mailing and eligibility addresses are different",
+                    function="address",
+                    user_id=request.user.id,
+                )
+
+            mailing_address = {
+                "address1": request.POST["mailing_address1"],
+                "address2": request.POST["mailing_address2"],
+                "city": request.POST["mailing_city"],
+                "state": request.POST["mailing_state"],
+                "zipcode": request.POST["mailing_zip_code"],
+            }
+            addresses.append(
+                {
+                    "address": mailing_address,
+                    "type": "mailing",
+                    "processed": False,
+                },
+            )
+
+        address_correction_service = AddressCorrection()
+        corrected_address = address_correction_service.validate_usps(eligibility_address)
+        
+        if 'error' in corrected_address:
+            print(corrected_address['error']['errors'][0]['title'])
+        # request.session["application_addresses"] = json.dumps(addresses)
+        # log.info(
+        #     f"Sending to address correction: {request.session['application_addresses']}",
+        #     function="address",
+        #     user_id=request.user.id,
+        # )
+        # return redirect(reverse("app:address_correction"))
 
     return render(
             request,
             "application/test_form.html",
             {
+                'userJson': json_data,
                 'user': user,
                 'elPrograms': el_programs,
+                'user_form': user_form
             },
         )
 
