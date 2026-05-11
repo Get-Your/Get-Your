@@ -1,16 +1,18 @@
 # ruff: noqa: ERA001, E501
 """Base settings to build other settings files upon."""
 
+import os
 from pathlib import Path
 
 import environ
+from django.core.files import File
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # get_your/
 APPS_DIR = BASE_DIR / "get_your"
 env = environ.Env()
 
-READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
+READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=True)
 if READ_DOT_ENV_FILE:
     # OS environment variables take precedence over variables from .env
     env.read_env(str(BASE_DIR / ".env"))
@@ -18,20 +20,29 @@ if READ_DOT_ENV_FILE:
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = env.bool("DJANGO_DEBUG", False)
+# Add environment variables optionally set by Azure or in the Docker build.
+# These will use the environment var if exists, else the .env file or fallback
+# to the defined default
+if os.environ.get("DJANGO_DEBUG"):
+    # Compare this explicitly to 'true'; all else will result in False
+    DEBUG = str(os.environ.get("DJANGO_DEBUG")).lower() == "true"
+else:
+    # The default is False
+    DEBUG = env.bool("DJANGO_DEBUG", False)
+
 # Local time zone. Choices are
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # though not all of them may be available with every OS.
 # In Windows, this must be set to your system time zone.
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/Denver"
 # https://docs.djangoproject.com/en/dev/ref/settings/#language-code
 LANGUAGE_CODE = "en-us"
 # https://docs.djangoproject.com/en/dev/ref/settings/#languages
 # from django.utils.translation import gettext_lazy as _
 # LANGUAGES = [
-#     ('en', _('English')),
-#     ('fr-fr', _('French')),
-#     ('pt-br', _('Portuguese')),
+#     ("en", _("English")),
+#     ("fr-fr", _("French")),
+#     ("pt-br", _("Portuguese")),
 # ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
@@ -44,9 +55,6 @@ LOCALE_PATHS = [str(BASE_DIR / "locale")]
 
 # DATABASES
 # ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#databases
-DATABASES = {"default": env.db("DATABASE_URL")}
-DATABASES["default"]["ATOMIC_REQUESTS"] = True
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -236,7 +244,11 @@ EMAIL_TIMEOUT = 5
 # Django Admin URL.
 ADMIN_URL = "admin/"
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
-ADMINS = ['"City of Fort Collins" <getfoco@fcgov.com>']
+ADMINS = [
+    ("""Tim Campbell""", "ticampbell@fcgov.com"),
+    ("""Dave Council""", "dcouncil@fcgov.com"),
+    ("""Sean Cordill""", "scordill@fcgov.com"),
+]
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 # https://cookiecutter-django.readthedocs.io/en/latest/settings.html#other-environment-settings
@@ -276,12 +288,29 @@ ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
 # https://docs.allauth.org/en/latest/account/configuration.html
 ACCOUNT_LOGIN_METHODS = {"email"}
 # https://docs.allauth.org/en/latest/account/configuration.html
-ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+ACCOUNT_SIGNUP_FIELDS = [
+    "first_name*",
+    "last_name*",
+    "email*",
+    "phone_number*",
+    "password1*",
+    "password2*",
+]
 # https://docs.allauth.org/en/latest/account/configuration.html
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-# https://docs.allauth.org/en/latest/account/configuration.html
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-# https://docs.allauth.org/en/latest/account/configuration.html
+# Make email verification mandatory, then allow logging in with 'magic link'
+# (that times out after 5 minutes)
+# TODO: Switch ACCOUNT_EMAIL_VERIFICATION back to "mandatory"
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_LOGIN_BY_CODE_ENABLED = True
+ACCOUNT_LOGIN_BY_CODE_TIMEOUT = 300
+# Allow the user to resend the email verification link
+ACCOUNT_EMAIL_VERIFICATION_SUPPORTS_RESEND = True
+# Enable password change by following a link sent to the user's email, timing
+# out after 5 minutes
+ACCOUNT_PASSWORD_RESET_BY_CODE_ENABLED = True
+ACCOUNT_PASSWORD_RESET_BY_CODE_TIMEOUT = 300
+
 ACCOUNT_ADAPTER = "get_your.users.adapters.AccountAdapter"
 # https://docs.allauth.org/en/latest/account/forms.html
 ACCOUNT_FORMS = {"signup": "get_your.users.forms.UserSignupForm"}
@@ -314,5 +343,22 @@ SPECTACULAR_SETTINGS = {
     "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
     "SCHEMA_PATH_PREFIX": "/api/",
 }
-# Your stuff...
+# # Get-Your-specific
 # ------------------------------------------------------------------------------
+TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN")
+TWILIO_AUTOMATED_SMS_NUMBER = env("TWILIO_AUTOMATED_SMS_NUMBER")
+CONTACT_EMAIL = env("CONTACT_EMAIL")
+USPS_SID = env("USPS_SID")
+SENDGRID_API_KEY = env("SENDGRID_API_KEY")
+WELCOME_EMAIL_TEMPLATE = env("WELCOME_EMAIL_TEMPLATE")
+PW_RESET_EMAIL_TEMPLATE = env("PW_RESET_EMAIL_TEMPLATE")
+RENEWAL_EMAIL_TEMPLATE = env("RENEWAL_EMAIL_TEMPLATE")
+
+# Verify that the file chunk size is greater than the python-magic recommended
+# minimum read of 2048 bytes
+# (https://github.com/ahupp/python-magic?tab=readme-ov-file#usage)
+if File.DEFAULT_CHUNK_SIZE < 2048:
+    raise AssertionError(
+        "The DEFAULT_CHUNK_SIZE for uploaded files is too small for python-magic to produce a correct identification",
+    )

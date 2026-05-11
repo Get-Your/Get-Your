@@ -1,3 +1,22 @@
+"""
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
 from .base import *  # noqa: F403
 from .base import INSTALLED_APPS
 from .base import MIDDLEWARE
@@ -10,7 +29,8 @@ from .base import env
 # environment-specific overwrites).
 # Because this is a local environment, some settings are unused and set
 # explicity in this file
-env.read_env(str(BASE_DIR / ".dev.env"), overwrite=True)
+if READ_DOT_ENV_FILE:
+    env.read_env(str(BASE_DIR / ".dev.env"), overwrite=True)
 
 # GENERAL
 # ------------------------------------------------------------------------------
@@ -24,15 +44,30 @@ ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]  # noqa: S104
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
+# Create the Postgres URI from individual parameters in secrets file
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": str(BASE_DIR / "db.sqlite3"),
-    },
-    "monitor": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": str(BASE_DIR / "db_monitor.sqlite3"),
-    },
+    "default": env.db(
+        # env.db expects a DATABASE_URL environment var; using the 'default'
+        # kwarg allows building the connection string here
+        default="postgres://{usr}:{pwd}@{hst}:{prt}/{dbn}".format(
+            usr=env("POSTGRES_USER"),
+            pwd=env("POSTGRES_PASSWORD"),
+            hst=env("POSTGRES_HOST"),
+            prt=env("POSTGRES_PORT"),
+            dbn=env("POSTGRES_DB"),
+        ),
+    ),
+    "monitor": env.db(
+        # env.db expects a DATABASE_URL environment var; using the 'default'
+        # kwarg allows building the connection string here
+        default="postgres://{usr}:{pwd}@{hst}:{prt}/{dbn}".format(
+            usr=env("POSTGRES_USER"),
+            pwd=env("POSTGRES_PASSWORD"),
+            hst=env("POSTGRES_HOST"),
+            prt=env("POSTGRES_PORT"),
+            dbn=env("MONITOR_DB"),
+        ),
+    ),
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
@@ -46,6 +81,38 @@ CACHES = {
     },
 }
 
+# SECURITY
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-proxy-ssl-header
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-ssl-redirect
+SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=True)
+# https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-secure
+SESSION_COOKIE_SECURE = True
+# https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-name
+SESSION_COOKIE_NAME = "__Secure-sessionid"
+# https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-secure
+CSRF_COOKIE_SECURE = True
+# https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-name
+CSRF_COOKIE_NAME = "__Secure-csrftoken"
+# https://docs.djangoproject.com/en/dev/topics/security/#ssl-https
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-seconds
+# TODO: set this to 60 seconds first and then to 518400 once you prove the former works
+SECURE_HSTS_SECONDS = 60
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-include-subdomains
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool(
+    "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS",
+    default=True,
+)
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-preload
+SECURE_HSTS_PRELOAD = env.bool("DJANGO_SECURE_HSTS_PRELOAD", default=True)
+# https://docs.djangoproject.com/en/dev/ref/middleware/#x-content-type-options-nosniff
+SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
+    "DJANGO_SECURE_CONTENT_TYPE_NOSNIFF",
+    default=True,
+)
+
+
 AZURE_ACCOUNT_KEY = env("DJANGO_AZURE_ACCOUNT_KEY")
 AZURE_ACCOUNT_NAME = env("DJANGO_AZURE_ACCOUNT_NAME")
 AZURE_CONTAINER = env("DJANGO_AZURE_CONTAINER_NAME")
@@ -53,19 +120,32 @@ AZURE_CONTAINER_SUFFIX = env("DJANGO_AZURE_CONTAINER_SUFFIX")
 AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}{AZURE_CONTAINER_SUFFIX}"
 # STATIC & MEDIA
 # ------------------------
+# STORAGES = {
+#     "default": {
+#         "BACKEND": "storages.backends.azure_storage.AzureStorage",
+#         "OPTIONS": {
+#             "account_key": AZURE_ACCOUNT_KEY,
+#             "account_name": AZURE_ACCOUNT_NAME,
+#             # "connection_string": env("DJANGO_AZURE_CONNECTION_STRING"),
+#             "azure_container": AZURE_CONTAINER,
+#             "expiration_secs": 200,
+#             "endpoint_suffix": env("DJANGO_AZURE_CONTAINER_SUFFIX"),
+#             "location": "media",
+#         },
+#     },
+#     "staticfiles": {
+#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+#     },
+# }
 STORAGES = {
     "default": {
-        "BACKEND": "storages.backends.azure_storage.AzureStorage",
-        "OPTIONS": {
-            "location": "media",
-            "overwrite_files": False,
-        },
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
-MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/media/"
+MEDIA_URL = "media/"
 
 # EMAIL
 # ------------------------------------------------------------------------------
@@ -126,13 +206,19 @@ if env("USE_DOCKER") == "yes":
     import socket
 
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS += [".".join([*ip.split(".")[:-1], "1"]) for ip in ips]
+    INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
 
 # django-extensions
 # ------------------------------------------------------------------------------
 # https://django-extensions.readthedocs.io/en/latest/installation_instructions.html#configuration
 INSTALLED_APPS += ["django_extensions"]
 
+# django-rest-framework
+# -------------------------------------------------------------------------------
+# Tools that generate code samples can use SERVERS to point to the correct domain
+SPECTACULAR_SETTINGS["SERVERS"] = [
+    {"url": "https://fcgov.com", "description": "Production server"},
+]
 # Get-Your-specific
 # ------------------------------------------------------------------------------
 IS_PROD = False
