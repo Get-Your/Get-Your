@@ -25,7 +25,8 @@ from django.utils.translation import gettext_lazy as _
 
 from app.models import Household
 from dashboard.backend import get_iqprogram_requires_fields
-from dashboard.backend import get_users_iq_programs
+
+# from dashboard.backend import get_users_iq_programs
 from ref.models import Address as AddressRef
 from ref.models import EligibilityProgram as EligibilityProgramRef
 from ref.models import IQProgram as IQProgramRef
@@ -68,12 +69,12 @@ class IQProgramAddForm(forms.Form):
             id=user.address.eligibility_address_id,
         ).first()
 
-        # Get all of the IQ Programs for which the user is eligible
-        users_iq_programs = get_users_iq_programs(
-            user.id,
-            household.income_as_fraction_of_ami,
-            eligibility_address,
-        )
+        # # Get all of the IQ Programs for which the user is eligible
+        # users_iq_programs = get_users_iq_programs(
+        #     user.id,
+        #     household.income_as_fraction_of_ami,
+        #     eligibility_address,
+        # )
 
         # Return the available IQ Programs the user is not currently applied
         # (IQProgramRef objects are those that the user qualifies for but is not

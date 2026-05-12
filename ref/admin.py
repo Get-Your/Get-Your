@@ -45,9 +45,10 @@ from app.admin.filters import GMAListFilter
 from app.admin.forms import EligibilityProgramRefForm
 from app.admin.forms import IQProgramRefForm
 from app.admin.models import StaffPermissions
-from app.backend import finalize_application
-from app.backend import remove_ineligible_programs_for_user
-from app.backend import update_users_for_program
+
+# from app.backend import finalize_application
+# from app.backend import remove_ineligible_programs_for_user
+# from app.backend import update_users_for_program
 from app.backend.address import address_check
 from app.backend.address import finalize_address
 from app.models import Address
@@ -227,17 +228,17 @@ class AddressRefAdmin(admin.ModelAdmin):
                     change_message="Changed Is in GMA.",
                 )
 
-                # Loop through any users with this as their eligibility address
-                # and correct their application if they have already completed it
-                for addr in obj.eligibility_user.all():
-                    if addr.user.last_completed_at is not None:
-                        _ = finalize_application(addr.user, update_user=False)
+                # # Loop through any users with this as their eligibility address
+                # # and correct their application if they have already completed it
+                # for addr in obj.eligibility_user.all():
+                #     if addr.user.last_completed_at is not None:
+                #         _ = finalize_application(addr.user, update_user=False)
 
-                        # Remove any no-longer-eligible programs
-                        remove_ineligible_programs_for_user(
-                            addr.user.id,
-                            admin_mode=True,
-                        )
+                #     # Remove any no-longer-eligible programs
+                #     remove_ineligible_programs_for_user(
+                #         addr.user.id,
+                #         admin_mode=True,
+                #     )
 
         log.info(
             f"{len(queryset)} addresses checked; updates applied to {updated_addr_count}.",
@@ -582,19 +583,19 @@ class IQProgramRefAdmin(admin.ModelAdmin):
                         ),
                     )
 
-                    affected_counts = update_users_for_program(
-                        program=obj,
-                        users=users,
-                    )
+                    # affected_counts = update_users_for_program(
+                    #     program=obj,
+                    #     users=users,
+                    # )
 
-                    user_message = "Users affected by the change to “{}”: {} auto-applied user(s), {} unapplied user(s), and {} enrolled user(s) (could not be altered)".format(
-                        "”, “".join(
-                            [x[0] for x in updated_fields],
-                        ),
-                        affected_counts["applied_users"],
-                        affected_counts["removed_users"],
-                        affected_counts["ignored_users"],
-                    )
+                    # user_message = "Users affected by the change to “{}”: {} auto-applied user(s), {} unapplied user(s), and {} enrolled user(s) (could not be altered)".format(
+                    #     "”, “".join(
+                    #         [x[0] for x in updated_fields],
+                    #     ),
+                    #     affected_counts["applied_users"],
+                    #     affected_counts["removed_users"],
+                    #     affected_counts["ignored_users"],
+                    # )
                     log.info(
                         "{} (view_only={})".format(
                             # Remove the unicode quotes when logging

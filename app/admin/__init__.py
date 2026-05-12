@@ -43,8 +43,8 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 
-from app.backend import finalize_application
-from app.backend import remove_ineligible_programs_for_user
+# from app.backend import finalize_application
+# from app.backend import remove_ineligible_programs_for_user
 from app.constants import application_pages
 from app.models import Address
 from app.models import EligibilityProgram
@@ -52,7 +52,8 @@ from app.models import Household
 
 # from app.models import HouseholdMembers
 from app.models import IQProgram
-from dashboard.backend import get_eligible_iq_programs
+
+# from dashboard.backend import get_eligible_iq_programs
 from dashboard.backend import get_iqprogram_requires_fields
 
 # from dashboard.backend import get_users_iq_programs
@@ -554,24 +555,24 @@ class UserAdmin(admin.ModelAdmin):
             id=obj.address.eligibility_address_id,
         ).first()
 
-        # Notify if the user is not qualified for any programs
-        if len(get_eligible_iq_programs(obj, eligibility_address)) == 0:
-            msg.append("User is not eligible for any programs.")
+        # # Notify if the user is not qualified for any programs
+        # if len(get_eligible_iq_programs(obj, eligibility_address)) == 0:
+        #     msg.append("User is not eligible for any programs.")
 
-            # If the user doesn't qualify for any programs, check if the user's
-            # address doesn't have a required component
-            req_fields = get_iqprogram_requires_fields()
-            # The second element holds the field requirements in AddressRef
-            for req, fd in req_fields:
-                if not getattr(eligibility_address, fd):
-                    msg[-1] += (
-                        " User's address has False `{}`; IQ Programs may require it to be True (see '{}' on the 'IQ Programs' page).".format(
-                            fd,
-                            # Somewhat match the formatting of the 'IQ programs'
-                            # admin page
-                            req.capitalize().replace("_", " "),
-                        )
-                    )
+        #     # If the user doesn't qualify for any programs, check if the user's
+        #     # address doesn't have a required component
+        #     req_fields = get_iqprogram_requires_fields()
+        #     # The second element holds the field requirements in AddressRef
+        #     for req, fd in req_fields:
+        #         if not getattr(eligibility_address, fd):
+        #             msg[-1] += (
+        #                 " User's address has False `{}`; IQ Programs may require it to be True (see '{}' on the 'IQ Programs' page).".format(
+        #                     fd,
+        #                     # Somewhat match the formatting of the 'IQ programs'
+        #                     # admin page
+        #                     req.capitalize().replace("_", " "),
+        #                 )
+        #             )
 
         if len(msg) > 0:
             return "\u2023 {}".format("\n\u2023 ".join(msg))
@@ -1340,15 +1341,15 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                             change_message=f'Changed program name for User eligibility program "{obj!s}".',
                         )
 
-                        # Finalize the user's application to update their income
-                        if obj.user.last_completed_at is not None:
-                            _ = finalize_application(obj.user, update_user=False)
+                        # # Finalize the user's application to update their income
+                        # if obj.user.last_completed_at is not None:
+                        #     _ = finalize_application(obj.user, update_user=False)
 
-                        # Remove any no-longer-eligible programs
-                        msg = remove_ineligible_programs_for_user(
-                            obj.user.id,
-                            admin_mode=True,
-                        )
+                        # # Remove any no-longer-eligible programs
+                        # msg = remove_ineligible_programs_for_user(
+                        #     obj.user.id,
+                        #     admin_mode=True,
+                        # )
 
                 except AttributeError as e:
                     # Undo the changes (automatic, since an exception was
@@ -1497,17 +1498,17 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
 
             super().delete_model(request, obj)
 
-            # Although the object itself is deleted, the relations still exist
-            if obj.user.last_completed_at is not None:
-                _ = finalize_application(obj.user, update_user=False)
+            # # Although the object itself is deleted, the relations still exist
+            # if obj.user.last_completed_at is not None:
+            #     _ = finalize_application(obj.user, update_user=False)
 
-                # Remove any no-longer-eligible programs
-                request.session["remove_ineligible_message"] = (
-                    remove_ineligible_programs_for_user(
-                        obj.user.id,
-                        admin_mode=True,
-                    )
-                )
+            #     # Remove any no-longer-eligible programs
+            #     request.session["remove_ineligible_message"] = (
+            #         remove_ineligible_programs_for_user(
+            #             obj.user.id,
+            #             admin_mode=True,
+            #         )
+            #     )
 
     def response_delete(self, request, obj_display, obj_id):
         msg = request.session.pop("remove_ineligible_message", "")
