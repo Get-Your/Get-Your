@@ -15,7 +15,7 @@
         content="Behold My Awesome Project!" />
   <meta name="author"
         content="City of Fort Collins" />
-  <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}" />
+  <link rel="icon" type="image/png" href="{% static 'images/favicons/faviconblue.png' %}" />
   {% block css %}
     <!-- Latest compiled and minified Bootstrap CSS -->
     <link rel="stylesheet"
@@ -26,7 +26,7 @@
 <!-- Your stuff: Third-party CSS libraries go here -->
 <!-- This file stores project-specific CSS -->
 
-  
+
   <link href="{% static 'css/project.css' %}" rel="stylesheet" />
 
 
@@ -48,7 +48,7 @@
 
 <!-- place project specific Javascript in this file -->
 
-  
+
   <script defer src="{% static 'js/project.js' %}"></script>
 
 
@@ -68,7 +68,7 @@
                 aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <a class="navbar-brand" href="{% url 'home' %}">Get-Your</a>
+        <a class="navbar-brand" href="{% url 'home' %}">Get FoCo</a>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
@@ -117,7 +117,8 @@
     {% endif %}
     {% block main %}
       {% block content %}
-        <p>Use this document as a way to quick start any new project.</p>
+        <p>Welcome to Get FoCo</p>
+        <p>An all-in-one application portal to the discounted services and municipal benefits offered by the City of Fort Collins, for income eligible residents. Get FoCo is a partnership between Fort Collins' Connexion and the City of Fort Collins' income eligible programming.</p>
       {% endblock content %}
     {% endblock main %}
 
