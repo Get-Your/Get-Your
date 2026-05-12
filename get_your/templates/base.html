@@ -12,16 +12,19 @@
   </title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
-        content="Behold My Awesome Project!" />
+    content="Behold My Awesome Project!" />
   <meta name="author"
-        content="City of Fort Collins" />
+    content="City of Fort Collins" />
   <link rel="icon" type="image/png" href="{% static 'images/favicons/faviconblue.png' %}" />
   {% block css %}
     <!-- Latest compiled and minified Bootstrap CSS -->
     <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-          crossorigin="anonymous"
-          referrerpolicy="no-referrer" />
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer" />
+    <link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
 <!-- Your stuff: Third-party CSS libraries go here -->
 <!-- This file stores project-specific CSS -->
 
@@ -47,7 +50,7 @@
 <!-- place project specific Javascript in this file -->
 
 
-  <script defer src="{% static 'js/project.js' %}"></script>
+<script defer src="{% static 'js/project.js' %}"></script>
 
 
 {% endblock javascript %}
