@@ -12,21 +12,23 @@
   </title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
-        content="Behold My Awesome Project!" />
+    content="GetFoCo, by The City of Fort Collins" />
   <meta name="author"
-        content="City of Fort Collins" />
-  <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}" />
+    content="City of Fort Collins" />
+  <link rel="icon" type="image/png" href="{% static 'images/favicons/faviconblue.png' %}" />
   {% block css %}
     <!-- Latest compiled and minified Bootstrap CSS -->
     <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
-          integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA=="
-          crossorigin="anonymous"
-          referrerpolicy="no-referrer" />
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer" />
+    <link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
 <!-- Your stuff: Third-party CSS libraries go here -->
 <!-- This file stores project-specific CSS -->
 
-  
+
   <link href="{% static 'css/project.css' %}" rel="stylesheet" />
 
 
@@ -39,8 +41,7 @@
 
 <!-- Bootstrap JS -->
 <script defer
-        src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"
-        integrity="sha512-1/RvZTcCDEUjY/CypiMz+iqqtaoQfAITmNSJY17Myp4Ms5mdxPS5UV7iOfdZoxcGhzFbOm6sntTKJppjvuhg4g=="
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"
         referrerpolicy="no-referrer"></script>
 <!-- Your stuff: Third-party javascript libraries go here -->
@@ -48,8 +49,8 @@
 
 <!-- place project specific Javascript in this file -->
 
-  
-  <script defer src="{% static 'js/project.js' %}"></script>
+
+<script defer src="{% static 'js/project.js' %}"></script>
 
 
 {% endblock javascript %}
@@ -68,19 +69,29 @@
                 aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <a class="navbar-brand" href="{% url 'home' %}">Get-Your</a>
+        <a class="navbar-brand" href="{% url 'home' %}">
+          <img src="{% static 'images/citylogoblue.png' %}" alt="City of Fort Collins Logo" height="30" class="d-inline-block align-text-top">
+          Get FoCo
+        </a>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
-              <a class="nav-link" href="{% url 'home' %}">Home <span class="visually-hidden">(current)</span></a>
+              <a class="nav-link" href="{% url 'home' %}">{% translate "Dashboard" %}</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'about' %}">About</a>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                {% translate "About" %}
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">{% translate "Programs" %}</a></li>
+                <li><a class="dropdown-item" href="#">{% translate "How It Works" %}</a></li>
+                <li><a class="dropdown-item" href="#">{% translate "Something Else Here" %}</a></li>
+              </ul>
             </li>
             {% if request.user.is_authenticated %}
               <li class="nav-item">
                 <a class="nav-link"
-                   href="{% url 'users:detail' request.user.pk %}">{% translate "My Profile" %}</a>
+                   href="{% url 'users:detail' request.user.pk %}">{% translate "My Account" %}</a>
               </li>
               <li class="nav-item">
                 {# URL provided by django-allauth/account/urls.py #}
@@ -90,7 +101,7 @@
               {% if ACCOUNT_ALLOW_REGISTRATION %}
                 <li class="nav-item">
                   {# URL provided by django-allauth/account/urls.py #}
-                  <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% translate "Sign Up" %}</a>
+                  <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% translate "Apply" %}</a>
                 </li>
               {% endif %}
               <li class="nav-item">
@@ -117,7 +128,8 @@
     {% endif %}
     {% block main %}
       {% block content %}
-        <p>Use this document as a way to quick start any new project.</p>
+        <p>Welcome to Get FoCo</p>
+        <p>An all-in-one application portal to the discounted services and municipal benefits offered by the City of Fort Collins, for income eligible residents. Get FoCo is a partnership between Fort Collins' Connexion and the City of Fort Collins' income eligible programming.</p>
       {% endblock content %}
     {% endblock main %}
 
