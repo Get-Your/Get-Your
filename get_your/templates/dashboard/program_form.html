@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Program Form - Get FoCo{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="my-3 card shadow-sm">
+            <div class="card-body">
+                <form action="{% url 'program_form' %}" method="post">
+                    {% csrf_token %}
+                    <fieldset>
+                        <legend class="border-bottom">Account Information</legend>
+                        <div class="row">
+                            {% for field in user_form %}
+                                <div class="mb-3 col-12 col-md-6">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                                {{ field.errors }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <legend class="border-bottom">Address Information</legend>
+                        <div class="row">
+                            {% for field in address_form %}
+                                <div class="mb-3 col-12 col-md-6">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                                {{ field.errors }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <legend class="border-bottom">Household Information</legend>
+                        <div class="row">
+                            {% for field in household_form %}
+                                <div class="mb-3 col-12 col-md-6">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                                {{ field.errors }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <!-- Vue App for Interactivity -->
+                        <div id="app">
+                            <div class="mb-3">
+                                <p class="mb-1"><i class="me-1 bi bi-exclmation-circle text-danger"></i>Please, add all household members below.</p>
+                                <button type="button" class="btn btn-sm btn-outline-secondary shadow-sm" @click.prevent="addFamilyMember">Add Family Member</button>
+                            </div>
+                            <div class="row">
+                                <div v-for="(item, index) in familyMembers" :key="item.id" class="mb-3 col-12 col-md-6">
+                                    <p class="mb-1 pb-1 d-flex justify-content-between align-items-center border-bottom"><span class="fw-semibold">Family Member [[ item.id + 1 ]]</span> <span v-if="item.id > 0" role="button" class="badge text-bg-danger" @click="removeFamilyMember(index)">Remove</span></p>
+                                    <input type="hidden" :value="item.id">
+                                    <div class="mb-3">
+                                        <label :for="'full_name_' + item.id" class="form-label">Full Name</label>
+                                        <input type="text" :name="'full_name_' + item.id" :id="'full_name_' + item.id" class="form-control shadow-sm" :value="item.fullName">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label :for="'birth_date_' + item.id" class="form-label">Birth Date</label>
+                                        <input type="date" :name="'birth_date_' + item.id" :id="'birth_date_' + item.id" class="form-control shadow-sm" :value="item.birthDate">
+                                    </div>
+                                    <div>
+                                        <label :for="'identification_path_' + item.id" class="form-label">Upload ID</label>
+                                        <input type="file" :name="'identification_path_' + item.id" :id="'identification_path_' + item.id" class="form-control shadow-sm" :value="item.identificationPath" accept="image/*">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <hr class="my-3">
+                    <button class="me-2 btn btn-primary" type="submit">Save Information</button>
+                    <a href="{% url 'dashboard' %}">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{ userJson|json_script:"user" }}
+    <script type="module">
+        import { createApp, ref } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+        
+        createApp({
+            delimiters: ['[[', ']]'],
+            setup() {
+                // hack to get json data from Django response
+                const user = JSON.parse($('#user').text());
+                // hopefully, can do this as user.household.members instead
+                const familyMembers = ref([
+                    {
+                        id: 0,
+                        fullName: user.first_name + ' ' + user.last_name,
+                        birthDate: '',
+                        identificationPath: ''
+                    }
+                ]);
+
+                function addFamilyMember() {
+                    familyMembers.value.push({
+                        id: familyMembers.value.length,
+                        fullName: '',
+                        birthDate: '',
+                        identificationPath: ''
+                    })
+                }
+
+                function removeFamilyMember(objIndex) {
+                    if (familyMembers.value.length > 1) {
+                        familyMembers.value.splice(objIndex,1);
+                    }
+                }
+
+                return {
+                    user,
+                    familyMembers,
+                    addFamilyMember,
+                    removeFamilyMember
+                }
+            }
+        }).mount('#app')
+
+        $('input[name~=mailing_address]').on('change', function() {
+            if ($('#mailing_address_yes').prop('checked')) {
+                $('#mailing_address_information').addClass('d-none');
+            } else {
+                $('#mailing_address_information').removeClass('d-none');
+            }
+        });
+        
+        {% comment %} $(function () {
+            $('.step').on('click', function() {
+                let el = $(this),
+                    clickedElementId = el.prop('id'),
+                    fieldsetId = clickedElementId.substring(0, clickedElementId.lastIndexOf('_')),
+                    fieldset = $('#' + fieldsetId);
+                
+                el.addClass('active');
+                el.siblings().removeClass('active');
+                fieldset.removeClass('d-none');
+                fieldset.siblings().addClass('d-none');
+            });
+        }) {% endcomment %}
+        {% comment %} document.addEventListener("DOMContentLoaded", function() {
+            var submitButton = document.querySelector("button[type=submit]");
+            submitButton.addEventListener('click', function (e) {
+                var spinner = document.createElement('div');
+                spinner.classList.add('spinner-border', 'spinner-border-sm', 'ms-2');
+                submitButton.appendChild(spinner);
+            });
+
+            {% if not update_mode %}
+            var sameAddress = "{{ same_address }}" === "True";
+            var mailingAddressWrapper = document.getElementById("mailing_address_wrapper");
+            var mailingAddressHtml = mailingAddressWrapper.innerHTML;
+            mailingAddressWrapper.innerHTML = "";
+
+            var mailingAddressRadios = document.querySelectorAll('input[type=radio][name=mailing_address]');
+            if (sameAddress) {
+                document.querySelector('input[type=radio][name=mailing_address][value=yes]').checked = true;
+            } else {
+                document.querySelector('input[type=radio][name=mailing_address][value=no]').checked = true;
+            }
+
+            // this call and the one on line 218 will probably cause errors if in update mode
+            updateMailingAddressVisibility(mailingAddressHtml);
+
+            mailingAddressRadios.forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    updateMailingAddressVisibility(mailingAddressHtml);
+                });
+            });
+            {% endif %}
+        });
+
+        {% if not update_mode %}
+        function updateMailingAddressVisibility(mailingAddressHtml) {
+            var mailingAddressBtn = document.querySelector('input[type=radio][name=mailing_address]:checked').value;
+            toggleMailingAddressVisibility(mailingAddressBtn, mailingAddressHtml);
+        }
+
+        function toggleMailingAddressVisibility(mailingAddressBtn, mailingAddressHtml) {
+            var mailingAddressWrapper = document.getElementById("mailing_address_wrapper");
+            if (mailingAddressBtn == 'yes') {
+                mailingAddressWrapper.innerHTML = "";
+            } else if (mailingAddressBtn == 'no') {
+                mailingAddressWrapper.innerHTML = mailingAddressHtml;
+            }
+        }
+        {% endif %} {% endcomment %}
+    </script>
+{% endblock %}

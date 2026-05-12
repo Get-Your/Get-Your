@@ -17,9 +17,49 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import json
 import logging
+
+from django.conf import settings
+from django.core.serializers.json import DjangoJSONEncoder
+from django.shortcuts import render, redirect, reverse
+from django.contrib.auth.decorators import login_required
+from .forms import UserForm, AddressForm, HouseholdForm
 
 from monitor.wrappers import LoggerWrapper
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
+
+@login_required(redirect_field_name='auth_next')
+def dashboard(request, **kwargs):
+    return render(
+            request,
+            'dashboard/dashboard.html',
+            {
+                "title": "Get FoCo Dashboard",
+            },
+        )
+
+@login_required(redirect_field_name='auth_next')
+def program_form(request, **kwargs):
+    user_form = UserForm(prefix='user')
+    address_form = AddressForm(prefix='home_address')
+    household_form = HouseholdForm(prefix='household')
+    json_data = {
+        "id": request.user.id,
+        "first_name": request.user.first_name,
+        "last_name": request.user.last_name,
+    }
+
+    return render(
+            request,
+            'dashboard/program_form.html',
+            {
+                'title': 'Program Form',
+                'user_form': user_form,
+                'address_form': address_form,
+                'household_form': household_form,
+                'userJson': json_data
+            },
+        )

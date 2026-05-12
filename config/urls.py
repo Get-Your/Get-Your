@@ -8,6 +8,7 @@ from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView
 from drf_spectacular.views import SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
+from dashboard.views import dashboard, program_form
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -25,6 +26,19 @@ urlpatterns = [
     # ...
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
+
+    path(
+        'dashboard',
+        dashboard,
+        name='dashboard',
+        kwargs={'allow_direct_user': True},
+     ),
+    path(
+        'program_form',
+        program_form,
+        name='program_form',
+        kwargs={'allow_direct_user': True},
+     ),
 ]
 
 # API URLS
