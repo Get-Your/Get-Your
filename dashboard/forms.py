@@ -20,7 +20,7 @@ from django import forms
 from django.contrib.auth.password_validation import validate_password
 from app.models import Household
 from app.constants import rent_own_choices, duration_at_address_choices
-from ref.models import Address as AddressRef
+from ref.models import Address as AddressRef, EligibilityProgram
 from get_your.users.models import User
 
 class UserForm(forms.ModelForm):
@@ -67,3 +67,9 @@ class HouseholdForm(forms.ModelForm):
             'rent_own': forms.Select(attrs={'class':'form-select shadow-sm'}),
             'duration_at_address': forms.Select(attrs={'class':'form-select shadow-sm'})
         }
+
+class EligibilityForm(forms.ModelForm):
+    class Meta:
+        model = EligibilityProgram
+        fields = ['friendly_name', 'friendly_description']
+
