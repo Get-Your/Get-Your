@@ -1,3 +1,22 @@
+"""
+Get-Your is a platform for application and administration of income-
+qualified programs, used primarily by the City of Fort Collins.
+Copyright (C) 2022-2025
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
 # ruff: noqa: ERA001, E501
 """Base settings to build other settings files upon."""
 
@@ -29,6 +48,42 @@ if os.environ.get("DJANGO_DEBUG"):
 else:
     # The default is False
     DEBUG = env.bool("DJANGO_DEBUG", False)
+
+# Uses Python logging levels
+# (https://docs.python.org/3.12/library/logging.html#levels)
+if os.environ.get("DJANGO_LOGGING_LEVEL"):
+    LOGGING_LEVEL = str(os.environ.get("DJANGO_DEBUG_LOGGING")).upper()
+else:
+    # The default is 'NOTSET'
+    LOGGING_LEVEL = env.str("DJANGO_LOGGING_LEVEL", "NOTSET")
+
+# Code version, for display on the site.
+try:
+    # Try to load the code version from environment vars. Note that the
+    # Dockerfile defaults to "", so False is only returned if CODE_VERSION env
+    # var DNE
+    CODE_VERSION = env.str("CODE_VERSION", False)
+    if CODE_VERSION is False:
+        # Otherwise, try to find the current Git version directly from the repo.
+        # The assumption is that this is part of a Git repo if not built by
+        # Docker
+        import subprocess
+
+        # Run `git describe --tags`
+        CODE_VERSION = (
+            subprocess.check_output(
+                ["git", "describe", "--tags", "--always"],
+            )
+            .decode("ascii")
+            .strip()
+        )
+
+except Exception:
+    # Cannot be found; use blank
+    CODE_VERSION = ""
+
+# Set the 'site name', as used in django.contrib.sites
+SITE_NAME = env.str("DJANGO_SITE_NAME", "Get-Your")
 
 # Local time zone. Choices are
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -80,8 +135,10 @@ DJANGO_APPS = [
     # "django.contrib.humanize", # Handy template tags
     "django.contrib.admin",
     "django.forms",
+    "django.contrib.postgres",  # Postgres-extension functionality
 ]
 THIRD_PARTY_APPS = [
+    "whitenoise.runserver_nostatic",
     "crispy_forms",
     "crispy_bootstrap5",
     "allauth",
@@ -89,10 +146,9 @@ THIRD_PARTY_APPS = [
     "allauth.mfa",
     "allauth.socialaccount",
     "phonenumber_field",
-    "rest_framework",
-    "rest_framework.authtoken",
-    "corsheaders",
-    "drf_spectacular",
+    "django_q",
+    "formset",
+    "softdelete",
 ]
 
 LOCAL_APPS = [
@@ -103,6 +159,7 @@ LOCAL_APPS = [
     "files",
     "monitor",
     "ref",
+    "django_bootstrap_icons",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -125,6 +182,8 @@ AUTH_USER_MODEL = "users.User"
 LOGIN_REDIRECT_URL = "users:redirect"
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = "account_login"
+# https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
+LOGOUT_REDIRECT_URL = "app:index"
 
 # PASSWORDS
 # ------------------------------------------------------------------------------
@@ -149,9 +208,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # MIDDLEWARE
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
-MIDDLEWARE = [
+BUILTIN_MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -162,6 +220,15 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
 ]
+
+# Your stuff: custom middleware goes here
+LOCAL_MIDDLEWARE = [
+    "config.middleware.FirstViewMiddleware",
+    "config.middleware.ValidRouteMiddleware",
+]
+
+# https://docs.djangoproject.com/en/dev/ref/settings/#middleware
+MIDDLEWARE = BUILTIN_MIDDLEWARE + LOCAL_MIDDLEWARE
 
 # STATIC
 # ------------------------------------------------------------------------------
@@ -207,6 +274,7 @@ TEMPLATES = [
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
                 "get_your.users.context_processors.allauth_settings",
+                #                 "global_settings.context_processors.global_template_variables",
             ],
         },
     },
@@ -232,6 +300,10 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#x-frame-options
 X_FRAME_OPTIONS = "DENY"
+# Log out on browser close
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# Expire the session cookie (force re-login) at 6 hours (in seconds)
+SESSION_COOKIE_AGE = 6 * 60 * 60
 
 # EMAIL
 # ------------------------------------------------------------------------------
@@ -248,11 +320,7 @@ EMAIL_TIMEOUT = 5
 # Django Admin URL.
 ADMIN_URL = "admin/"
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
-ADMINS = [
-    ("""Tim Campbell""", "ticampbell@fcgov.com"),
-    ("""Dave Council""", "dcouncil@fcgov.com"),
-    ("""Sean Cordill""", "scordill@fcgov.com"),
-]
+ADMINS = [("""Tim Campbell""", "ticampbell@fcgov.com")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 # https://cookiecutter-django.readthedocs.io/en/latest/settings.html#other-environment-settings
@@ -264,22 +332,44 @@ DJANGO_ADMIN_FORCE_ALLAUTH = env.bool("DJANGO_ADMIN_FORCE_ALLAUTH", default=Fals
 # https://docs.djangoproject.com/en/dev/ref/settings/#logging
 # See https://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
+
+# Define database routing other than the default
+DATABASE_ROUTERS = ["config.routers.LogRouter"]
+
+# Get-Your custom database logging
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {
-            "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s",
+        "simple": {
+            "format": "%(message)s",
+            # datefmt is autocreated by Django; it would be ignored here
         },
     },
     "handlers": {
-        "console": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
+        "db_log": {
+            "class": "monitor.handlers.DatabaseLogHandler",
+            "formatter": "simple",
         },
     },
-    "root": {"level": "INFO", "handlers": ["console"]},
+    "loggers": {
+        "": {
+            "handlers": ["db_log"],
+            "level": "INFO",
+        },
+        # Keep this logger! Even though it's a duplicate of the root logger,
+        # the environment-specific settings may reference it
+        "app": {
+            "handlers": ["db_log"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["db_log"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
 }
 
 REDIS_URL = env("REDIS_URL", default="redis://redis:6379/0")
@@ -291,7 +381,6 @@ REDIS_SSL = REDIS_URL.startswith("rediss://")
 ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
 # https://docs.allauth.org/en/latest/account/configuration.html
 ACCOUNT_LOGIN_METHODS = {"email"}
-# https://docs.allauth.org/en/latest/account/configuration.html
 ACCOUNT_SIGNUP_FIELDS = [
     "first_name*",
     "last_name*",
@@ -300,7 +389,11 @@ ACCOUNT_SIGNUP_FIELDS = [
     "password1*",
     "password2*",
 ]
-# https://docs.allauth.org/en/latest/account/configuration.html
+# Define a hidden field named something related to account creation. This is to
+# potentially trick a spambot into filling it; if filled, account creation is
+# disabled. Note that this must be a field name not otherwise used for signup
+# (including 'username')
+ACCOUNT_SIGNUP_FORM_HONEYPOT_FIELD = "address"
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 # Make email verification mandatory, then allow logging in with 'magic link'
 # (that times out after 5 minutes)
@@ -316,6 +409,8 @@ ACCOUNT_PASSWORD_RESET_BY_CODE_ENABLED = True
 ACCOUNT_PASSWORD_RESET_BY_CODE_TIMEOUT = 300
 
 ACCOUNT_ADAPTER = "get_your.users.adapters.AccountAdapter"
+# Never remember the user (and don't show the 'Remember Me?' option)
+ACCOUNT_SESSION_REMEMBER = False
 # https://docs.allauth.org/en/latest/account/forms.html
 ACCOUNT_FORMS = {"signup": "get_your.users.forms.UserSignupForm"}
 # https://docs.allauth.org/en/latest/socialaccount/configuration.html
@@ -323,38 +418,14 @@ SOCIALACCOUNT_ADAPTER = "get_your.users.adapters.SocialAccountAdapter"
 # https://docs.allauth.org/en/latest/socialaccount/configuration.html
 SOCIALACCOUNT_FORMS = {"signup": "get_your.users.forms.UserSocialSignupForm"}
 
-# django-rest-framework
-# -------------------------------------------------------------------------------
-# django-rest-framework - https://www.django-rest-framework.org/api-guide/settings/
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
-    ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-}
 
-# django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
-CORS_URLS_REGEX = r"^/api/.*$"
-
-# By Default swagger ui is available only to admin user(s). You can change permission classes to change that
-# See more configuration options at https://drf-spectacular.readthedocs.io/en/latest/settings.html#settings
-SPECTACULAR_SETTINGS = {
-    "TITLE": "Get-Your API",
-    "DESCRIPTION": "Documentation of API endpoints of Get-Your",
-    "VERSION": "1.0.0",
-    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
-    "SCHEMA_PATH_PREFIX": "/api/",
-}
-# # Get-Your-specific
+# Get-Your-specific
 # ------------------------------------------------------------------------------
 TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN")
 TWILIO_AUTOMATED_SMS_NUMBER = env("TWILIO_AUTOMATED_SMS_NUMBER")
 CONTACT_EMAIL = env("CONTACT_EMAIL")
-USPS_KEY = env("USPS_KEY")
-USPS_SECRET = env("USPS_SECRET")
+USPS_SID = env("USPS_SID")
 SENDGRID_API_KEY = env("SENDGRID_API_KEY")
 WELCOME_EMAIL_TEMPLATE = env("WELCOME_EMAIL_TEMPLATE")
 PW_RESET_EMAIL_TEMPLATE = env("PW_RESET_EMAIL_TEMPLATE")
