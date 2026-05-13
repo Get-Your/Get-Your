@@ -656,10 +656,9 @@ class Extract:
                             user_id=id,
                             program_id=programId
                         ).get()
-                        # TODO: uncomment this
-                        # iqprogramRecord.is_enrolled = True
-                        # iqprogramRecord.enrolled_at = pendulum.now()
-                        # iqprogramRecord.save()
+                        iqprogramRecord.is_enrolled = True
+                        iqprogramRecord.enrolled_at = pendulum.now()
+                        iqprogramRecord.save()
                     
                 else:
                     outMsg.append("users were not enrolled")
@@ -676,26 +675,25 @@ class Extract:
             affectedUpdateUsers = list(set(affectedUpdateUsers))
 
             # Reset all is_updated values in all applicable tables from self.hist_tables[4]
-            # TODO: uncomment this
-            # for tableitm in self.hist_tables:
-            #     modelName = tableitm[4]
-            #     modelClass = getattr(models, modelName)
+            for tableitm in self.hist_tables:
+                modelName = tableitm[4]
+                modelClass = getattr(models, modelName)
 
-            #     allModelsOfClass = modelClass.objects.all()
+                allModelsOfClass = modelClass.objects.all()
                 
-            #     if modelName == 'User':
-            #         filteredClassModels = allModelsOfClass.filter(
-            #             id__in=affectedUpdateUsers
-            #         )
-            #     else:
-            #         filteredClassModels = allModelsOfClass.filter(
-            #             user_id__in=affectedUpdateUsers
-            #         )
+                if modelName == 'User':
+                    filteredClassModels = allModelsOfClass.filter(
+                        id__in=affectedUpdateUsers
+                    )
+                else:
+                    filteredClassModels = allModelsOfClass.filter(
+                        user_id__in=affectedUpdateUsers
+                    )
 
-            #     filteredClassModels.update(
-            #         is_updated=False
-            #     )
-            # log.info("All 'is_updated' designations in the database were successfully reset")
+                filteredClassModels.update(
+                    is_updated=False
+                )
+            log.info("All 'is_updated' designations in the database were successfully reset")
             
         else:
             log.info("No 'is_updated' designations in the database were reset")

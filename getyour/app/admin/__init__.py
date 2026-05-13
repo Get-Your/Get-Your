@@ -958,13 +958,7 @@ class UserAdmin(admin.ModelAdmin):
         description="Run extracts",
     )
     def run_extracts(self, request, queryset):
-        extract = Extract(
-            export_type='program',
-            #ids_to_warn=[834, 266]+mustCompleteRenewalBeforeBeingEnrolled,
-            # reset_updates=False,
-            # mark_enrolled=False,
-            # interactive=True,
-        )
+        extract = Extract(export_type='program')
 
         extractFiles = extract.export_programs()
 
