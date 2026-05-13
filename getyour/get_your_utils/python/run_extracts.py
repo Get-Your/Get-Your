@@ -17,24 +17,20 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import os
+import logging
 import pendulum
-import re
-from tomlkit import loads
 from pathlib import Path
 from typing import Union
 import pandas as pd
-from fnmatch import fnmatch
-
-from rich.console import Console
-from rich.table import Table
-from rich.prompt import Confirm
-from rich import print
 
 from django.db.models import Count, Q
 from django.core.files.storage import default_storage
 from app import models
 from app.models import IQProgramRD, IQProgram, User, HouseholdMembersHist
+from logger.wrappers import LoggerWrapper
+
+# Initialize logger
+log = LoggerWrapper(logging.getLogger(__name__))
 
 # TODO: update to use typer
 class Extract:
@@ -411,8 +407,6 @@ class Extract:
             # values were truly updated, this will only include identifying
             # vals
             outputList.append(tuple(updatedVals))
-                
-            assert len(outputList) == len(isUpdatedList)
             
         return (outputList, isUpdatedList)
         
@@ -443,10 +437,13 @@ class Extract:
         # Keep list of *all* users involved in extracts - these users will have
         # is_updated reset for all applicable tables after extracts are saved
         # (because any updates will have been part of the applicable extracts)
-        activePrograms = IQProgramRD.objects.filter(is_active=True).values_list('id', 'program_name', 'friendly_name')
+        activePrograms = IQProgramRD.objects.filter(is_active=True).values_list(
+            'id',
+            'program_name',
+            'friendly_name',
+        ).order_by('id')
         affectedUpdateUsers = []
         for programId,programname,friendlyname in activePrograms:
-            print(programId)
             # Initialize dbOut (there will be multiple queries) and their
             # respective 'notes' (to be combined in the extract)
             dbOut = []
@@ -599,20 +596,6 @@ class Extract:
             # any updates are superfluous
             affectedUpdateUsers.extend([x[idFieldIdx] for x in newOut])
 
-            # if programId == 3:
-            #     print(len(updateOut))
-                # print(self.select_framework.format(
-                #     additionalJoin="""
-                #     right join (select * from public.app_iqprogram ii
-                #         left join public.app_iqprogramrd iir on iir.id=ii.program_id) i on i.user_id=u.id
-                #     """,
-                #     wherePlaceholder=self.where_framework + """ and i."is_enrolled"=true and i."program_name"='{prg}' and ({upd}) {prc}""".format(
-                #         prg=programname,
-                #         upd='or '.join([f"""{x}."is_updated" """ for x in set([x[0] for x in fieldsToUse])]),
-                #         prc=f"""and u."id" not in ({', '.join([str(x) for x in alreadyProcessedUsers])})""" if len(alreadyProcessedUsers)>0 else '',
-                #     ),
-                #     fields=','.join([f'{x[0]}."{x[1]}"' for x in fieldsToUse]),
-                # ))
             # For each user in updateOut, find the information that changed
             # and prepend 'UPDATE ONLY: ' in the extract
             recordsOut, updatedBools = self._mark_updates(
@@ -644,27 +627,6 @@ class Extract:
                     df = df.assign(
                         **{'Enrolled in Program': [True if isinstance(x, str) and x.lower().startswith('update') else False for x in df['Notes']]},
                         )
-                
-                # Set a warning when specific IDs are included in the extract
-                warningList = []
-                for iditm in ids_to_warn:
-                    try:
-                        _ = list(df['Primary ID'].values).index(iditm)
-                    except ValueError:
-                        pass
-                    else:
-                        warningList.append(iditm)
-                       
-                if len(warningList) > 0:
-                    userContinue = Confirm.ask(
-                        "\nWARNING: ID{} ({}) from [green]ids_to_warn[/green] found in the '{}' extract. Continue?".format(
-                            's' if len(warningList)>1 else '',
-                            ', '.join([str(x) for x in warningList]),
-                            programname,
-                            )
-                        )
-                    if not userContinue:
-                        raise KeyboardInterrupt("User cancelled file creation based on ID-specific warning")
 
                 # Determine output
                 outMsg = []
@@ -686,7 +648,7 @@ class Extract:
                     with open(save_filepath, 'rb') as fp:
                         default_storage.save(f'extracts/{save_filepath.name}', fp)
 
-                    outMsg.append("extract saved")
+                    outMsg.append("'{}' extract saved".format(programname))
                     
                 if mark_enrolled:
                     for id in df['Primary ID'].tolist():
@@ -704,7 +666,7 @@ class Extract:
                     
                 # Print any output to the user
                 if len(outMsg) > 0:
-                    print("{}!".format(' and '.join(outMsg)).capitalize())
+                    log.info("{}!".format(' and '.join(outMsg)).capitalize())
                     
                 
         # Only reset is_updated values if save_file==True (to ensure the
@@ -712,8 +674,7 @@ class Extract:
         if reset_updates and save_file and len(affectedUpdateUsers) > 0:
             # Remove duplicates from affectedUpdateUsers
             affectedUpdateUsers = list(set(affectedUpdateUsers))
-            print("Don't delete the new exports! Exports created from this script in the future won't include the same 'updated' user(s)")
-            
+
             # Reset all is_updated values in all applicable tables from self.hist_tables[4]
             # TODO: uncomment this
             # for tableitm in self.hist_tables:
@@ -734,9 +695,10 @@ class Extract:
             #     filteredClassModels.update(
             #         is_updated=False
             #     )
+            # log.info("All 'is_updated' designations in the database were successfully reset")
             
         else:
-            print("Update designations in the database were not reset")
+            log.info("No 'is_updated' designations in the database were reset")
 
         return [x for x in self.output_file_dir.iterdir() if x.name.startswith(str(pendulum.today().year))]
         
