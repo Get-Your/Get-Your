@@ -224,12 +224,27 @@ class Extract:
         
         for idxitm,itm in enumerate(record_list):
             # Gather the table(s) that were updated
-            tableCheckList = list(set([x[0] for x in field_list]))
+            tableCheckList = sorted(
+                list(
+                    set(
+                        [x[0] for x in field_list]
+                    )
+                ),
+                reverse=True,
+            )
 
-            valueListFields = ['is_updated', 'householdmembers__is_updated', 'address__is_updated']
+            # tableCheckList will always be either ['u', 'm', 'am'] (user,
+            # household members, mailing address) or just ['u'] (user); ensure
+            # valueListFields matches the order of each
+            valueListFields = [
+                'is_updated',
+                'householdmembers__is_updated',
+                'address__is_updated',
+            ]
 
-            if (len(tableCheckList) == 1 and 'u' in tableCheckList):
-                valueListFields = ['is_updated']
+            if len(tableCheckList) == 1:
+                # Take only the first value (still in a list) to match tableCheckList
+                valueListFields = valueListFields[:1]
             
             tableCheckOut = list(User.objects.select_related(
                 'householdmembers',
