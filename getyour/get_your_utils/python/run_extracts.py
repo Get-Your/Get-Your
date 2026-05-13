@@ -316,7 +316,8 @@ class Extract:
                             else:
                                 updatedFields.append(outVal)
                      
-            # Define indices that weren't updated to keep in the extract
+            # Define indices to keep in the extract, regardless of whether they
+            # have updates
             nonUpdatedIdxToKeep = [truncFieldsToUse.index(x[:2]) for x in identifyingFields]
             # Mark updated values as well as 'old value' for identifying
             # fields
@@ -326,10 +327,7 @@ class Extract:
                 try:
                     updatedFieldVal = next(iter(x for x in updatedFields if x[0]==iteridx))
                 except StopIteration:   # index is not in updatedFields
-                    if iteridx in nonUpdatedIdxToKeep:
-                        updatedVals.append(iteritm)
-                    else:
-                        updatedVals.append(None)
+                    updatedVals.append(None)
                 else:
                     # If this is the JSON value, insert 'NEW VALUE' as a key
                     if isinstance(iteritm, dict):
@@ -373,10 +371,7 @@ class Extract:
                             for listitm in histOut['historical_values']['household_info']['persons_in_household']
                             ]
                         if iterCheck == histCheck:
-                            if iteridx in nonUpdatedIdxToKeep:
-                                updatedVals.append(iteritm)
-                            else:
-                                updatedVals.append(None)
+                            updatedVals.append(None)
                         else:
                         ############
                         
@@ -385,16 +380,21 @@ class Extract:
                     else:
                         updatedVals.append(f"OLD VALUE: {updatedFieldVal[1]}, NEW VALUE: {iteritm}" if updatedFieldVal[1] is not None else f"NEW VALUE: {iteritm}")
                     
+            # If any of the affected fields are actual updates, write them to
+            # the isUpdatedList for reference
+            if all(x is None for idx,x in enumerate(updatedVals)):
+                isUpdatedList.append(False)
+            else:
+                isUpdatedList.append(True)
+                # Then, go through the nonUpdatedIdxToKeep and replace None
+                # with the original values (to ensure the record is identifiable)
+                for nidx in nonUpdatedIdxToKeep:
+                    updatedVals[nidx] = itm[nidx] if updatedVals[nidx] is None else updatedVals[nidx]
+
             # Append the updated values to the output list. If no business
             # values were truly updated, this will only include identifying
             # vals
             outputList.append(tuple(updatedVals))
-            # If any of the affected fields are actual updates, write them to
-            # the isUpdatedList for reference
-            if all(x is None for idx,x in enumerate(updatedVals) if idx not in nonUpdatedIdxToKeep):
-                isUpdatedList.append(False)
-            else:
-                isUpdatedList.append(True)
                 
             assert len(outputList) == len(isUpdatedList)
             
