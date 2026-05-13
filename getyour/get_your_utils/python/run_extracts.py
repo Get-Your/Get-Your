@@ -428,7 +428,7 @@ class Extract:
         # is_updated reset for all applicable tables after extracts are saved
         # (because any updates will have been part of the applicable extracts)
         activePrograms = IQProgramRD.objects.filter(is_active=True).values_list('id', 'program_name', 'friendly_name')
-        allAffectedUsers = []
+        affectedUpdateUsers = []
         for programId,programname,friendlyname in activePrograms:
             print(programId)
             # Initialize dbOut (there will be multiple queries) and their
@@ -570,6 +570,19 @@ class Extract:
             ).values_list(
                 *valueListFields
             ).order_by('id')
+
+            # Add all updateOut users (regardless of whether an update was
+            # actually found) to the list for is_updated to be reset (if
+            # applicable, below). This will remove all users identified here
+            # from future is_updated checks (unless/until they modify additional
+            # information)
+            affectedUpdateUsers.extend([x[idFieldIdx] for x in updateOut])
+            # Also include users that were processed as new enrollees, in case
+            # they updated information between applying and these extracts
+            # being run. Since this is their first inclusion in extracts,
+            # any updates are superfluous
+            affectedUpdateUsers.extend([x[idFieldIdx] for x in newOut])
+
             # if programId == 3:
             #     print(len(updateOut))
                 # print(self.select_framework.format(
@@ -738,11 +751,7 @@ class Extract:
                             ),
                         index=False,
                         )
-                    
-                    # Once the extract is saved, add the users to the list of
-                    # is_updated being reset
-                    allAffectedUsers.extend(df['Primary ID'].tolist())
-            
+
                     outMsg.append("extract saved")
                     
                 if mark_enrolled:
@@ -766,9 +775,9 @@ class Extract:
                 
         # Only reset is_updated values if save_file==True (to ensure the
         # extracts were exported)
-        if reset_updates and save_file and len(allAffectedUsers) > 0:
-            # Remove duplicates from allAffectedUsers
-            allAffectedUsers = list(set(allAffectedUsers))
+        if reset_updates and save_file and len(affectedUpdateUsers) > 0:
+            # Remove duplicates from affectedUpdateUsers
+            affectedUpdateUsers = list(set(affectedUpdateUsers))
             print("Don't delete the new exports! Exports created from this script in the future won't include the same 'updated' user(s)")
             
             # Reset all is_updated values in all applicable tables from self.hist_tables[4]
@@ -781,11 +790,11 @@ class Extract:
                 
             #     if modelName == 'User':
             #         filteredClassModels = allModelsOfClass.filter(
-            #             id__in=allAffectedUsers
+            #             id__in=affectedUpdateUsers
             #         )
             #     else:
             #         filteredClassModels = allModelsOfClass.filter(
-            #             user_id__in=allAffectedUsers
+            #             user_id__in=affectedUpdateUsers
             #         )
 
             #     filteredClassModels.update(
