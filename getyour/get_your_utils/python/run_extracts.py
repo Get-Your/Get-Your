@@ -645,92 +645,6 @@ class Extract:
                         **{'Enrolled in Program': [True if isinstance(x, str) and x.lower().startswith('update') else False for x in df['Notes']]},
                         )
                 
-                ## Data validation
-                
-                # User IDs in question
-                userIds = df['Primary ID'].tolist()
-                
-                # Check for prior enrollments for new users
-                
-                # This has been an issue with GTR (and probably others, but
-                # since they're not payments they haven't been an issue) with
-                # the v1 app, so we need to verify it doesn't continue
-                # happening
-
-                # Use case-insensitive programname when searching to catch all
-                # files with older naming conventions as well
-                fileList = [x for x in os.listdir(self.output_file_dir) if fnmatch(x, f"*{programname}*")]
-                
-                # With renewal availability in Get-Your v4, 'already enrolled'
-                # here is essentially meaningless. Use only the current-year
-                # files as a doublecheck that a user hasn't been enrolled more
-                # than once
-                fileList = [x for x in fileList if int(re.match(r'(\d{4}).*', x).group(1))==pendulum.today().year]
-
-                # Initialize the list of those possibly already enrolled
-                possibleAlreadyEnrolled = []
-                
-                # Search through all files in fileList to ensure there isn't
-                # a matching 'Primary ID' + 'Last Name' that had been previously
-                # enrolled
-                
-                # Note that this only checks when Notes is None (to avoid
-                # checking for either 'update' or 'renewal')
-                newDf = df[df['Notes'].apply(lambda x: x is None)]
-                newData = list(
-                    zip(
-                        newDf['Primary ID'].values,
-                        newDf['Last Name'].values,
-                        )
-                    )
-                for filename in fileList:
-                    try:
-                        checkDf = pd.read_csv(
-                            self.output_file_dir.joinpath(filename),
-                            encoding='latin',
-                            )
-                    except pd.errors.ParserError:
-                        # Some issue with reading the file; go to the next
-                        continue
-                    
-                    # Check when Notes is not 'UPDATE ONLY' (only when None or
-                    # 'renewal')
-                    checkDf = checkDf[checkDf['Notes'].apply(lambda x: x != 'UPDATE ONLY')]
-                    
-                    # Filter for only enrolled==true if this column exists;
-                    # else, assume all users in the extract are enrolled
-                    try:
-                        checkDf = checkDf[checkDf['Enrolled in Program'].apply(lambda x: x==True)]
-                    except KeyError:
-                        pass
-                    
-                    if len(checkDf) > 0:
-                        checkData = list(
-                            zip(
-                                checkDf['Primary ID'].values,
-                                checkDf['Last Name'].values,
-                                [filename]*len(checkDf)
-                                )
-                            )
-                        
-                        # Check True-filtered checkData against each newData
-                        possibleAlreadyEnrolled.extend([x for x in checkData if x[:2] in newData])
-                        
-                if len(possibleAlreadyEnrolled) > 0:
-                    
-                    uniqueIds = list(set([x[0] for x in possibleAlreadyEnrolled]))
-                    # Use most-recent filename first; reverse the list
-                    possibleAlreadyEnrolled.reverse()
-                    possibleAlreadyEnrolled = [next(iter(x for x in possibleAlreadyEnrolled if x[0]==idv)) for idv in uniqueIds]
-                    
-                    console = Console()
-                    viewTable = Table("Primary ID", "Last Name", "Found Filename")
-                    for iditm,nameitm,fnameitm in possibleAlreadyEnrolled:
-                        viewTable.add_row(str(iditm), nameitm, fnameitm)
-                    
-                    print(f"[bold red]Warning: these users are possibly already enrolled in '{friendlyname}':")
-                    console.print(viewTable)
-
                 # Set a warning when specific IDs are included in the extract
                 warningList = []
                 for iditm in ids_to_warn:
@@ -775,7 +689,7 @@ class Extract:
                     outMsg.append("extract saved")
                     
                 if mark_enrolled:
-                    for id in userIds:
+                    for id in df['Primary ID'].tolist():
                         iqprogramRecord = IQProgram.objects.filter(
                             user_id=id,
                             program_id=programId
