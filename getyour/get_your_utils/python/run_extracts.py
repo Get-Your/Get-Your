@@ -32,6 +32,7 @@ from rich.prompt import Confirm
 from rich import print
 
 from django.db.models import Count, Q
+from django.core.files.storage import default_storage
 from app import models
 from app.models import IQProgramRD, IQProgram, User, HouseholdMembersHist
 
@@ -756,16 +757,20 @@ class Extract:
                 if save_file:
                     # Write to file
                     # TODO: write this to a buffer instead 
+                    save_filepath = self.output_file_dir.joinpath(
+                        '{dt} {prg} {suf}'.format(
+                            dt=pendulum.now().date(),
+                            prg=friendlyname,
+                            suf=self.filename_suffix,
+                        ),
+                    )
                     df.to_csv(
-                        self.output_file_dir.joinpath(
-                            '{dt} {prg} {suf}'.format(
-                                dt=pendulum.now().date(),
-                                prg=friendlyname,
-                                suf=self.filename_suffix,
-                                ),
-                            ),
+                        save_filepath,
                         index=False,
-                        )
+                    )
+                    # Write the file to blob storage, for posterity
+                    with open(save_filepath, 'rb') as fp:
+                        default_storage.save(f'extracts/{save_filepath.name}', fp)
 
                     outMsg.append("extract saved")
                     
