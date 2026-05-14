@@ -20,9 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import logging
 
 import requests
-from django import http
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from urllib.parse import quote, urlencode
 
 from monitor.wrappers import LoggerWrapper
 
@@ -364,23 +364,16 @@ def get_usps_token():
 
 
 def validate_usps(inobj):
-    if isinstance(inobj, http.request.QueryDict):
-        # Define the mapper of inobj keys to arguments used in the USPS v3 API
-        key_map = {
-            "address1": "streetAddress",
-            "address2": "secondaryAddress",
-            "city": "city",
-            "state": "state",
-            "zipcode": "ZIPCode",
-        }
-        # Create address, using only non-blank values
-        address = {key_map[key]: val for key, val in inobj.items() if val != ""}
-
-    elif isinstance(inobj, dict):
-        address = {key: val for key, val in inobj.items() if val != ""}
-
-    else:
-        raise AttributeError("Unknown validation input")
+    # Define the mapper of inobj keys to arguments used in the USPS v3 API
+    key_map = {
+        "address1": "streetAddress",
+        "address2": "secondaryAddress",
+        "city": "city",
+        "state": "state",
+        "zip_code": "ZIPCode",
+    }
+    # Create address, using only non-blank values
+    address = {key_map[key]: val for key, val in inobj.items() if val != ""}
 
     # Ensure 'state' is uppercase (otherwise the API will error)
     address["state"] = address["state"].upper()
@@ -411,7 +404,7 @@ def validate_usps(inobj):
             "Address could not be found; error {response.text}",
             function="validate_usps",
         )
-        response.raise_for_status()
+        return response.json()
 
     # Log and return the dictionary
     response_dict = response.json()
