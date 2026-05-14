@@ -958,9 +958,7 @@ class UserAdmin(admin.ModelAdmin):
         description="Run extracts",
     )
     def run_extracts(self, request, queryset):
-        extract = Extract(export_type='program')
-
-        extractFiles = extract.export_programs()
+        extractFiles = Extract().export_programs()
 
         if len(extractFiles) < 1:
             # early return to avoid downloading an empty zip

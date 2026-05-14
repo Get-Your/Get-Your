@@ -40,18 +40,12 @@ class Extract:
             output_file_dir=None,
             user_files_dir=None,
             filename_suffix='IQ Applicants.csv',
-            export_type='ALL',
             interactive=False,
             **kwargs,
             ):
 
         self.output_file_dir = output_file_dir
         self.user_files_dir = user_files_dir
-
-        # Ensure export_type is a valid value
-        export_type = export_type.upper()
-        if not export_type in ('ALL', 'INCOME', 'PROGRAM', 'INCOMPLETE'):
-            raise Exception("export_type must be 'ALL', 'INCOME', 'PROGRAM', or 'INCOMPLETE'")
         
         self._initialize_vars()
         self.select_framework = """
