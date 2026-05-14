@@ -18,9 +18,9 @@
                             {% if field.help_text %}
                                 <div class="form-text">{{ field.help_text }}</div>
                             {% endif %}
-                            <ul class="errorlist list-unstyled">
+                            <ul class="mb-0 errorlist list-unstyled">
                                 {% for error in field.errors %}
-                                  <li style="color: red;">{{ error }}</li>
+                                  <li class="text-danger">{{ error }}</li>
                                 {% endfor %}
                             </ul>
                             </div>
@@ -41,9 +41,9 @@
                                 {% if field.help_text %}
                                     <div class="form-text">{{ field.help_text }}</div>
                                 {% endif %}
-                                <ul class="errorlist list-unstyled">
+                                <ul class="mb-0 errorlist list-unstyled">
                                     {% for error in field.errors %}
-                                      <li style="color: red;">{{ error }}</li>
+                                      <li class="text-danger">{{ error }}</li>
                                     {% endfor %}
                                 </ul>
                                 </div>
@@ -61,9 +61,9 @@
                                 {% if field.help_text %}
                                     <div class="form-text">{{ field.help_text }}</div>
                                 {% endif %}
-                                <ul class="errorlist list-unstyled">
+                                <ul class="mb-0 errorlist list-unstyled">
                                     {% for error in field.errors %}
-                                    <li style="color: red;">{{ error }}</li>
+                                    <li class="text-danger">{{ error }}</li>
                                     {% endfor %}
                                 </ul>
                             {% endfor %}
@@ -80,9 +80,9 @@
                                 {% if field.help_text %}
                                     <div class="form-text">{{ field.help_text }}</div>
                                 {% endif %}
-                                <ul class="errorlist list-unstyled">
+                                <ul class="mb-0 errorlist list-unstyled">
                                     {% for error in field.errors %}
-                                      <li style="color: red;">{{ error }}</li>
+                                      <li class="text-danger">{{ error }}</li>
                                     {% endfor %}
                                 </ul>
                                 </div>
@@ -101,7 +101,11 @@
                             {% if field.help_text %}
                                 <div class="form-text">{{ field.help_text }}</div>
                             {% endif %}
-                            {{ field.errors }}
+                            <ul class="mb-0 errorlist list-unstyled">
+                                {% for error in field.errors %}
+                                  <li class="text-danger">{{ error }}</li>
+                                {% endfor %}
+                            </ul>
                             </div>
                         {% endfor %}
                     </div>
