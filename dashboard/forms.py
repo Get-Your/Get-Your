@@ -19,9 +19,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from django import forms
 from django.contrib.auth.password_validation import validate_password
 from app.models import Household
-from app.constants import rent_own_choices, duration_at_address_choices
 from ref.models import Address as AddressRef
 from get_your.users.models import User
+from django.forms import BaseFormSet
+
+from app.backend.address import validate_usps
+
+from phonenumber_field.widgets import RegionalPhoneNumberWidget
 
 class UserForm(forms.ModelForm):
     class Meta:
@@ -37,7 +41,7 @@ class UserForm(forms.ModelForm):
             'first_name': forms.TextInput(attrs={'class':'form-control shadow-sm'}),
             'last_name': forms.TextInput(attrs={'class':'form-control shadow-sm'}),
             'email': forms.EmailInput(attrs={'class':'form-control shadow-sm'}),
-            'phone_number': forms.TelInput(attrs={'class':'form-control shadow-sm'})
+            'phone_number': RegionalPhoneNumberWidget(attrs={'class':'form-control shadow-sm'})
         }
 
 class AddressForm(forms.ModelForm):
@@ -59,6 +63,16 @@ class AddressForm(forms.ModelForm):
             'zip_code': forms.NumberInput(attrs={'class':'form-control shadow-sm', 'max': 99999})
         }
 
+class SameAddressForm(forms.Form):
+    mailing_address_same_as_home = forms.ChoiceField(
+        choices=(
+            ('yes', 'Yes'),
+            ('no', 'No')
+        ),
+        initial='yes',
+        widget=forms.RadioSelect(attrs={'class':'form-check-input shadow-sm'})
+    )
+
 class HouseholdForm(forms.ModelForm):
     class Meta:
         model = Household
@@ -67,3 +81,30 @@ class HouseholdForm(forms.ModelForm):
             'rent_own': forms.Select(attrs={'class':'form-select shadow-sm'}),
             'duration_at_address': forms.Select(attrs={'class':'form-select shadow-sm'})
         }
+
+class BaseAddressFormSet(BaseFormSet):
+    def clean(self):
+        """Checks that address is valid with USPS API"""
+        if any(self.errors):
+            # Don't bother validating the formset unless each form is valid on its own
+            return
+
+        for form in self.forms:
+            # there will only ever be two address forms total
+            # in the set. the first form represents eligibility address
+            # and should always have data, but mailing address may be empty
+            if form.cleaned_data:
+                # can check USPS and whatever else here
+                corrected_address = validate_usps(form.cleaned_data)
+                if 'error' in corrected_address:
+                    form.add_error('address1', corrected_address['error']['message'])
+
+
+AddressFormSet = forms.formset_factory(
+    AddressForm,
+    extra=1,
+    min_num=1,
+    max_num=2,
+    validate_min=True,
+    formset=BaseAddressFormSet
+)
