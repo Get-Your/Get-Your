@@ -3,28 +3,75 @@
 {% block title %}Program Form - Get FoCo{% endblock %}
 
 {% block content %}
-    <div class="container">
-        <div class="my-3 card shadow-sm">
-            <div class="card-body">
-                <form action="{% url 'program_form' %}" method="post">
-                    {% csrf_token %}
+    <div class="my-3 card shadow-sm">
+        <div class="card-body">
+            <form action="{% url 'program_form' %}" method="post">
+                {% csrf_token %}
+                {{ address_form_set.management_form }}
+                <fieldset>
+                    <legend class="border-bottom">Account Information</legend>
+                    <div class="row">
+                        {% for field in user_form %}
+                            <div class="mb-3 col-12 col-md-6">
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                            <ul class="errorlist list-unstyled">
+                                {% for error in field.errors %}
+                                  <li style="color: red;">{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+                {% for address_form in address_form_set %}
+                    {% if forloop.counter0 == 0 %}
                     <fieldset>
-                        <legend class="border-bottom">Account Information</legend>
+                        <legend class="border-bottom">Home Address Information</legend>
+                        {{ address_form_set.non_form_errors }}
                         <div class="row">
-                            {% for field in user_form %}
+                            {% for field in address_form %}
+                                {{ address_form.id }}
                                 <div class="mb-3 col-12 col-md-6">
                                 {{ field.label_tag }}
                                 {{ field }}
                                 {% if field.help_text %}
                                     <div class="form-text">{{ field.help_text }}</div>
                                 {% endif %}
-                                {{ field.errors }}
+                                <ul class="errorlist list-unstyled">
+                                    {% for error in field.errors %}
+                                      <li style="color: red;">{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
                                 </div>
                             {% endfor %}
                         </div>
+                        <div class="mb-3 col-12 col-md-6">
+                            <p class="mb-1">Is your mailing address the same as your home address?</p>
+                            {% for field in same_address_form %}
+                                {% for radio in same_address_form.mailing_address_same_as_home %}
+                                <div class="form-check">
+                                    {{ radio.tag }}
+                                    <label for="{{ radio.id_for_label }}" class="form-check-label">{{ radio.choice_label }}</label>
+                                </div>
+                                {% endfor %}
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                                <ul class="errorlist list-unstyled">
+                                    {% for error in field.errors %}
+                                    <li style="color: red;">{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endfor %}
+                        </div>
                     </fieldset>
-                    <fieldset>
-                        <legend class="border-bottom">Address Information</legend>
+                    {% else %}
+                    <fieldset id="mailing_address_information" class="d-none">
+                        <legend class="border-bottom">Mailing Address Information</legend>
                         <div class="row">
                             {% for field in address_form %}
                                 <div class="mb-3 col-12 col-md-6">
@@ -33,56 +80,60 @@
                                 {% if field.help_text %}
                                     <div class="form-text">{{ field.help_text }}</div>
                                 {% endif %}
-                                {{ field.errors }}
+                                <ul class="errorlist list-unstyled">
+                                    {% for error in field.errors %}
+                                      <li style="color: red;">{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
                                 </div>
                             {% endfor %}
                         </div>
                     </fieldset>
-                    <fieldset>
-                        <legend class="border-bottom">Household Information</legend>
+                    {% endif %}
+                {% endfor %}
+                <fieldset>
+                    <legend class="border-bottom">Household Information</legend>
+                    <div class="row">
+                        {% for field in household_form %}
+                            <div class="mb-3 col-12 col-md-6">
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                            {{ field.errors }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div id="app">
                         <div class="row">
-                            {% for field in household_form %}
-                                <div class="mb-3 col-12 col-md-6">
-                                {{ field.label_tag }}
-                                {{ field }}
-                                {% if field.help_text %}
-                                    <div class="form-text">{{ field.help_text }}</div>
-                                {% endif %}
-                                {{ field.errors }}
-                                </div>
-                            {% endfor %}
-                        </div>
-                        <!-- Vue App for Interactivity -->
-                        <div id="app">
-                            <div class="mb-3">
-                                <p class="mb-1"><i class="me-1 bi bi-exclmation-circle text-danger"></i>Please, add all household members below.</p>
+                            <div class="mb-3 text-center">
+                                <div class="mb-2 py-1 alert alert-warning"><i class="me-1 bi bi-exclamation-circle-fill text-danger"></i>Please, add all household members below.</div>
                                 <button type="button" class="btn btn-sm btn-outline-secondary shadow-sm" @click.prevent="addFamilyMember">Add Family Member</button>
                             </div>
-                            <div class="row">
-                                <div v-for="(item, index) in familyMembers" :key="item.id" class="mb-3 col-12 col-md-6">
-                                    <p class="mb-1 pb-1 d-flex justify-content-between align-items-center border-bottom"><span class="fw-semibold">Family Member [[ item.id + 1 ]]</span> <span v-if="item.id > 0" role="button" class="badge text-bg-danger" @click="removeFamilyMember(index)">Remove</span></p>
-                                    <input type="hidden" :value="item.id">
-                                    <div class="mb-3">
-                                        <label :for="'full_name_' + item.id" class="form-label">Full Name</label>
-                                        <input type="text" :name="'full_name_' + item.id" :id="'full_name_' + item.id" class="form-control shadow-sm" :value="item.fullName">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label :for="'birth_date_' + item.id" class="form-label">Birth Date</label>
-                                        <input type="date" :name="'birth_date_' + item.id" :id="'birth_date_' + item.id" class="form-control shadow-sm" :value="item.birthDate">
-                                    </div>
-                                    <div>
-                                        <label :for="'identification_path_' + item.id" class="form-label">Upload ID</label>
-                                        <input type="file" :name="'identification_path_' + item.id" :id="'identification_path_' + item.id" class="form-control shadow-sm" :value="item.identificationPath" accept="image/*">
-                                    </div>
+                            <div v-for="(item, index) in familyMembers" :key="item.id" class="mb-3 col-12 col-md-6">
+                                <p class="mb-1 pb-1 d-flex justify-content-between align-items-center border-bottom"><span class="fw-semibold">Family Member [[ item.id + 1 ]]</span> <span v-if="item.id > 0" role="button" class="badge text-bg-danger" @click="removeFamilyMember(index)">Remove</span></p>
+                                <input type="hidden" :value="item.id">
+                                <div class="mb-3">
+                                    <label :for="'full_name_' + item.id" class="form-label">Full Name</label>
+                                    <input type="text" :name="'full_name_' + item.id" :id="'full_name_' + item.id" class="form-control shadow-sm" :value="item.fullName">
+                                </div>
+                                <div class="mb-3">
+                                    <label :for="'birth_date_' + item.id" class="form-label">Birth Date</label>
+                                    <input type="date" :name="'birth_date_' + item.id" :id="'birth_date_' + item.id" class="form-control shadow-sm" :value="item.birthDate">
+                                </div>
+                                <div>
+                                    <label :for="'identification_path_' + item.id" class="form-label">Upload ID</label>
+                                    <input type="file" :name="'identification_path_' + item.id" :id="'identification_path_' + item.id" class="form-control shadow-sm" :value="item.identificationPath" accept="image/*">
                                 </div>
                             </div>
                         </div>
-                    </fieldset>
-                    <hr class="my-3">
-                    <button class="me-2 btn btn-primary" type="submit">Save Information</button>
-                    <a href="{% url 'dashboard' %}">Cancel</a>
-                </form>
-            </div>
+                    </div>
+                </fieldset>
+                <hr class="my-3">
+                <button class="me-2 btn btn-primary" type="submit">Save Information</button>
+                <a href="{% url 'dashboard' %}">Cancel</a>
+            </form>
         </div>
     </div>
 
@@ -129,12 +180,21 @@
             }
         }).mount('#app')
 
-        $('input[name~=mailing_address]').on('change', function() {
-            if ($('#mailing_address_yes').prop('checked')) {
+        if ($('#id_mailing_address_same_as_home_1').prop('checked')) {
+            $('#mailing_address_information').removeClass('d-none');
+        }
+
+        $('input[name^=mailing_address]').on('change', function() {
+            if ($('#id_mailing_address_same_as_home_0').prop('checked')) {
                 $('#mailing_address_information').addClass('d-none');
             } else {
                 $('#mailing_address_information').removeClass('d-none');
             }
+        });
+
+        $('#id_user-phone_number').on('input', function () {
+            var x = $(this).val().replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+            $(this).val(!x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : ''));
         });
         
         {% comment %} $(function () {
