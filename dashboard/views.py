@@ -24,7 +24,8 @@ from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth.decorators import login_required
-from .forms import UserForm, AddressForm, HouseholdForm, EligibilityForm
+from .forms import UserForm, AddressForm, HouseholdForm
+from ref.models import EligibilityProgram as EligibilityProgramRef
 
 from monitor.wrappers import LoggerWrapper
 
@@ -66,13 +67,18 @@ def program_form(request, **kwargs):
 
 @login_required(redirect_field_name='auth_next')
 def eligibility_form(request, **kwargs):
-    eligibility_form = EligibilityForm(prefix='user')
+    ami_30_programs = EligibilityProgramRef.objects.filter(is_active=True).filter(ami_threshold=.3).order_by(
+            'friendly_name').values_list('friendly_name', flat=True)
+
+    ami_60_programs = EligibilityProgramRef.objects.filter(is_active=True).filter(ami_threshold=.6).order_by(
+            'friendly_name').values_list('friendly_name', flat=True)
 
     return render(
         request,
         'dashboard/eligibility_form.html',
         {
             'title': 'Program Form',
-            'eligibility_form': eligibility_form,
+            'ami30s': ami_30_programs,
+            'ami60s': ami_60_programs,
         }
     )

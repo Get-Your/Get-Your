@@ -1,8 +1,61 @@
 {% extends 'base.html' %}
 
-{% block title %}Eligibility Programs - Get FoCo{% endblock %}
+{% block title %}
+  Eligibility Programs - Get FoCo
+{% endblock %}
 
 {% block content %}
-    <h1>Select your Eligibilty Program here</h1>
+  <div class="container">
+    <div class="my-3 card shadow-sm">
+      <h1 class="hi m-3">Determine Your Eligibility</h1>
+      <p class="mx-3">Are you currently enrolled in any of these income-qualified programs? If so, select one that you can provide documentation for</p>
+      <div class="card-body">
+        <div class="ami30s">
+          {% for program in ami30s %}
+            <input type="radio" class="btn-check ami30" name="ami-30s" id="btn-check-{{ program }}" autocomplete="off" value="{{ program }}" />
+            <label class="btn btn-outline-primary" for="btn-check-{{ program }}">{{ program }}</label>
+          {% endfor %}
+          <input type="radio" class="btn-check" name="ami-30s" id="btn-check-none" autocomplete="off" value="none" />
+          <label class="btn btn-outline-primary" for="btn-check-none">None</label>
+        </div>
+        <div class="ami60s">
+          {% for program in ami60s %}
+            <input type="radio" class="btn-check ami60" name="ami-60s" id="btn-check-{{ program }}" autocomplete="off" value="{{ program }}" />
+            <label class="btn btn-outline-primary" for="btn-check-{{ program }}">{{ program }}</label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="my-3 card shadow-sm" id="upload">
+      <div class="card-body">
+        <button type="button" id="upload-btn" class="btn btn-primary" value="NA">Upload Documentation</button>
+      </div>
+    </div>
+  </div>
+{% endblock %}
 
+{% block inline_javascript %}
+  <script type="module">
+    $(function () {
+      $('.ami60s').addClass('d-none')
+      $('#upload').addClass('d-none')
+
+      $('#btn-check-none').on('click', function () {
+        // Hide the ami30,
+        $('.ami30s').addClass('d-none')
+        // show ami60
+        $('.ami60s').removeClass('d-none')
+      })
+
+      $('.ami30').on('click', function () {
+        // show the Upload Documentation button
+        $('#upload').removeClass('d-none')
+      })
+
+      $('.ami60').on('click', function () {
+        // show the Upload Documentation button
+        $('#upload').removeClass('d-none')
+      })
+    })
+  </script>
 {% endblock %}
