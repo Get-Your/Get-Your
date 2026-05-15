@@ -76,8 +76,12 @@ class SameAddressForm(forms.Form):
 class HouseholdForm(forms.ModelForm):
     class Meta:
         model = Household
-        fields = ['rent_own', 'duration_at_address']
+        fields = ['user', 'rent_own', 'duration_at_address']
+        labels = {
+            'user': ''
+        }
         widgets = {
+            'user': forms.HiddenInput(),
             'rent_own': forms.Select(attrs={'class':'form-select shadow-sm'}),
             'duration_at_address': forms.Select(attrs={'class':'form-select shadow-sm'})
         }

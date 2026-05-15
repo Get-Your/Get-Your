@@ -67,11 +67,12 @@ def program_form(request, **kwargs):
         same_address_form = SameAddressForm(request.POST)
         
         if user_form.is_valid():
-            # user_form.save()
+            user_form.save()
             print('user valid')
 
         if household_form.is_valid():
-            # household_form.save()
+
+            household_form.save()
             print('household valid')
 
         if address_form_set.is_valid():
@@ -82,14 +83,37 @@ def program_form(request, **kwargs):
                 # in the set. the first form represents eligibility address
                 # and should always have data, but mailing address may be empty
                 if address_form.cleaned_data:
-                    # USPS is checked automatically
-                    address_info_for_db.append(address_form.cleaned_data)
+                    new_address = address_form.save()
 
+                    address_info_for_db.append(new_address)
+
+            print('address(s) are valid')
             # need to create address info and then associate 
             # eligibility address and, if needed, mailing address
+            if len(address_info_for_db) > 1:
+                Address.objects.create(
+                    user_id = request.user.id,
+                    user_has_updated = False,
+                    eligibility_address_id = address_info_for_db[0].id,
+                    mailing_address_id = address_info_for_db[1].id,
+                )
+            else:
+                Address.objects.create(
+                    user_id = request.user.id,
+                    user_has_updated = False,
+                    eligibility_address_id = address_info_for_db[0].id,
+                    mailing_address_id = address_info_for_db[0].id,
+                )
 
-        else:
             return render(
+                request,
+                'dashboard/dashboard.html',
+                {
+                    "title": "Get FoCo Dashboard",
+                },
+            )
+        
+        return render(
             request,
             'dashboard/program_form.html',
             {
@@ -105,7 +129,7 @@ def program_form(request, **kwargs):
     user_form = UserForm(prefix='user', instance=user_with_relationships)
     address_form_set = AddressFormSet()
     same_address_form = SameAddressForm()
-    household_form = HouseholdForm(prefix='household')
+    household_form = HouseholdForm(prefix='household', initial={'user': request.user.id})
 
     return render(
             request,

@@ -95,18 +95,22 @@
                     <legend class="border-bottom">Household Information</legend>
                     <div class="row">
                         {% for field in household_form %}
+                            {% if not field.is_hidden %}
                             <div class="mb-3 col-12 col-md-6">
-                            {{ field.label_tag }}
-                            {{ field }}
-                            {% if field.help_text %}
+                                    {{ field.label_tag }}
+                                    {{ field }}
+                                {% if field.help_text %}
                                 <div class="form-text">{{ field.help_text }}</div>
-                            {% endif %}
-                            <ul class="mb-0 errorlist list-unstyled">
-                                {% for error in field.errors %}
-                                  <li class="text-danger">{{ error }}</li>
-                                {% endfor %}
-                            </ul>
+                                {% endif %}
+                                <ul class="mb-0 errorlist list-unstyled">
+                                    {% for error in field.errors %}
+                                    <li class="text-danger">{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
                             </div>
+                            {% else %}
+                            {{ field }}
+                            {% endif %}
                         {% endfor %}
                     </div>
                     <div id="app">
