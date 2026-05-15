@@ -52,19 +52,19 @@ def program_form(request, **kwargs):
     address = Address.objects.select_related(
         'eligibility_address',
         'mailing_address'
-    ).get(
+    ).filter(
         user_id=request.user.id
-    )
+    ).first()
 
     if address is not None:
         initial_address_data = address.set_initial_form_data()
 
     household = Household.objects.prefetch_related(
         'members'
-    ).get(
+    ).filter(
         user_id=request.user.id
-    )
-
+    ).first()
+    
     user_json_data = {
         "id": request.user.id,
         "first_name": request.user.first_name,
