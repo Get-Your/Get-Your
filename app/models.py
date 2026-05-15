@@ -76,6 +76,46 @@ class Address(TimeStampedModel):
     # Important: for this model, ``user_has_updated`` applies *only to the mailing address*
     user_has_updated = models.BooleanField(default=False)
 
+    def are_addresses_the_same(self):
+        if self.eligibility_address == self.mailing_address:
+            return True
+
+        return False
+
+    def set_initial_form_data(self):
+        initial_address_data = []
+
+        if self.are_addresses_the_same():
+            initial_address_data = [
+                {
+                    'address1': self.eligibility_address.address1,
+                    'address2': self.eligibility_address.address2,
+                    'city': self.eligibility_address.city,
+                    'state': self.eligibility_address.state,
+                    'zip_code': self.eligibility_address.zip_code,
+                },
+                {}
+            ]
+        else:
+            initial_address_data = [
+                {
+                    'address1': self.eligibility_address.address1,
+                    'address2': self.eligibility_address.address2,
+                    'city': self.eligibility_address.city,
+                    'state': self.eligibility_address.state,
+                    'zip_code': self.eligibility_address.zip_code,
+                },
+                {
+                    'address1': self.mailing_address.address1,
+                    'address2': self.mailing_address.address2,
+                    'city': self.mailing_address.city,
+                    'state': self.mailing_address.state,
+                    'zip_code': self.mailing_address.zip_code,
+                }
+            ]
+
+        return initial_address_data
+
     class Meta:
         verbose_name = "address"
         verbose_name_plural = "addresses"
