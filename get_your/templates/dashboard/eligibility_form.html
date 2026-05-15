@@ -37,6 +37,7 @@
 {% block inline_javascript %}
   <script type="module">
     $(function () {
+      {% comment %} hiding elements is a little funky... maybe just darken them or use Vue instead {% endcomment %}
       $('.ami60s').addClass('d-none')
       $('#upload').addClass('d-none')
 

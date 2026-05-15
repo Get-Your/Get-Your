@@ -67,18 +67,23 @@ def program_form(request, **kwargs):
 
 @login_required(redirect_field_name='auth_next')
 def eligibility_form(request, **kwargs):
-    ami_30_programs = EligibilityProgramRef.objects.filter(is_active=True).filter(ami_threshold=.3).order_by(
-            'friendly_name').values_list('friendly_name', flat=True)
+    if request.method == "POST":
+        # Handle the program ID and file upload
+        # Return to some other page, with a sucess mesage
+        pass
+    else:
+        ami_30_programs = EligibilityProgramRef.objects.filter(is_active=True).filter(ami_threshold=.3).order_by(
+                'friendly_name').values_list('friendly_name', flat=True)
 
-    ami_60_programs = EligibilityProgramRef.objects.filter(is_active=True).filter(ami_threshold=.6).order_by(
-            'friendly_name').values_list('friendly_name', flat=True)
+        ami_60_programs = EligibilityProgramRef.objects.filter(is_active=True).filter(ami_threshold=.6).order_by(
+                'friendly_name').values_list('friendly_name', flat=True)
 
-    return render(
-        request,
-        'dashboard/eligibility_form.html',
-        {
-            'title': 'Program Form',
-            'ami30s': ami_30_programs,
-            'ami60s': ami_60_programs,
-        }
+        return render(
+            request,
+            'dashboard/eligibility_form.html',
+            {
+                'title': 'Program Form',
+                'ami30s': ami_30_programs,
+                'ami60s': ami_60_programs,
+            }
     )
