@@ -54,6 +54,12 @@ class User(AbstractUser):
 
     phone_number = PhoneNumberField()
     has_viewed_dashboard = models.BooleanField(default=False)
+    is_archived = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Designates whether the user is marked as 'archived'.",
+        ),
+    )
     last_completed_at = models.DateTimeField(
         null=True,
         blank=True,
