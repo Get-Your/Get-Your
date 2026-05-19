@@ -31,6 +31,7 @@ from get_your.users.models import User
 from app.models import Address, Household
 from app.backend.address import validate_usps
 from monitor.wrappers import LoggerWrapper
+from ref.models import EligibilityProgram as EligibilityProgramRef
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -64,7 +65,7 @@ def program_form(request, **kwargs):
     ).filter(
         user_id=request.user.id
     ).first()
-    
+
     user_json_data = {
         "id": request.user.id,
         "first_name": request.user.first_name,
