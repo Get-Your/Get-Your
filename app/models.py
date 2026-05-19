@@ -93,8 +93,8 @@ class Address(TimeStampedModel):
                     'city': self.eligibility_address.city,
                     'state': self.eligibility_address.state,
                     'zip_code': self.eligibility_address.zip_code,
-                },
-                {}
+                    'address_sha1': self.eligibility_address.address_sha1
+                }
             ]
         else:
             initial_address_data = [
@@ -104,6 +104,7 @@ class Address(TimeStampedModel):
                     'city': self.eligibility_address.city,
                     'state': self.eligibility_address.state,
                     'zip_code': self.eligibility_address.zip_code,
+                    'address_sha1': self.eligibility_address.address_sha1
                 },
                 {
                     'address1': self.mailing_address.address1,
@@ -111,6 +112,7 @@ class Address(TimeStampedModel):
                     'city': self.mailing_address.city,
                     'state': self.mailing_address.state,
                     'zip_code': self.mailing_address.zip_code,
+                    'address_sha1': self.mailing_address.address_sha1
                 }
             ]
 
