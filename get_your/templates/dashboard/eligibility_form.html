@@ -8,27 +8,24 @@
   <div class="container">
     <div class="my-3 card shadow-sm">
       <h1 class="hi m-3">Determine Your Eligibility</h1>
-      <p class="mx-3">Are you currently enrolled in any of these income-qualified programs? If so, select one that you can provide documentation for</p>
+      <p class="mx-3">Are you currently enrolled in any of these income-qualified programs? If so, select one that you can provide documentation for:</p>
       <div class="card-body">
-        <div class="ami30s">
+        <div class="ami30s mb-3">
           {% for program in ami30s %}
             <input type="radio" class="btn-check ami30" name="ami-30s" id="btn-check-{{ program }}" autocomplete="off" value="{{ program }}" />
             <label class="btn btn-outline-primary" for="btn-check-{{ program }}">{{ program }}</label>
           {% endfor %}
           <input type="radio" class="btn-check" name="ami-30s" id="btn-check-none" autocomplete="off" value="none" />
-          <label class="btn btn-outline-primary" for="btn-check-none">None</label>
+          <label class="btn btn-outline-primary" for="btn-check-none">None of these</label>
         </div>
         <div class="ami60s">
           {% for program in ami60s %}
-            <input type="radio" class="btn-check ami60" name="ami-60s" id="btn-check-{{ program }}" autocomplete="off" value="{{ program }}" />
+            <input type="radio" class="btn-check ami60" name="ami-60s" id="btn-check-{{ program }}" autocomplete="off" value="{{ program }}" disabled />
             <label class="btn btn-outline-primary" for="btn-check-{{ program }}">{{ program }}</label>
           {% endfor %}
         </div>
-      </div>
-    </div>
-    <div class="my-3 card shadow-sm" id="upload">
-      <div class="card-body">
-        <button type="button" id="upload-btn" class="btn btn-primary" value="NA">Upload Documentation</button>
+        <hr />
+        <button type="button" id="upload-btn" class="btn btn-primary disabled" value="NA">Upload Documentation</button>
       </div>
     </div>
   </div>
@@ -38,24 +35,24 @@
   <script type="module">
     $(function () {
       {% comment %} hiding elements is a little funky... maybe just darken them or use Vue instead {% endcomment %}
-      $('.ami60s').addClass('d-none')
-      $('#upload').addClass('d-none')
-
       $('#btn-check-none').on('click', function () {
-        // Hide the ami30,
-        $('.ami30s').addClass('d-none')
         // show ami60
         $('.ami60s').removeClass('d-none')
+        // disable ami30s
+        $('.ami30').attr('disabled', 'disabled')
+        //disable the upload button
+        $('#upload-btn').addClass('disabled')
       })
 
       $('.ami30').on('click', function () {
         // show the Upload Documentation button
-        $('#upload').removeClass('d-none')
+        $('#upload-btn').removeClass('disabled')
       })
 
       $('.ami60').on('click', function () {
+        // uncheck any ami30s
         // show the Upload Documentation button
-        $('#upload').removeClass('d-none')
+        $('#upload-btn').removeClass('disabled')
       })
     })
   </script>
