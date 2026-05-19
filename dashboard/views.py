@@ -75,7 +75,7 @@ def program_form(request, **kwargs):
     if request.method == 'POST':
         # on post, set form to use posted data to fill form in case of error
         user_form = UserForm(request.POST, prefix='user', instance=request.user)
-        address_form_set = AddressFormSet(request.POST)
+        address_form_set = AddressFormSet(request.POST, initial=initial_address_data)
         same_address_form = SameAddressForm(request.POST)
         household_form = HouseholdForm(
             request.POST,
@@ -101,24 +101,16 @@ def program_form(request, **kwargs):
                 if address_form.cleaned_data:
                     # create ref_address model
                     new_address = address_form.save()
-                    address_info_for_db.append(new_address)
+                    address_info_for_db.append(new_address.id)
 
+            print('addresses valid')
             # create app_address info and then associate
             # eligibility address and, if needed, mailing address
-            if len(address_info_for_db) > 1:
-                Address.objects.create(
-                    user_id = request.user.id,
-                    user_has_updated = False,
-                    eligibility_address_id = address_info_for_db[0].id,
-                    mailing_address_id = address_info_for_db[1].id,
-                )
-            else:
-                Address.objects.create(
-                    user_id = request.user.id,
-                    user_has_updated = False,
-                    eligibility_address_id = address_info_for_db[0].id,
-                    mailing_address_id = address_info_for_db[0].id,
-                )
+            Address.objects.update_or_create(
+                user_id = request.user.id,
+                eligibility_address_id = address_info_for_db[0],
+                mailing_address_id = address_info_for_db[1] if len(address_info_for_db) > 1 else address_info_for_db[0],
+            )
 
             return render(
                 request,

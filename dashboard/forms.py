@@ -47,20 +47,22 @@ class UserForm(forms.ModelForm):
 class AddressForm(forms.ModelForm):
     class Meta:
         model = AddressRef
-        fields = ['address1', 'address2', 'city', 'state', 'zip_code']
+        fields = ['address1', 'address2', 'city', 'state', 'zip_code', 'address_sha1']
         labels = {
             'address1': 'Street Address',
             'address2': 'Apt, Suite, etc.',
             'city': 'City',
             'state': 'State',
             'zip_code': 'Zip Code',
+            'address_sha1': ''
         }
         widgets = {
             'address1': forms.TextInput(attrs={'class':'form-control shadow-sm', 'maxlength': 200}),
             'address2': forms.TextInput(attrs={'class':'form-control shadow-sm', 'maxlength': 200}),
             'city': forms.TextInput(attrs={'class':'form-control shadow-sm', 'maxlength': 64}),
             'state': forms.TextInput(attrs={'class':'form-control shadow-sm', 'maxlength': 2}),
-            'zip_code': forms.NumberInput(attrs={'class':'form-control shadow-sm', 'max': 99999})
+            'zip_code': forms.NumberInput(attrs={'class':'form-control shadow-sm', 'max': 99999}),
+            'address_sha1': forms.HiddenInput()
         }
 
 class SameAddressForm(forms.Form):
