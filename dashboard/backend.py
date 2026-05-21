@@ -22,7 +22,7 @@ import logging
 from django.contrib.auth import get_user_model
 
 from monitor.wrappers import LoggerWrapper
-from ref.models import IQProgram as IQProgramRef
+from ref.models import IQProgramRef
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))

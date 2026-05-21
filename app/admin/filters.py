@@ -66,7 +66,7 @@ def needs_income_verification_filter(queryset):
         # User is not 'archived'
         is_archived=False,
         # User's household is not 'income verified'
-        household__is_income_verified=False,
+        is_income_verified=False,
     )
 
     # Ensure all identification is included
@@ -124,7 +124,7 @@ class NeedsVerificationListFilter(admin.SimpleListFilter):
             return needs_income_verification_filter(queryset)
         if self.value() == "done":
             return queryset.filter(
-                household__is_income_verified=True,
+                is_income_verified=True,
             )
 
 
