@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Get-Your is a platform for application and administration of income-
 qualified programs, used primarily by the City of Fort Collins.
@@ -19,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 """
-This script runs ETL on the v6.0 Get-Your data to transform it for the v7
+This script runs ETL on the v7.x Get-Your data to transform it for the v10
 model.
 
 """
@@ -27,36 +26,31 @@ model.
 import re
 import sys
 from pathlib import Path
-from typing import Union
 
 import pandas as pd
 from psycopg.errors import FeatureNotSupported
-from sqlalchemy import (
-    Column,
-    Integer,
-    Table,
-    bindparam,
-    cast,
-    delete,
-    func,
-    literal_column,
-    select,
-    text,
-    update,
-)
+from sqlalchemy import Column
+from sqlalchemy import Integer
+from sqlalchemy import Table
+from sqlalchemy import bindparam
+from sqlalchemy import cast
+from sqlalchemy import delete
+from sqlalchemy import func
+from sqlalchemy import literal_column
+from sqlalchemy import select
+from sqlalchemy import text
+from sqlalchemy import update
 
 # Use Postgres-specific insert
 from sqlalchemy.dialects.postgresql import insert
 
 # Add the path of this directory's parent, then import helper functions
 sys.path.append(str(Path(__file__).parents[1]))
-from helper_functions import (
-    DBMetadata,
-    FieldMapping,
-    finalize_df_for_database,
-    process_data,
-    upsert_via_merge,
-)
+from sqlalchemy_functions import DBMetadata
+from sqlalchemy_functions import FieldMapping
+from sqlalchemy_functions import finalize_df_for_database
+from sqlalchemy_functions import process_data
+from sqlalchemy_functions import upsert_via_merge
 
 # Return the directory of this file
 FILE_DIR = Path(__file__).parent
@@ -75,7 +69,10 @@ DTYPE_MAPPING = {
 
 
 class TableFunctions:
-    def __init__(self, etl_object):
+    def __init__(
+        self,
+        etl_object: ETLToNew,
+    ):
         """Table-specific functions for the ETL process."""
         self.etlo = etl_object
 
@@ -151,7 +148,10 @@ class TableFunctions:
             select(
                 source_eligibilityprogram_table.c.user_id,
                 func.sum(
-                    cast(source_eligibilityprogram_table.c.document_path == "", Integer)
+                    cast(
+                        source_eligibilityprogram_table.c.document_path == "",
+                        Integer,
+                    ),
                 ).label("empty_uploads_count"),
             )
             .order_by(
@@ -205,7 +205,7 @@ class TableFunctions:
                         }
                         for ky, vl in renewal.items()
                         if vl["status"] == "completed"
-                    ]
+                    ],
                 )
 
             else:
@@ -218,7 +218,7 @@ class TableFunctions:
                     [
                         {"user_id": user_id, "page_url": "app:get_ready"},
                         {"user_id": user_id, "page_url": "users:signup"},
-                    ]
+                    ],
                 )
 
                 if user_id in address_exists_dict:
@@ -227,24 +227,24 @@ class TableFunctions:
                     )
                 if user_id in household_exists_dict:
                     complete_pages.append(
-                        {"user_id": user_id, "page_url": "app:household"}
+                        {"user_id": user_id, "page_url": "app:household"},
                     )
                 if user_id in householdmembers_exists_dict:
                     complete_pages.append(
                         {
                             "user_id": user_id,
                             "page_url": "app:household_members",
-                        }
+                        },
                     )
                 # Check to see if the user has selected any eligibility programs
                 if user_id in empty_uploads_dict:
                     complete_pages.append(
-                        {"user_id": user_id, "page_url": "app:programs"}
+                        {"user_id": user_id, "page_url": "app:programs"},
                     )
                     # Check if any of the eligibility programs have empty uploads
                     if empty_uploads_dict[user_id] == 0:
                         complete_pages.append(
-                            {"user_id": user_id, "page_url": "app:files"}
+                            {"user_id": user_id, "page_url": "app:files"},
                         )
 
         # Convert insert list to DataFrame
@@ -284,7 +284,7 @@ class TableFunctions:
             target_table,
         )
         insert_stmt = insert(target_table).values(
-            **{x: bindparam(x) for x in df_completed.columns}
+            **{x: bindparam(x) for x in df_completed.columns},
         )
         with self.etlo.new.engine.begin() as conn:
             conn.execute(insert_stmt, df_completed.to_dict("records"))
@@ -308,6 +308,8 @@ class ETLToNew:
         newdb_monitor_profile: str = "getfoco_dev_monitor_v7",
         olddb_profile: str = "getfoco_prod_v6",
         olddb_analytics_profile: str = "getfoco_dev_analytics_v6",
+        *,
+        # The following are keyword-only
         ignore_errors: bool = True,
     ):
         """
@@ -383,12 +385,12 @@ class ETLToNew:
         # Advise the user on truncating, then filling all available tables
         print(
             "ETL script initialized.\n"
-            "To truncate then fill all 'dynamic tables', run fill_all_tables()"
+            "To truncate then fill all 'dynamic tables', run fill_all_tables()",
         )
 
     def _get_table_index(
         self,
-        target_table: str = None,
+        target_table: str | None = None,
     ):
         """
         Get the index of the specified table within
@@ -396,7 +398,7 @@ class ETLToNew:
 
         Parameters
         ----------
-        target_table : str, optional
+        target_table : str | None, optional
             The target table name to start with for filling/truncating.
 
         Returns
@@ -414,11 +416,11 @@ class ETLToNew:
             # Find the index from a list of (ordered) table definition dict keys
             try:
                 table_idx = list(self.dynamic_table_definitions.keys()).index(
-                    target_table
+                    target_table,
                 )
             except ValueError as exc:
                 raise ValueError(
-                    f"'{target_table}' is not a recognized target table name"
+                    f"'{target_table}' is not a recognized target table name",
                 ) from exc
 
         else:
@@ -430,7 +432,7 @@ class ETLToNew:
     def _update_autoincrement(
         self,
         target_table: Table,
-        target_db: DBMetadata = None,
+        target_db: DBMetadata | None = None,
     ):
         """
         Update the specified table's auto-increment ``id`` value, if applicable.
@@ -442,7 +444,7 @@ class ETLToNew:
         ----------
         target_table : Table
             The table to update autoincrement for.
-        target_db : DBMetadata, optional
+        target_db : DBMetadata | None, optional
             The DBMetadata object to use for the transfer. If excluded (the
             default), ``self.new`` will be used.
 
@@ -458,7 +460,7 @@ class ETLToNew:
         # Ensure the database is supported
         if target_db.db_type not in ("postgres", "sqlite"):
             raise NotImplementedError(
-                "The autoincrement-reset functionality is currently only available for PostgreSQL and SQLite."
+                "The autoincrement-reset functionality is currently only available for PostgreSQL and SQLite.",
             )
 
         # Check if the target table has values
@@ -470,7 +472,7 @@ class ETLToNew:
             if target_db.db_type == "postgres":
                 # Get the Postgres sequence name
                 sequence_name_stmt = text(
-                    f"select pg_get_serial_sequence('{target_table.name}', 'id')"
+                    f"select pg_get_serial_sequence('{target_table.name}', 'id')",
                 )
                 with target_db.engine.begin() as conn:
                     sequence_name = conn.execute(sequence_name_stmt).fetchone()[0]
@@ -479,7 +481,7 @@ class ETLToNew:
                 # the max; else, set to 1 (using the 'false' param in setval())
                 if count_val > 0:
                     sequence_stmt = text(
-                        f"select setval('{sequence_name}', (select max(id) from {target_table.name}))"
+                        f"select setval('{sequence_name}', (select max(id) from {target_table.name}))",
                     )
                 else:
                     sequence_stmt = text(f"select setval('{sequence_name}', 1, false)")
@@ -543,11 +545,11 @@ class ETLToNew:
         self,
         source_table_name: str,
         target_table_name: str,
-        source_db: DBMetadata = None,
-        source_fields: Union[list, tuple] = (),
-        target_db: DBMetadata = None,
-        target_fields: Union[list, tuple] = (),
-        target_types: Union[list, tuple] = (),
+        source_db: DBMetadata | None = None,
+        source_fields: list | tuple = (),
+        target_db: DBMetadata | None = None,
+        target_fields: list | tuple = (),
+        target_types: list | tuple = (),
     ):
         """
         Port the data from 'source' to 'target'.
@@ -558,20 +560,20 @@ class ETLToNew:
             Name of the source table.
         target_table_name : str
             Name of the target table.
-        source_db : DBMetadata, optional
+        source_db : DBMetadata | None, optional
             The DBMetadata object to use for the transfer. If excluded (the
             default), ``self.old`` will be used.
-        source_fields : Union[list, tuple], optional
+        source_fields : list | tuple, optional
             Ordered fields to pull from the source table. If excluded (the
             default), all fields from the source table will be used.
-        target_db : DBMetadata, optional
+        target_db : DBMetadata | None, optional
             The DBMetadata object to use for the transfer. If excluded (the
             default), ``self.new`` will be used.
-        target_fields : Union[list, tuple], optional
+        target_fields : list | tuple, optional
             Ordered fields to insert into the target table (matching the order
             of source_fields). If excluded (the default), all fields (and exact
             names) from the source table will be used.
-        target_types : Union[list, tuple], optional
+        target_types : list | tuple, optional
             Ordered datatypes for the data in the target table. This is only
             necessary if any datatypes are different than in the source table;
             the default is ().
@@ -592,7 +594,7 @@ class ETLToNew:
             "sqlite",
         ):
             raise NotImplementedError(
-                "The UPSERT functionality used for the target table is currently only available for PostgreSQL and SQLite."
+                "The UPSERT functionality used for the target table is currently only available for PostgreSQL and SQLite.",
             )
 
         # Ensure all field/type inputs match
@@ -600,7 +602,7 @@ class ETLToNew:
             target_types and len(source_fields) != len(target_types)
         ):
             raise AttributeError(
-                "'source_fields', 'target_fields', and 'target_types' (if exists) must be the same length"
+                "'source_fields', 'target_fields', and 'target_types' (if exists) must be the same length",
             )
 
         try:
@@ -670,9 +672,11 @@ class ETLToNew:
                     mappings=[
                         {"source_field": src, "target_field": trg, "target_type": typ}
                         for src, trg, typ in zip(
-                            source_fields, target_fields, python_dtypes
+                            source_fields,
+                            target_fields,
+                            python_dtypes,
                         )
-                    ]
+                    ],
                 )
 
             # Overwrite the source fields, given any new data from field_mapping
@@ -722,7 +726,7 @@ class ETLToNew:
                     # as well
                     upsert_stmt = insert(target_table).values(
                         # Use all columns in df
-                        **{x: bindparam(x) for x in df.columns}
+                        **{x: bindparam(x) for x in df.columns},
                     )
 
                     upsert_stmt = upsert_stmt.on_conflict_do_update(
@@ -742,13 +746,13 @@ class ETLToNew:
                 # This allows rejecting specific records on failure
                 if self.ignore_errors:
                     print(
-                        f"Bulk UPSERT failed with\n\n{exc}\n\nProceeding with much slower row-by-row INSERT (ONLY)..."
+                        f"Bulk UPSERT failed with\n\n{exc}\n\nProceeding with much slower row-by-row INSERT (ONLY)...",
                     )
 
                     ignore_count = 0
                     insert_stmt = insert(target_table).values(
                         # Use all columns in df
-                        **{x: bindparam(x) for x in df.columns}
+                        **{x: bindparam(x) for x in df.columns},
                     )
                     for row in df.to_dict("records"):
                         try:
@@ -759,7 +763,7 @@ class ETLToNew:
                             ignore_count += 1
 
                     print(
-                        f"Row-by-row insertion successful! {ignore_count} of {len(df)} records ignored."
+                        f"Row-by-row insertion successful! {ignore_count} of {len(df)} records ignored.",
                     )
 
                 else:
@@ -767,7 +771,7 @@ class ETLToNew:
                     # specifying ignore_errors may be able to bypass the
                     # issue
                     print(
-                        "The following error was raised during bulk UPSERT (setting ignore_errors=True may be able to load partial data):"
+                        "The following error was raised during bulk UPSERT (setting ignore_errors=True may be able to load partial data):",
                     )
                     raise
 
@@ -779,8 +783,8 @@ class ETLToNew:
 
     def truncate_dynamic_tables(
         self,
-        starting_target_table: str = None,
-        ending_target_table: str = None,
+        starting_target_table: str | None = None,
+        ending_target_table: str | None = None,
     ):
         """
         Truncate all available DEV tables (e.g. "dynamic" tables) beginning with
@@ -788,19 +792,13 @@ class ETLToNew:
 
         Parameters
         ----------
-        source_db : DBMetadata, optional
-            The DBMetadata object to use for the transfer. If excluded (the
-            default), ``self.old`` will be used.
-        target_db : DBMetadata, optional
-            The DBMetadata object to use for the transfer. If excluded (the
-            default), ``self.new`` will be used.
-        starting_target_table : str, optional
+        starting_target_table : str | None, optional
             Specifies the table in the target database to start the process
             with. Table order (in self.dynamic_table_definitions) is preserved
             (and truncation is a reverse of this order); this just ignores all
             tables prior to this value. The default is None, specifying that all
             tables will be included.
-        ending_target_table : str, optional
+        ending_target_table : str | None, optional
             Specifies the table in the target database to end the process
             with. Table order (in self.dynamic_table_definitions) is preserved
             (and truncation is a reverse of this order); this just ignores all
@@ -844,7 +842,7 @@ class ETLToNew:
         print(
             "Beginning table truncation{cst}...".format(
                 cst=f" ({custom_truncate_msg})" if custom_truncate_msg else "",
-            )
+            ),
         )
 
         # Include all dynamic tables, beginning with starting_idx and ending
@@ -864,7 +862,7 @@ class ETLToNew:
         # Ensure all databases are supported
         if any(x.db_type not in ("postgres", "sqlite") for x in tables_to_truncate):
             raise NotImplementedError(
-                "The truncate functionality is currently only available for PostgreSQL and SQLite."
+                "The truncate functionality is currently only available for PostgreSQL and SQLite.",
             )
 
         for dbm, tbls in tables_to_truncate.items():
@@ -907,8 +905,8 @@ class ETLToNew:
                 try:
                     delete_stmt = text(
                         "truncate {} restart identity".format(
-                            ", ".join([f"public.{x}" for x in tbls])
-                        )
+                            ", ".join([f"public.{x}" for x in tbls]),
+                        ),
                     )
                     with dbm.engine.begin() as conn:
                         conn.execute(delete_stmt)
@@ -937,7 +935,7 @@ class ETLToNew:
                             # Notify of additional errors or messages, depending on the
                             # placement of reftable in dynamic_table_definitions
                             reftable_index = list(
-                                self.dynamic_table_definitions.keys()
+                                self.dynamic_table_definitions.keys(),
                             ).index(reftable_name)
                             if reftable_index <= ending_idx:
                                 additional_notification = f'\n\nAdditional error: "{reftable_name}" is defined *before* "{tbls[-1]}"; this will need to be rearranged before proceeding.'
@@ -947,7 +945,7 @@ class ETLToNew:
                                 additional_notification = ""
 
                             raise FeatureNotSupported(
-                                f"""Update the command to use "ending_target_table='{reftable_name}'" to resolve this issue: table "{tbls[-1]}" could not be truncated.{additional_notification}"""
+                                f"""Update the command to use "ending_target_table='{reftable_name}'" to resolve this issue: table "{tbls[-1]}" could not be truncated.{additional_notification}""",
                             ) from exc
                     raise
 
@@ -1262,8 +1260,10 @@ class ETLToNew:
 
     def fill_all_tables(
         self,
-        starting_target_table: str = None,
-        ending_target_table: str = None,
+        starting_target_table: str | None = None,
+        ending_target_table: str | None = None,
+        *,
+        # The following are keyword-only
         truncate_first: bool = True,
     ):
         """
@@ -1364,7 +1364,7 @@ class ETLToNew:
                     target_table,
                     target_db=tbldef["target_db"] if "target_db" in tbldef else None,
                 )
-            except (UnboundLocalError, AttributeError):
+            except UnboundLocalError, AttributeError:
                 # Case for if target_table was not defined or if there is no
                 # 'id' column
                 pass
