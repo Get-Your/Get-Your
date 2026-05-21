@@ -71,9 +71,13 @@ class TableFunctions:
     def __init__(
         self,
         etl_object: ETLToNew,
+        *,
+        # The following are keyword-only
+        ignore_errors: bool = False,
     ):
         """Table-specific functions for the ETL process."""
         self.etlo = etl_object
+        self.ignore_errors = ignore_errors
 
     def determine_completed_pages(self):
         """
