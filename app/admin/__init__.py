@@ -43,26 +43,21 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 
-# from app.backend import finalize_application
-# from app.backend import remove_ineligible_programs_for_user
 from app.constants import application_pages
-from app.models import Address
 from app.models import EligibilityProgram
-from app.models import Household
-
-# from app.models import HouseholdMembers
 from app.models import IQProgram
-
-# from dashboard.backend import get_eligible_iq_programs
 from dashboard.backend import get_iqprogram_requires_fields
-
-# from dashboard.backend import get_users_iq_programs
 from get_your.users.models import UserNote
 from monitor.wrappers import LoggerWrapper
-from ref.models import Address as AddressRef
-from ref.models import EligibilityProgram as EligibilityProgramRef
-from ref.models import IQProgram as IQProgramRef
+from ref.models import AddressRef
+from ref.models import EligibilityProgramRef
+from ref.models import IQProgramRef
 
+# from app.backend import finalize_application
+# from app.backend import remove_ineligible_programs_for_user
+# from app.models import HouseholdMembers
+# from dashboard.backend import get_eligible_iq_programs
+# from dashboard.backend import get_users_iq_programs
 from .filters import AccountDisabledListFilter
 from .filters import NeedsVerificationListFilter
 from .filters import needs_income_verification_filter
@@ -135,141 +130,6 @@ def get_admin_url(obj, urltype="change"):
         f"admin:{obj._meta.app_label}_{obj._meta.model_name}_{urltype}",
         args=(obj.id,),
     )
-
-
-class AddressInline(admin.TabularInline):
-    model = Address
-
-    fk_name = "user"
-
-    fields = readonly_fields = [
-        "created_at",
-        "modified_at",
-        "mailing_addr",
-        "eligibility_addr",
-    ]
-
-    # Adding directly to this inline is always disabled (proper logic DNE)
-    def has_add_permission(self, request, obj=None):
-        return False
-
-    @admin.display(description="mailing address")
-    def mailing_addr(self, obj):
-        addr = AddressRef.objects.get(id=obj.mailing_address_id)
-        if addr.address2 == "":
-            return format_html(
-                f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.city}, {addr.state} {addr.zip_code}</a>',
-            )
-        return format_html(
-            f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.address2}<br />{addr.city}, {addr.state} {addr.zip_code}</a>',
-        )
-
-    @admin.display(description="eligibility address")
-    def eligibility_addr(self, obj):
-        addr = AddressRef.objects.get(id=obj.eligibility_address_id)
-        if addr.address2 == "":
-            return format_html(
-                f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.city}, {addr.state} {addr.zip_code}</a>',
-            )
-        return format_html(
-            f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.address2}<br />{addr.city}, {addr.state} {addr.zip_code}</a>',
-        )
-
-    # Show zero extra (unfilled) options
-    extra = 0
-
-
-class HouseholdInline(admin.TabularInline):
-    model = Household
-
-    fk_name = "user"
-
-    fields = [
-        "created_at",
-        "modified_at",
-        "duration_at_address",
-        "rent_own",
-        "number_persons_in_household",
-        "income_percent",
-        "is_income_verified",
-    ]
-
-    def get_readonly_fields(self, request, obj=None):
-        """
-        Return readonly fields based on user type and groups. Note that this
-        follows zero-trust; it starts with all fields read-only and removes them
-        based on permissions.
-
-        """
-        # Parse the available permissions and those of the request user
-        request.user.staff_permissions = StaffPermissions(request.user)
-        # Use the `_available_groups` attribute so the Enum groups are
-        # comparable (they must originate in the same module)
-        permission_groups = request.user.staff_permissions._available_groups
-
-        # Store is_income_verified in session var, for use with
-        # has_delete_permission
-        request.session["is_income_verified"] = (
-            hasattr(obj, "household") and obj.household.is_income_verified
-        )
-
-        # Global readonly fields. Note that @property and calculated fields must
-        # be read-only
-        readonly_fields = self.fields
-
-        # Remove fields from readonly_fields based on permissions group
-        income_remove = [
-            "is_income_verified",
-        ]
-        # admin_remove extends income_remove
-        admin_remove = income_remove + [
-            "rent_own",
-            "duration_at_address",
-        ]
-        # superuser_remove extends admin_remove
-        superuser_remove = admin_remove + [
-            "number_persons_in_household",
-        ]
-
-        readonly_remove = []
-        if request.user.staff_permissions.contains(permission_groups.SUPERUSER):
-            # Remove the following readonly fields for superusers
-            readonly_remove.extend(superuser_remove)
-        if request.user.staff_permissions.contains(
-            permission_groups.INCOME_VERIFICATION,
-        ):
-            # Remove these fields from read-only if the user is in the
-            # 'income...' group
-            readonly_remove.extend(income_remove)
-        if request.user.staff_permissions.contains(permission_groups.PROGRAM_ADMIN):
-            # Remove these fields from read-only if the user is in the
-            # 'admin...' group
-            readonly_remove.extend(admin_remove)
-
-        # Remove the fields and re-listify
-        return list(set(readonly_fields) - set(readonly_remove))
-
-    def has_delete_permission(self, request, obj=None):
-        if request.session.get("is_income_verified", True):
-            # If the user's income has been verified (or the session var DNE),
-            # nobody has delete permissions
-            return False
-        # Otherwise, use the django.auth permissions for this admin user
-        return request.user.has_perm(
-            "{}.{}".format(
-                ContentType.objects.get_for_model(Household).app_label,
-                "delete_household",
-            ),
-        )
-
-    @admin.display(description="income relative to AMI")
-    def income_percent(self, obj):
-        # As some point when the stack is called, income_as_fraction_of_ami may
-        # return None; the 'or' ensures this won't error out
-        return f"{100 * (obj.income_as_fraction_of_ami or 0):.0f}%"
-
-    # Show zero extra (unfilled) options
-    extra = 0
 
 
 # class HouseholdMembersInline(admin.TabularInline):
@@ -383,7 +243,7 @@ class EligibilityProgramInline(admin.TabularInline):
     @admin.display(description="edit record")
     def record_edit(self, obj):
         # Record can only be edited if is_income_verified is False
-        if obj.user.household.is_income_verified is False:
+        if obj.user.is_income_verified is False:
             return format_html(f'<a href="{get_admin_url(obj)}">Edit Record</a>')
         return "Cannot Be Edited"
 
@@ -434,7 +294,7 @@ class IQProgramInline(admin.TabularInline):
 
         readonly_remove = []
         # Enrollment status can only be altered if income has been verified
-        if hasattr(obj, "household") and obj.household.is_income_verified is True:
+        if obj.is_income_verified is True:
             # Remove fields from readonly_fields based on permissions group
             if request.user.staff_permissions.contains(
                 permission_groups.SUPERUSER,
@@ -513,6 +373,13 @@ class UserAdmin(admin.ModelAdmin):
         "user_message",
         "id",
         "is_archived",
+        "mailing_addr",
+        "eligibility_addr",
+        "duration_at_address",
+        "rent_own",
+        "number_persons_in_household",
+        "income_percent",
+        "is_income_verified",
     ]
     application_fields = [
         "date_joined",
@@ -552,7 +419,7 @@ class UserAdmin(admin.ModelAdmin):
 
         # Get the user's eligibility address
         eligibility_address = AddressRef.objects.filter(
-            id=obj.address.eligibility_address_id,
+            id=obj.eligibility_address_id,
         ).first()
 
         # # Notify if the user is not qualified for any programs
@@ -577,6 +444,34 @@ class UserAdmin(admin.ModelAdmin):
         if len(msg) > 0:
             return "\u2023 {}".format("\n\u2023 ".join(msg))
         return self.get_empty_value_display()
+
+    @admin.display(description="mailing address")
+    def mailing_addr(self, obj):
+        addr = AddressRef.objects.get(id=obj.mailing_address_id)
+        if addr.address2 == "":
+            return format_html(
+                f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.city}, {addr.state} {addr.zip_code}</a>',
+            )
+        return format_html(
+            f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.address2}<br />{addr.city}, {addr.state} {addr.zip_code}</a>',
+        )
+
+    @admin.display(description="eligibility address")
+    def eligibility_addr(self, obj):
+        addr = AddressRef.objects.get(id=obj.eligibility_address_id)
+        if addr.address2 == "":
+            return format_html(
+                f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.city}, {addr.state} {addr.zip_code}</a>',
+            )
+        return format_html(
+            f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.address2}<br />{addr.city}, {addr.state} {addr.zip_code}</a>',
+        )
+
+    @admin.display(description="income relative to AMI")
+    def income_percent(self, obj):
+        # As some point when the stack is called, income_as_fraction_of_ami may
+        # return None; the 'or' ensures this won't error out
+        return f"{100 * (obj.income_as_fraction_of_ami or 0):.0f}%"
 
     def has_add_permission(self, request, obj=None):
         # Adding directly from the admin panel is disallowed for everyone
@@ -700,15 +595,28 @@ class UserAdmin(admin.ModelAdmin):
                     "phone_number",
                     "is_archived",
                     "last_completed_at",
+                    "is_income_verified",
+                    "rent_own",
+                    "duration_at_address",
+                    "number_persons_in_household",
                 ],
             )
+        if request.user.staff_permissions.contains(
+            permission_groups.INCOME_VERIFICATION,
+        ):
+            # Remove these fields from read-only if the user is in the
+            # 'income_verification' group
+            readonly_remove.extend("is_income_verified")
         if request.user.staff_permissions.contains(permission_groups.PROGRAM_ADMIN):
             # Remove these fields from read-only if the user is in the
-            # 'income...' group
+            # 'program_admin' group
             readonly_remove.extend(
                 [
                     "phone_number",
                     "is_archived",
+                    "is_income_verified",
+                    "rent_own",
+                    "duration_at_address",
                 ],
             )
 
@@ -717,8 +625,6 @@ class UserAdmin(admin.ModelAdmin):
 
     inlines = [
         UserNoteInline,
-        AddressInline,
-        HouseholdInline,
         # HouseholdMembersInline,
         EligibilityProgramInline,
         IQProgramInline,
@@ -826,7 +732,7 @@ class UserAdmin(admin.ModelAdmin):
             # is on a related model; instead, loop through queryset and update
             # each related model (in order to avoid .save() calls)
             for usr in queryset:
-                Household.objects.filter(user=usr).update(is_income_verified=True)
+                User.objects.filter(user=usr).update(is_income_verified=True)
 
             log.info(
                 f"{len(queryset)} users marked as verified.",
@@ -895,7 +801,7 @@ class UserAdmin(admin.ModelAdmin):
                     "pretty_name": "Phone Number",
                 },
             },
-            "address.mailing_address": {
+            "mailing_address": {
                 "address1": {
                     "pretty_name": "Mailing Address1",
                 },
@@ -1014,7 +920,7 @@ class UserAdmin(admin.ModelAdmin):
         ):
             # ...but Eligibility Program addition is disallowed once income has
             # been verified
-            if obj.household.is_income_verified is False:
+            if obj.is_income_verified is False:
                 extra_context["custom_buttons"].extend(
                     [
                         {
@@ -1211,7 +1117,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
 
         # Store is_income_verified in session var, for use with
         # has_delete_permission
-        request.session["is_income_verified"] = obj.user.household.is_income_verified
+        request.session["is_income_verified"] = obj.user.is_income_verified
 
         fieldsets = [
             (
@@ -1301,7 +1207,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         ):
             # Editing is disallowed once income has been verified
             obj = EligibilityProgram.objects.get(pk=object_id)
-            if obj.user.household.is_income_verified is False:
+            if obj.user.is_income_verified is False:
                 extra_context["custom_buttons"] = [
                     {
                         # Buttons that open in the same window save the model first
