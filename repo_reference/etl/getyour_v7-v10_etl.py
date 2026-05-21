@@ -123,7 +123,7 @@ class ETLToNew:
 
         # Initialize the table functions. Note that this must happen before the
         # table defintions are called
-        self.table_functions = TableFunctions(self)
+        self.table_functions = TableFunctions(self, DTYPE_MAPPING)
 
         # # Define static tables. These tables may not be truncated.
         # self.static_table_definitions = {

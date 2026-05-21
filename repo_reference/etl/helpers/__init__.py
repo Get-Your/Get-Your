@@ -44,6 +44,7 @@ class TableFunctions:
     def __init__(
         self,
         etl_object,
+        dtype_mapping: list | tuple,
         *,
         # The following are keyword-only
         ignore_errors: bool = False,
@@ -51,6 +52,8 @@ class TableFunctions:
         """Table-specific functions for the ETL process."""
         self.etlo = etl_object
         self.ignore_errors = ignore_errors
+
+        self.dtype_mapping = dtype_mapping
 
     def determine_completed_pages(self):
         """
@@ -277,14 +280,14 @@ class TableFunctions:
             ]
 
             # Define 'target_types' as the types in source_table_fields, using
-            # the DTYPE_MAPPING defined at the top of this file (this is to
+            # the dtype_mapping passed in via ETLToNew() (this is to
             # resolve the issue of 'int' dtypes in pandas not being about to
             # store NULL values)
             python_dtypes = [
                 next(
                     iter(
                         ptype
-                        for dbtype, ptype in DTYPE_MAPPING.items()
+                        for dbtype, ptype in self.dtype_mapping.items()
                         if re.match(dbtype, str(x.type))
                     ),
                     None,
@@ -332,12 +335,11 @@ class TableFunctions:
 
             return (char_fields, df)
 
-        # Gather the proper DBMetadata
-        source_db = self.etlo.old
-        target_db = self.etlo.new
-
         # Ensure the databases are supported
-        if source_db.db_type not in ("postgres", "sqlite") or target_db.db_type not in (
+        if self.etlo.old.db_type not in (
+            "postgres",
+            "sqlite",
+        ) or self.etlo.new.db_type not in (
             "postgres",
             "sqlite",
         ):
@@ -349,23 +351,23 @@ class TableFunctions:
             # First, load the source and target tables from metadata reflections
             source_user_table = Table(
                 "app_user",
-                source_db.metadata,
-                autoload_with=source_db.engine,
+                self.etlo.old.metadata,
+                autoload_with=self.etlo.old.engine,
             )
             source_address_table = Table(
                 "app_address",
-                source_db.metadata,
-                autoload_with=source_db.engine,
+                self.etlo.old.metadata,
+                autoload_with=self.etlo.old.engine,
             )
             source_household_table = Table(
                 "app_household",
-                source_db.metadata,
-                autoload_with=source_db.engine,
+                self.etlo.old.metadata,
+                autoload_with=self.etlo.old.engine,
             )
             target_table = Table(
                 "users_user",
-                target_db.metadata,
-                autoload_with=target_db.engine,
+                self.etlo.new.metadata,
+                autoload_with=self.etlo.new.engine,
             )
 
             # Define field mapping for each table
@@ -426,14 +428,14 @@ class TableFunctions:
 
             # Fill the beginnings of the user table
             char_fields, df = _query_source_table(
-                source_db,
+                self.etlo.old,
                 source_user_table,
                 user_map_list,
             )
 
             # Combine with the address table (on id)
             char_fields_add, df_add = _query_source_table(
-                source_db,
+                self.etlo.old,
                 source_address_table,
                 address_map_list,
             )
@@ -449,7 +451,7 @@ class TableFunctions:
 
             # Combine with the household table (on id)
             char_fields_add, df_add = _query_source_table(
-                source_db,
+                self.etlo.old,
                 source_household_table,
                 household_map_list,
             )
@@ -501,9 +503,9 @@ class TableFunctions:
 
                 # Use MERGE to upsert if the target is Postgres or SQLite; else
                 # use ON CONFLICT
-                if target_db.db_type == "postgres":
+                if self.etlo.new.db_type == "postgres":
                     upsert_via_merge(
-                        target_db,
+                        self.etlo.new,
                         target_table,
                         df,
                         primary_keys,
@@ -528,7 +530,7 @@ class TableFunctions:
                             x: bindparam(x) for x in df.columns if x not in primary_keys
                         },
                     )
-                    with target_db.engine.connect() as conn:
+                    with self.etlo.new.engine.connect() as conn:
                         conn.execute(upsert_stmt, df.to_dict("records"))
                         conn.commit()
 
@@ -548,7 +550,7 @@ class TableFunctions:
                     )
                     for row in df.to_dict("records"):
                         try:
-                            with target_db.engine.connect() as conn:
+                            with self.etlo.new.engine.connect() as conn:
                                 conn.execute(insert_stmt, row)
                                 conn.commit()
                         except:
