@@ -55,9 +55,9 @@ from app.models import IQProgram
 from dashboard.backend import get_iqprogram_requires_fields
 from monitor.wrappers import LoggerWrapper
 
-from .models import Address as AddressRef
-from .models import EligibilityProgram as EligibilityProgramRef
-from .models import IQProgram as IQProgramRef
+from .models import AddressRef
+from .models import EligibilityProgramRef
+from .models import IQProgramRef
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))

@@ -25,7 +25,7 @@ from django.utils.translation import gettext_lazy as _
 from app.models import TimeStampedModel
 
 
-class Address(TimeStampedModel):
+class AddressRef(TimeStampedModel):
     address1 = models.CharField(
         max_length=200,
         default="",
@@ -109,7 +109,7 @@ class Address(TimeStampedModel):
         return hashlib.sha1(bytearray(concatVals, "utf8")).hexdigest()
 
 
-class IQProgram(TimeStampedModel):
+class IQProgramRef(TimeStampedModel):
     # ``id`` is the implicity primary key
     program_name = models.CharField(
         max_length=40,
@@ -261,7 +261,7 @@ class IQProgram(TimeStampedModel):
         return str(self.friendly_name)
 
 
-class EligibilityProgram(TimeStampedModel):
+class EligibilityProgramRef(TimeStampedModel):
     """
     Model class to store the eligibility programs.
     """

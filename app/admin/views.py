@@ -39,7 +39,7 @@ from app.backend import finalize_application
 from app.constants import supported_content_types
 from app.models import EligibilityProgram
 from monitor.wrappers import LoggerWrapper
-from ref.models import EligibilityProgram as EligibilityProgramRef
+from ref.models import EligibilityProgramRef
 
 from .forms import EligProgramAddForm
 

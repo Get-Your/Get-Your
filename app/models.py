@@ -87,7 +87,7 @@ class IQProgram(IQProgramModel):
     )
 
     program = models.ForeignKey(
-        "ref.IQProgram",
+        "ref.IQProgramRef",
         related_name="iq_programs",
         on_delete=models.DO_NOTHING,  # don't update these values if the program is deleted
     )
@@ -112,7 +112,7 @@ class EligibilityProgram(TimeStampedModel):
     )
 
     program = models.ForeignKey(
-        "ref.EligibilityProgram",
+        "ref.EligibilityProgramRef",
         # Prevent deletion of the referenced object (under restricted conditions)
         # (ref https://docs.djangoproject.com/en/4.2/ref/models/fields/#django.db.models.ForeignKey.on_delete)
         on_delete=models.RESTRICT,

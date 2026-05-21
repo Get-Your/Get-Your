@@ -26,9 +26,9 @@ from django.utils.translation import gettext_lazy as _
 from dashboard.backend import get_iqprogram_requires_fields
 
 # from dashboard.backend import get_users_iq_programs
-from ref.models import Address as AddressRef
-from ref.models import EligibilityProgram as EligibilityProgramRef
-from ref.models import IQProgram as IQProgramRef
+from ref.models import AddressRef
+from ref.models import EligibilityProgramRef
+from ref.models import IQProgramRef
 
 # Get the user model
 User = get_user_model()

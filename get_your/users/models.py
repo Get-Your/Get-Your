@@ -92,17 +92,17 @@ class User(AbstractUser):
     # Address-specific fields
 
     mailing_address = models.ForeignKey(
-        "ref.Address",
+        "ref.AddressRef",
         # TODO: Consider switching this back to non-nullable (after the
         # transition to v10)
         null=True,
         on_delete=models.DO_NOTHING,  # don't remove this value if address is deleted
-        related_name="+",  # don't relate "ref.Address" with this field
+        related_name="+",  # don't relate "ref.AddressRef" with this field
     )
     # Note that 'user_has_updated' doesn't apply to the eligibility_address;
     # this is only changed after the initial application during renewals
     eligibility_address = models.ForeignKey(
-        "ref.Address",
+        "ref.AddressRef",
         # TODO: Consider switching this back to non-nullable (after the
         # transition to v10)
         null=True,
