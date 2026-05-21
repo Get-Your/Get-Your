@@ -31,7 +31,14 @@
                 {% for address_form in address_form_set %}
                     {{ address_form.non_field_errors }}
                     {% if forloop.counter0 == 0 %}
-                    <fieldset>
+                    <fieldset id="home-address-information">
+                        <div class="mb-3">
+                            <label for="autocomplete-container" class="form-label fw-bold">Enter an Address</label>
+                            <!-- Bootstrap classes style this wrapper -->
+                            <div id="autocomplete-container" class="position-relative shadow-sm">
+                                <!-- Google PlaceAutocompleteElement will be injected here -->
+                            </div>
+                        </div>
                         <legend class="border-bottom">Home Address Information</legend>
                         <div class="row">
                             {% for field in address_form %}
@@ -156,6 +163,75 @@
     </div>
 
     {{ userJson|json_script:"user" }}
+    {% comment %} <script>
+        let autocompleteFunc = function initAutocomplete() {
+            let inputEl = document.getElementById('autocomplete');
+            autocomplete = new google.maps.places.Autocomplete(
+                inputEl,
+                {
+                    types: ['address'],
+                    componentRestriction: { 'country': ['us'] },
+                    fields: ['address_components', 'place_id', 'geometry', 'name']
+                }
+            )
+        }
+
+        function onPlaceChanged() {
+            var place = autocomplete.getPlace();
+
+            if (!place.geometry) {
+                document.getElementById('autocomplete').placeholder = 'Enter an address';
+            } else {
+                console.log(place);
+            }
+        }
+
+        autocompleteFunc.addEventListener('place_changed', onPlaceChanged);        
+    </script> {% endcomment %}
+    <script>
+        // prettier-ignore
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+            key: "AIzaSyDUNIHIyhuTeH5f11cSEFuw3mk4y82NSbE"
+        });
+
+        async function init() {
+            // Request needed libraries.
+        
+            const { PlaceAutocompleteElement } =
+                await google.maps.importLibrary('places');
+            // Create the input HTML element, and append it.
+            const placeAutocomplete = new PlaceAutocompleteElement();
+            document.getElementById('autocomplete-container').appendChild(placeAutocomplete);
+        
+            const selectedPlaceInfo = document.createElement('pre');
+            selectedPlaceInfo.textContent = '';
+            document.body.appendChild(selectedPlaceInfo);
+        
+            // Add the gmp-select listener, and display the results.
+            placeAutocomplete.addEventListener(
+                'gmp-select',
+                async ({ placePrediction }) => {
+                    const place = placePrediction.toPlace();
+                    await place.fetchFields({
+                        fields: ['displayName', 'formattedAddress', 'addressComponents'],
+                    });
+                    // selectedPlaceInfo.textContent = JSON.stringify(
+                    //    place.toJSON(),
+                    //    /* replacer */ null,
+                    //    /* space */ 2
+                    // );
+                    console.log(place);
+                }
+                // Populate your Bootstrap input with the result
+                // document.getElementById("formatted-address").value = place.formattedAddress;
+            );
+        }
+        
+        void init();
+    </script>
+    {% comment %} <script async
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDUNIHIyhuTeH5f11cSEFuw3mk4y82NSbE&loading=async&libraries=places&callback=initAutocomplete">
+    </script> {% endcomment %}
     <script type="module">
         import { createApp, ref } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
         
@@ -197,6 +273,11 @@
                 }
             }
         }).mount('#app')
+
+        if ($('#id_form-1-address1').val()) {
+            $('#mailing_address_information').removeClass('d-none');
+            $('#id_mailing_address_same_as_home_1').prop('checked', true);
+        }
 
         if ($('#id_mailing_address_same_as_home_1').prop('checked')) {
             $('#mailing_address_information').removeClass('d-none');
