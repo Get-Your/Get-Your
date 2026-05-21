@@ -1387,7 +1387,7 @@ class ETLToNew:
                     "requires_is_city_covered",
                     "requires_is_in_gma",
                     "is_active",
-                    "",
+                    "additional_external_form_link",
                 ],
                 "target_fields": [
                     "id",
