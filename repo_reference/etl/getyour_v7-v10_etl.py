@@ -1322,7 +1322,7 @@ class ETLToNew:
             "socialaccount_socialtoken": {},
             "socialaccount_socialaccount": {},
             "users_user_user_completed_pages": {},
-            "ref_address": {
+            "ref_addressref": {
                 "source_table": "app_addressrd",
             },
             "users_user": {
@@ -1369,7 +1369,7 @@ class ETLToNew:
             "auth_group_permissions": {
                 "source_table": "auth_group_permissions",
             },
-            "ref_iqprogram": {
+            "ref_iqprogramref": {
                 "source_table": "app_iqprogramrd",
                 "source_fields": [
                     "id",
@@ -1410,7 +1410,7 @@ class ETLToNew:
                     "additional_external_form_link",
                 ],
             },
-            "ref_eligibilityprogram": {
+            "ref_eligibilityprogramref": {
                 "source_table": "app_eligibilityprogramrd",
                 "source_fields": [
                     "id",
