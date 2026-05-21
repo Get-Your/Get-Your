@@ -83,40 +83,16 @@ class Address(TimeStampedModel):
         return False
 
     def set_initial_form_data(self):
-        initial_address_data = []
+        initial_queryset = None
 
         if self.are_addresses_the_same():
-            initial_address_data = [
-                {
-                    'address1': self.eligibility_address.address1,
-                    'address2': self.eligibility_address.address2,
-                    'city': self.eligibility_address.city,
-                    'state': self.eligibility_address.state,
-                    'zip_code': self.eligibility_address.zip_code,
-                    'address_sha1': self.eligibility_address.address_sha1
-                }
-            ]
+            initial_queryset = self.eligibility_address
         else:
-            initial_address_data = [
-                {
-                    'address1': self.eligibility_address.address1,
-                    'address2': self.eligibility_address.address2,
-                    'city': self.eligibility_address.city,
-                    'state': self.eligibility_address.state,
-                    'zip_code': self.eligibility_address.zip_code,
-                    'address_sha1': self.eligibility_address.address_sha1
-                },
-                {
-                    'address1': self.mailing_address.address1,
-                    'address2': self.mailing_address.address2,
-                    'city': self.mailing_address.city,
-                    'state': self.mailing_address.state,
-                    'zip_code': self.mailing_address.zip_code,
-                    'address_sha1': self.mailing_address.address_sha1
-                }
-            ]
+            initial_queryset = AddressRef.objects.filter(
+                id__in=[self.eligibility_address.id, self.mailing_address.id]
+            )
 
-        return initial_address_data
+        return initial_queryset
 
     class Meta:
         verbose_name = "address"
