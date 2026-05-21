@@ -497,7 +497,7 @@ class TableFunctions:
                 if not col.nullable:
                     default_value = col.default
                     if (
-                        target_db.db_type == "postgres"
+                        not default_value
                         and col.server_default
                         and col.server_default.has_argument
                     ):
