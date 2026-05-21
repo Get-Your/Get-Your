@@ -56,9 +56,10 @@ class User(AbstractUser):
     username = None  # type: ignore[assignment]
 
     phone_number = PhoneNumberField()
-    has_viewed_dashboard = models.BooleanField(default=False)
+    has_viewed_dashboard = models.BooleanField(default=False, db_default=False)
     is_archived = models.BooleanField(
         default=False,
+        db_default=False,
         help_text=_(
             "Designates whether the user is marked as 'archived'.",
         ),
@@ -72,7 +73,7 @@ class User(AbstractUser):
     )
 
     # Define user-updated data
-    user_has_updated = models.BooleanField(default=False)
+    user_has_updated = models.BooleanField(default=False, db_default=False)
     user_completed_pages = models.ManyToManyField(
         "ref.ApplicationPage",
         related_name="user",
@@ -113,6 +114,7 @@ class User(AbstractUser):
 
     is_income_verified = models.BooleanField(
         default=False,
+        db_default=False,
         verbose_name="income has been verified",
         help_text=_(
             "Designates whether an applicant has had their income verified.",
@@ -121,6 +123,7 @@ class User(AbstractUser):
     duration_at_address = models.CharField(
         # TODO: Consider removing the default again (after the transition to v10)
         default="",
+        db_default="",
         max_length=200,
         choices=duration_at_address_choices,
     )
@@ -136,6 +139,7 @@ class User(AbstractUser):
     rent_own = models.CharField(
         # TODO: Consider removing the default again (after the transition to v10)
         default="",
+        db_default="",
         max_length=200,
         choices=rent_own_choices,
         verbose_name="rent or own",
@@ -185,6 +189,7 @@ class UserNote(models.Model):
 
     awaiting_user_response = models.BooleanField(
         default=False,
+        db_default=False,
         help_text=_(
             "Designates that the admin is waiting for a user to respond to a request made separate from this platform. "
             "This is used only to filter income-verification applicants.",

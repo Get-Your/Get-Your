@@ -63,7 +63,7 @@ class HouseholdMembers(TimeStampedModel):
     birthdate = models.DateField()
     identification_path = models.FileField()
 
-    user_has_updated = models.BooleanField(default=False)
+    user_has_updated = models.BooleanField(default=False, db_default=False)
 
     class Meta:
         verbose_name = "household member"
@@ -92,7 +92,7 @@ class IQProgram(IQProgramModel):
         on_delete=models.DO_NOTHING,  # don't update these values if the program is deleted
     )
 
-    is_enrolled = models.BooleanField(default=False)
+    is_enrolled = models.BooleanField(default=False, db_default=False)
 
     class Meta:
         verbose_name = "user IQ program"

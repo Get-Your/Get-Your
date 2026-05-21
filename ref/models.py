@@ -29,6 +29,7 @@ class Address(TimeStampedModel):
     address1 = models.CharField(
         max_length=200,
         default="",
+        db_default="",
         verbose_name="street address",
         help_text=_(
             "House number and street name.",
@@ -38,6 +39,7 @@ class Address(TimeStampedModel):
         max_length=200,
         blank=True,
         default="",
+        db_default="",
         verbose_name="apt, suite, etc.",
         help_text=_(
             "Leave blank if not applicable.",
@@ -46,7 +48,7 @@ class Address(TimeStampedModel):
 
     # Try to get past the things that should be the same for every applicant
     city = models.CharField(max_length=64)
-    state = models.CharField(max_length=2, default="")
+    state = models.CharField(max_length=2, default="", db_default="")
 
     zip_code = models.DecimalField(max_digits=5, decimal_places=0)
 
@@ -60,7 +62,7 @@ class Address(TimeStampedModel):
         ),
     )
     has_connexion = models.BooleanField(null=True, default=None)
-    is_verified = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False, db_default=False)
     address_sha1 = models.CharField(max_length=40, unique=True)
 
     class Meta:
@@ -190,6 +192,7 @@ class IQProgram(TimeStampedModel):
 
     is_active = models.BooleanField(
         default=True,
+        db_default=True,
         help_text=_(
             "Designates whether the program is in-use or not. "
             "Unselect this instead of deleting programs.",
@@ -199,6 +202,7 @@ class IQProgram(TimeStampedModel):
     # Enable auto-apply for the designated program
     enable_autoapply = models.BooleanField(
         default=False,
+        db_default=False,
         help_text=_(
             "Designates whether the program should automatically apply new users who are eligible.",
         ),
@@ -210,6 +214,7 @@ class IQProgram(TimeStampedModel):
     requires_is_in_gma = models.BooleanField(
         # Default to True for safety
         default=True,
+        db_default=True,
         help_text=_(
             "Designates whether the user's eligibility address is required to be in the GMA to be eligible.",
         ),
@@ -217,6 +222,7 @@ class IQProgram(TimeStampedModel):
     requires_is_city_covered = models.BooleanField(
         # Default to True for safety
         default=True,
+        db_default=True,
         help_text=_(
             "Designates whether the user's eligibility address is required to be 'covered by the City' to be eligible. "
             "'City coverage' is always True for addresses within the GMA, otherwise it's determined by the Get FoCo administrators.",
@@ -305,6 +311,7 @@ class EligibilityProgram(TimeStampedModel):
 
     is_active = models.BooleanField(
         default=True,
+        db_default=True,
         help_text=_(
             "Designates whether the program is in-use or not. "
             "Unselect this instead of deleting programs.",
