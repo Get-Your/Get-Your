@@ -53,10 +53,10 @@ class IQProgramModel(models.Model):
 
 
 class HouseholdMembers(TimeStampedModel):
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         User,
+        related_name="householdmembers",
         on_delete=models.CASCADE,
-        primary_key=True,
     )
 
     full_name = models.CharField(max_length=200)
