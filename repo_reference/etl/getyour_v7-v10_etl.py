@@ -887,28 +887,12 @@ class ETLToNew:
                 "source_table": "app_iqprogram",
             },
             "app_householdmembers": {
-                # # Temporarily commented out because we can't have null values;
-                # # this will need to be ported and converted simultaneously (in
-                # # convert_household_from_json())
-                # "source_table": "app_householdmembers",
-                # "source_fields": [
-                #     "created_at",
-                #     "modified_at",
-                #     "user_id",
-                #     "is_updated",
-                # ],
-                # "target_fields": [
-                #     "created_at",
-                #     "modified_at",
-                #     "user_id",
-                #     "user_has_updated",
-                # ],
-                # "after_port": [
-                #     {
-                #         "function": self.table_functions.convert_household_from_json,
-                #         "kwargs": {},
-                #     },
-                # ],
+                "after_port": [
+                    {
+                        "function": self.table_functions.convert_householdmembers_from_json,
+                        "kwargs": {},
+                    },
+                ],
             },
             "app_eligibilityprogram": {
                 "source_table": "app_eligibilityprogram",

@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import re
 
 import pandas as pd
+import pendulum
 from coftc_db_utils.sqlalchemy_functions import DBMetadata
 from coftc_db_utils.sqlalchemy_functions import FieldMapping
 from coftc_db_utils.sqlalchemy_functions import finalize_df_for_database
@@ -54,6 +55,95 @@ class TableFunctions:
         self.ignore_errors = ignore_errors
 
         self.dtype_mapping = dtype_mapping
+
+        # Ensure the databases are supported
+        if self.etlo.old.db_type not in (
+            "postgres",
+            "sqlite",
+        ) or self.etlo.new.db_type not in (
+            "postgres",
+            "sqlite",
+        ):
+            raise NotImplementedError(
+                "The functionality used in TableFunctions is currently only available for PostgreSQL and SQLite.",
+            )
+
+    def _query_source_table(
+        self,
+        source_db: DBMetadata,
+        source_table: Table,
+        map_list: list | tuple,
+        *,
+        # The following are keyword-only
+        do_trim_columns: bool | None = None,
+    ):
+        # Gather the field if source_value
+        source_table_fields = [source_table.c.get(x["source_field"]) for x in map_list]
+
+        # Define 'target_types' as the types in source_table_fields, using
+        # the dtype_mapping passed in via ETLToNew() (this is to
+        # resolve the issue of 'int' dtypes in pandas not being about to
+        # store NULL values)
+        python_dtypes = [
+            next(
+                iter(
+                    ptype
+                    for dbtype, ptype in self.dtype_mapping.items()
+                    if re.match(dbtype, str(x.type))
+                ),
+                None,
+            )
+            if isinstance(x, Column)
+            else "str"
+            for x in source_table_fields
+        ]
+
+        # Create field_mapping
+        field_mapping = FieldMapping(
+            mappings=[
+                {
+                    "source_field": mp["source_field"],
+                    "target_field": mp["target_field"],
+                    "target_type": typ,
+                }
+                for mp, typ in zip(
+                    map_list,
+                    python_dtypes,
+                )
+            ],
+        )
+
+        # Overwrite the source fields, given any new data from field_mapping
+        source_table_fields = [
+            source_table.c.get(fd) for fd, _ in field_mapping.source_fields.items()
+        ]
+
+        # Define the SELECT statement
+        stmt = select(*source_table_fields)
+
+        # Pull the data into a DataFrame and process it
+        if do_trim_columns is not None:
+            df = process_data(
+                stmt,
+                source_db.engine,
+                field_mapping,
+                do_trim_columns=do_trim_columns,
+                do_follow_django=True,
+            )
+        else:
+            df = process_data(
+                stmt,
+                source_db.engine,
+                field_mapping,
+                do_follow_django=True,
+            )
+
+        # Find the 'char' fields, for reference later
+        char_fields = [
+            fd for fd, tp in field_mapping.target_types.items() if tp == "str"
+        ]
+
+        return (char_fields, df)
 
     def determine_completed_pages(self):
         """
@@ -269,84 +359,6 @@ class TableFunctions:
             conn.execute(insert_stmt, df_completed.to_dict("records"))
 
     def port_user_table(self):
-        def _query_source_table(
-            source_db: DBMetadata,
-            source_table: Table,
-            map_list: list | tuple,
-        ):
-            # Gather the field if source_value
-            source_table_fields = [
-                source_table.c.get(x["source_field"]) for x in map_list
-            ]
-
-            # Define 'target_types' as the types in source_table_fields, using
-            # the dtype_mapping passed in via ETLToNew() (this is to
-            # resolve the issue of 'int' dtypes in pandas not being about to
-            # store NULL values)
-            python_dtypes = [
-                next(
-                    iter(
-                        ptype
-                        for dbtype, ptype in self.dtype_mapping.items()
-                        if re.match(dbtype, str(x.type))
-                    ),
-                    None,
-                )
-                if isinstance(x, Column)
-                else "str"
-                for x in source_table_fields
-            ]
-
-            # Create field_mapping
-            field_mapping = FieldMapping(
-                mappings=[
-                    {
-                        "source_field": mp["source_field"],
-                        "target_field": mp["target_field"],
-                        "target_type": typ,
-                    }
-                    for mp, typ in zip(
-                        map_list,
-                        python_dtypes,
-                    )
-                ],
-            )
-
-            # Overwrite the source fields, given any new data from field_mapping
-            source_table_fields = [
-                source_table.c.get(fd) for fd, _ in field_mapping.source_fields.items()
-            ]
-
-            # Define the SELECT statement
-            stmt = select(*source_table_fields)
-
-            # Pull the data into a DataFrame and process it
-            df = process_data(
-                stmt,
-                source_db.engine,
-                field_mapping,
-                do_follow_django=True,
-            )
-
-            # Find the 'char' fields, for reference later
-            char_fields = [
-                fd for fd, tp in field_mapping.target_types.items() if tp == "str"
-            ]
-
-            return (char_fields, df)
-
-        # Ensure the databases are supported
-        if self.etlo.old.db_type not in (
-            "postgres",
-            "sqlite",
-        ) or self.etlo.new.db_type not in (
-            "postgres",
-            "sqlite",
-        ):
-            raise NotImplementedError(
-                "The UPSERT functionality used for the target table is currently only available for PostgreSQL and SQLite.",
-            )
-
         try:
             # First, load the source and target tables from metadata reflections
             source_user_table = Table(
@@ -427,14 +439,14 @@ class TableFunctions:
             ]
 
             # Fill the beginnings of the user table
-            char_fields, df = _query_source_table(
+            char_fields, df = self._query_source_table(
                 self.etlo.old,
                 source_user_table,
                 user_map_list,
             )
 
             # Combine with the address table (on id)
-            char_fields_add, df_add = _query_source_table(
+            char_fields_add, df_add = self._query_source_table(
                 self.etlo.old,
                 source_address_table,
                 address_map_list,
@@ -450,7 +462,7 @@ class TableFunctions:
             char_fields += char_fields_add
 
             # Combine with the household table (on id)
-            char_fields_add, df_add = _query_source_table(
+            char_fields_add, df_add = self._query_source_table(
                 self.etlo.old,
                 source_household_table,
                 household_map_list,
@@ -575,7 +587,7 @@ class TableFunctions:
         else:
             self.determine_completed_pages()
 
-    def convert_household_from_json(self):
+    def convert_householdmembers_from_json(self):
         """
         For each account, convert `app_householdmembers.household_info` from
         JSON into the new field-separated `birthdate`, `full_name`, and
@@ -583,4 +595,101 @@ class TableFunctions:
 
         """
 
-        print("FINISH CONVERTING HOUSEHOLDMEMBERS")
+        source_table = Table(
+            "app_householdmembers",
+            self.etlo.old.metadata,
+            autoload_with=self.etlo.old.engine,
+        )
+        target_table = Table(
+            "app_householdmembers",
+            self.etlo.new.metadata,
+            autoload_with=self.etlo.new.engine,
+        )
+
+        map_list = [
+            {"source_field": "user_id", "target_field": "user_id"},
+            {"source_field": "created_at", "target_field": "created_at"},
+            {"source_field": "modified_at", "target_field": "modified_at"},
+            {"source_field": "is_updated", "target_field": "user_has_updated"},
+            # No transform here; this will be done manually below
+            {"source_field": "household_info", "target_field": "household_info"},
+        ]
+
+        # Pull the data into a DataFrame and process it
+        char_fields, df = self._query_source_table(
+            self.etlo.old,
+            source_table,
+            map_list,
+            # Don't trim the columns (else the JSON will be nullified)
+            do_trim_columns=False,
+        )
+
+        # Create the new fields (in a new DataFrame) from household_info
+        df_members = pd.DataFrame(
+            columns=[
+                "user_id",
+                "full_name",
+                "birthdate",
+                "identification_path",
+            ],
+        )
+        # Generate the last two digits of the current year (to assist in date
+        # parsing)
+        current_year_last_digits = int(str(pendulum.now().year)[2:])
+        # Loop through df to parse the data
+        for idx, row in df.iterrows():
+            # Add a new row for each record in household_info
+            for itm in row.household_info["persons_in_household"]:
+                # Some values may not exist, in which case, place a blank
+                if (
+                    "identification_path" not in itm
+                    or itm["identification_path"] is None
+                ):
+                    filepath = ""
+                else:
+                    filepath = itm["identification_path"]
+
+                # Parse text birthdate as Date
+                try:
+                    birthdate = pendulum.parse(itm["birthdate"], exact=True)
+                except pendulum.exceptions.ParserError:
+                    # Try it as an older-style m/d/y date
+                    mo, da, yr = itm["birthdate"].split("/")
+
+                    # If yr < 4 characters, need to prepend the century to it
+                    if len(yr) < 4:
+                        if int(yr) >= current_year_last_digits:
+                            yr = f"19{yr}"
+                        else:
+                            yr = f"20{yr}"
+
+                    birthdate = pendulum.datetime(int(yr), int(mo), int(da)).date()
+                    print(
+                        f"Date parser error; calculated '{birthdate}' (user_id {row['user_id']})",
+                    )
+
+                member_dict = {
+                    "user_id": row["user_id"],
+                    "full_name": itm["name"],
+                    "birthdate": birthdate,
+                    "identification_path": filepath,
+                }
+                df_members.loc[len(df_members)] = member_dict
+
+        # Merge df_members with df to fill the metadata
+        df = df.merge(
+            df_members,
+            # Make a 'left' merge so that df keeps all values
+            how="left",
+            # Merge on 'user_id' field
+            on="user_id",
+        )
+        # Remove 'household_info'
+        del df["household_info"]
+
+        # Insert the remaining columns of df into the target_table
+        insert_stmt = insert(target_table).values(
+            **{x: bindparam(x) for x in df.columns},
+        )
+        with self.etlo.new.engine.begin() as conn:
+            conn.execute(insert_stmt, df.to_dict("records"))
