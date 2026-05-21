@@ -1318,6 +1318,7 @@ class ETLToNew:
             # Truncate (only) tables that FK to users_user (or themselves)
             "django_admin_log": {},
             "mfa_authenticator": {},
+            "authtoken_token": {},
             "socialaccount_socialtoken": {},
             "socialaccount_socialaccount": {},
             "users_user_user_completed_pages": {},
