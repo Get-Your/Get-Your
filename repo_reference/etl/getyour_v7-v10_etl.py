@@ -43,6 +43,8 @@ from sqlalchemy import update
 
 # Use Postgres-specific insert
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.sql.sqltypes import BOOLEAN
+from sqlalchemy.sql.sqltypes import VARCHAR
 
 # Add the path of this directory's parent, then import helper functions
 sys.path.append(str(Path(__file__).parents[1]))
@@ -287,6 +289,314 @@ class TableFunctions:
         )
         with self.etlo.new.engine.begin() as conn:
             conn.execute(insert_stmt, df_completed.to_dict("records"))
+
+    def port_user_table(self):
+        def _query_source_table(
+            source_db: DBMetadata,
+            source_table: Table,
+            map_list: list | tuple,
+        ):
+            # Gather the field if source_value
+            source_table_fields = [
+                source_table.c.get(x["source_field"]) for x in map_list
+            ]
+
+            # Define 'target_types' as the types in source_table_fields, using
+            # the DTYPE_MAPPING defined at the top of this file (this is to
+            # resolve the issue of 'int' dtypes in pandas not being about to
+            # store NULL values)
+            python_dtypes = [
+                next(
+                    iter(
+                        ptype
+                        for dbtype, ptype in DTYPE_MAPPING.items()
+                        if re.match(dbtype, str(x.type))
+                    ),
+                    None,
+                )
+                if isinstance(x, Column)
+                else "str"
+                for x in source_table_fields
+            ]
+
+            # Create field_mapping
+            field_mapping = FieldMapping(
+                mappings=[
+                    {
+                        "source_field": mp["source_field"],
+                        "target_field": mp["target_field"],
+                        "target_type": typ,
+                    }
+                    for mp, typ in zip(
+                        map_list,
+                        python_dtypes,
+                    )
+                ],
+            )
+
+            # Overwrite the source fields, given any new data from field_mapping
+            source_table_fields = [
+                source_table.c.get(fd) for fd, _ in field_mapping.source_fields.items()
+            ]
+
+            # Define the SELECT statement
+            stmt = select(*source_table_fields)
+
+            # Pull the data into a DataFrame and process it
+            df = process_data(
+                stmt,
+                source_db.engine,
+                field_mapping,
+                do_follow_django=True,
+            )
+
+            # Find the 'char' fields, for reference later
+            char_fields = [
+                fd for fd, tp in field_mapping.target_types.items() if tp == "str"
+            ]
+
+            return (char_fields, df)
+
+        # Gather the proper DBMetadata
+        source_db = self.etlo.old
+        target_db = self.etlo.new
+
+        # Ensure the databases are supported
+        if source_db.db_type not in ("postgres", "sqlite") or target_db.db_type not in (
+            "postgres",
+            "sqlite",
+        ):
+            raise NotImplementedError(
+                "The UPSERT functionality used for the target table is currently only available for PostgreSQL and SQLite.",
+            )
+
+        try:
+            # First, load the source and target tables from metadata reflections
+            source_user_table = Table(
+                "app_user",
+                source_db.metadata,
+                autoload_with=source_db.engine,
+            )
+            source_address_table = Table(
+                "app_address",
+                source_db.metadata,
+                autoload_with=source_db.engine,
+            )
+            source_household_table = Table(
+                "app_household",
+                source_db.metadata,
+                autoload_with=source_db.engine,
+            )
+            target_table = Table(
+                "users_user",
+                target_db.metadata,
+                autoload_with=target_db.engine,
+            )
+
+            # Define field mapping for each table
+            user_map_list = [
+                {"source_field": "id", "target_field": "id"},
+                {"source_field": "password", "target_field": "password"},
+                {"source_field": "last_login", "target_field": "last_login"},
+                {"source_field": "is_superuser", "target_field": "is_superuser"},
+                {"source_field": "is_staff", "target_field": "is_staff"},
+                {"source_field": "is_active", "target_field": "is_active"},
+                {"source_field": "is_archived", "target_field": "is_archived"},
+                {"source_field": "date_joined", "target_field": "date_joined"},
+                {"source_field": "email", "target_field": "email"},
+                {"source_field": "first_name", "target_field": "first_name"},
+                {"source_field": "last_name", "target_field": "last_name"},
+                {"source_field": "phone_number", "target_field": "phone_number"},
+                {
+                    "source_field": "has_viewed_dashboard",
+                    "target_field": "has_viewed_dashboard",
+                },
+                {"source_field": "is_updated", "target_field": "user_has_updated"},
+                {
+                    "source_field": "last_completed_at",
+                    "target_field": "last_completed_at",
+                },
+                {
+                    "source_field": "last_action_notification_at",
+                    "target_field": "last_action_notification_at",
+                },
+            ]
+            address_map_list = [
+                {"source_field": "user_id", "target_field": "id"},
+                {
+                    "source_field": "eligibility_address_id",
+                    "target_field": "eligibility_address_id",
+                },
+                {
+                    "source_field": "mailing_address_id",
+                    "target_field": "mailing_address_id",
+                },
+            ]
+            household_map_list = [
+                {"source_field": "user_id", "target_field": "id"},
+                {
+                    "source_field": "is_income_verified",
+                    "target_field": "is_income_verified",
+                },
+                {
+                    "source_field": "duration_at_address",
+                    "target_field": "duration_at_address",
+                },
+                {
+                    "source_field": "income_as_fraction_of_ami",
+                    "target_field": "income_as_fraction_of_ami",
+                },
+                {"source_field": "rent_own", "target_field": "rent_own"},
+            ]
+
+            # Fill the beginnings of the user table
+            char_fields, df = _query_source_table(
+                source_db,
+                source_user_table,
+                user_map_list,
+            )
+
+            # Combine with the address table (on id)
+            char_fields_add, df_add = _query_source_table(
+                source_db,
+                source_address_table,
+                address_map_list,
+            )
+            # Join the address table to the primary DataFrame
+            df = df.merge(
+                df_add,
+                # Make a 'left' merge so that df keeps all values
+                how="left",
+                # Merge on 'id' field
+                on="id",
+            )
+            char_fields += char_fields_add
+
+            # Combine with the household table (on id)
+            char_fields_add, df_add = _query_source_table(
+                source_db,
+                source_household_table,
+                household_map_list,
+            )
+            # Join the household table to the primary DataFrame
+            df = df.merge(
+                df_add,
+                # Make a 'left' merge so that df keeps all values
+                how="left",
+                # Merge on 'id' field
+                on="id",
+            )
+            char_fields += char_fields_add
+
+            # Fill merged fields that DNE with that column's default value
+            # Postgres uses the 'server_default' option instead of 'default',
+            # which is slightly more intricate to parse
+            for col in target_table.columns:
+                if not col.nullable:
+                    default_value = col.default
+                    if (
+                        target_db.db_type == "postgres"
+                        and col.server_default
+                        and col.server_default.has_argument
+                    ):
+                        if isinstance(col.type, BOOLEAN):
+                            default_value = (
+                                col.server_default.arg.text.lower() == "true"
+                            )
+                        elif isinstance(col.type, VARCHAR):
+                            default_value = (
+                                ""
+                                if col.server_default.arg.text.startswith("''")
+                                else col.server_default.arg.text
+                            )
+
+                    if default_value is not None:
+                        df[col.name] = df[col.name].apply(
+                            lambda x: default_value if pd.isna(x) else x,
+                        )
+
+            # Convert merged fields that DNE from None to '' (empty string) for
+            # all 'char' fields (to follow Django guidelines)
+            for fd in char_fields:
+                df[fd] = df[fd].apply(lambda x: "" if pd.isna(x) else x)
+
+            try:
+                # Find the primary key(s) to upsert with
+                primary_keys = [x.name for x in target_table.columns if x.primary_key]
+
+                # Use MERGE to upsert if the target is Postgres or SQLite; else
+                # use ON CONFLICT
+                if target_db.db_type == "postgres":
+                    upsert_via_merge(
+                        target_db,
+                        target_table,
+                        df,
+                        primary_keys,
+                    )
+
+                else:
+                    # Upsert (insert with ON CONFLICT DO UPDATE) the data. This
+                    # operation is specific to Postgres, but works with SQLite
+                    # as well
+                    # Finalize the DataFrame for the database
+                    df = finalize_df_for_database(df)
+
+                    upsert_stmt = insert(target_table).values(
+                        # Use all columns in df
+                        **{x: bindparam(x) for x in df.columns},
+                    )
+
+                    upsert_stmt = upsert_stmt.on_conflict_do_update(
+                        index_elements=primary_keys,
+                        # Set all columns except the primary keys
+                        set_={
+                            x: bindparam(x) for x in df.columns if x not in primary_keys
+                        },
+                    )
+                    with target_db.engine.connect() as conn:
+                        conn.execute(upsert_stmt, df.to_dict("records"))
+                        conn.commit()
+
+            except Exception as exc:
+                # If ignore_errors is specified, proceed with the *slow*
+                # row-by-row insert (ONLY) (after notifying user)
+                # This allows rejecting specific records on failure
+                if self.ignore_errors:
+                    print(
+                        f"Bulk UPSERT failed with\n\n{exc}\n\nProceeding with much slower row-by-row INSERT (ONLY)...",
+                    )
+
+                    ignore_count = 0
+                    insert_stmt = insert(target_table).values(
+                        # Use all columns in df
+                        **{x: bindparam(x) for x in df.columns},
+                    )
+                    for row in df.to_dict("records"):
+                        try:
+                            with target_db.engine.connect() as conn:
+                                conn.execute(insert_stmt, row)
+                                conn.commit()
+                        except:
+                            ignore_count += 1
+
+                    print(
+                        f"Row-by-row insertion successful! {ignore_count} of {len(df)} records ignored.",
+                    )
+
+                else:
+                    # Raise the original error after notifying user that
+                    # specifying ignore_errors may be able to bypass the
+                    # issue
+                    print(
+                        "The following error was raised during bulk UPSERT (setting ignore_errors=True may be able to load partial data):",
+                    )
+                    raise
+
+        except:
+            raise
+
+        else:
+            self.determine_completed_pages()
 
     def convert_household_from_json(self):
         """
@@ -1011,45 +1321,13 @@ class ETLToNew:
             "socialaccount_socialtoken": {},
             "socialaccount_socialaccount": {},
             "users_user_user_completed_pages": {},
+            "ref_address": {
+                "source_table": "app_addressrd",
+            },
             "users_user": {
-                "source_table": "app_user",
-                "source_fields": [
-                    "id",
-                    "password",
-                    "last_login",
-                    "is_superuser",
-                    "is_staff",
-                    "is_active",
-                    "date_joined",
-                    "email",
-                    "first_name",
-                    "last_name",
-                    "phone_number",
-                    "has_viewed_dashboard",
-                    "is_updated",
-                    "last_completed_at",
-                    "last_action_notification_at",
-                ],
-                "target_fields": [
-                    "id",
-                    "password",
-                    "last_login",
-                    "is_superuser",
-                    "is_staff",
-                    "is_active",
-                    "date_joined",
-                    "email",
-                    "first_name",
-                    "last_name",
-                    "phone_number",
-                    "has_viewed_dashboard",
-                    "user_has_updated",
-                    "last_completed_at",
-                    "last_action_notification_at",
-                ],
                 "after_port": [
                     {
-                        "function": self.table_functions.determine_completed_pages,
+                        "function": self.table_functions.port_user_table,
                         "kwargs": {},
                     },
                 ],
@@ -1154,34 +1432,8 @@ class ETLToNew:
                     "is_active",
                 ],
             },
-            "ref_address": {
-                "source_table": "app_addressrd",
-            },
             "app_iqprogram": {
                 "source_table": "app_iqprogram",
-            },
-            "app_household": {
-                "source_table": "app_household",
-                "source_fields": [
-                    "created_at",
-                    "modified_at",
-                    "user_id",
-                    "is_updated",
-                    "is_income_verified",
-                    "duration_at_address",
-                    "income_as_fraction_of_ami",
-                    "rent_own",
-                ],
-                "target_fields": [
-                    "created_at",
-                    "modified_at",
-                    "user_id",
-                    "user_has_updated",
-                    "is_income_verified",
-                    "duration_at_address",
-                    "income_as_fraction_of_ami",
-                    "rent_own",
-                ],
             },
             "app_householdmembers": {
                 # # Temporarily commented out because we can't have null values;
@@ -1209,25 +1461,6 @@ class ETLToNew:
             },
             "app_eligibilityprogram": {
                 "source_table": "app_eligibilityprogram",
-            },
-            "app_address": {
-                "source_table": "app_address",
-                "source_fields": [
-                    "created_at",
-                    "modified_at",
-                    "user_id",
-                    "eligibility_address_id",
-                    "mailing_address_id",
-                    "is_updated",
-                ],
-                "target_fields": [
-                    "created_at",
-                    "modified_at",
-                    "user_id",
-                    "eligibility_address_id",
-                    "mailing_address_id",
-                    "user_has_updated",
-                ],
             },
             "dashboard_feedback": {
                 "source_table": "app_feedback",
