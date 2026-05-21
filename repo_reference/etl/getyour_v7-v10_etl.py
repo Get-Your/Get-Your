@@ -15,9 +15,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
 
-"""
 This script runs ETL on the v7.x Get-Your data to transform it for the v10
 model.
 
@@ -613,10 +611,10 @@ class ETLToNew:
     def __init__(
         self,
         # Use the path to the default SQLite database as the default newdb_profile
-        newdb_profile: str = "getfoco_dev_v7",
-        newdb_monitor_profile: str = "getfoco_dev_monitor_v7",
-        olddb_profile: str = "getfoco_prod_v6",
-        olddb_analytics_profile: str = "getfoco_dev_analytics_v6",
+        newdb_profile: str = "getfoco_dev_v10",
+        newdb_monitor_profile: str = "getfoco_dev_monitor_v10",
+        olddb_profile: str = "getfoco_prod",
+        olddb_analytics_profile: str = "getfoco_dev_analytics",
         *,
         # The following are keyword-only
         ignore_errors: bool = True,
