@@ -22,10 +22,14 @@ model.
 """
 
 import re
-import sys
 from pathlib import Path
 
 import pandas as pd
+from coftc_db_utils.sqlalchemy_functions import DBMetadata
+from coftc_db_utils.sqlalchemy_functions import FieldMapping
+from coftc_db_utils.sqlalchemy_functions import finalize_df_for_database
+from coftc_db_utils.sqlalchemy_functions import process_data
+from coftc_db_utils.sqlalchemy_functions import upsert_via_merge
 from psycopg.errors import FeatureNotSupported
 from sqlalchemy import Column
 from sqlalchemy import Integer
@@ -43,14 +47,6 @@ from sqlalchemy import update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql.sqltypes import BOOLEAN
 from sqlalchemy.sql.sqltypes import VARCHAR
-
-# Add the path of this directory's parent, then import helper functions
-sys.path.append(str(Path(__file__).parents[1]))
-from sqlalchemy_functions import DBMetadata
-from sqlalchemy_functions import FieldMapping
-from sqlalchemy_functions import finalize_df_for_database
-from sqlalchemy_functions import process_data
-from sqlalchemy_functions import upsert_via_merge
 
 # Return the directory of this file
 FILE_DIR = Path(__file__).parent

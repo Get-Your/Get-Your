@@ -212,4 +212,4 @@ od-format-utils = { path = "../dist/od_format_utils-1.1.4-py3-none-any.whl" }
 coftc-file-utils = { path = "../dist/coftc_file_utils-3.0.2-py3-none-any.whl" }
 coftc-logging-utils = { path = "../dist/coftc_logging_utils-2.1.1-py3-none-any.whl" }
 coftc-cred-man = { path = "../dist/coftc_cred_man-5.0.0-py3-none-any.whl" }
-coftc-db-utils = { path = "../dist/coftc_db_utils-7.0.2-py3-none-any.whl" }
+coftc-db-utils = { path = "../dist/coftc_db_utils-8.0.0-py3-none-any.whl" }

@@ -359,8 +359,8 @@ requires-dist = [
 
 [[package]]
 name = "coftc-db-utils"
-version = "7.0.2"
-source = { path = "../dist/coftc_db_utils-7.0.2-py3-none-any.whl" }
+version = "8.0.0"
+source = { path = "../dist/coftc_db_utils-8.0.0-py3-none-any.whl" }
 dependencies = [
     { name = "coftc-cred-man" },
     { name = "coftc-file-utils" },
@@ -378,7 +378,7 @@ dependencies = [
     { name = "typer" },
 ]
 wheels = [
-    { filename = "coftc_db_utils-7.0.2-py3-none-any.whl", hash = "sha256:22ff91e7abccc977fe5f8e788251cd944ae805a89a7c380f6be1d09328b265c8" },
+    { filename = "coftc_db_utils-8.0.0-py3-none-any.whl", hash = "sha256:7bfde5129cdec9e198af2e7fd217571a707b30f2e52fbced2353eaaa36b09d06" },
 ]
 
 [package.metadata]
@@ -1086,7 +1086,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "coftc-cred-man", path = "../dist/coftc_cred_man-5.0.0-py3-none-any.whl" },
-    { name = "coftc-db-utils", path = "../dist/coftc_db_utils-7.0.2-py3-none-any.whl" },
+    { name = "coftc-db-utils", path = "../dist/coftc_db_utils-8.0.0-py3-none-any.whl" },
     { name = "coftc-file-utils", path = "../dist/coftc_file_utils-3.0.2-py3-none-any.whl" },
     { name = "coftc-logging-utils", path = "../dist/coftc_logging_utils-2.1.1-py3-none-any.whl" },
     { name = "coverage", specifier = "==7.13.5" },
