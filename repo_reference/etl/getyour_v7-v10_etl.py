@@ -59,7 +59,6 @@ FILE_DIR = Path(__file__).parent
 # the Postgres dtypes
 DTYPE_MAPPING = {
     "(.*?INT.*?)": "Int64",
-    "(.*?TIMESTAMP.*?)": "str",
     "(.*?CHAR.*?)": "str",
     "(.*?TEXT.*?)": "str",
     "(.*?JSON.*?)": "str",
@@ -658,9 +657,12 @@ class ETLToNew:
                 # Convert each Postgres dtype to Python
                 python_dtypes = [
                     next(
-                        ptype
-                        for dbtype, ptype in DTYPE_MAPPING.items()
-                        if re.match(dbtype, str(x.type))
+                        iter(
+                            ptype
+                            for dbtype, ptype in DTYPE_MAPPING.items()
+                            if re.match(dbtype, str(x.type))
+                        ),
+                        None,
                     )
                     if isinstance(x, Column)
                     else "str"
