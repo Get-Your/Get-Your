@@ -51,7 +51,6 @@ from app.admin.models import StaffPermissions
 # from app.backend import update_users_for_program
 from app.backend.address import address_check
 from app.backend.address import finalize_address
-from app.models import Address
 from app.models import IQProgram
 from dashboard.backend import get_iqprogram_requires_fields
 from monitor.wrappers import LoggerWrapper
@@ -531,7 +530,7 @@ class IQProgramRefAdmin(admin.ModelAdmin):
                 # 'restrictive' cases (an address that is currently ineligible
                 # but would be eligible with the proposed changes and vice
                 # versa, respectively)
-                permissive_address = Address.objects.select_related(
+                permissive_address = User.objects.select_related(
                     "eligibility_address",
                 ).filter(
                     filter_currently_ineligible,
@@ -539,7 +538,7 @@ class IQProgramRefAdmin(admin.ModelAdmin):
                     user_id=OuterRef("id"),
                 )
 
-                restrictive_address = Address.objects.select_related(
+                restrictive_address = User.objects.select_related(
                     "eligibility_address",
                 ).filter(
                     filter_currently_eligible,

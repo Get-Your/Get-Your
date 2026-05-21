@@ -28,6 +28,9 @@ from django.utils.translation import gettext_lazy as _
 from django_case_insensitive_field import CaseInsensitiveFieldMixin
 from phonenumber_field.modelfields import PhoneNumberField
 
+from app.constants import duration_at_address_choices
+from app.constants import rent_own_choices
+
 from .managers import UserManager
 
 
@@ -82,6 +85,62 @@ class User(AbstractUser):
         verbose_name="Last user action notification",
         help_text=_(
             "The latest time a notification was sent because of or requesting user action.",
+        ),
+    )
+
+    # Address-specific fields
+
+    mailing_address = models.ForeignKey(
+        "ref.Address",
+        # TODO: Consider switching this back to non-nullable (after the
+        # transition to v10)
+        null=True,
+        on_delete=models.DO_NOTHING,  # don't remove this value if address is deleted
+        related_name="+",  # don't relate "ref.Address" with this field
+    )
+    # Note that 'user_has_updated' doesn't apply to the eligibility_address;
+    # this is only changed after the initial application during renewals
+    eligibility_address = models.ForeignKey(
+        "ref.Address",
+        # TODO: Consider switching this back to non-nullable (after the
+        # transition to v10)
+        null=True,
+        on_delete=models.DO_NOTHING,  # don't remove this value if address is deleted
+        related_name="eligibility_user",
+    )
+
+    # Household-specific fields
+
+    is_income_verified = models.BooleanField(
+        default=False,
+        verbose_name="income has been verified",
+        help_text=_(
+            "Designates whether an applicant has had their income verified.",
+        ),
+    )
+    duration_at_address = models.CharField(
+        # TODO: Consider removing the default again (after the transition to v10)
+        default="",
+        max_length=200,
+        choices=duration_at_address_choices,
+    )
+
+    # Define the min and max Gross Annual Household Income as a fraction of
+    # AMI (which is a function of number of individuals in household)
+    income_as_fraction_of_ami = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+        default=None,
+    )
+    rent_own = models.CharField(
+        # TODO: Consider removing the default again (after the transition to v10)
+        default="",
+        max_length=200,
+        choices=rent_own_choices,
+        verbose_name="rent or own",
+        help_text=_(
+            "Designates whether the applicant rents or owns their primary residence.",
         ),
     )
 

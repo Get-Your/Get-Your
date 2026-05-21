@@ -23,7 +23,6 @@ from django.core.exceptions import ValidationError
 from django.forms.widgets import Textarea
 from django.utils.translation import gettext_lazy as _
 
-from app.models import Household
 from dashboard.backend import get_iqprogram_requires_fields
 
 # from dashboard.backend import get_users_iq_programs
@@ -64,15 +63,14 @@ class IQProgramAddForm(forms.Form):
 
         # Pull user data
         user = User.objects.get(id=user_id)
-        household = Household.objects.get(user_id=user.id)
         eligibility_address = AddressRef.objects.filter(
-            id=user.address.eligibility_address_id,
+            id=user.eligibility_address_id,
         ).first()
 
         # # Get all of the IQ Programs for which the user is eligible
         # users_iq_programs = get_users_iq_programs(
         #     user.id,
-        #     household.income_as_fraction_of_ami,
+        #     income_as_fraction_of_ami,
         #     eligibility_address,
         # )
 

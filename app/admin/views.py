@@ -258,17 +258,12 @@ def add_elig_program(request, **kwargs):
 
                 # Finalize the application with the new program, if applicable
                 if user.last_completed_at is not None:
-                    prev_income_as_fraction_of_ami = (
-                        user.household.income_as_fraction_of_ami
-                    )
+                    prev_income_as_fraction_of_ami = user.income_as_fraction_of_ami
                     _ = finalize_application(user, update_user=False)
 
                     # Add a log entry to UserAdmin if income was changed
                     # IQ Program changes are planned for a later date
-                    if (
-                        user.household.income_as_fraction_of_ami
-                        != prev_income_as_fraction_of_ami
-                    ):
+                    if user.income_as_fraction_of_ami != prev_income_as_fraction_of_ami:
                         _ = LogEntry.objects.log_action(
                             user_id=request.user.id,
                             # Use the target (user) object from here
