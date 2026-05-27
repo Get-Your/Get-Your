@@ -19,11 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.utils.translation import gettext_lazy as _
-from files.backend import userfiles_path
 
-from .constants import duration_at_address_choices
-from .constants import rent_own_choices
+from files.backend import userfiles_path
 
 # Get the user model
 User = get_user_model()
@@ -55,127 +52,18 @@ class IQProgramModel(models.Model):
         abstract = True
 
 
-class Address(TimeStampedModel):
-    # Default relation is the User primary key
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        primary_key=True,  # set this to the primary key of this model
-    )
-    mailing_address = models.ForeignKey(
-        "ref.Address",
-        on_delete=models.DO_NOTHING,  # don't remove this value if address is deleted
-        related_name="+",  # don't relate "ref.Address" with this field
-    )
-    eligibility_address = models.ForeignKey(
-        "ref.Address",
-        on_delete=models.DO_NOTHING,  # don't remove this value if address is deleted
-        related_name="eligibility_user",
-    )
-
-    # Important: for this model, ``user_has_updated`` applies *only to the mailing address*
-    user_has_updated = models.BooleanField(default=False)
-
-    def are_addresses_the_same(self):
-        if self.eligibility_address == self.mailing_address:
-            return True
-
-        return False
-
-    def set_initial_form_data(self):
-        initial_address_data = []
-
-        if self.are_addresses_the_same():
-            initial_address_data = [
-                {
-                    'address1': self.eligibility_address.address1,
-                    'address2': self.eligibility_address.address2,
-                    'city': self.eligibility_address.city,
-                    'state': self.eligibility_address.state,
-                    'zip_code': self.eligibility_address.zip_code,
-                    'address_sha1': self.eligibility_address.address_sha1
-                }
-            ]
-        else:
-            initial_address_data = [
-                {
-                    'address1': self.eligibility_address.address1,
-                    'address2': self.eligibility_address.address2,
-                    'city': self.eligibility_address.city,
-                    'state': self.eligibility_address.state,
-                    'zip_code': self.eligibility_address.zip_code,
-                    'address_sha1': self.eligibility_address.address_sha1
-                },
-                {
-                    'address1': self.mailing_address.address1,
-                    'address2': self.mailing_address.address2,
-                    'city': self.mailing_address.city,
-                    'state': self.mailing_address.state,
-                    'zip_code': self.mailing_address.zip_code,
-                    'address_sha1': self.mailing_address.address_sha1
-                }
-            ]
-
-        return initial_address_data
-
-    class Meta:
-        verbose_name = "address"
-        verbose_name_plural = "addresses"
-
-
-class Household(TimeStampedModel):
+class HouseholdMembers(TimeStampedModel):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         primary_key=True,
-    )
-    user_has_updated = models.BooleanField(default=False)
-    is_income_verified = models.BooleanField(
-        default=False,
-        verbose_name="income has been verified",
-        help_text=_(
-            "Designates whether an applicant has had their income verified.",
-        ),
-    )
-    duration_at_address = models.CharField(
-        max_length=200,
-        choices=duration_at_address_choices,
-    )
-
-    # Define the min and max Gross Annual Household Income as a fraction of
-    # AMI (which is a function of number of individuals in household)
-    income_as_fraction_of_ami = models.DecimalField(
-        max_digits=3,
-        decimal_places=2,
-        null=True,
-        default=None,
-    )
-    rent_own = models.CharField(
-        max_length=200,
-        choices=rent_own_choices,
-        verbose_name="rent or own",
-        help_text=_(
-            "Designates whether the applicant rents or owns their primary residence.",
-        ),
-    )
-
-    class Meta:
-        verbose_name = "household"
-        verbose_name_plural = "household"
-
-
-class HouseholdMembers(TimeStampedModel):
-    household = models.ForeignKey(
-        Household,
-        related_name="members",
-        on_delete=models.CASCADE,
     )
 
     full_name = models.CharField(max_length=200)
     birthdate = models.DateField()
     identification_path = models.FileField()
 
-    user_has_updated = models.BooleanField(default=False)
+    user_has_updated = models.BooleanField(default=False, db_default=False)
 
     class Meta:
         verbose_name = "household member"
@@ -199,12 +87,12 @@ class IQProgram(IQProgramModel):
     )
 
     program = models.ForeignKey(
-        "ref.IQProgram",
+        "ref.IQProgramRef",
         related_name="iq_programs",
         on_delete=models.DO_NOTHING,  # don't update these values if the program is deleted
     )
 
-    is_enrolled = models.BooleanField(default=False)
+    is_enrolled = models.BooleanField(default=False, db_default=False)
 
     class Meta:
         verbose_name = "user IQ program"
@@ -224,7 +112,7 @@ class EligibilityProgram(TimeStampedModel):
     )
 
     program = models.ForeignKey(
-        "ref.EligibilityProgram",
+        "ref.EligibilityProgramRef",
         # Prevent deletion of the referenced object (under restricted conditions)
         # (ref https://docs.djangoproject.com/en/4.2/ref/models/fields/#django.db.models.ForeignKey.on_delete)
         on_delete=models.RESTRICT,
