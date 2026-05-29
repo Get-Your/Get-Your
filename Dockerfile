@@ -5,11 +5,9 @@ ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Layer for supervisor and redis
-RUN apt-get update && apt-get install -y curl gpg && \
-    curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg && \
-    apt-get update && \
-    apt-get install -y software-properties-common libssl-dev libffi-dev supervisor redis && \
-    rm -rf /var/lib/apt/lists/* && apt-get remove -y curl
+RUN apt-get update && \
+    apt-get install -y redis-server redis-tools libmagic1 supervisor && \
+    rm -rf /var/lib/apt/lists/*
 
 # Layer for uv
 
