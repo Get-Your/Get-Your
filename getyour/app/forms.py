@@ -161,7 +161,9 @@ class FileUploadForm(forms.ModelForm):
             "document_path",
         ]
         widgets = {
-            "document_path": forms.ClearableFileInput(attrs={"multiple": True}),
+            "document_path": forms.ClearableFileInput(
+                attrs={"allow_multiple_selected": True}
+            ),
         }
 
 
