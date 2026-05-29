@@ -20,7 +20,7 @@ dependencies = [
     "psycopg2-binary~=2.9.12",
     "python-magic~=0.4.27",
     "python-magic-bin~=0.4.14 ; (platform_machine == 'x86_64' and sys_platform == 'darwin') or sys_platform == 'win32'",
-    "redis~=8.0.0",
+    "redis~=7.0.0",
     "rich~=15.0.0",
     "sendgrid~=6.12.5",
     "tomlkit~=0.15.0",
