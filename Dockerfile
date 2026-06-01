@@ -60,4 +60,4 @@ COPY redis.conf /etc/redis/redis.conf
 EXPOSE 8000
 
 # Run supervisord, which executes Django, Redis, and Django-Q
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
