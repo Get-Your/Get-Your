@@ -2,6 +2,9 @@ FROM ubuntu:24.04
 
 SHELL ["/bin/bash", "-c"]
 
+RUN groupadd dj_group
+RUN useradd -m -g dj_group -s /bin/bash dj_user
+
 # Add timezone for processes using tzdata
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -15,9 +18,12 @@ RUN apt-get update && apt-get install -y curl gpg && \
 # Layer for uv - copy files from the official uv container (latest version)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Create project directory, set as the working directory (for uv sync steps),
-# and copy the uv definitions files
-RUN mkdir /proj
+# Create project and supplemental directories and set the owner to dj_user
+RUN mkdir -p /proj/code && chown -R dj_user /proj
+RUN mkdir -p /opt/venv && chown -R dj_user /opt/venv
+
+# Under dj_user, set the working directory (for uv), and copy the uv files
+USER dj_user:dj_group
 WORKDIR /proj
 COPY pyproject.toml uv.lock ./
 
@@ -34,12 +40,11 @@ ENV UV_COMPILE_BYTECODE=1 \
     UV_PROJECT_ENVIRONMENT="/opt/venv"
 
 # Run uv sync
-RUN --mount=type=cache,target=/root/.cache/uv uv sync --managed-python
+RUN --mount=type=cache,target=/usr/.cache/uv uv sync --managed-python
 
 # Layers for the Django app
 
-# Create target code directory and set as the working directory
-RUN mkdir /proj/code
+# Set target code directory as the working directory
 WORKDIR /proj/code
 
 # Add the files in getyour/ to the current (/proj/code/) dir
@@ -62,6 +67,16 @@ COPY redis.conf /etc/redis/redis.conf
 
 # Expose the Django app for use
 EXPOSE 8000
+
+# Temporarily switch back to root for final ownership modifications
+USER root
+RUN chown -R dj_user /var/log/redis
+RUN chown -R dj_user /var/lib/redis
+RUN chgrp -R dj_group /etc/redis
+RUN chown -R dj_user /var/log/supervisor
+RUN chown -R dj_user /etc/supervisor
+RUN chgrp -R dj_group /etc/supervisor
+USER dj_user:dj_group
 
 # Run supervisord, which executes Django, Redis, and Django-Q
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
