@@ -6,9 +6,10 @@ SHELL ["/bin/bash", "-c"]
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Layer for supervisor and redis
-RUN apt-get update && \
-    apt-get install -y redis-server redis-tools libmagic1 supervisor && \
+# Layer for libmagic1 (for python-magic), redis, and supervisor
+RUN apt-get update && apt-get install -y curl gpg && \
+    curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg && \
+    apt-get install -y redis libmagic1 supervisor && \
     rm -rf /var/lib/apt/lists/*
 
 # Layer for uv - copy files from the official uv container (latest version)
