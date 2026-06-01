@@ -25,6 +25,7 @@ dependencies = [
     "sendgrid~=6.12.5",
     "tomlkit~=0.15.0",
     "twilio~=9.10.9",
+    "urllib3~=2.7.0",
     "usaddress~=0.5.16",
     "whitenoise~=6.12.0",
 ]
