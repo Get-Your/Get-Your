@@ -1,5 +1,7 @@
 FROM ubuntu:24.04
 
+SHELL ["/bin/bash", "-c"]
+
 # Add timezone for processes using tzdata
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -9,9 +11,7 @@ RUN apt-get update && \
     apt-get install -y redis-server redis-tools libmagic1 supervisor && \
     rm -rf /var/lib/apt/lists/*
 
-# Layer for uv
-
-# Copy files from the official uv container (latest version)
+# Layer for uv - copy files from the official uv container (latest version)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Create project directory, set as the working directory (for uv sync steps),
@@ -49,7 +49,10 @@ ARG CODE_VERSION=''
 # Save the code version to a runtime env var
 ENV CODE_VERSION=$CODE_VERSION
 
-# Collect static files
+# Activate uv for the following commands
+RUN source /opt/venv/bin/activate
+
+# Collect static files, using the uv venv python (also within activated uv env)
 RUN /opt/venv/bin/python manage.py collectstatic --noinput
 
 # Copy supervisor and redis conf files to the appropriate locations
