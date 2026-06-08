@@ -373,7 +373,7 @@ def validate_usps(inobj):
         "zip_code": "ZIPCode",
     }
     # Create address, using only non-blank values
-    address = {key_map[key]: val for key, val in inobj.items() if val != ""}
+    address = {key_map[key]: val for key, val in inobj.items() if val != "" and key != 'id'}
 
     # Ensure 'state' is uppercase (otherwise the API will error)
     address["state"] = address["state"].upper()
