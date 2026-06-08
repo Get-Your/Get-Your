@@ -11,3 +11,23 @@
   background-color: #f2dede;
   border-color: #eed3d7;
 }
+
+gmp-place-autocomplete {
+  font-size: 16px;
+  line-height: 1.5;
+  /* color: #333333; */
+  background-color: transparent;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  color-scheme: light;
+}
+
+gmp-place-autocomplete:focus {
+  border-color: #86b7fe;
+}
+
+gmp-place-autocomplete::part(focus-ring) {
+  outline: 0;
+   /* Custom color (e.g., Tailwind blue-500) */
+  /* outline-offset: 2px; */
+}
