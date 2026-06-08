@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   # dependencies for building Python packages
   build-essential \
   # psycopg dependencies
-  libpq-dev
-
+  libpq-dev \
+  libmagic-dev
 
 # Requirements are installed here to ensure they will be cached.
 RUN --mount=type=cache,target=/root/.cache/uv \
