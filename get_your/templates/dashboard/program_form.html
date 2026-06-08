@@ -5,7 +5,7 @@
 {% block content %}
     <div class="my-3 card shadow-sm">
         <div class="card-body">
-            <form action="{% url 'program_form' %}" method="post">
+            <form action="{% url 'program_form' pk=user.pk %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ address_form_set.management_form }}
                 <fieldset>
@@ -32,18 +32,18 @@
                     {{ address_form.non_field_errors }}
                     {% if forloop.counter0 == 0 %}
                     <fieldset id="home-address-information">
+                        <legend class="border-bottom">Home Address Information</legend>
                         <div class="mb-3">
-                            <label for="autocomplete-container" class="form-label fw-bold">Enter an Address</label>
+                            <label for="eligibility-address-autocomplete" class="mb-0 form-label">Enter an Address:</label>
                             <!-- Bootstrap classes style this wrapper -->
-                            <div id="autocomplete-container" class="position-relative shadow-sm">
+                            <div id="eligibility-address-autocomplete-container" class="position-relative shadow-sm">
                                 <!-- Google PlaceAutocompleteElement will be injected here -->
                             </div>
+                            <p class="fw-light"><small>Address fields below <strong>(except Apt, Suite, etc)</strong> will be filled after selection</small></p>
                         </div>
-                        <legend class="border-bottom">Home Address Information</legend>
                         <div class="row">
                             {% for field in address_form %}
                                 {% if not field.is_hidden %}
-                                {{ address_form.id }}
                                 <div class="mb-3 col-12 col-md-6">
                                 {{ field.label_tag }}
                                 {{ field }}
@@ -84,6 +84,14 @@
                     {% else %}
                     <fieldset id="mailing_address_information" class="d-none">
                         <legend class="border-bottom">Mailing Address Information</legend>
+                        <div class="mb-3">
+                            <label for="mailing-address-autocomplete" class="mb-0 form-label">Enter an Address:</label>
+                            <!-- Bootstrap classes style this wrapper -->
+                            <div id="mailing-address-autocomplete-container" class="position-relative shadow-sm">
+                                <!-- Google PlaceAutocompleteElement will be injected here -->
+                            </div>
+                            <p class="fw-light"><small>Address fields below <strong>(except Apt, Suite, etc)</strong> will be filled after selection</small></p>
+                        </div>
                         <div class="row">
                             {% for field in address_form %}
                                 {% if not field.is_hidden %}
@@ -141,71 +149,137 @@
                                 <input type="hidden" :value="item.id">
                                 <div class="mb-3">
                                     <label :for="'full_name_' + item.id" class="form-label">Full Name</label>
-                                    <input type="text" :name="'full_name_' + item.id" :id="'full_name_' + item.id" class="form-control shadow-sm" :value="item.fullName">
+                                    <input type="text" :id="'full_name_' + item.id" class="form-control shadow-sm" v-model="item.fullName" @input="updateJson">
                                 </div>
                                 <div class="mb-3">
                                     <label :for="'birth_date_' + item.id" class="form-label">Birth Date</label>
-                                    <input type="date" :name="'birth_date_' + item.id" :id="'birth_date_' + item.id" class="form-control shadow-sm" :value="item.birthDate">
+                                    <input type="date" :id="'birth_date_' + item.id" class="form-control shadow-sm" v-model="item.birthDate" @input="updateJson">
                                 </div>
                                 <div>
                                     <label :for="'identification_path_' + item.id" class="form-label">Upload ID</label>
-                                    <input type="file" :name="'identification_path_' + item.id" :id="'identification_path_' + item.id" class="form-control shadow-sm" :value="item.identificationPath" accept="image/*">
+                                    <input type="file" :id="'identification_path_' + item.id" class="form-control shadow-sm" accept="image/*" @change="handleFileChange($event, item.id)">
                                 </div>
                             </div>
                         </div>
+                        <input type="hidden" name="family_members" :value="familyMembersJson">
                     </div>
                 </fieldset>
                 <hr class="my-3">
                 <button class="me-2 btn btn-primary" type="submit">Save Information</button>
-                <a href="{% url 'dashboard' %}">Cancel</a>
+                <a href="{% url 'dashboard' pk=user.pk %}">Cancel</a>
             </form>
         </div>
     </div>
 
     {{ userJson|json_script:"user" }}
-    {% comment %} <script>
-        let autocompleteFunc = function initAutocomplete() {
-            let inputEl = document.getElementById('autocomplete');
-            autocomplete = new google.maps.places.Autocomplete(
-                inputEl,
-                {
-                    types: ['address'],
-                    componentRestriction: { 'country': ['us'] },
-                    fields: ['address_components', 'place_id', 'geometry', 'name']
+    <script type="module">
+        import { createApp, ref, onMounted } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+        
+        createApp({
+            delimiters: ['[[', ']]'],
+            setup() {
+                // hack to get json data from Django response
+                const user = JSON.parse($('#user').text());
+                console.log(user.household_members)
+                // hopefully, can do this as user.household.members instead
+                const familyMembers = ref([
+                    {
+                        id: 0,
+                        fullName: user.first_name + ' ' + user.last_name,
+                        birthDate: '',
+                        fileObject: '',
+                        identificationPath: ''
+                    }
+                ]);
+
+                let familyMembersJson = ref('');
+
+                function addFamilyMember() {
+                    familyMembers.value.push({
+                        id: familyMembers.value.length,
+                        fullName: '',
+                        birthDate: '',
+                        fileObject: '',
+                        identificationPath: ''
+                    });
                 }
-            )
-        }
 
-        function onPlaceChanged() {
-            var place = autocomplete.getPlace();
+                function removeFamilyMember(objIndex) {
+                    if (familyMembers.value.length > 1) {
+                        familyMembers.value.splice(objIndex,1);
+                    }
+                }
 
-            if (!place.geometry) {
-                document.getElementById('autocomplete').placeholder = 'Enter an address';
-            } else {
-                console.log(place);
+                function handleFileChange(event, objIndex) {
+                    const file = event.target.files[0];
+                    const familyMemberObject = familyMembers.value.find(obj => obj.id === objIndex);
+
+                    if (file) {
+                        familyMemberObject.fileObject = file;
+                        familyMemberObject.identificationPath = event.target.value;
+                    }
+                    updateJson()
+                }
+
+                function updateJson() {
+                    familyMembersJson.value = JSON.stringify(familyMembers.value);
+                }
+
+                onMounted(() => {
+                    updateJson();
+                })
+
+                return {
+                    user,
+                    familyMembers,
+                    addFamilyMember,
+                    removeFamilyMember,
+                    familyMembersJson,
+                    handleFileChange,
+                    updateJson
+                }
             }
+        }).mount('#app')
+
+        if ($('#id_address-1-address1').val()) {
+            $('#mailing_address_information').removeClass('d-none');
+            $('#id_mailing_address_same_as_home_1').prop('checked', true);
+            void init('mailing-address-autocomplete-container', 'id_address-1');
         }
 
-        autocompleteFunc.addEventListener('place_changed', onPlaceChanged);        
-    </script> {% endcomment %}
-    <script>
-        // prettier-ignore
-        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
-            key: "AIzaSyDUNIHIyhuTeH5f11cSEFuw3mk4y82NSbE"
+        if ($('#id_mailing_address_same_as_home_1').prop('checked')) {
+            $('#mailing_address_information').removeClass('d-none');
+            void init('mailing-address-autocomplete-container', 'id_address-1');
+        }
+
+        $('input[name^=mailing_address]').on('change', function() {
+            if ($('#id_mailing_address_same_as_home_0').prop('checked')) {
+                $('#mailing_address_information').addClass('d-none');
+            } else {
+                $('#mailing_address_information').removeClass('d-none');
+                void init('mailing-address-autocomplete-container', 'id_address-1');
+            }
         });
 
-        async function init() {
+        $('#id_user-phone_number').on('input', function () {
+            var x = $(this).val().replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+            $(this).val(!x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : ''));
+        });
+
+        // Google Maps Places Autocomplete Code
+        // prettier-ignore
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+            key: "{{ mapsApiKey }}"
+        });
+
+        async function init(wrapperElementId, formId) {
             // Request needed libraries.
-        
-            const { PlaceAutocompleteElement } =
-                await google.maps.importLibrary('places');
+            const { PlaceAutocompleteElement } = await google.maps.importLibrary('places');
+            
             // Create the input HTML element, and append it.
             const placeAutocomplete = new PlaceAutocompleteElement();
-            document.getElementById('autocomplete-container').appendChild(placeAutocomplete);
-        
-            const selectedPlaceInfo = document.createElement('pre');
-            selectedPlaceInfo.textContent = '';
-            document.body.appendChild(selectedPlaceInfo);
+            placeAutocomplete.setAttribute('id', wrapperElementId.replace('-container', ''))
+            document.getElementById(wrapperElementId).appendChild(placeAutocomplete);
         
             // Add the gmp-select listener, and display the results.
             placeAutocomplete.addEventListener(
@@ -215,146 +289,42 @@
                     await place.fetchFields({
                         fields: ['displayName', 'formattedAddress', 'addressComponents'],
                     });
-                    // selectedPlaceInfo.textContent = JSON.stringify(
-                    //    place.toJSON(),
-                    //    /* replacer */ null,
-                    //    /* space */ 2
-                    // );
-                    console.log(place);
+
+                    for (const component of place.addressComponents) {
+                        const componentType = component.types[0]
+
+                        switch (componentType) {
+                            case 'street_number':
+                                document.getElementById(formId + '-address1').value = component.longText
+                                break;
+                            
+                            case 'route':
+                                document.getElementById(formId + '-address1').value += ' ' + component.shortText
+                                break;
+                            
+                            case 'locality':
+                                document.getElementById(formId + '-city').value = component.longText
+                                break;
+                            
+                            case 'administrative_area_level_1':
+                                document.getElementById(formId + '-state').value = component.shortText
+                                break;
+                            
+                            case 'postal_code':
+                                document.getElementById(formId + '-zip_code').value = component.longText
+                                break;
+                            
+                            default:
+                                break;
+                        }
+                    }
+
+                    // focus on Apt, Suite, etc input to prompt filling if needed
+                    document.getElementById(formId + '-address2').focus();
                 }
-                // Populate your Bootstrap input with the result
-                // document.getElementById("formatted-address").value = place.formattedAddress;
             );
         }
         
-        void init();
-    </script>
-    {% comment %} <script async
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDUNIHIyhuTeH5f11cSEFuw3mk4y82NSbE&loading=async&libraries=places&callback=initAutocomplete">
-    </script> {% endcomment %}
-    <script type="module">
-        import { createApp, ref } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
-        
-        createApp({
-            delimiters: ['[[', ']]'],
-            setup() {
-                // hack to get json data from Django response
-                const user = JSON.parse($('#user').text());
-                // hopefully, can do this as user.household.members instead
-                const familyMembers = ref([
-                    {
-                        id: 0,
-                        fullName: user.first_name + ' ' + user.last_name,
-                        birthDate: '',
-                        identificationPath: ''
-                    }
-                ]);
-
-                function addFamilyMember() {
-                    familyMembers.value.push({
-                        id: familyMembers.value.length,
-                        fullName: '',
-                        birthDate: '',
-                        identificationPath: ''
-                    })
-                }
-
-                function removeFamilyMember(objIndex) {
-                    if (familyMembers.value.length > 1) {
-                        familyMembers.value.splice(objIndex,1);
-                    }
-                }
-
-                return {
-                    user,
-                    familyMembers,
-                    addFamilyMember,
-                    removeFamilyMember
-                }
-            }
-        }).mount('#app')
-
-        if ($('#id_form-1-address1').val()) {
-            $('#mailing_address_information').removeClass('d-none');
-            $('#id_mailing_address_same_as_home_1').prop('checked', true);
-        }
-
-        if ($('#id_mailing_address_same_as_home_1').prop('checked')) {
-            $('#mailing_address_information').removeClass('d-none');
-        }
-
-        $('input[name^=mailing_address]').on('change', function() {
-            if ($('#id_mailing_address_same_as_home_0').prop('checked')) {
-                $('#mailing_address_information').addClass('d-none');
-            } else {
-                $('#mailing_address_information').removeClass('d-none');
-            }
-        });
-
-        $('#id_user-phone_number').on('input', function () {
-            var x = $(this).val().replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
-            $(this).val(!x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : ''));
-        });
-        
-        {% comment %} $(function () {
-            $('.step').on('click', function() {
-                let el = $(this),
-                    clickedElementId = el.prop('id'),
-                    fieldsetId = clickedElementId.substring(0, clickedElementId.lastIndexOf('_')),
-                    fieldset = $('#' + fieldsetId);
-                
-                el.addClass('active');
-                el.siblings().removeClass('active');
-                fieldset.removeClass('d-none');
-                fieldset.siblings().addClass('d-none');
-            });
-        }) {% endcomment %}
-        {% comment %} document.addEventListener("DOMContentLoaded", function() {
-            var submitButton = document.querySelector("button[type=submit]");
-            submitButton.addEventListener('click', function (e) {
-                var spinner = document.createElement('div');
-                spinner.classList.add('spinner-border', 'spinner-border-sm', 'ms-2');
-                submitButton.appendChild(spinner);
-            });
-
-            {% if not update_mode %}
-            var sameAddress = "{{ same_address }}" === "True";
-            var mailingAddressWrapper = document.getElementById("mailing_address_wrapper");
-            var mailingAddressHtml = mailingAddressWrapper.innerHTML;
-            mailingAddressWrapper.innerHTML = "";
-
-            var mailingAddressRadios = document.querySelectorAll('input[type=radio][name=mailing_address]');
-            if (sameAddress) {
-                document.querySelector('input[type=radio][name=mailing_address][value=yes]').checked = true;
-            } else {
-                document.querySelector('input[type=radio][name=mailing_address][value=no]').checked = true;
-            }
-
-            // this call and the one on line 218 will probably cause errors if in update mode
-            updateMailingAddressVisibility(mailingAddressHtml);
-
-            mailingAddressRadios.forEach(function(radio) {
-                radio.addEventListener('change', function() {
-                    updateMailingAddressVisibility(mailingAddressHtml);
-                });
-            });
-            {% endif %}
-        });
-
-        {% if not update_mode %}
-        function updateMailingAddressVisibility(mailingAddressHtml) {
-            var mailingAddressBtn = document.querySelector('input[type=radio][name=mailing_address]:checked').value;
-            toggleMailingAddressVisibility(mailingAddressBtn, mailingAddressHtml);
-        }
-
-        function toggleMailingAddressVisibility(mailingAddressBtn, mailingAddressHtml) {
-            var mailingAddressWrapper = document.getElementById("mailing_address_wrapper");
-            if (mailingAddressBtn == 'yes') {
-                mailingAddressWrapper.innerHTML = "";
-            } else if (mailingAddressBtn == 'no') {
-                mailingAddressWrapper.innerHTML = mailingAddressHtml;
-            }
-        }
-        {% endif %} {% endcomment %}
+        void init('eligibility-address-autocomplete-container', 'id_address-0');
     </script>
 {% endblock %}

@@ -18,10 +18,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django import forms
 from django.contrib.auth.password_validation import validate_password
-from app.models import Household
-from ref.models import Address as AddressRef
+# from app.models import Household
+from ref.models import AddressRef
 from get_your.users.models import User
-from django.forms import BaseFormSet
+from django.forms import BaseModelFormSet
 
 from app.backend.address import validate_usps
 
@@ -47,14 +47,13 @@ class UserForm(forms.ModelForm):
 class AddressForm(forms.ModelForm):
     class Meta:
         model = AddressRef
-        fields = ['address1', 'address2', 'city', 'state', 'zip_code', 'address_sha1']
+        fields = ['address1', 'address2', 'city', 'state', 'zip_code']
         labels = {
             'address1': 'Street Address',
             'address2': 'Apt, Suite, etc.',
             'city': 'City',
             'state': 'State',
             'zip_code': 'Zip Code',
-            'address_sha1': ''
         }
         widgets = {
             'address1': forms.TextInput(attrs={'class':'form-control shadow-sm', 'maxlength': 200}),
@@ -62,7 +61,6 @@ class AddressForm(forms.ModelForm):
             'city': forms.TextInput(attrs={'class':'form-control shadow-sm', 'maxlength': 64}),
             'state': forms.TextInput(attrs={'class':'form-control shadow-sm', 'maxlength': 2}),
             'zip_code': forms.NumberInput(attrs={'class':'form-control shadow-sm', 'max': 99999}),
-            'address_sha1': forms.HiddenInput()
         }
 
 class SameAddressForm(forms.Form):
@@ -77,18 +75,18 @@ class SameAddressForm(forms.Form):
 
 class HouseholdForm(forms.ModelForm):
     class Meta:
-        model = Household
-        fields = ['user', 'rent_own', 'duration_at_address']
-        labels = {
-            'user': ''
-        }
+        model = User
+        fields = ['rent_own', 'duration_at_address']
         widgets = {
-            'user': forms.HiddenInput(),
             'rent_own': forms.Select(attrs={'class':'form-select shadow-sm'}),
             'duration_at_address': forms.Select(attrs={'class':'form-select shadow-sm'})
         }
 
-class BaseAddressFormSet(BaseFormSet):
+class BaseAddressFormSet(BaseModelFormSet):
+    def add_fields(self, form, index):
+        super().add_fields(form, index)
+        form.index = index
+
     def clean(self):
         """Checks that address is valid with USPS API"""
         if any(self.errors):
@@ -106,7 +104,8 @@ class BaseAddressFormSet(BaseFormSet):
                     form.add_error('address1', corrected_address['error']['message'])
 
 
-AddressFormSet = forms.formset_factory(
+AddressFormSet = forms.modelformset_factory(
+    AddressRef,
     AddressForm,
     extra=1,
     min_num=1,
