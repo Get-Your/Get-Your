@@ -28,13 +28,13 @@ urlpatterns = [
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 
     path(
-        'dashboard',
+        'dashboard/<int:pk>/',
         dashboard,
         name='dashboard',
         kwargs={'allow_direct_user': True},
      ),
     path(
-        'program_form',
+        'program_form/<int:pk>/',
         program_form,
         name='program_form',
         kwargs={'allow_direct_user': True},
