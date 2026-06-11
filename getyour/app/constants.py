@@ -54,3 +54,7 @@ duration_at_address_choices = (
     ('1 to 3 Years', '1 to 3 Years'),
     ('Less than a Year', 'Less than a Year'),
 )
+
+# Set a default spatial reference (SR) to use for all GIS calls (address and GMA
+# lookup). This is the preferred SR for Northern Colorado
+default_spatial_reference = 2231

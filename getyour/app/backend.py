@@ -57,6 +57,7 @@ from app.constants import (
     supported_content_types,
     enable_calendar_year_renewal,
     application_pages,
+    default_spatial_reference,
 )
 from logger.wrappers import LoggerWrapper
 
@@ -217,7 +218,7 @@ def address_lookup(street_address, zip_code):
         # Match addresses outside the area, if possible
         'matchOutOfRange': True,
         # Return results in the global Spatial Reference
-        'outSR': 2231,
+        'outSR': default_spatial_reference,
     }
 
     # Gather response
@@ -308,11 +309,13 @@ def gma_lookup(coord_string, target_wkid):
         # incorrectly
         'geometry': """{"points":[["""+coord_string+"""]],"spatialReference":{"wkid":"""+str(target_wkid)+"""}}""",
         'geometryType': 'esriGeometryMultipoint',
-        'inSR': 2231,
+        # Use the global Spatial Reference
+        'inSR': default_spatial_reference,
         'spatialRel': 'esriSpatialRelIntersects',
         'where': '',
         'returnGeometry': 'false',
-        'outSR': 2231,
+        # Return results in the global Spatial Reference
+        'outSR': default_spatial_reference,
         'outFields': '*',
         'f': 'pjson',
     }
