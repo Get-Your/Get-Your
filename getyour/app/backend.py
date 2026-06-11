@@ -301,7 +301,7 @@ def gma_lookup(coord_string, target_wkid):
 
     """
 
-    url = 'https://gisweb.fcgov.com/arcgis/rest/services/FCMaps/MapServer/26/query'
+    url = 'https://gis.fortcollins.gov/arcgis/rest/services/GMA/MapServer/0/query'
 
     payload = {
         # Manually stringify 'geometry' - requests and json.dumps do this
