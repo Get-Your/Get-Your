@@ -162,11 +162,8 @@ def address_check(address_dict):
         return (False, False)
 
     else:
-        has_connexion = connexion_lookup(coord_string)
-        msg = 'Connexion not available or API not found' if has_connexion is None \
-            else 'Connexion available' if has_connexion \
-            else 'Connexion coming soon'
-        log.info(msg, function='address_check')
+        # Hardcode has_connexion now that the function has been removed
+        has_connexion = False
 
         is_in_gma = gma_lookup(coord_string)
         msg = 'Address is in GMA' if is_in_gma else 'Address is outside of GMA'
@@ -260,88 +257,6 @@ def address_lookup(street_address, zip_code):
         raise NameError("Matching address not found")
 
     return coord_string
-
-
-def connexion_lookup(coord_string):
-    """
-    Look up the Connexion service status given the coordinate string.
-
-    Parameters
-    ----------
-    coord_string : str
-        Formatted <x>,<y> string of coordinates from address_lookup().
-
-    Raises
-    ------
-    requests.exceptions.HTTPError
-        An issue with the lookup endpoint.
-    IndexError
-        Address not found in Connexion lookups - Connexion is likely to be
-        unavailable at this address.
-
-    Returns
-    -------
-    bool
-        Boolean 'status', designating True for 'service available' or False
-        for 'service will be available, but not yet' OR None for 'unavailable'
-        (probably)
-
-    TODO: Switch this to an enum if we want to keep this structure
-
-    """
-
-    url = 'https://gisweb.fcgov.com/arcgis/rest/services/FDH_Boundaries_ForPublic/MapServer/0/query'
-
-    payload = {
-        'f': 'pjson',
-        'geometryType': 'esriGeometryPoint',
-        'geometry': coord_string,
-    }
-
-    try:
-        # Gather response
-        response = requests.post(url, params=payload)
-        if response.status_code != requests.codes.ok:
-            log.error(
-                f"API error {response.status_code}: {response.reason}; {response.content}",
-                function='connexion_lookup',
-            )
-            raise requests.exceptions.HTTPError(response.reason, response.content)
-
-        # Parse response
-        outVal = response.json()
-
-        # Since the gisweb endpoint seems to always return an HTTP 200, also check
-        # the JSON for an 'error' key
-        if 'error' in outVal:
-            errDict = outVal['error']
-            log.error(
-                f"API error {errDict['code']}: {errDict['message']}",
-                function='connexion_lookup',
-            )
-            raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
-
-        statusInput = outVal['features'][0]['attributes']['INVENTORY_STATUS_CODE']
-
-    except requests.exceptions.HTTPError:
-        return None
-
-    except (IndexError, KeyError):
-        return None
-
-    else:
-        statusInput = statusInput.lower()
-
-        # If we made it to this point, Connexion will be or is currently
-        # available
-        if statusInput in (
-                'released',
-                'out of warranty',
-        ):      # this is the 'available' case
-            return True
-
-        else:
-            return False
 
 
 def gma_lookup(coord_string):
