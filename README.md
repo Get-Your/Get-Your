@@ -94,7 +94,7 @@ Unless otherwise noted, the following commands must be run from the 'get_your' d
 3. Set your terminal to use the virtual environment that uv set up in [Dependency Installation](#dependency-installation); the Python executable should be at `.venv/Scripts/python.exe`.
 
 If an initialization error is thrown when loading `magic`:
-- On Windows: `python-magic-bin` may have been installed in the wrong order. If the error is 'ImportError: failed to find libmagic.  Check your installation', try running `uv remove python-magic-bin && uv add python-magic-bin~=0.4`
+- On Windows: `python-magic-bin` may have been installed in the wrong order. If the error is 'ImportError: failed to find libmagic.  Check your installation', try running `uv remove python-magic-bin && uv add "python-magic-bin~=0.4.14 ; (platform_machine == 'x86_64' and sys_platform == 'darwin') or sys_platform == 'win32'"`
 - On all other platforms, or if `magic` still isn't working, follow the instructions at https://github.com/pidydx/libmagicwin64
 
 Run the following to start the app. This will create the SQLite database and populate it with the database schema and sample data (coming soon - see https://github.com/Get-Your/Get-Your/issues/63).
