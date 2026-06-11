@@ -139,8 +139,9 @@ def address_check(address_dict):
     """
 
     try:
-        # Gather the coordinate string for future queries
-        coord_string = address_lookup(
+        # Gather the coordinate string and the 'WKID' from the lookup, for use
+        # in future queries
+        coord_string, result_wkid = address_lookup(
             address_dict['streetAddress'],
             address_dict['ZIPCode'],
         )
@@ -165,7 +166,7 @@ def address_check(address_dict):
         # Hardcode has_connexion now that the function has been removed
         has_connexion = False
 
-        is_in_gma = gma_lookup(coord_string)
+        is_in_gma = gma_lookup(coord_string, result_wkid)
         msg = 'Address is in GMA' if is_in_gma else 'Address is outside of GMA'
         log.info(msg, function='address_check')
 
@@ -201,15 +202,22 @@ def address_lookup(street_address, zip_code):
 
     # API documentation at
     # https://developers.arcgis.com/rest/geocode/find-address-candidates
-    url = 'https://gis.fortcollins.gov/arcgis/rest/services/Geocode/Fort_CollinsAddress_Point_Locator_Pro_New_/GeocodeServer/findAddressCandidates'
+    url = 'https://maps1.larimer.org/arcgis/rest/services/Locators/LETA_PLN_ASR_Composite/GeocodeServer/findAddressCandidates'
 
-    # While there are many more options than the prior endpoint, it seems the
-    # best results are garnered with the minimum input
     payload = {
+        # Return JSON
         'f': 'pjson',
-        'address': street_address,
-        'postal': zip_code,
-        'outFields': 'location',
+        'Street': street_address,
+        'ZIP': zip_code,
+        # Gather the coordinates (location), ZIP Code (ZIP), and wkid
+        # (spatialReference)
+        'outFields': 'location,ZIP,spatialReference',
+        # Return a single match
+        'maxLocations': 1,
+        # Match addresses outside the area, if possible
+        'matchOutOfRange': True,
+        # Return results in the global Spatial Reference
+        'outSR': 2231,
     }
 
     # Gather response
@@ -239,27 +247,40 @@ def address_lookup(street_address, zip_code):
         # later")
         raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
 
-    # Ensure candidate(s) exist and they have a decent match score
-    # The endpoint has smart matching and even exact inputs result in fairly
-    # low scores; set the 'minimum score' somewhat low to avoid missing accurate
-    # matches
+    # Ensure candidate(s) exist and that they either
+    #   a) have a ZIP Code and have a good match score (a ZIP Code in the result
+    #       implies the address is definitely in the area and therefore will be
+    #       correctly associated to a Larimer County address if it also has a
+    #       good score)
+    #   b) do not have a ZIP Code and have a perfect match score (not having a
+    #       ZIP Code in the result is a sign that the address is outside the
+    #       area, but testing shows that real Larimer County addresses can be
+    #       identified correctly if the score is perfect)
 
-    # Because this is how the Sales Tax lookup is architected, it should be
-    # safe to assume these are returned sorted, with best candidate first
-    if len(outVal['candidates']) > 0 and outVal['candidates'][0]['score'] > 69.9:
-        # Define the coordinate string to be used in future queries
-        coord_string = '{x},{y}'.format(
-            x=outVal['candidates'][0]['location']['x'],
-            y=outVal['candidates'][0]['location']['y'],
-        )
+    # Define the coordinate string to be used in future queries
+    coord_string = None
+    if len(outVal['candidates']) > 0:
+        found_zip = outVal['candidates'][0]['attributes']['ZIP']
+        match_score = outVal['candidates'][0]['score']
+        if (
+            found_zip != '' and match_score >= 95
+        ) or (
+            found_zip == '' and match_score > 99.9
+        ):
+            coord_string = '{x},{y}'.format(
+                x=outVal['candidates'][0]['location']['x'],
+                y=outVal['candidates'][0]['location']['y'],
+            )
 
-    else:
+    # Raise an exception if coord_string remains None
+    if not coord_string:
         raise NameError("Matching address not found")
 
-    return coord_string
+    # Return the found coordinate string and the returned 'WKID' from the lookup
+    return (coord_string, outVal['spatialReference']['wkid'])
 
 
-def gma_lookup(coord_string):
+def gma_lookup(coord_string, target_wkid):
     """
     Look up the GMA location given the coordinate string.
 
@@ -285,7 +306,7 @@ def gma_lookup(coord_string):
     payload = {
         # Manually stringify 'geometry' - requests and json.dumps do this
         # incorrectly
-        'geometry': """{"points":[["""+coord_string+"""]],"spatialReference":{"wkid":102653}}""",
+        'geometry': """{"points":[["""+coord_string+"""]],"spatialReference":{"wkid":"""+str(target_wkid)+"""}}""",
         'geometryType': 'esriGeometryMultipoint',
         'inSR': 2231,
         'spatialRel': 'esriSpatialRelIntersects',
@@ -326,7 +347,7 @@ def gma_lookup(coord_string):
 
     except requests.exceptions.HTTPError:
         return False
-    
+
 
 def get_usps_token():
     """Get the bearer token for the USPS v3 API."""
