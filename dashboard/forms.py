@@ -17,15 +17,24 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django import forms
-from django.contrib.auth.password_validation import validate_password
-# from app.models import Household
+
 from ref.models import AddressRef
+from app.models import HouseholdMembers
 from get_your.users.models import User
 from django.forms import BaseModelFormSet
 
 from app.backend.address import validate_usps
+from app.constants import supported_content_types
 
 from phonenumber_field.widgets import RegionalPhoneNumberWidget
+from django.forms.widgets import ClearableFileInput
+
+class CustomClearableFileInput(ClearableFileInput):
+    clear_checkbox_label = "Remove"
+    initial_text = "Current File"
+    input_text = "Upload a New File"
+    # Path to your new custom HTML snippet
+    template_name = 'widgets/custom_clearable_file_input.html'
 
 class UserForm(forms.ModelForm):
     class Meta:
@@ -82,6 +91,35 @@ class HouseholdForm(forms.ModelForm):
             'duration_at_address': forms.Select(attrs={'class':'form-select shadow-sm'})
         }
 
+class HouseholdMembersForm(forms.ModelForm):
+    class Meta:
+        model = HouseholdMembers
+        fields = ['id', 'user', 'full_name', 'birthdate', 'identification_path']
+        labels = {
+            'id': '',
+            'user': '',
+            'full_name': 'Full Name',
+            'birthdate': 'Birth Date',
+            'identification_path': 'Upload Id'
+        }
+        widgets = {
+            'id': forms.HiddenInput(),
+            'user': forms.HiddenInput(),
+            'full_name': forms.TextInput(
+                attrs={'class':'form-control shadow-sm', 'maxlength': 100}
+            ),
+            'birthdate': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'type': 'date', 'class':'form-control shadow-sm'}
+            ),
+            'identification_path': CustomClearableFileInput(
+                attrs={
+                    'class':'form-control shadow-sm',
+                    'accept': ', '.join(supported_content_types.values())
+                }
+            )
+        }
+
 class BaseAddressFormSet(BaseModelFormSet):
     def add_fields(self, form, index):
         super().add_fields(form, index)
@@ -103,6 +141,26 @@ class BaseAddressFormSet(BaseModelFormSet):
                 if 'error' in corrected_address:
                     form.add_error('address1', corrected_address['error']['message'])
 
+class BaseHouseholdMembersFormSet(BaseModelFormSet):
+
+    def clean(self):
+        """Return with input on error"""
+        if any(self.errors):
+            print(self.errors)
+            # Don't bother validating the formset unless each form is valid on its own
+            return
+
+
+HouseholdMembersFormSet = forms.modelformset_factory(
+    HouseholdMembers,
+    HouseholdMembersForm,
+    extra=0,
+    min_num=1,
+    max_num=8,
+    can_delete=True,
+    validate_min=True,
+    formset=BaseHouseholdMembersFormSet
+)
 
 AddressFormSet = forms.modelformset_factory(
     AddressRef,
