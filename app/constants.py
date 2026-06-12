@@ -31,8 +31,8 @@ supported_content_types = {
     "png": "image/png",
     "jpg": "image/jpeg",
     "jpeg": "image/jpeg",
+    "jfif": "image/jpeg",
     "pdf": "application/pdf",
-    "heic": "image/heic"
 }
 
 # Define the pages for the application/renewal, in order
