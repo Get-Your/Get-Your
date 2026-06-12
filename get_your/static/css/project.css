@@ -12,6 +12,11 @@
   border-color: #eed3d7;
 }
 
+.preview-image {
+  width: 300px;
+  height: 200px;
+}
+
 gmp-place-autocomplete {
   font-size: 16px;
   line-height: 1.5;
