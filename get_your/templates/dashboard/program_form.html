@@ -8,6 +8,7 @@
             <form action="{% url 'program_form' pk=user.pk %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ address_form_set.management_form }}
+                {{ householdmembers_form_set.management_form }}
                 <fieldset>
                     <legend class="border-bottom">Account Information</legend>
                     <div class="row">
@@ -95,7 +96,6 @@
                         <div class="row">
                             {% for field in address_form %}
                                 {% if not field.is_hidden %}
-                                {{ address_form.id }}
                                 <div class="mb-3 col-12 col-md-6">
                                 {{ field.label_tag }}
                                 {{ field }}
@@ -138,30 +138,38 @@
                             {% endif %}
                         {% endfor %}
                     </div>
-                    <div id="app">
-                        <div class="row">
-                            <div class="mb-3 text-center">
-                                <div class="mb-2 py-1 alert alert-warning"><i class="me-1 bi bi-exclamation-circle-fill text-danger"></i>Please, add all household members below.</div>
-                                <button type="button" class="btn btn-sm btn-outline-secondary shadow-sm" @click.prevent="addFamilyMember">Add Family Member</button>
-                            </div>
-                            <div v-for="(item, index) in familyMembers" :key="item.id" class="mb-3 col-12 col-md-6">
-                                <p class="mb-1 pb-1 d-flex justify-content-between align-items-center border-bottom"><span class="fw-semibold">Family Member [[ item.id + 1 ]]</span> <span v-if="item.id > 0" role="button" class="badge text-bg-danger" @click="removeFamilyMember(index)">Remove</span></p>
-                                <input type="hidden" :value="item.id">
-                                <div class="mb-3">
-                                    <label :for="'full_name_' + item.id" class="form-label">Full Name</label>
-                                    <input type="text" :id="'full_name_' + item.id" class="form-control shadow-sm" v-model="item.fullName" @input="updateJson">
-                                </div>
-                                <div class="mb-3">
-                                    <label :for="'birth_date_' + item.id" class="form-label">Birth Date</label>
-                                    <input type="date" :id="'birth_date_' + item.id" class="form-control shadow-sm" v-model="item.birthDate" @input="updateJson">
-                                </div>
-                                <div>
-                                    <label :for="'identification_path_' + item.id" class="form-label">Upload ID</label>
-                                    <input type="file" :id="'identification_path_' + item.id" class="form-control shadow-sm" accept="image/*" @change="handleFileChange($event, item.id)">
-                                </div>
-                            </div>
+                    <div class="mb-3 text-center">
+                        <div class="mb-2 py-1 alert alert-warning"><i class="me-1 bi bi-exclamation-circle-fill text-danger"></i>Please, add all household members below, including yourself.</div>
+                        <button id="add-family-member" type="button" class="btn btn-sm btn-outline-secondary shadow-sm">Add Family Member</button>
+                    </div>
+                    <div id="householdmembers-formset-wrapper" class="row">
+                        {% for householdmembers_form in householdmembers_form_set %}
+                        <div class="mb-3 col-12 col-md-6 formset">
+                            <div class="mb-2 d-flex justify-content-between align-items-center border-bottom fw-semibold"><p class="mb-0 pb-1">Family Member <span class="family-member-count">{{ householdmembers_form_set.total_form_count }}</span></p><span role="button" class="d-none badge text-bg-danger remove-family-member">Remove</span></div>
+                            {% for field in householdmembers_form %}
+                                {% if not field.is_hidden %}
+                                    <div class="mb-3">
+                                        {{ field.label_tag }}
+                                        {{ field }}
+                                        {% if field.help_text %}
+                                        <div class="form-text">{{ field.help_text }}</div>
+                                        {% endif %}
+                                        <ul class="mb-0 errorlist list-unstyled">
+                                            {% for error in field.errors %}
+                                            <li class="text-danger">{{ error }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% else %}
+                                {{ field }}
+                                {% endif %}
+                            {% endfor %}
+                            <div class="d-none image-preview-wrapper">
+                                <p>File to be uploaded:</p>
+                                <img class="preview-image" src="" alt="">
+                            </div>    
                         </div>
-                        <input type="hidden" name="family_members" :value="familyMembersJson">
+                        {% endfor %}
                     </div>
                 </fieldset>
                 <hr class="my-3">
@@ -171,75 +179,86 @@
         </div>
     </div>
 
-    {{ userJson|json_script:"user" }}
     <script type="module">
-        import { createApp, ref, onMounted } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+        let formIndex = {{ householdmembers_form_set.total_form_count|add:"-1" }},
+            maxFormCount = $('#id_householdmembers-MAX_NUM_FORMS').val(),
+            formsetWrapper = $('#householdmembers-formset-wrapper');
         
-        createApp({
-            delimiters: ['[[', ']]'],
-            setup() {
-                // hack to get json data from Django response
-                const user = JSON.parse($('#user').text());
-                console.log(user.household_members)
-                // hopefully, can do this as user.household.members instead
-                const familyMembers = ref([
-                    {
-                        id: 0,
-                        fullName: user.first_name + ' ' + user.last_name,
-                        birthDate: '',
-                        fileObject: '',
-                        identificationPath: ''
+        $('input[id$=DELETE]').parent().addClass('d-none');
+        
+        $('#add-family-member').on('click', function() {
+            // increment the form index
+            formIndex++;
+
+            // if index is less than max form count
+            if (formIndex <= maxFormCount-1) {
+                formsetWrapper.append($('#householdmembers-formset-wrapper .formset:last').clone().find('input').each(function() {
+                    // update the name and ID attribute of the cloned form fields with the new form index
+                    let name = $(this).attr('name').replace(/-\d+-/, '-' + formIndex + '-'),
+                        id = $(this).attr('id').replace(/-\d+-/, '-' + formIndex + '-'),
+                        label = $(this).siblings('label');
+                    
+                    // update input label with new form index
+                    if (label.length) {
+                        label.attr('for', label.attr('for').replace(/-\d+-/, '-' + formIndex + '-'));
                     }
-                ]);
+                    
+                    // set attributes and clear the value of the input field
+                    $(this).attr({
+                        'name': name,
+                        'id': id
+                    }).val('');
 
-                let familyMembersJson = ref('');
+                    // find span and update count
+                    $(this).parent('div').parent('.formset').find('.family-member-count').text(formIndex+1);
 
-                function addFamilyMember() {
-                    familyMembers.value.push({
-                        id: familyMembers.value.length,
-                        fullName: '',
-                        birthDate: '',
-                        fileObject: '',
-                        identificationPath: ''
-                    });
-                }
-
-                function removeFamilyMember(objIndex) {
-                    if (familyMembers.value.length > 1) {
-                        familyMembers.value.splice(objIndex,1);
+                    // do not show remove button if there is only one form
+                    if (formIndex > 0) {
+                        $(this).parent('div').parent('.formset').find('.remove-family-member').removeClass('d-none');
                     }
-                }
+                }).end().find('input[name$=-id]').val('').end());
 
-                function handleFileChange(event, objIndex) {
-                    const file = event.target.files[0];
-                    const familyMemberObject = familyMembers.value.find(obj => obj.id === objIndex);
+                $('#id_householdmembers-' + formIndex + '-user').val({{ request.user.id }})
 
-                    if (file) {
-                        familyMemberObject.fileObject = file;
-                        familyMemberObject.identificationPath = event.target.value;
-                    }
-                    updateJson()
-                }
+                // remove image if found
+                $(this).find('#householdmembers-formset-wrapper').find('.formset:last').siblings('.image-preview-wrapper').find('img').remove()
 
-                function updateJson() {
-                    familyMembersJson.value = JSON.stringify(familyMembers.value);
-                }
-
-                onMounted(() => {
-                    updateJson();
-                })
-
-                return {
-                    user,
-                    familyMembers,
-                    addFamilyMember,
-                    removeFamilyMember,
-                    familyMembersJson,
-                    handleFileChange,
-                    updateJson
-                }
+                // update the management form's TOTAL_FORMS count
+                $('#id_householdmembers-TOTAL_FORMS').val(formIndex+1);
             }
-        }).mount('#app')
+        });
+
+        formsetWrapper.on('click', '.remove-family-member', function () {
+            // remove form
+            $(this).closest('.formset').remove();
+
+            // decrement the form index and update the TOTAL_FORMS count
+            formIndex--;
+            $('#id_householdmembers-TOTAL_FORMS').val(formIndex+1);
+        });
+
+        // show file preview
+        formsetWrapper.on('change', 'input[id$=identification_path]', function() {
+            const fileInput = $(this),
+                file = this.files[0],
+                imageWrap = fileInput.parent().siblings('.image-preview-wrapper');
+            
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = imageWrap.find('img');
+                    img.prop('src', e.target.result);
+                    imageWrap.removeClass('d-none');
+                    //if ($('#preview-image-' + formIndex).length) {
+                    //    $('#preview-image-' + formIndex).prop('src', e.target.result);
+                    //} else {
+                    //    img.prop('src', e.target.result);
+                    //    fileInput.parent().parent('.formset').append(img);
+                    //}
+                }
+                reader.readAsDataURL(file);
+            }
+        });
 
         if ($('#id_address-1-address1').val()) {
             $('#mailing_address_information').removeClass('d-none');
