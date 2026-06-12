@@ -146,7 +146,6 @@ class BaseHouseholdMembersFormSet(BaseModelFormSet):
     def clean(self):
         """Return with input on error"""
         if any(self.errors):
-            print(self.errors)
             # Don't bother validating the formset unless each form is valid on its own
             return
 
