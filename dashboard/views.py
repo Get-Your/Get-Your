@@ -25,13 +25,10 @@ from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
 
-from .forms import UserForm, SameAddressForm, HouseholdForm, AddressFormSet
+from .forms import UserForm, SameAddressForm, HouseholdForm, AddressFormSet, HouseholdMembersFormSet
 from get_your.users.models import User
 from ref.models import AddressRef
-from get_your.users.serializers import UserSerializer
-from app.backend.address import validate_usps
 from monitor.wrappers import LoggerWrapper
 
 # Initialize logger
@@ -39,7 +36,7 @@ log = LoggerWrapper(logging.getLogger(__name__))
 
 @login_required(redirect_field_name='auth_next')
 def dashboard(request, pk, **kwargs):
-    user = get_object_or_404(User, pk=pk)
+    user = get_object_or_404(User.objects.prefetch_related('householdmembers'), pk=pk)
 
     return render(
             request,
@@ -52,8 +49,8 @@ def dashboard(request, pk, **kwargs):
 
 @login_required(redirect_field_name='auth_next')
 def program_form(request, pk, **kwargs):
-    user = get_object_or_404(User, pk=pk)
-    
+    user = User.objects.prefetch_related('householdmembers').get(pk=pk)
+
     initial_address_queryset = AddressRef.objects.none()
 
     if user.eligibility_address_id is not None:
@@ -67,16 +64,14 @@ def program_form(request, pk, **kwargs):
                 id__in=[user.eligibility_address.id, user.mailing_address.id]
             ).order_by('id')
 
-    user_json_data = {
-        "id": user.id,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-    }
-    
     if request.method == 'POST':
         # on post, set form to use posted data to fill form in case of error
         user_form = UserForm(request.POST, prefix='user', instance=user)
-        address_form_set = AddressFormSet(request.POST, queryset=initial_address_queryset, prefix='address')
+        address_form_set = AddressFormSet(
+            request.POST,
+            queryset=initial_address_queryset,
+            prefix='address'
+        )
         same_address_form = SameAddressForm(request.POST)
         household_form = HouseholdForm(
             request.POST,
@@ -86,13 +81,17 @@ def program_form(request, pk, **kwargs):
             },
             instance=user
         )
+        householdmembers_form_set = HouseholdMembersFormSet(
+            request.POST,
+            request.FILES,
+            queryset=user.householdmembers.all(),
+            prefix='householdmembers'
+        )
 
         if user_form.is_valid():
-            print('user form valid')
             user_instance = user_form.save(commit=False)
 
         if household_form.is_valid():
-            print('household form valid')
             household_form.save()
 
         if address_form_set.is_valid():
@@ -112,8 +111,11 @@ def program_form(request, pk, **kwargs):
             user_instance.mailing_address = address_info_for_db[1] if len(address_info_for_db) > 1 else address_info_for_db[0]
             user_instance.save()
 
+        if householdmembers_form_set.is_valid():
+            for householdmembers_form in householdmembers_form_set:
+                if householdmembers_form.cleaned_data:
+                    householdmembers_form.save()
 
-                
             return render(
                 request,
                 'dashboard/dashboard.html',
@@ -132,7 +134,7 @@ def program_form(request, pk, **kwargs):
                 'address_form_set': address_form_set,
                 'same_address_form': same_address_form,
                 'household_form': household_form,
-                'userJson': user_json_data,
+                'householdmembers_form_set': householdmembers_form_set,
                 'mapsApiKey': os.environ.get('GOOGLE_MAPS_API', '')
             },
         )
@@ -148,7 +150,11 @@ def program_form(request, pk, **kwargs):
         },
         instance=user
     )
-    # print(UserSerializer(user))
+    householdmembers_form_set = HouseholdMembersFormSet(
+        queryset=user.householdmembers.all(),
+        prefix='householdmembers'
+    )
+
     return render(
         request,
         'dashboard/program_form.html',
@@ -158,7 +164,7 @@ def program_form(request, pk, **kwargs):
             'address_form_set': address_form_set,
             'same_address_form': same_address_form,
             'household_form': household_form,
-            'userJson': user_json_data,
+            'householdmembers_form_set': householdmembers_form_set,
             'mapsApiKey': os.environ.get('GOOGLE_MAPS_API', '')
         },
     )
