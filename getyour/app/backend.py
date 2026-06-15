@@ -26,6 +26,8 @@ import logging
 import httpagentparser
 import magic
 from urllib.parse import quote, urlencode
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 from twilio.rest import Client
 from sendgrid.helpers.mail import Mail
@@ -98,6 +100,22 @@ tag_mapping = {
     'StateName': 'state',
     'ZipCode': 'ZIPCode',
 }
+
+# Set the API-call retry strategy
+retry_strategy = Retry(
+    # Retry up to 5 times
+    total=5,
+    # Don't retry for 'read' errors
+    read=0,
+    # Follow up to 10 redirects
+    redirect=10,
+    # Force 'bad' statuses to retry
+    status_forcelist=[502, 503, 504],
+    # The factor to 'back off' at each retry (as a multiple of the retry
+    # iteration), to a maximum overall
+    backoff_factor=0.1,
+    backoff_max=1,
+)
 
 
 class QualificationStatus(Enum):
@@ -201,6 +219,11 @@ def address_lookup(street_address, zip_code):
 
     """
 
+    # TODO: Allow all requests error messages to populate a custom HTTP error
+    # page that has select messages for the user (e.g. something like "There was
+    # an error and your application can't be completed right now. Your
+    # information has been saved; please try again later")
+
     # API documentation at
     # https://developers.arcgis.com/rest/geocode/find-address-candidates
     url = 'https://maps1.larimer.org/arcgis/rest/services/Locators/LETA_PLN_ASR_Composite/GeocodeServer/findAddressCandidates'
@@ -221,8 +244,12 @@ def address_lookup(street_address, zip_code):
         'outSR': default_spatial_reference,
     }
 
-    # Gather response (time out after 2 seconds to connect, 5 to read)
-    response = requests.get(url, params=payload, timeout=(2, 5))
+    # Gather response, with retries
+    with requests.Session() as s:
+        s.mount('https://', HTTPAdapter(max_retries=retry_strategy))
+        # Time out after 2 seconds to connect, 5 to read
+        response = s.get(url, params=payload, timeout=(2, 5))
+
     if response.status_code != requests.codes.ok:
         log.error(
             f"API error {response.status_code}: {response.reason}; {response.content}",
@@ -241,11 +268,6 @@ def address_lookup(street_address, zip_code):
             f"API error {errDict['code']}: {errDict['message']}",
             function='address_lookup',
         )
-        # TODO: Allow this error message to populate a custom HTTP error page
-        # that has select messages for the user (e.g. this one could be
-        # something like "There was an error and your application can't be
-        # completed right now. Your information has been saved; please try again
-        # later")
         raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
 
     # Ensure candidate(s) exist and that they either
@@ -321,8 +343,12 @@ def gma_lookup(coord_string, target_wkid):
     }
 
     try:
-        # Gather response (time out after 2 seconds to connect, 5 to read)
-        response = requests.get(url, params=payload, timeout=(2, 5))
+        # Gather response, with retries
+        with requests.Session() as s:
+            s.mount('https://', HTTPAdapter(max_retries=retry_strategy))
+            # Time out after 2 seconds to connect, 5 to read
+            response = s.get(url, params=payload, timeout=(2, 5))
+
         if response.status_code != requests.codes.ok:
             log.error(
                 f"API error {response.status_code}: {response.reason}; {response.content}",
@@ -404,22 +430,24 @@ def validate_usps(inobj):
     # calling this each time)
     access_token = get_usps_token()
     
-    # Call the USPS 'addresses' API with the parsed input. urljoin(),
-    # urlencode(), and quote are used so that spaces are escaped with '%20'
-    # instead of '+' (as requests-native functionality does)
-    response = requests.get(
-        "https://apis.usps.com/addresses/v3/address?{}".format(
-            urlencode(
-                address,
-                quote_via=quote,
+    # Call the USPS 'addresses' API with the parsed input and retries.
+    # urljoin(), urlencode(), and quote are used so that spaces are escaped with
+    # '%20' instead of '+' (as requests-native functionality does)
+    with requests.Session() as s:
+        s.mount('https://', HTTPAdapter(max_retries=retry_strategy))
+        response = s.get(
+            "https://apis.usps.com/addresses/v3/address?{}".format(
+                urlencode(
+                    address,
+                    quote_via=quote,
+                ),
             ),
-        ),
-        timeout=10,
-        headers={
-            "Authorization": f"Bearer {access_token}",
-            "Accept": "application/json",
-        },
-    )
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Accept": "application/json",
+            },
+            timeout=10,
+        )
 
     # Log then raise an error and raise if status_code != 200
     if not response.ok:
