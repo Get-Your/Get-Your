@@ -221,8 +221,8 @@ def address_lookup(street_address, zip_code):
         'outSR': default_spatial_reference,
     }
 
-    # Gather response
-    response = requests.get(url, params=payload)
+    # Gather response (time out after 2 seconds to connect, 5 to read)
+    response = requests.get(url, params=payload, timeout=(2, 5))
     if response.status_code != requests.codes.ok:
         log.error(
             f"API error {response.status_code}: {response.reason}; {response.content}",
@@ -321,8 +321,8 @@ def gma_lookup(coord_string, target_wkid):
     }
 
     try:
-        # Gather response
-        response = requests.get(url, params=payload)
+        # Gather response (time out after 2 seconds to connect, 5 to read)
+        response = requests.get(url, params=payload, timeout=(2, 5))
         if response.status_code != requests.codes.ok:
             log.error(
                 f"API error {response.status_code}: {response.reason}; {response.content}",
@@ -333,7 +333,7 @@ def gma_lookup(coord_string, target_wkid):
         # Parse response
         outVal = response.json()
 
-        # Since the gisweb endpoint seems to always return an HTTP 200, also check
+        # Since the endpoint seems to always return an HTTP 200, also check
         # the JSON for an 'error' key
         if 'error' in outVal:
             errDict = outVal['error']
