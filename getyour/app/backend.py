@@ -247,8 +247,8 @@ def address_lookup(street_address, zip_code):
     # Gather response, with retries
     with requests.Session() as s:
         s.mount('https://', HTTPAdapter(max_retries=retry_strategy))
-        # Time out after 2 seconds to connect, 5 to read
-        response = s.get(url, params=payload, timeout=(2, 5))
+        # Time out after 1 second to connect, 3 to read
+        response = s.get(url, params=payload, timeout=(1, 3))
 
     if response.status_code != requests.codes.ok:
         log.error(
@@ -346,8 +346,8 @@ def gma_lookup(coord_string, target_wkid):
         # Gather response, with retries
         with requests.Session() as s:
             s.mount('https://', HTTPAdapter(max_retries=retry_strategy))
-            # Time out after 2 seconds to connect, 5 to read
-            response = s.get(url, params=payload, timeout=(2, 5))
+            # Time out after 1 second to connect, 3 to read
+            response = s.get(url, params=payload, timeout=(1, 3))
 
         if response.status_code != requests.codes.ok:
             log.error(
@@ -446,7 +446,8 @@ def validate_usps(inobj):
                 "Authorization": f"Bearer {access_token}",
                 "Accept": "application/json",
             },
-            timeout=10,
+            # Time out after 1 second to connect, 3 for read
+            timeout=(1, 3),
         )
 
     # Log then raise an error and raise if status_code != 200
