@@ -145,7 +145,7 @@
                     <div id="householdmembers-formset-wrapper" class="row">
                         {% for householdmembers_form in householdmembers_form_set %}
                         <div class="mb-3 col-12 col-md-6 formset">
-                            <div class="mb-2 d-flex justify-content-between align-items-center border-bottom fw-semibold"><p class="mb-0 pb-1">Family Member <span class="family-member-count">{{ householdmembers_form_set.total_form_count }}</span></p><span role="button" class="d-none badge text-bg-danger remove-family-member">Remove</span></div>
+                            <div class="mb-2 d-flex justify-content-between align-items-center border-bottom fw-semibold"><p class="mb-0 pb-1">Family Member <span class="family-member-count">{{ householdmembers_form.index|add:1 }}</span></p><span role="button" class="d-none badge text-bg-danger remove-family-member">Remove</span></div>
                             {% for field in householdmembers_form %}
                                 {% if not field.is_hidden %}
                                     <div class="mb-3">
@@ -166,10 +166,35 @@
                             {% endfor %}
                             <div class="d-none image-preview-wrapper">
                                 <p>File to be uploaded:</p>
-                                <img class="preview-image" src="" alt="">
                             </div>    
                         </div>
                         {% endfor %}
+                    </div>
+                    <div id="empty-form-template" class="d-none">
+                        <div class="mb-3 col-12 col-md-6 formset">
+                            <div class="mb-2 d-flex justify-content-between align-items-center border-bottom fw-semibold"><p class="mb-0 pb-1">Family Member <span class="family-member-count">{{ householdmembers_form.index|add:1 }}</span></p><span role="button" class="badge text-bg-danger remove-family-member">Remove</span></div>
+                            {% for field in householdmembers_form_set.empty_form %}
+                                {% if not field.is_hidden %}
+                                    <div class="mb-3">
+                                        {{ field.label_tag }}
+                                        {{ field }}
+                                        {% if field.help_text %}
+                                        <div class="form-text">{{ field.help_text }}</div>
+                                        {% endif %}
+                                        <ul class="mb-0 errorlist list-unstyled">
+                                            {% for error in field.errors %}
+                                            <li class="text-danger">{{ error }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% else %}
+                                {{ field }}
+                                {% endif %}
+                            {% endfor %}
+                            <div class="d-none image-preview-wrapper">
+                                <p>File to be uploaded:</p>
+                            </div>    
+                        </div>
                     </div>
                 </fieldset>
                 <hr class="my-3">
@@ -183,24 +208,32 @@
         let formIndex = {{ householdmembers_form_set.total_form_count|add:"-1" }},
             maxFormCount = $('#id_householdmembers-MAX_NUM_FORMS').val(),
             formsetWrapper = $('#householdmembers-formset-wrapper');
+
+        // show remove buttons for all formsets except the first
+        if (formIndex > 0) {
+            formsetWrapper.children('.formset').not('.formset:first').find('.remove-family-member').removeClass('d-none');
+        }
         
+        // hide native Django DELETE checkboxes
         $('input[id$=DELETE]').parent().addClass('d-none');
         
+        // add formset
         $('#add-family-member').on('click', function() {
             // increment the form index
             formIndex++;
 
             // if index is less than max form count
             if (formIndex <= maxFormCount-1) {
-                formsetWrapper.append($('#householdmembers-formset-wrapper .formset:last').clone().find('input').each(function() {
+                formsetWrapper.append($('#empty-form-template .formset').clone().find('input').each(function() {
                     // update the name and ID attribute of the cloned form fields with the new form index
-                    let name = $(this).attr('name').replace(/-\d+-/, '-' + formIndex + '-'),
-                        id = $(this).attr('id').replace(/-\d+-/, '-' + formIndex + '-'),
+                    let searchString = '__prefix__',
+                        name = $(this).attr('name').replace(searchString, formIndex),
+                        id = $(this).attr('id').replace(searchString, formIndex),
                         label = $(this).siblings('label');
                     
                     // update input label with new form index
                     if (label.length) {
-                        label.attr('for', label.attr('for').replace(/-\d+-/, '-' + formIndex + '-'));
+                        label.attr('for', label.attr('for').replace(searchString, formIndex));
                     }
                     
                     // set attributes and clear the value of the input field
@@ -211,64 +244,75 @@
 
                     // find span and update count
                     $(this).parent('div').parent('.formset').find('.family-member-count').text(formIndex+1);
-
-                    // do not show remove button if there is only one form
-                    if (formIndex > 0) {
-                        $(this).parent('div').parent('.formset').find('.remove-family-member').removeClass('d-none');
-                    }
                 }).end().find('input[name$=-id]').val('').end());
 
-                $('#id_householdmembers-' + formIndex + '-user').val({{ request.user.id }})
-
-                // remove image if found
-                $(this).find('#householdmembers-formset-wrapper').find('.formset:last').siblings('.image-preview-wrapper').find('img').remove()
+                // set user_id 
+                $('#id_householdmembers-' + formIndex + '-user').val({{ request.user.id }});
 
                 // update the management form's TOTAL_FORMS count
                 $('#id_householdmembers-TOTAL_FORMS').val(formIndex+1);
             }
         });
 
+        // remove formset
         formsetWrapper.on('click', '.remove-family-member', function () {
-            // remove form
-            $(this).closest('.formset').remove();
-
-            // decrement the form index and update the TOTAL_FORMS count
-            formIndex--;
-            $('#id_householdmembers-TOTAL_FORMS').val(formIndex+1);
+            let parentFormset = $(this).parent().parent('.formset'),
+                idHiddenInput = parentFormset.find('input[name$=-id]');
+            
+            if (idHiddenInput.val()) {
+                // if the id field has a value, check DELETE checkbox and hide form
+                // this will make sure the record is deleted from the DB
+                parentFormset.find('input[type=checkbox]').prop('checked', true);
+                parentFormset.addClass('d-none');
+            } else {
+                // otherwise, remove the form from the DOM entirely,
+                // decrement the form index and update the TOTAL_FORMS count
+                parentFormset.remove();
+                $('#id_householdmembers-TOTAL_FORMS').val(formIndex);
+                formIndex--;
+            }
         });
 
         // show file preview
         formsetWrapper.on('change', 'input[id$=identification_path]', function() {
             const fileInput = $(this),
                 file = this.files[0],
-                imageWrap = fileInput.parent().siblings('.image-preview-wrapper');
+                imageWrap = fileInput.parent().siblings('.image-preview-wrapper'),
+                pdfIcon = $('<i><i>'),
+                img = $('<img/>');
+
+            pdfIcon.addClass('bi bi-filetype-pdf');
             
             if (file && file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const img = imageWrap.find('img');
                     img.prop('src', e.target.result);
+                    img.addClass('preview-image');
+                    imageWrap.append(img);
                     imageWrap.removeClass('d-none');
-                    //if ($('#preview-image-' + formIndex).length) {
-                    //    $('#preview-image-' + formIndex).prop('src', e.target.result);
-                    //} else {
-                    //    img.prop('src', e.target.result);
-                    //    fileInput.parent().parent('.formset').append(img);
-                    //}
+                    if (imageWrap.find('.bi .bi-filetype-pdf').length) {
+                        imageWrap.find('.bi .bi-filetype-pdf').remove();
+                    }
                 }
                 reader.readAsDataURL(file);
+            } else {
+                if (imageWrap.find('img').length) {
+                    imageWrap.find('img').remove();
+                }
+                imageWrap.append(pdfIcon);
+                imageWrap.removeClass('d-none');
             }
         });
 
         if ($('#id_address-1-address1').val()) {
             $('#mailing_address_information').removeClass('d-none');
             $('#id_mailing_address_same_as_home_1').prop('checked', true);
-            void init('mailing-address-autocomplete-container', 'id_address-1');
+            void autoCompleteInit('mailing-address-autocomplete-container', 'id_address-1');
         }
 
         if ($('#id_mailing_address_same_as_home_1').prop('checked')) {
             $('#mailing_address_information').removeClass('d-none');
-            void init('mailing-address-autocomplete-container', 'id_address-1');
+            void autoCompleteInit('mailing-address-autocomplete-container', 'id_address-1');
         }
 
         $('input[name^=mailing_address]').on('change', function() {
@@ -276,7 +320,7 @@
                 $('#mailing_address_information').addClass('d-none');
             } else {
                 $('#mailing_address_information').removeClass('d-none');
-                void init('mailing-address-autocomplete-container', 'id_address-1');
+                void autoCompleteInit('mailing-address-autocomplete-container', 'id_address-1');
             }
         });
 
@@ -291,7 +335,7 @@
             key: "{{ mapsApiKey }}"
         });
 
-        async function init(wrapperElementId, formId) {
+        async function autoCompleteInit(wrapperElementId, formId) {
             // Request needed libraries.
             const { PlaceAutocompleteElement } = await google.maps.importLibrary('places');
             
@@ -344,6 +388,6 @@
             );
         }
         
-        void init('eligibility-address-autocomplete-container', 'id_address-0');
+        void autoCompleteInit('eligibility-address-autocomplete-container', 'id_address-0');
     </script>
 {% endblock %}
