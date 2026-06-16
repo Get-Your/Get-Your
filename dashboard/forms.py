@@ -112,7 +112,7 @@ class HouseholdMembersForm(forms.ModelForm):
                 format='%Y-%m-%d',
                 attrs={'type': 'date', 'class':'form-control shadow-sm'}
             ),
-            'identification_path': CustomClearableFileInput(
+            'identification_path': forms.FileInput(
                 attrs={
                     'class':'form-control shadow-sm',
                     'accept': ', '.join(supported_content_types.values())
@@ -142,6 +142,9 @@ class BaseAddressFormSet(BaseModelFormSet):
                     form.add_error('address1', corrected_address['error']['message'])
 
 class BaseHouseholdMembersFormSet(BaseModelFormSet):
+    def add_fields(self, form, index):
+        super().add_fields(form, index)
+        form.index = index
 
     def clean(self):
         """Return with input on error"""
@@ -155,7 +158,7 @@ HouseholdMembersFormSet = forms.modelformset_factory(
     HouseholdMembersForm,
     extra=0,
     min_num=1,
-    max_num=8,
+    max_num=16,
     can_delete=True,
     validate_min=True,
     formset=BaseHouseholdMembersFormSet
