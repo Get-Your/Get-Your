@@ -112,17 +112,9 @@ def program_form(request, pk, **kwargs):
             user_instance.save()
 
         if householdmembers_form_set.is_valid():
-            for householdmembers_form in householdmembers_form_set:
-                if householdmembers_form.cleaned_data:
-                    householdmembers_form.save()
+            householdmembers_form_set.save()
 
-            return render(
-                request,
-                'dashboard/dashboard.html',
-                {
-                    "title": "Get FoCo Dashboard",
-                },
-            )
+            return redirect('dashboard', pk=user.id)
 
         # if validation fails, return form with input
         return render(
