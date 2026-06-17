@@ -26,6 +26,8 @@ import logging
 import httpagentparser
 import magic
 from urllib.parse import quote, urlencode
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 from twilio.rest import Client
 from sendgrid.helpers.mail import Mail
@@ -57,6 +59,7 @@ from app.constants import (
     supported_content_types,
     enable_calendar_year_renewal,
     application_pages,
+    default_spatial_reference,
 )
 from logger.wrappers import LoggerWrapper
 
@@ -97,6 +100,22 @@ tag_mapping = {
     'StateName': 'state',
     'ZipCode': 'ZIPCode',
 }
+
+# Set the API-call retry strategy
+retry_strategy = Retry(
+    # Retry up to 5 times
+    total=5,
+    # Don't retry for 'read' errors
+    read=0,
+    # Follow up to 10 redirects
+    redirect=10,
+    # Force 'bad' statuses to retry
+    status_forcelist=[502, 503, 504],
+    # The factor to 'back off' at each retry (as a multiple of the retry
+    # iteration), to a maximum overall
+    backoff_factor=0.1,
+    backoff_max=1,
+)
 
 
 class QualificationStatus(Enum):
@@ -139,8 +158,9 @@ def address_check(address_dict):
     """
 
     try:
-        # Gather the coordinate string for future queries
-        coord_string = address_lookup(
+        # Gather the coordinate string and the 'WKID' from the lookup, for use
+        # in future queries
+        coord_string, result_wkid = address_lookup(
             address_dict['streetAddress'],
             address_dict['ZIPCode'],
         )
@@ -162,13 +182,10 @@ def address_check(address_dict):
         return (False, False)
 
     else:
-        has_connexion = connexion_lookup(coord_string)
-        msg = 'Connexion not available or API not found' if has_connexion is None \
-            else 'Connexion available' if has_connexion \
-            else 'Connexion coming soon'
-        log.info(msg, function='address_check')
+        # Hardcode has_connexion now that the function has been removed
+        has_connexion = False
 
-        is_in_gma = gma_lookup(coord_string)
+        is_in_gma = gma_lookup(coord_string, result_wkid)
         msg = 'Address is in GMA' if is_in_gma else 'Address is outside of GMA'
         log.info(msg, function='address_check')
 
@@ -202,21 +219,37 @@ def address_lookup(street_address, zip_code):
 
     """
 
+    # TODO: Allow all requests error messages to populate a custom HTTP error
+    # page that has select messages for the user (e.g. something like "There was
+    # an error and your application can't be completed right now. Your
+    # information has been saved; please try again later")
+
     # API documentation at
     # https://developers.arcgis.com/rest/geocode/find-address-candidates
-    url = 'https://gis.fortcollins.gov/arcgis/rest/services/Geocode/Fort_CollinsAddress_Point_Locator_Pro_New_/GeocodeServer/findAddressCandidates'
+    url = 'https://maps1.larimer.org/arcgis/rest/services/Locators/LETA_PLN_ASR_Composite/GeocodeServer/findAddressCandidates'
 
-    # While there are many more options than the prior endpoint, it seems the
-    # best results are garnered with the minimum input
     payload = {
+        # Return JSON
         'f': 'pjson',
-        'address': street_address,
-        'postal': zip_code,
-        'outFields': 'location',
+        'Street': street_address,
+        'ZIP': zip_code,
+        # Gather the coordinates (location), ZIP Code (ZIP), and wkid
+        # (spatialReference)
+        'outFields': 'location,ZIP,spatialReference',
+        # Return a single match
+        'maxLocations': 1,
+        # Match addresses outside the area, if possible
+        'matchOutOfRange': True,
+        # Return results in the global Spatial Reference
+        'outSR': default_spatial_reference,
     }
 
-    # Gather response
-    response = requests.get(url, params=payload)
+    # Gather response, with retries
+    with requests.Session() as s:
+        s.mount('https://', HTTPAdapter(max_retries=retry_strategy))
+        # Time out after 1 second to connect, 3 to read
+        response = s.get(url, params=payload, timeout=(1, 3))
+
     if response.status_code != requests.codes.ok:
         log.error(
             f"API error {response.status_code}: {response.reason}; {response.content}",
@@ -235,116 +268,42 @@ def address_lookup(street_address, zip_code):
             f"API error {errDict['code']}: {errDict['message']}",
             function='address_lookup',
         )
-        # TODO: Allow this error message to populate a custom HTTP error page
-        # that has select messages for the user (e.g. this one could be
-        # something like "There was an error and your application can't be
-        # completed right now. Your information has been saved; please try again
-        # later")
         raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
 
-    # Ensure candidate(s) exist and they have a decent match score
-    # The endpoint has smart matching and even exact inputs result in fairly
-    # low scores; set the 'minimum score' somewhat low to avoid missing accurate
-    # matches
+    # Ensure candidate(s) exist and that they either
+    #   a) have a ZIP Code and have a good match score (a ZIP Code in the result
+    #       implies the address is definitely in the area and therefore will be
+    #       correctly associated to a Larimer County address if it also has a
+    #       good score)
+    #   b) do not have a ZIP Code and have a perfect match score (not having a
+    #       ZIP Code in the result is a sign that the address is outside the
+    #       area, but testing shows that real Larimer County addresses can be
+    #       identified correctly if the score is perfect)
 
-    # Because this is how the Sales Tax lookup is architected, it should be
-    # safe to assume these are returned sorted, with best candidate first
-    if len(outVal['candidates']) > 0 and outVal['candidates'][0]['score'] > 69.9:
-        # Define the coordinate string to be used in future queries
-        coord_string = '{x},{y}'.format(
-            x=outVal['candidates'][0]['location']['x'],
-            y=outVal['candidates'][0]['location']['y'],
-        )
+    # Define the coordinate string to be used in future queries
+    coord_string = None
+    if len(outVal['candidates']) > 0:
+        found_zip = outVal['candidates'][0]['attributes']['ZIP']
+        match_score = outVal['candidates'][0]['score']
+        if (
+            found_zip != '' and match_score >= 95
+        ) or (
+            found_zip == '' and match_score > 99.9
+        ):
+            coord_string = '{x},{y}'.format(
+                x=outVal['candidates'][0]['location']['x'],
+                y=outVal['candidates'][0]['location']['y'],
+            )
 
-    else:
+    # Raise an exception if coord_string remains None
+    if not coord_string:
         raise NameError("Matching address not found")
 
-    return coord_string
+    # Return the found coordinate string and the returned 'WKID' from the lookup
+    return (coord_string, outVal['spatialReference']['wkid'])
 
 
-def connexion_lookup(coord_string):
-    """
-    Look up the Connexion service status given the coordinate string.
-
-    Parameters
-    ----------
-    coord_string : str
-        Formatted <x>,<y> string of coordinates from address_lookup().
-
-    Raises
-    ------
-    requests.exceptions.HTTPError
-        An issue with the lookup endpoint.
-    IndexError
-        Address not found in Connexion lookups - Connexion is likely to be
-        unavailable at this address.
-
-    Returns
-    -------
-    bool
-        Boolean 'status', designating True for 'service available' or False
-        for 'service will be available, but not yet' OR None for 'unavailable'
-        (probably)
-
-    TODO: Switch this to an enum if we want to keep this structure
-
-    """
-
-    url = 'https://gisweb.fcgov.com/arcgis/rest/services/FDH_Boundaries_ForPublic/MapServer/0/query'
-
-    payload = {
-        'f': 'pjson',
-        'geometryType': 'esriGeometryPoint',
-        'geometry': coord_string,
-    }
-
-    try:
-        # Gather response
-        response = requests.post(url, params=payload)
-        if response.status_code != requests.codes.ok:
-            log.error(
-                f"API error {response.status_code}: {response.reason}; {response.content}",
-                function='connexion_lookup',
-            )
-            raise requests.exceptions.HTTPError(response.reason, response.content)
-
-        # Parse response
-        outVal = response.json()
-
-        # Since the gisweb endpoint seems to always return an HTTP 200, also check
-        # the JSON for an 'error' key
-        if 'error' in outVal:
-            errDict = outVal['error']
-            log.error(
-                f"API error {errDict['code']}: {errDict['message']}",
-                function='connexion_lookup',
-            )
-            raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
-
-        statusInput = outVal['features'][0]['attributes']['INVENTORY_STATUS_CODE']
-
-    except requests.exceptions.HTTPError:
-        return None
-
-    except (IndexError, KeyError):
-        return None
-
-    else:
-        statusInput = statusInput.lower()
-
-        # If we made it to this point, Connexion will be or is currently
-        # available
-        if statusInput in (
-                'released',
-                'out of warranty',
-        ):      # this is the 'available' case
-            return True
-
-        else:
-            return False
-
-
-def gma_lookup(coord_string):
+def gma_lookup(coord_string, target_wkid):
     """
     Look up the GMA location given the coordinate string.
 
@@ -365,25 +324,31 @@ def gma_lookup(coord_string):
 
     """
 
-    url = 'https://gisweb.fcgov.com/arcgis/rest/services/FCMaps/MapServer/26/query'
+    url = 'https://gis.fortcollins.gov/arcgis/rest/services/GMA/MapServer/0/query'
 
     payload = {
         # Manually stringify 'geometry' - requests and json.dumps do this
         # incorrectly
-        'geometry': """{"points":[["""+coord_string+"""]],"spatialReference":{"wkid":102653}}""",
+        'geometry': """{"points":[["""+coord_string+"""]],"spatialReference":{"wkid":"""+str(target_wkid)+"""}}""",
         'geometryType': 'esriGeometryMultipoint',
-        'inSR': 2231,
+        # Use the global Spatial Reference
+        'inSR': default_spatial_reference,
         'spatialRel': 'esriSpatialRelIntersects',
         'where': '',
         'returnGeometry': 'false',
-        'outSR': 2231,
+        # Return results in the global Spatial Reference
+        'outSR': default_spatial_reference,
         'outFields': '*',
         'f': 'pjson',
     }
 
     try:
-        # Gather response
-        response = requests.get(url, params=payload)
+        # Gather response, with retries
+        with requests.Session() as s:
+            s.mount('https://', HTTPAdapter(max_retries=retry_strategy))
+            # Time out after 1 second to connect, 3 to read
+            response = s.get(url, params=payload, timeout=(1, 3))
+
         if response.status_code != requests.codes.ok:
             log.error(
                 f"API error {response.status_code}: {response.reason}; {response.content}",
@@ -394,7 +359,7 @@ def gma_lookup(coord_string):
         # Parse response
         outVal = response.json()
 
-        # Since the gisweb endpoint seems to always return an HTTP 200, also check
+        # Since the endpoint seems to always return an HTTP 200, also check
         # the JSON for an 'error' key
         if 'error' in outVal:
             errDict = outVal['error']
@@ -411,7 +376,7 @@ def gma_lookup(coord_string):
 
     except requests.exceptions.HTTPError:
         return False
-    
+
 
 def get_usps_token():
     """Get the bearer token for the USPS v3 API."""
@@ -465,22 +430,25 @@ def validate_usps(inobj):
     # calling this each time)
     access_token = get_usps_token()
     
-    # Call the USPS 'addresses' API with the parsed input. urljoin(),
-    # urlencode(), and quote are used so that spaces are escaped with '%20'
-    # instead of '+' (as requests-native functionality does)
-    response = requests.get(
-        "https://apis.usps.com/addresses/v3/address?{}".format(
-            urlencode(
-                address,
-                quote_via=quote,
+    # Call the USPS 'addresses' API with the parsed input and retries.
+    # urljoin(), urlencode(), and quote are used so that spaces are escaped with
+    # '%20' instead of '+' (as requests-native functionality does)
+    with requests.Session() as s:
+        s.mount('https://', HTTPAdapter(max_retries=retry_strategy))
+        response = s.get(
+            "https://apis.usps.com/addresses/v3/address?{}".format(
+                urlencode(
+                    address,
+                    quote_via=quote,
+                ),
             ),
-        ),
-        timeout=10,
-        headers={
-            "Authorization": f"Bearer {access_token}",
-            "Accept": "application/json",
-        },
-    )
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Accept": "application/json",
+            },
+            # Time out after 1 second to connect, 3 for read
+            timeout=(1, 3),
+        )
 
     # Log then raise an error and raise if status_code != 200
     if not response.ok:
