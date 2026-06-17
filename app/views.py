@@ -19,7 +19,34 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
 
+from django.shortcuts import render
 from monitor.wrappers import LoggerWrapper
+from ref.models import EligibilityProgramRef, AddressRef
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
+
+# @login_required(redirect_field_name='auth_next')
+def eligibility_form(request, **kwargs):
+    if request.method == "POST":
+        # Handle the program ID and file upload
+        # Return to some other page, with a sucess mesage
+        pass
+    else:
+        ami_30_programs = EligibilityProgramRef.objects.filter(is_active=True).filter(ami_threshold=.3).order_by(
+                'friendly_name').values_list('friendly_name', flat=True)
+
+        ami_60_programs = EligibilityProgramRef.objects.filter(is_active=True).filter(ami_threshold=.6).order_by(
+                'friendly_name').values_list('friendly_name', flat=True)
+
+        print(ami_30_programs)
+
+        return render(
+            request,
+            'dashboard/new_eligibility.html',
+            {
+                'title': 'Program Form',
+                'ami30_programs': ami_30_programs,
+                'ami60_programs': ami_60_programs,
+            }
+    )

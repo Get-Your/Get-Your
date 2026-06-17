@@ -11,16 +11,16 @@
       <p class="mx-3">Are you currently enrolled in any of these income-qualified programs? If so, select one that you can provide documentation for:</p>
       <div class="card-body">
         <div class="ami30s mb-3">
-          {% for program in ami30s %}
-            <input type="radio" class="btn-check ami30" name="ami-30s" id="btn-check-{{ program }}" autocomplete="off" value="{{ program }}" />
+          {% for program in ami30_programs %}
+            <input type="radio" class="btn-check ami30" name="programs" id="btn-check-{{ program }}" autocomplete="off" value="{{ program }}" />
             <label class="btn btn-outline-primary" for="btn-check-{{ program }}">{{ program }}</label>
           {% endfor %}
-          <input type="radio" class="btn-check" name="ami-30s" id="btn-check-none" autocomplete="off" value="none" />
+          <input type="radio" class="btn-check" name="programs" id="btn-check-none" autocomplete="off" value="none" />
           <label class="btn btn-outline-primary" for="btn-check-none">None of these</label>
         </div>
         <div class="ami60s">
-          {% for program in ami60s %}
-            <input type="radio" class="btn-check ami60" name="ami-60s" id="btn-check-{{ program }}" autocomplete="off" value="{{ program }}" disabled />
+          {% for program in ami60_programs %}
+            <input type="radio" class="btn-check ami60" name="programs" id="btn-check-{{ program }}" autocomplete="off" value="{{ program }}" disabled />
             <label class="btn btn-outline-primary" for="btn-check-{{ program }}">{{ program }}</label>
           {% endfor %}
         </div>
@@ -37,9 +37,8 @@
       {% comment %} hiding elements is a little funky... maybe just darken them or use Vue instead {% endcomment %}
       $('#btn-check-none').on('click', function () {
         // show ami60
-        $('.ami60s').removeClass('d-none')
-        // disable ami30s
-        $('.ami30').attr('disabled', 'disabled')
+        $('.ami60').removeAttr('disabled')
+
         //disable the upload button
         $('#upload-btn').addClass('disabled')
       })

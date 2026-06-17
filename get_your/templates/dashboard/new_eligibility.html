@@ -1,0 +1,433 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block title %}
+  {% translate 'Eligibility Survey' %}- {{ block.super }}
+{% endblock %}
+{% block css %}
+  {{ block.super }}
+  <style>
+    /* Design Tokens & Theme Variables */
+    :root {
+      --survey-primary: #198754; /* Green for success/AMI 30 */
+      --survey-secondary: #0d6efd; /* Blue for AMI 60 */
+      --survey-bg-hover: rgba(25, 135, 84, 0.05);
+      --survey-border-active: #198754;
+      --survey-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    /* Survey Card Styling */
+    .survey-container {
+      max-width: 800px;
+      margin: 2rem auto;
+    }
+    .step-card {
+      border: 1px solid rgba(0, 0, 0, 0.125);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      background-color: #fff;
+      transition: var(--survey-transition);
+      margin-bottom: 2rem;
+    }
+    .program-card {
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: var(--survey-transition);
+      position: relative;
+      height: 100%;
+      background: #fff;
+    }
+    .program-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+      border-color: #ced4da;
+    }
+    /* Active selection styles for AMI 30 */
+    .program-card.active-ami30 {
+      border-color: var(--survey-primary);
+      background-color: rgba(25, 135, 84, 0.03);
+    }
+    /* Active selection styles for AMI 60 */
+    .program-card.active-ami60 {
+      border-color: var(--survey-secondary);
+      background-color: rgba(13, 110, 253, 0.03);
+    }
+    .card-check-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 1.25rem;
+      color: transparent;
+      transition: var(--survey-transition);
+    }
+    .program-card.active-ami30 .card-check-icon {
+      color: var(--survey-primary);
+    }
+    .program-card.active-ami60 .card-check-icon {
+      color: var(--survey-secondary);
+    }
+    .badge-category {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0.35em 0.65em;
+    }
+    /* Survey Steps Animations */
+    .workflow-step {
+      transition: var(--survey-transition);
+    }
+    .workflow-step.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    /* Drag & Drop File Zone Styling */
+    .upload-dropzone {
+      border: 2px dashed #dee2e6;
+      border-radius: 8px;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      background-color: #f8f9fa;
+      cursor: pointer;
+      transition: var(--survey-transition);
+    }
+    .upload-dropzone:hover,
+    .upload-dropzone.dragover {
+      border-color: var(--survey-secondary);
+      background-color: rgba(13, 110, 253, 0.02);
+    }
+    .upload-dropzone i {
+      font-size: 2.5rem;
+      color: #6c757d;
+      margin-bottom: 1rem;
+      transition: var(--survey-transition);
+    }
+    .upload-dropzone:hover i {
+      color: var(--survey-secondary);
+      transform: scale(1.1);
+    }
+  </style>
+{% endblock %}
+{% block javascript %}
+  {{ block.super }}
+  <!-- Inject jQuery CDN for dynamic UI interactions -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+{% endblock %}
+{% block content %}
+  <div class="survey-container px-3">
+    <!-- Header and Title -->
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bold text-dark mb-3">{% translate 'Eligibility Verification' %}</h1>
+      <p class="lead text-secondary">
+        {% translate 'Select one program you are currently enrolled in to verify your household eligibility.' %}
+      </p>
+    </div>
+    <form method="post" enctype="multipart/form-data" id="survey-workflow-form" novalidate>
+      {% csrf_token %}
+      <!-- STEP 1: Program Selection -->
+      <div class="card step-card p-4 workflow-step" id="step-selection">
+        <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+          <span class="badge bg-dark rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 2rem; height: 2rem; font-weight: bold;">1</span>
+          <h2 class="h4 mb-0 fw-semibold">{% translate 'Choose an Qualifying Program' %}</h2>
+        </div>
+        <!-- Priority / Preferred Category: AMI 30 -->
+        <div class="mb-4">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h3 class="h6 text-uppercase fw-bold text-success mb-0 tracking-wider"><i class="bi bi-star-fill me-1"></i> {% translate 'Preferred Programs (AMI 30%)' %}</h3>
+            <span class="badge bg-success-subtle text-success badge-category">{% translate 'Higher Approval Rate' %}</span>
+          </div>
+          <div class="row g-3">
+            <!-- Medicaid -->
+            <div class="col-md-4">
+              <div class="program-card text-center" data-program-id="medicaid" data-category="ami30" data-label="Medicaid">
+                <i class="bi bi-check-circle-fill card-check-icon"></i>
+                <div class="fs-1 text-success mb-2">
+                  <i class="bi bi-heart-pulse"></i>
+                </div>
+                <h4 class="h6 fw-bold mb-1">{% translate 'Medicaid' %}</h4>
+                <p class="small text-muted mb-0">
+                  {% translate 'Healthcare support for eligible individuals.' %}
+                </p>
+              </div>
+            </div>
+            <!-- Free/Reduced Lunch -->
+            <div class="col-md-4">
+              <div class="program-card text-center" data-program-id="free_reduced_lunch" data-category="ami30" data-label="Free/Reduced Price School Meals">
+                <i class="bi bi-check-circle-fill card-check-icon"></i>
+                <div class="fs-1 text-success mb-2">
+                  <i class="bi bi-egg-fried"></i>
+                </div>
+                <h4 class="h6 fw-bold mb-1">{% translate 'Free/Reduced Lunch' %}</h4>
+                <p class="small text-muted mb-0">
+                  {% translate 'School meal assistance for children.' %}
+                </p>
+              </div>
+            </div>
+            <!-- SNAP -->
+            <div class="col-md-4">
+              <div class="program-card text-center" data-program-id="snap" data-category="ami30" data-label="SNAP (Food Stamps)">
+                <i class="bi bi-check-circle-fill card-check-icon"></i>
+                <div class="fs-1 text-success mb-2">
+                  <i class="bi bi-basket"></i>
+                </div>
+                <h4 class="h6 fw-bold mb-1">{% translate 'SNAP' %}</h4>
+                <p class="small text-muted mb-0">
+                  {% translate 'Supplemental nutrition assistance benefits.' %}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Alternative Category: AMI 60 -->
+        <div class="pt-2">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h3 class="h6 text-uppercase fw-bold text-primary mb-0 tracking-wider">{% translate 'Alternative Programs (AMI 60%)' %}</h3>
+            <span class="badge bg-primary-subtle text-primary badge-category">{% translate 'General Eligibility' %}</span>
+          </div>
+          <div class="row g-3">
+            <!-- CHP -->
+            <div class="col-md-6">
+              <div class="program-card text-center" data-program-id="chp" data-category="ami60" data-label="Child Health Plan Plus (CHP+)">
+                <i class="bi bi-check-circle-fill card-check-icon"></i>
+                <div class="fs-1 text-primary mb-2">
+                  <i class="bi bi-shield-plus"></i>
+                </div>
+                <h4 class="h6 fw-bold mb-1">{% translate 'CHP+' %}</h4>
+                <p class="small text-muted mb-0">
+                  {% translate 'Child Health Plan Plus for children & pregnant women.' %}
+                </p>
+              </div>
+            </div>
+            <!-- LEAP -->
+            <div class="col-md-6">
+              <div class="program-card text-center" data-program-id="leap" data-category="ami60" data-label="LEAP (Energy Assistance)">
+                <i class="bi bi-check-circle-fill card-check-icon"></i>
+                <div class="fs-1 text-primary mb-2">
+                  <i class="bi bi-fire"></i>
+                </div>
+                <h4 class="h6 fw-bold mb-1">{% translate 'LEAP' %}</h4>
+                <p class="small text-muted mb-0">
+                  {% translate 'Low-Income Energy Assistance program.' %}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Hidden Radio Fields to Store Selected Entity -->
+        <div style="display:none;">
+          <input type="radio" name="selected_entity" id="radio-medicaid" value="medicaid" />
+          <input type="radio" name="selected_entity" id="radio-free_reduced_lunch" value="free_reduced_lunch" />
+          <input type="radio" name="selected_entity" id="radio-snap" value="snap" />
+          <input type="radio" name="selected_entity" id="radio-chp" value="chp" />
+          <input type="radio" name="selected_entity" id="radio-leap" value="leap" />
+        </div>
+      </div>
+      <!-- STEP 2: Document Upload -->
+      <div class="card step-card p-4 workflow-step disabled" id="step-upload">
+        <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+          <span class="badge bg-dark rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 2rem; height: 2rem; font-weight: bold;">2</span>
+          <h2 class="h4 mb-0 fw-semibold">{% translate 'Upload Verification Document' %}</h2>
+        </div>
+        <div class="mb-4">
+          <div class="alert alert-info d-flex align-items-start" role="alert">
+            <i class="bi bi-info-circle-fill me-3 fs-5 mt-1 flex-shrink-0"></i>
+            <div>
+              <span class="fw-bold">{% translate 'Required Proof' %}:</span>
+              <span id="required-doc-text">{% translate 'Please select a program in step 1 to view the document requirements.' %}</span>
+            </div>
+          </div>
+        </div>
+        <!-- File Dropzone Area -->
+        <div class="mb-4">
+          <label for="id_document" class="form-label fw-semibold text-secondary mb-2">{% translate 'Select or Drag File' %}</label>
+          <div class="upload-dropzone" id="dropzone-trigger">
+            <i class="bi bi-cloud-arrow-up-fill"></i>
+            <h3 class="h6 fw-bold text-dark mb-1">{% translate 'Drag your file here or click to browse' %}</h3>
+            <p class="small text-muted mb-0">
+              {% translate 'Supported formats: PDF, PNG, JPG, JPEG (Max size: 5MB)' %}
+            </p>
+            <div class="mt-3 d-none" id="file-info-container">
+              <span class="badge bg-secondary p-2 d-inline-flex align-items-center">
+                <i class="bi bi-file-earmark-check me-2 fs-6"></i>
+                <span id="selected-file-name" class="text-truncate" style="max-width: 250px;"></span>
+                <button type="button" class="btn-close btn-close-white ms-2" id="btn-clear-file" style="font-size: 0.65rem;"></button>
+              </span>
+            </div>
+          </div>
+          <!-- Hidden Native File Input -->
+          <input type="file" name="document" id="id_document" class="d-none" accept=".pdf,.png,.jpg,.jpeg" />
+          <div class="invalid-feedback mt-2" id="file-error-feedback">
+            {% translate 'Please upload a valid document to continue.' %}
+          </div>
+        </div>
+        <!-- Form Submission Controls -->
+        <div class="d-flex justify-content-between align-items-center mt-5">
+          <button type="button" class="btn btn-outline-secondary px-4 py-2" id="btn-reset"><i class="bi bi-arrow-left-short me-1"></i> {% translate 'Clear Choices' %}</button>
+          <button type="submit" class="btn btn-success px-5 py-2 fw-semibold" id="btn-submit" disabled>{% translate 'Submit Application' %} <i class="bi bi-send-fill ms-2"></i></button>
+        </div>
+      </div>
+    </form>
+  </div>
+{% endblock %}
+{% block inline_javascript %}
+  {{ block.super }}
+  <script>
+    $(document).ready(function () {
+      const $form = $('#survey-workflow-form')
+      const $fileInput = $('#id_document')
+      const $dropzone = $('#dropzone-trigger')
+      const $fileInfoContainer = $('#file-info-container')
+      const $selectedFileName = $('#selected-file-name')
+      const $clearFileBtn = $('#btn-clear-file')
+      const $submitBtn = $('#btn-submit')
+      const $resetBtn = $('#btn-reset')
+      const $stepUpload = $('#step-upload')
+      const $requiredDocText = $('#required-doc-text')
+      const $fileErrorFeedback = $('#file-error-feedback')
+      // 1. Program Selection Interactions
+      $('.program-card').on('click', function () {
+        const $card = $(this)
+        const programId = $card.data('program-id')
+        const category = $card.data('category')
+        const label = $card.data('label')
+        // Reset all active classes
+        $('.program-card').removeClass('active-ami30 active-ami60')
+        // Apply specific active styling class depending on category selected
+        if (category === 'ami30') {
+          $card.addClass('active-ami30')
+        } else {
+          $card.addClass('active-ami60')
+        }
+        // Check the matching hidden radio button
+        $(`#radio-${programId}`).prop('checked', true)
+        // Update the dynamic label instructions in Step 2
+        let docRequirement = ''
+        switch (programId) {
+          case 'medicaid':
+            docRequirement = "{% translate 'A copy of your current Medicaid enrollment card or recent letter of benefits.' %}"
+            break
+          case 'free_reduced_lunch':
+            docRequirement = "{% translate 'A school district notification letter indicating approval for the current school year.' %}"
+            break
+          case 'snap':
+            docRequirement = "{% translate 'A recent SNAP approval letter or electronic benefit transfer (EBT) card statement.' %}"
+            break
+          case 'chp':
+            docRequirement = "{% translate 'A Child Health Plan Plus card or recent insurance verification documentation.' %}"
+            break
+          case 'leap':
+            docRequirement = "{% translate 'Your utility bill showing a LEAP credit, or a LEAP award notification letter.' %}"
+            break
+        }
+        $requiredDocText.text(`{% translate "Please upload proof of enrollment for " %} ${label}. ${docRequirement}`)
+        // Unlock Step 2 with smooth fade effect
+        $stepUpload.removeClass('disabled').css('opacity', '1')
+        // Scroll smoothly to Step 2
+        $('html, body').animate(
+          {
+            scrollTop: $stepUpload.offset().top - 100
+          },
+          500
+        )
+        validateForm()
+      })
+      // 2. Drag & Drop and File Input Interactions
+      $dropzone.on('click', function (e) {
+        // Prevent click trigger loop
+        if ($(e.target).closest('#btn-clear-file').length) return
+        $fileInput.trigger('click')
+      })
+      $fileInput.on('change', function () {
+        handleFileSelection(this.files[0])
+      })
+      // Drag over styles
+      $dropzone.on('dragover dragenter', function (e) {
+        e.preventDefault()
+        e.stopPropagation()
+        $dropzone.addClass('dragover')
+      })
+      $dropzone.on('dragleave drop', function (e) {
+        e.preventDefault()
+        e.stopPropagation()
+        $dropzone.removeClass('dragover')
+      })
+      $dropzone.on('drop', function (e) {
+        const dt = e.originalEvent.dataTransfer
+        const files = dt.files
+        if (files.length) {
+          $fileInput[0].files = files
+          handleFileSelection(files[0])
+        }
+      })
+      function handleFileSelection(file) {
+        if (!file) {
+          clearFileSelection()
+          return
+        }
+        // Validate File Type (Allowed: PDF, PNG, JPG, JPEG)
+        const allowedExtensions = ['pdf', 'png', 'jpg', 'jpeg']
+        const fileExtension = file.name.split('.').pop().toLowerCase()
+        if (!allowedExtensions.includes(fileExtension)) {
+          showFileError("{% translate 'Unsupported file type. Please upload a PDF, PNG, JPG, or JPEG.' %}")
+          clearFileSelection()
+          return
+        }
+        // Validate File Size (Max 5MB)
+        const maxSizeInBytes = 5 * 1024 * 1024
+        if (file.size > maxSizeInBytes) {
+          showFileError("{% translate 'The selected file is too large. Maximum size allowed is 5MB.' %}")
+          clearFileSelection()
+          return
+        }
+        // File is valid
+        $fileErrorFeedback.removeClass('d-block')
+        $selectedFileName.text(file.name)
+        $fileInfoContainer.removeClass('d-none')
+        validateForm()
+      }
+      function clearFileSelection() {
+        $fileInput.val('')
+        $fileInfoContainer.addClass('d-none')
+        $selectedFileName.text('')
+        validateForm()
+      }
+      $clearFileBtn.on('click', function (e) {
+        e.preventDefault()
+        e.stopPropagation()
+        clearFileSelection()
+      })
+      function showFileError(msg) {
+        $fileErrorFeedback.text(msg).addClass('d-block')
+      }
+      // 3. Workflow Validation State Controller
+      function validateForm() {
+        const isEntitySelected = $('input[name="selected_entity"]:checked').length > 0
+        const isFileUploaded = $fileInput.val() !== ''
+        if (isEntitySelected && isFileUploaded) {
+          $submitBtn.prop('disabled', false)
+        } else {
+          $submitBtn.prop('disabled', true)
+        }
+      }
+      // 4. Reset Button Action
+      $resetBtn.on('click', function () {
+        // Clear card active highlights
+        $('.program-card').removeClass('active-ami30 active-ami60')
+        // Uncheck radio buttons
+        $('input[name="selected_entity"]').prop('checked', false)
+        // Clear file input
+        clearFileSelection()
+        $fileErrorFeedback.removeClass('d-block')
+        // Lock and fade out Step 2
+        $stepUpload.addClass('disabled').css('opacity', '0.5')
+        $requiredDocText.text("{% translate 'Please select a program in step 1 to view the document requirements.' %}")
+        // Scroll back to top
+        $('html, body').animate(
+          {
+            scrollTop: $('#step-selection').offset().top - 100
+          },
+          500
+        )
+      })
+    })
+  </script>
+{% endblock %}
