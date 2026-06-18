@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Program Form - Get FoCo{% endblock %}
+
+{% block content %}
+    <button class="btn btn-sm btn-outline-primary" type="button" onclick="history.back()"><i class="bi bi-arrow-left"></i>Back</button>
+    <div class="my-3 card shadow-sm">
+        <div class="card-header">
+            Current File for: {{ householdmembers_object.full_name }}
+        </div>
+        <div class="card-body d-flex justify-content-center align-items-center">
+            <img src="data:image/jpg;base64,{{ blob_data }}" alt="" width="500" height="300">
+        </div>
+    </div>
+{% endblock %}

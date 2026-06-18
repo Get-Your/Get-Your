@@ -19,17 +19,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
 import json
+import base64
 import logging
 
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.core.files.storage import default_storage
 
-from .forms import UserForm, SameAddressForm, HouseholdForm, AddressFormSet, HouseholdMembersFormSet
 from get_your.users.models import User
 from ref.models import AddressRef
+from app.models import HouseholdMembers
 from monitor.wrappers import LoggerWrapper
+
+from .forms import UserForm, SameAddressForm, HouseholdForm, AddressFormSet, HouseholdMembersFormSet
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -159,4 +163,21 @@ def program_form(request, pk, **kwargs):
             'householdmembers_form_set': householdmembers_form_set,
             'mapsApiKey': os.environ.get('GOOGLE_MAPS_API', '')
         },
+    )
+
+@login_required(redirect_field_name='auth_next')
+def view_image(request, pk, image_name, **kwargs):
+    householdmember_obj = HouseholdMembers.objects.get(pk=pk)
+    file = default_storage.open(image_name)
+    blob_data = b''
+    for chunk in file.chunks():
+        blob_data += chunk
+    
+    return render(
+        request,
+        'dashboard/view_image.html',
+        {
+            'householdmembers_object': householdmember_obj,
+            'blob_data': base64.b64encode(blob_data).decode('utf-8')
+        }
     )
