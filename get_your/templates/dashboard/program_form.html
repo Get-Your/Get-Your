@@ -146,6 +146,7 @@
                         {% for householdmembers_form in householdmembers_form_set %}
                         <div class="mb-3 col-12 col-md-6 formset">
                             <div class="mb-2 d-flex justify-content-between align-items-center border-bottom fw-semibold"><p class="mb-0 pb-1">Family Member <span class="family-member-count">{{ householdmembers_form.index|add:1 }}</span></p><span role="button" class="d-none badge text-bg-danger remove-family-member">Remove</span></div>
+                            {{ householdmembers_form.id }}
                             {% for field in householdmembers_form %}
                                 {% if not field.is_hidden %}
                                     <div class="mb-3">
@@ -153,6 +154,9 @@
                                         {{ field }}
                                         {% if field.help_text %}
                                         <div class="form-text">{{ field.help_text }}</div>
+                                        {% endif %}
+                                        {% if field.name == 'identification_path' %}
+                                            <p class="my-1">Current file: <a href="{% url 'view_image' pk=householdmembers_form.instance.id image_name=householdmembers_form.instance.identification_path.name %}">{{ householdmembers_form.instance.identification_path.name }}</a></p>
                                         {% endif %}
                                         <ul class="mb-0 errorlist list-unstyled">
                                             {% for error in field.errors %}
@@ -288,8 +292,10 @@
                 reader.onload = function(e) {
                     img.prop('src', e.target.result);
                     img.addClass('preview-image');
+
                     imageWrap.append(img);
                     imageWrap.removeClass('d-none');
+
                     if (imageWrap.find('.bi .bi-filetype-pdf').length) {
                         imageWrap.find('.bi .bi-filetype-pdf').remove();
                     }
