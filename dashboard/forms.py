@@ -27,14 +27,6 @@ from app.backend.address import validate_usps
 from app.constants import supported_content_types
 
 from phonenumber_field.widgets import RegionalPhoneNumberWidget
-from django.forms.widgets import ClearableFileInput
-
-class CustomClearableFileInput(ClearableFileInput):
-    clear_checkbox_label = "Remove"
-    initial_text = "Current File"
-    input_text = "Upload a New File"
-    # Path to your new custom HTML snippet
-    template_name = 'widgets/custom_clearable_file_input.html'
 
 class UserForm(forms.ModelForm):
     class Meta:
