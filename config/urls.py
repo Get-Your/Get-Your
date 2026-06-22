@@ -9,7 +9,7 @@ from drf_spectacular.views import SpectacularAPIView
 from drf_spectacular.views import SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
 from dashboard.views import dashboard
-from app.views import eligibility_form
+from app.views import EligibilitySurveyView
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -36,7 +36,7 @@ urlpatterns = [
     ),
     path(
         'eligibility_form',
-        eligibility_form,
+        EligibilitySurveyView.as_view(),
         name='eligibility_form',
         kwargs={'allow_direct_user': True},
     )
