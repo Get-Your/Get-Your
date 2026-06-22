@@ -288,16 +288,20 @@
             pdfIcon.addClass('bi bi-filetype-pdf');
             
             if (file && file.type.startsWith('image/')) {
+                if (imageWrap.find('i').length) {
+                    imageWrap.find('i').remove();
+                }
+
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    img.prop('src', e.target.result);
-                    img.addClass('preview-image');
-
-                    imageWrap.append(img);
-                    imageWrap.removeClass('d-none');
-
-                    if (imageWrap.find('.bi .bi-filetype-pdf').length) {
-                        imageWrap.find('.bi .bi-filetype-pdf').remove();
+                    if (imageWrap.find('img').length) {
+                        imageWrap.find('img').prop('src', e.target.result);
+                    } else {
+                        img.prop('src', e.target.result);
+                        img.addClass('preview-image');
+    
+                        imageWrap.append(img);
+                        imageWrap.removeClass('d-none');
                     }
                 }
                 reader.readAsDataURL(file);
