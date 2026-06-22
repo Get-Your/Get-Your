@@ -36,11 +36,11 @@ from ref.models import EligibilityProgramRef
 log = LoggerWrapper(logging.getLogger(__name__))
 
 
-class EligibilitySurveyView(LoginRequiredMixin, View):
+class EligibilitySurveyView(View):
     """
     View handling the program eligibility survey and verification document upload.
     """
-    template_name = "pages/survey.html"
+    template_name = "dashboard/new_eligibility.html"
 
     def get(self, request, *args, **kwargs):
         log.debug(
