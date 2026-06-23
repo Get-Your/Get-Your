@@ -18,11 +18,12 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   # psycopg dependencies
   libpq-dev \
   gettext \
-  wait-for-it
+  wait-for-it \
+  libmagic-dev
 
 # Requirements are installed here to ensure they will be cached.
 RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml,relabel=shared \
     --mount=type=bind,source=uv.lock,target=uv.lock:rw \
     uv sync --no-install-project
 
