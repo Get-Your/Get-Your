@@ -3,7 +3,125 @@
 {% block title %}Dashboard - Get FoCo{% endblock %}
 
 {% block content %}
-    <h1>Stuff and Things</h1>
-    <p>Here are some things.</p>
-    <a href="{% url 'program_form' pk=user.pk %}">Program Form</a>
+    <h1 class="border-bottom">{{ user.full_name }}</h1>
+    {% if user.eligibility_address is None %}
+    <div class="alert alert-warning shadow-sm">
+        <p class="mb-0"><i class="me-1 bi bi-exclamation-circle-fill"></i>There is no eligibility address on file. You have not completed your application! Access the <a href="{% url 'program_form' pk=user.pk %}">Program Form</a> to continue applying!</p>
+    </div>
+    {% endif %}
+    <p class="alert alert-light shadow-sm">Once your information is reviewed by the GetFoCo team, you will find the programs you were approved for here. Check back as it gets closer to your application's estimated date and be sure to check your email for communication from us.</p>
+    <h2 class="border-bottom">Available Programs (limit these based on AMI?)</h2>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <ul class="list-group list-group-flush">
+                {% for program in all_available_programs %}
+                <li class="list-group-item d-flex flex-column flex-md-row  justify-content-between align-items-center text-center text-md-start">
+                    <div>
+                        <p class="mb-0">{{ program.friendly_name }}</p>
+                        <p class="mb-1"><small><a href="#">Learn More<i class="ms-1 bi bi-box-arrow-up-right"></i></a></small></p>
+                    </div>
+                    {% if program.id in all_user_programs.enrolled %}
+                    <div class="d-flex flex-column flex-md-row">
+                        <span class="badge text-bg-success d-flex justify-content-between align-items-center shadow-sm">Enrolled</span>
+                        {% if program.id in all_user_programs.renewals_needed %}
+                        <span class="ms-0 mt-1 ms-md-1 mt-md-0 badge text-bg-warning d-flex justify-content-between align-items-center shadow-sm">Renewal Needed</span>
+                        {% endif %}
+                    </div>
+                    {% elif program.id in all_user_programs.pending %}
+                    <span class="badge text-bg-info d-flex justify-content-between align-items-center shadow-sm">Pending Approval</span>
+                    {% else %}
+                    <a href="#"><span data-program-id="{{ program.id }}" class="badge text-bg-secondary d-flex justify-content-between align-items-center shadow-sm">Apply Now</span></a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <h2 class="mt-4 border-bottom">Your Information</h2>
+    <div class="row">
+        <div class="mb-3 mb-md-0 col-12 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="border-bottom">Personal</h3>
+                    <p class="mb-0">{{ user.full_name }}</p>
+                    <p class="mb-0">{{ user.email }}</p>
+                    <p>{{ user.phone_number }}</p>
+
+                    <h3 class="border-bottom">Address</h3>
+                    <p class="mb-0">{{ user.eligibility_address.address1 }}</p>                      
+                    <p class="mb-0">{{ user.eligibility_address.city }}, {{ user.eligibility_address.state }}</p>
+                    <p>{{ user.eligibility_address.zip_code }}</p>
+
+                    <h3 class="border-bottom">Household</h3>
+                    <p class="mb-0"><strong>Duration at address</strong>: {{ user.duration_at_address }}</p>
+                    <p><strong>Ownership</strong>: {{ user.rent_own|capfirst }}</p>
+
+                    <h3 class="border-bottom">Household Members</h3>
+                    {% for member in user.householdmembers.all %}
+                    <ul class="list-unstyled">
+                        <li>{{ member.full_name }}</li>
+                        <li>{{ member.birthdate }}</li>
+                    </ul>
+                    {% endfor %}
+                    <hr>
+                    <a class="btn btn-sm btn-outline-primary" href="{% url 'program_form' pk=user.pk %}">Update Details</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="border-bottom">Eligibility Status</h3>
+                    <p class="mb-0">Percent AMI here?</p>
+                    {% if not user.is_income_verified %}
+                    <span class="badge text-bg-info shadow-sm">Verifying Income</span>
+                    {% else %}
+                    <span class="badge text-bg-success shadow-sm">Income Verified</span>
+                    {% endif %}
+                    <hr>
+                    <a class="btn btn-sm btn-outline-primary" href="#">Update Eligibility</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h2 class="mt-4 border-bottom">Submit Feedback?</h2>
+    <div class="row">
+        <div class="col-12 col-lg-6 offset-0 offset-lg-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form action="" method="post">
+                        <fieldset class="mb-3">
+                            <p class="mb-1">Please, rate your overall experience with this application.</p>
+                            <div class="form-check">
+                                <input class="form-check-input shadow-sm" type="radio" id="very_poor_rating" name="star_rating" value="1">
+                                <label class="form-check-label d-flex align-items-center" for="very_poor_rating">Very Poor</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input shadow-sm" type="radio" id="poor_rating" name="star_rating" value="2">
+                                <label class="form-check-label d-flex align-items-center" for="poor_rating">Poor</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input shadow-sm" type="radio" id="neutral_rating" name="star_rating" value="3">
+                                <label class="form-check-label d-flex align-items-center" for="neutral_rating">Neutral</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input shadow-sm" type="radio" id="good_rating" name="star_rating" value="4">
+                                <label class="form-check-label d-flex align-items-center" for="good_rating">Good</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input shadow-sm" type="radio" id="great_rating" name="star_rating" value="5" checked>
+                                <label class="form-check-label d-flex align-items-center" for="great_rating">Great</label>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <label class="form-label" for="feedback-comments">How can we do better? Don't worry, your feedback is anonymous!</label>
+                            <textarea class="form-control shadow-sm" name="feedback_comments" id="feedback-comments" rows="5" cols="10"></textarea>
+                        </fieldset>
+                        <hr>
+                        <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
