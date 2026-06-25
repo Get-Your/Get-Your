@@ -1,164 +1,183 @@
 {% extends 'base.html' %}
+{% load static i18n %}
 
 {% block title %}Dashboard - Get FoCo{% endblock %}
 
 {% block content %}
-    {% comment %} <h1 class="border-bottom">{{ user.full_name }}</h1> {% endcomment %}
-    {% if user.eligibility_address is None %}
-    <div class="alert alert-warning shadow-sm">
-        <p class="mb-0"><i class="me-1 bi bi-exclamation-circle-fill"></i>There is no eligibility address on file. You have not completed your application! Access the <a href="{% url 'program_form' pk=user.pk %}">Program Form</a> to continue applying!</p>
-    </div>
-    {% endif %}
-    <p class="alert alert-info shadow-sm">Once your information is reviewed by the GetFoCo team, you will find the programs you were approved for here. Check back as it gets closer to your application's estimated date and be sure to check your email for communication from us.</p>
-    <h2 class="border-bottom">Available Programs (limit these based on AMI?)</h2>
-    {% comment %} {% csrf_token %}
-    <div class="row">
-        {% for program in all_available_programs %}
-        <div class="mb-2 col-12 col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-header d-flex flex-column flex-lg-row justify-content-between align-items-center">
-                    <p class="mb-0 fs-5">{{ program.friendly_name }}</p>
-                    {% if program.id in all_user_programs.enrolled %}
-                        {% if program.id in all_user_programs.renewals_needed %}
-                        <span class="ms-0 mt-1 ms-md-1 mt-md-0 badge text-bg-warning d-flex justify-content-center align-items-center shadow-sm">Renewal Needed</span>
-                        {% else %}
-                        <span class="badge text-bg-success d-flex justify-content-center align-items-center shadow-sm">Enrolled</span>
-                        {% endif %}
-                    {% elif program.id in all_user_programs.pending %}
-                    <span class="badge text-bg-info d-flex justify-content-center align-items-center shadow-sm">Pending Approval</span>
-                    {% else %}
-                    <span data-program-id="{{ program.id }}" role="button" class="badge text-bg-secondary d-flex justify-content-center align-items-center apply-button">Apply Now</span>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    <div class="d-flex flex-column justify-content-around align-items-center">
-                        <p>{{ program.friendly_description }}</p>
-                        <p>{{ program.friendly_supplemental_info }}</p>
-                        <p class="mb-1"><small><a href="{{ program.learn_more_link }}">Learn More<i class="ms-1 bi bi-box-arrow-up-right"></i></a></small></p>
-                    </div>
-                </div>
-            </div>
+    <div id="dashboard-container">
+        <h1 class="text-center">{% translate 'Account Dashboard' %}</h1>
+        {% if user.eligibility_address is None %}
+        <div class="alert alert-warning shadow-sm">
+            <p class="mb-0"><i class="me-1 bi bi-exclamation-circle-fill"></i>There is no eligibility address on file. You have not completed your application! Access the <a href="{% url 'program_form' pk=user.pk %}">Program Form</a> to continue applying!</p>
         </div>
-        {% endfor %}
-    </div> {% endcomment %}
-    <div class="card shadow-sm">
-        <div class="card-body">
-            {% csrf_token %}
-            <ul class="list-group list-group-flush">
+        {% endif %}
+        <p class="alert alert-info shadow-sm">Once your information is reviewed by the GetFoCo team, you will find the programs you were approved for here. Check back as it gets closer to your application's estimated date and be sure to check your email for communication from us.</p>
+
+        <div class="mb-3 px-3 py-2 border rounded dashboard-item shadow-sm">
+            <h3 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom text-center text-md-start">{% translate 'Available Programs' %}</h3>
+            <div class="mb-3 row g-3">
                 {% for program in all_available_programs %}
-                <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-center text-center text-md-start">
-                    <div>
-                        <p class="mb-0">{{ program.friendly_name }}</p>
-                        <p class="mb-1"><small><a href="#">Learn More<i class="ms-1 bi bi-box-arrow-up-right"></i></a></small></p>
+                <div class="col-md-4">
+                    <div class="program-card d-flex flex-column justify-content-start align-items-center" data-program-id="{{ program.id }}">
+                        <div class="mb-2">
+                            {% if program.id in all_user_programs.enrolled %}
+                                {% if program.id in all_user_programs.renewals_needed %}
+                                <span class="ms-0 mt-1 ms-md-1 mt-md-0 badge text-bg-warning d-flex justify-content-center align-items-center shadow-sm">Renewal Needed</span>
+                                {% else %}
+                                <span class="badge text-bg-success d-flex justify-content-center align-items-center shadow-sm">Enrolled</span>
+                                {% endif %}
+                            {% elif program.id in all_user_programs.pending %}
+                            <span class="badge text-bg-info d-flex justify-content-center align-items-center shadow-sm">Pending Approval</span>
+                            {% else %}
+                            <span data-program-id="{{ program.id }}" role="button" class="badge text-bg-secondary d-flex justify-content-center align-items-center apply-button">Apply Now</span>
+                            {% endif %}
+                        </div>
+                        <h4 class="h6 fw-bold mb-1">{% translate program.friendly_name %}</h4>
+                        {% comment %} <p class="small text-muted mb-3">
+                            {{ program.friendly_description }}
+                        </p> {% endcomment %}
+                        <p class="mb-2 text-center small">
+                            {{ program.friendly_supplemental_info }}
+                        </p>
+                        <a href="{{ program.learn_more_link }}" target="_blank">{% translate 'Learn More' %}<i class="ms-1 bi bi-box-arrow-up-right"></i></a>
                     </div>
-                    {% if program.id in all_user_programs.enrolled %}
-                    <div class="d-flex flex-column flex-md-row justify-content-center align-items-center">
-                        {% if program.id in all_user_programs.renewals_needed %}
-                        <span class="ms-0 mt-1 ms-md-1 mt-md-0 badge text-bg-warning d-flex justify-content-between align-items-center shadow-sm">Renewal Needed</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="mb-3 px-3 py-2 border rounded dashboard-item shadow-sm">
+            <h3 class="mb-3 pb-2 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom">{% translate 'Eligibility Information' %}</h3>
+            <div class="mb-3 row g-3">
+                <div class="col-12 col-md-6">
+                    <div class="p-3 d-flex flex-column justify-content-center align-items-center">
+                        <div class="mb-2">
+                            <h4 class="h6 fw-bold mb-1 border-bottom">{% translate 'Status' %}</h4>
+                        </div>
+                        {% if not user.is_income_verified %}
+                        <span class="badge text-bg-info shadow-sm">Verifying Income</span>
                         {% else %}
-                        <span class="badge text-bg-success d-flex justify-content-between align-items-center shadow-sm">Enrolled</span>
+                        <span class="badge text-bg-success shadow-sm">Income Verified</span>
                         {% endif %}
                     </div>
-                    {% elif program.id in all_user_programs.pending %}
-                    <span class="badge text-bg-secondary d-flex justify-content-between align-items-center shadow-sm">Pending Approval</span>
-                    {% else %}
-                    <span data-program-id="{{ program.id }}" role="button" class="badge text-bg-light d-flex justify-content-between align-items-center apply-button">Apply Now</span>
-                    {% endif %}
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-    <h2 class="mt-4 border-bottom">Account Information</h2>
-    <div class="row">
-        <div class="mb-3 mb-md-0 col-12 col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h3 class="border-bottom">Personal</h3>
-                    <p class="mb-0">{{ user.full_name }}</p>
-                    <p class="mb-0">{{ user.email }}</p>
-                    <p>{{ user.phone_number }}</p>
-
-                    <h3 class="border-bottom">Address</h3>
-                    <p class="mb-0">{{ user.eligibility_address.address1 }}</p>                      
-                    <p class="mb-0">{{ user.eligibility_address.city }}, {{ user.eligibility_address.state }}</p>
-                    <p>{{ user.eligibility_address.zip_code }}</p>
-
-                    <h3 class="border-bottom">Household</h3>
-                    <p class="mb-0"><strong>Duration at address</strong>: {{ user.duration_at_address }}</p>
-                    <p><strong>Ownership</strong>: {{ user.rent_own|capfirst }}</p>
-
-                    <h3 class="border-bottom">Household Members</h3>
-                    {% for member in user.householdmembers.all %}
-                    <ul class="list-unstyled">
-                        <li>{{ member.full_name }}</li>
-                        <li>{{ member.birthdate }}</li>
-                    </ul>
-                    {% endfor %}
-                    <hr>
-                    <a class="btn btn-sm btn-outline-primary" href="{% url 'program_form' pk=user.pk %}">Update Details</a>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="p-3 d-flex flex-column justify-content-center align-items-center">
+                        <div class="mb-2">
+                            <h4 class="h6 fw-bold mb-1 border-bottom">{% translate 'Selected Eligibility Program' %}</h4>
+                        </div>
+                        <p class="mb-0">{{ user.eligibility_files.friendly_name }}</p>
+                        <p>{{ user.eligibility_files.friendly_description }}</p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-12 col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h3 class="border-bottom">Eligibility Status</h3>
-                    <p class="mb-0">Percent AMI here?</p>
-                    {% if not user.is_income_verified %}
-                    <span class="badge text-bg-info shadow-sm">Verifying Income</span>
-                    {% else %}
-                    <span class="badge text-bg-success shadow-sm">Income Verified</span>
-                    {% endif %}
-                    <hr>
-                    <a class="btn btn-sm btn-outline-primary" href="#">Update Eligibility</a>
-                </div>
+            <hr>
+            <div class="text-center text-md-start">
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'program_form' pk=user.pk %}">Edit Eligibility Details</a>
             </div>
         </div>
-    </div>
-    <h2 class="mt-4 border-bottom">Submit Feedback?</h2>
-    <div class="row">
-        <div class="col-12 col-lg-6 offset-0 offset-lg-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <form action="" method="post">
-                        <fieldset class="mb-3">
-                            <p class="mb-1">Please, rate your overall experience with this application.</p>
-                            <div class="form-check">
-                                <input class="form-check-input shadow-sm" type="radio" id="very_poor_rating" name="star_rating" value="1">
-                                <label class="form-check-label d-flex align-items-center" for="very_poor_rating">Very Poor</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input shadow-sm" type="radio" id="poor_rating" name="star_rating" value="2">
-                                <label class="form-check-label d-flex align-items-center" for="poor_rating">Poor</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input shadow-sm" type="radio" id="neutral_rating" name="star_rating" value="3">
-                                <label class="form-check-label d-flex align-items-center" for="neutral_rating">Neutral</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input shadow-sm" type="radio" id="good_rating" name="star_rating" value="4">
-                                <label class="form-check-label d-flex align-items-center" for="good_rating">Good</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input shadow-sm" type="radio" id="great_rating" name="star_rating" value="5" checked>
-                                <label class="form-check-label d-flex align-items-center" for="great_rating">Great</label>
-                            </div>
-                        </fieldset>
-                        <fieldset>
-                            <label class="form-label" for="feedback-comments">How can we do better? Don't worry, your feedback is anonymous!</label>
-                            <textarea class="form-control shadow-sm" name="feedback_comments" id="feedback-comments" rows="5" cols="10"></textarea>
-                        </fieldset>
-                        <hr>
-                        <button type="submit" class="btn btn-sm btn-primary">Submit</button>
-                    </form>
+        <div class="mb-3 px-3 py-2 border rounded dashboard-item shadow-sm">
+            <h3 class="mb-3 pb-2 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom">{% translate 'Account Information' %}</h3>
+            <div class="mb-3 row g-3">
+                <div class="col-md-4">
+                    <div class="d-flex flex-column justify-content-center align-items-center">
+                        <div class="mb-2">
+                            <h4 class="h6 fw-bold mb-1 border-bottom">{% translate 'Personal' %}</h4>
+                        </div>
+                        <p class="mb-0">{{ user.full_name }}</p>
+                        <p class="mb-0">{{ user.email }}</p>
+                        <p>{{ user.phone_number }}</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex flex-column justify-content-center align-items-center">
+                        <div class="mb-2">
+                            <h4 class="h6 fw-bold mb-1 border-bottom">{% translate 'Address' %}</h4>
+                        </div>
+                        {% if user.eligibility_address %}
+                        <p class="mb-0">{{ user.eligibility_address.address1 }}</p>                      
+                        <p class="mb-0">{{ user.eligibility_address.city }}, {{ user.eligibility_address.state }}</p>
+                        <p>{{ user.eligibility_address.zip_code }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex flex-column justify-content-center align-items-center">
+                        <div class="mb-2">
+                            <h4 class="h6 fw-bold mb-1 border-bottom">{% translate 'Household' %}</h4>
+                        </div>
+                        <p class="mb-0">{{ user.rent_own|capfirst }}</p>
+                        <p>{{ user.duration_at_address }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3 row g-3">
+                <div class="col-12">
+                    <div class="d-flex flex-column justify-content-center align-items-center">
+                        <div class="mb-2">
+                            <h4 class="h6 fw-bold mb-1 border-bottom">{% translate 'Household Members' %}</h4>
+                        </div>
+                        {% if user.householdmembers %}
+                        <div class="d-flex flex-column flex-md-row justify-content-around align-items-center w-100">
+                            {% for member in user.householdmembers.all %}
+                            <ul class="list-unstyled">
+                                <li>{{ member.full_name }}</li>
+                                <li>{{ member.birthdate }}</li>
+                            </ul>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center text-md-start">
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'program_form' pk=user.pk %}">Edit Account Details</a>
+            </div>
+        </div>
+        <div class="px-3 py-2 border rounded dashboard-item shadow-sm">
+            <h3 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom">{% translate 'Submit Feedback?' %}</h3>
+            <div class="mb-3 row g-3">
+                <div class="col-12">
+                    <div class="d-flex flex-column justify-content-center align-items-center">
+                        <form action="" method="post">
+                            <fieldset class="mb-3">
+                                <p class="mb-1">Please, rate your overall experience with this application.</p>
+                                <div class="form-check">
+                                    <input class="form-check-input shadow-sm" type="radio" id="very_poor_rating" name="star_rating" value="1">
+                                    <label class="form-check-label d-flex align-items-center" for="very_poor_rating">Very Poor</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input shadow-sm" type="radio" id="poor_rating" name="star_rating" value="2">
+                                    <label class="form-check-label d-flex align-items-center" for="poor_rating">Poor</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input shadow-sm" type="radio" id="neutral_rating" name="star_rating" value="3">
+                                    <label class="form-check-label d-flex align-items-center" for="neutral_rating">Neutral</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input shadow-sm" type="radio" id="good_rating" name="star_rating" value="4">
+                                    <label class="form-check-label d-flex align-items-center" for="good_rating">Good</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input shadow-sm" type="radio" id="great_rating" name="star_rating" value="5" checked>
+                                    <label class="form-check-label d-flex align-items-center" for="great_rating">Great</label>
+                                </div>
+                            </fieldset>
+                            <fieldset>
+                                <label class="form-label" for="feedback-comments">How can we do better? Don't worry, your feedback is anonymous!</label>
+                                <textarea class="form-control shadow-sm" name="feedback_comments" id="feedback-comments" rows="5" cols="10"></textarea>
+                            </fieldset>
+                            <hr>
+                            <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     <script type="module">
         $(function() {
-            $('.apply-button').on('click', function() {
+            $('.program-card').on('click', '.apply-button', function() {
                 let programId = $(this).data('programId');
                 $.ajax({
                     url: '/dashboard/' + {{ user.id }} + '/apply_for_program/',
