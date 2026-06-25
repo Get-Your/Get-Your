@@ -138,4 +138,4 @@ class EligibilitySurveyView(View):
                 ),
             )
 
-        return redirect("users:detail", pk=request.user.pk)
+        return redirect("dashboard")

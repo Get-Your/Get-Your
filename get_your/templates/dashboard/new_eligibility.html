@@ -53,31 +53,6 @@
       opacity: 0.5;
       pointer-events: none;
     }
-    /* Drag & Drop File Zone Styling */
-    .upload-dropzone {
-      border: 2px dashed #dee2e6;
-      border-radius: 8px;
-      padding: 2.5rem 1.5rem;
-      text-align: center;
-      background-color: #f8f9fa;
-      cursor: pointer;
-      transition: var(--survey-transition);
-    }
-    .upload-dropzone:hover,
-    .upload-dropzone.dragover {
-      border-color: var(--survey-secondary);
-      background-color: rgba(13, 110, 253, 0.02);
-    }
-    .upload-dropzone i {
-      font-size: 2.5rem;
-      color: #6c757d;
-      margin-bottom: 1rem;
-      transition: var(--survey-transition);
-    }
-    .upload-dropzone:hover i {
-      color: var(--survey-secondary);
-      transform: scale(1.1);
-    }
   </style>
 {% endblock %}
 {% block javascript %}
@@ -99,7 +74,7 @@
       <!-- STEP 1: Program Selection -->
       <div class="card p-4 workflow-step" id="step-selection">
         <!-- Priority / Preferred Category: AMI 30 -->
-        <div class="mb-4">
+        <div class="mb-3">
           <div class="mb-3">
             <h3 class="h6 text-uppercase fw-bold text-success mb-0 tracking-wider">{% translate 'Preferred Programs' %}</h3>
           </div>
@@ -185,10 +160,10 @@
       </div>
       <!-- STEP 2: Document Upload -->
       <div class="card p-4 workflow-step disabled" id="step-upload">
-        <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+        <div class="d-flex align-items-center mb-3 border-bottom pb-3">
           <h2 class="h4 mb-0 fw-semibold">{% translate 'Upload Verification Document' %}</h2>
         </div>
-        <div class="mb-4">
+        <div class="mb-3">
           <div class="alert alert-info d-flex align-items-start" role="alert">
             <i class="bi bi-info-circle-fill me-3 fs-5 mt-1 flex-shrink-0"></i>
             <div>
@@ -198,27 +173,14 @@
           </div>
         </div>
         <!-- File Dropzone Area -->
-        <div class="mb-4">
-          <label for="id_document" class="form-label fw-semibold text-secondary mb-2">{% translate 'Select or Drag File' %}</label>
-          <div class="upload-dropzone" id="dropzone-trigger">
-            <i class="bi bi-cloud-arrow-up-fill"></i>
-            <h3 class="h6 fw-bold text-dark mb-1">{% translate 'Drag your file here or click to browse' %}</h3>
-            <p class="small text-muted mb-0">
-              {% translate 'Supported formats: PDF, PNG, JPG, JPEG (Max size: 5MB)' %}
-            </p>
-            <div class="mt-3 d-none" id="file-info-container">
-              <span class="badge bg-secondary p-2 d-inline-flex align-items-center">
-                <i class="bi bi-file-earmark-check me-2 fs-6"></i>
-                <span id="selected-file-name" class="text-truncate" style="max-width: 250px;"></span>
-                <button type="button" class="btn-close btn-close-white ms-2" id="btn-clear-file" style="font-size: 0.65rem;"></button>
-              </span>
-            </div>
-          </div>
-          <!-- Hidden Native File Input -->
-          <input type="file" name="document" id="id_document" class="d-none" accept=".pdf,.png,.jpg,.jpeg" />
+        <div class="mb-3">
+          <!-- Native File Input -->
+          <label for="id_document" class="form-label">{% translate 'Select File' %}</label>
+          <input type="file" name="document" id="id_document" class="form-input shadow-sm" accept=".pdf,.png,.jpg,.jpeg" />
           <div class="invalid-feedback mt-2" id="file-error-feedback">
             {% translate 'Please upload a valid document to continue.' %}
           </div>
+          <button type="button" class="btn-close ms-2" id="btn-clear-file"></button>
         </div>
         <!-- Form Submission Controls -->
         <div class="d-flex justify-content-between align-items-center mt-5">
@@ -230,13 +192,10 @@
   </div>
 {% endblock %}
 {% block inline_javascript %}
-  {{ block.super }}
   <script>
     $(document).ready(function () {
       const $form = $('#survey-workflow-form')
       const $fileInput = $('#id_document')
-      const $dropzone = $('#dropzone-trigger')
-      const $fileInfoContainer = $('#file-info-container')
       const $selectedFileName = $('#selected-file-name')
       const $clearFileBtn = $('#btn-clear-file')
       const $submitBtn = $('#btn-submit')
@@ -292,32 +251,8 @@
         validateForm()
       })
       // 2. Drag & Drop and File Input Interactions
-      $dropzone.on('click', function (e) {
-        // Prevent click trigger loop
-        if ($(e.target).closest('#btn-clear-file').length) return
-        $fileInput.trigger('click')
-      })
       $fileInput.on('change', function () {
         handleFileSelection(this.files[0])
-      })
-      // Drag over styles
-      $dropzone.on('dragover dragenter', function (e) {
-        e.preventDefault()
-        e.stopPropagation()
-        $dropzone.addClass('dragover')
-      })
-      $dropzone.on('dragleave drop', function (e) {
-        e.preventDefault()
-        e.stopPropagation()
-        $dropzone.removeClass('dragover')
-      })
-      $dropzone.on('drop', function (e) {
-        const dt = e.originalEvent.dataTransfer
-        const files = dt.files
-        if (files.length) {
-          $fileInput[0].files = files
-          handleFileSelection(files[0])
-        }
       })
       function handleFileSelection(file) {
         if (!file) {
@@ -342,12 +277,10 @@
         // File is valid
         $fileErrorFeedback.removeClass('d-block')
         $selectedFileName.text(file.name)
-        $fileInfoContainer.removeClass('d-none')
         validateForm()
       }
       function clearFileSelection() {
         $fileInput.val('')
-        $fileInfoContainer.addClass('d-none')
         $selectedFileName.text('')
         validateForm()
       }
