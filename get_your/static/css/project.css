@@ -28,6 +28,27 @@
   box-shadow: 3px 3px 1px rgba(0,0,0,0.3);
 }
 
+#dashboard-container {
+  max-width: 800px;
+  margin: 2rem auto;
+}
+
+.program-card {
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: var(--survey-transition);
+  position: relative;
+  height: 100%;
+  background: #fff;
+}
+.program-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+  border-color: #ced4da;
+}
+
 gmp-place-autocomplete {
   font-size: 16px;
   line-height: 1.5;
