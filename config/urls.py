@@ -8,7 +8,7 @@ from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView
 from drf_spectacular.views import SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
-from dashboard.views import dashboard, program_form, view_image
+from dashboard.views import dashboard, program_form, view_image, apply_for_program
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -32,6 +32,11 @@ urlpatterns = [
         dashboard,
         name='dashboard',
         kwargs={'allow_direct_user': True},
+     ),
+    path(
+        'dashboard/<int:pk>/apply_for_program/',
+        apply_for_program,
+        name='apply_for_program_ajax',
      ),
      path(
          'dashboard/<int:pk>/view_uploaded_file/<path:image_name>',
