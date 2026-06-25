@@ -21,6 +21,13 @@
   font-size: 7em;
 }
 
+.apply-button {
+  &:hover {
+    box-shadow: none;
+  }
+  box-shadow: 3px 3px 1px rgba(0,0,0,0.3);
+}
+
 gmp-place-autocomplete {
   font-size: 16px;
   line-height: 1.5;
