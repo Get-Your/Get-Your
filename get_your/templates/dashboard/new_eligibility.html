@@ -19,14 +19,7 @@
       max-width: 800px;
       margin: 2rem auto;
     }
-    .step-card {
-      border: 1px solid rgba(0, 0, 0, 0.125);
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-      background-color: #fff;
-      transition: var(--survey-transition);
-      margin-bottom: 2rem;
-    }
+    
     .program-card {
       border: 2px solid #e9ecef;
       border-radius: 10px;
@@ -51,26 +44,6 @@
     .program-card.active-ami60 {
       border-color: var(--survey-secondary);
       background-color: rgba(13, 110, 253, 0.03);
-    }
-    .card-check-icon {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 1.25rem;
-      color: transparent;
-      transition: var(--survey-transition);
-    }
-    .program-card.active-ami30 .card-check-icon {
-      color: var(--survey-primary);
-    }
-    .program-card.active-ami60 .card-check-icon {
-      color: var(--survey-secondary);
-    }
-    .badge-category {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 0.35em 0.65em;
     }
     /* Survey Steps Animations */
     .workflow-step {
@@ -115,7 +88,7 @@
 {% block content %}
   <div class="survey-container px-3">
     <!-- Header and Title -->
-    <div class="text-center mb-5">
+    <div class="text-center mb-3">
       <h1 class="display-5 fw-bold text-dark mb-3">{% translate 'Eligibility Verification' %}</h1>
       <p class="lead text-secondary">
         {% translate 'Select one program you are currently enrolled in to verify your household eligibility.' %}
@@ -124,22 +97,16 @@
     <form method="post" enctype="multipart/form-data" id="survey-workflow-form" novalidate>
       {% csrf_token %}
       <!-- STEP 1: Program Selection -->
-      <div class="card step-card p-4 workflow-step" id="step-selection">
-        <div class="d-flex align-items-center mb-4 border-bottom pb-3">
-          <span class="badge bg-dark rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 2rem; height: 2rem; font-weight: bold;">1</span>
-          <h2 class="h4 mb-0 fw-semibold">{% translate 'Choose an Qualifying Program' %}</h2>
-        </div>
+      <div class="card p-4 workflow-step" id="step-selection">
         <!-- Priority / Preferred Category: AMI 30 -->
         <div class="mb-4">
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <h3 class="h6 text-uppercase fw-bold text-success mb-0 tracking-wider"><i class="bi bi-star-fill me-1"></i> {% translate 'Preferred Programs (AMI 30%)' %}</h3>
-            <span class="badge bg-success-subtle text-success badge-category">{% translate 'Higher Approval Rate' %}</span>
+          <div class="mb-3">
+            <h3 class="h6 text-uppercase fw-bold text-success mb-0 tracking-wider">{% translate 'Preferred Programs' %}</h3>
           </div>
           <div class="row g-3">
             <!-- Medicaid -->
             <div class="col-md-4">
               <div class="program-card text-center" data-program-id="medicaid" data-category="ami30" data-label="Medicaid">
-                <i class="bi bi-check-circle-fill card-check-icon"></i>
                 <div class="fs-1 text-success mb-2">
                   <i class="bi bi-heart-pulse"></i>
                 </div>
@@ -152,26 +119,24 @@
             <!-- Free/Reduced Lunch -->
             <div class="col-md-4">
               <div class="program-card text-center" data-program-id="free_reduced_lunch" data-category="ami30" data-label="Free/Reduced Price School Meals">
-                <i class="bi bi-check-circle-fill card-check-icon"></i>
                 <div class="fs-1 text-success mb-2">
                   <i class="bi bi-egg-fried"></i>
                 </div>
                 <h4 class="h6 fw-bold mb-1">{% translate 'Free/Reduced Lunch' %}</h4>
                 <p class="small text-muted mb-0">
-                  {% translate 'School meal assistance for children.' %}
+                  {% translate 'Poudre School District meal assistance for children.' %}
                 </p>
               </div>
             </div>
             <!-- SNAP -->
             <div class="col-md-4">
               <div class="program-card text-center" data-program-id="snap" data-category="ami30" data-label="SNAP (Food Stamps)">
-                <i class="bi bi-check-circle-fill card-check-icon"></i>
                 <div class="fs-1 text-success mb-2">
                   <i class="bi bi-basket"></i>
                 </div>
                 <h4 class="h6 fw-bold mb-1">{% translate 'SNAP' %}</h4>
                 <p class="small text-muted mb-0">
-                  {% translate 'Supplemental nutrition assistance benefits.' %}
+                  {% translate 'Supplemental nutrition assistance program.' %}
                 </p>
               </div>
             </div>
@@ -179,15 +144,13 @@
         </div>
         <!-- Alternative Category: AMI 60 -->
         <div class="pt-2">
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <h3 class="h6 text-uppercase fw-bold text-primary mb-0 tracking-wider">{% translate 'Alternative Programs (AMI 60%)' %}</h3>
-            <span class="badge bg-primary-subtle text-primary badge-category">{% translate 'General Eligibility' %}</span>
+          <div class="mb-3">
+            <h3 class="h6 text-uppercase fw-bold text-primary mb-0 tracking-wider">{% translate 'Alternative Programs' %}</h3>
           </div>
           <div class="row g-3">
             <!-- CHP -->
             <div class="col-md-6">
               <div class="program-card text-center" data-program-id="chp" data-category="ami60" data-label="Child Health Plan Plus (CHP+)">
-                <i class="bi bi-check-circle-fill card-check-icon"></i>
                 <div class="fs-1 text-primary mb-2">
                   <i class="bi bi-shield-plus"></i>
                 </div>
@@ -200,7 +163,6 @@
             <!-- LEAP -->
             <div class="col-md-6">
               <div class="program-card text-center" data-program-id="leap" data-category="ami60" data-label="LEAP (Energy Assistance)">
-                <i class="bi bi-check-circle-fill card-check-icon"></i>
                 <div class="fs-1 text-primary mb-2">
                   <i class="bi bi-fire"></i>
                 </div>
@@ -222,9 +184,8 @@
         </div>
       </div>
       <!-- STEP 2: Document Upload -->
-      <div class="card step-card p-4 workflow-step disabled" id="step-upload">
+      <div class="card p-4 workflow-step disabled" id="step-upload">
         <div class="d-flex align-items-center mb-4 border-bottom pb-3">
-          <span class="badge bg-dark rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 2rem; height: 2rem; font-weight: bold;">2</span>
           <h2 class="h4 mb-0 fw-semibold">{% translate 'Upload Verification Document' %}</h2>
         </div>
         <div class="mb-4">
@@ -232,7 +193,7 @@
             <i class="bi bi-info-circle-fill me-3 fs-5 mt-1 flex-shrink-0"></i>
             <div>
               <span class="fw-bold">{% translate 'Required Proof' %}:</span>
-              <span id="required-doc-text">{% translate 'Please select a program in step 1 to view the document requirements.' %}</span>
+              <span id="required-doc-text">{% translate 'Please select a program to view the document requirements.' %}</span>
             </div>
           </div>
         </div>
@@ -262,7 +223,7 @@
         <!-- Form Submission Controls -->
         <div class="d-flex justify-content-between align-items-center mt-5">
           <button type="button" class="btn btn-outline-secondary px-4 py-2" id="btn-reset"><i class="bi bi-arrow-left-short me-1"></i> {% translate 'Clear Choices' %}</button>
-          <button type="submit" class="btn btn-success px-5 py-2 fw-semibold" id="btn-submit" disabled>{% translate 'Submit Application' %} <i class="bi bi-send-fill ms-2"></i></button>
+          <button type="submit" class="btn btn-success px-5 py-2 fw-semibold" id="btn-submit" disabled>{% translate 'Submit Application' %}</button>
         </div>
       </div>
     </form>
@@ -390,11 +351,6 @@
         $selectedFileName.text('')
         validateForm()
       }
-      $clearFileBtn.on('click', function (e) {
-        e.preventDefault()
-        e.stopPropagation()
-        clearFileSelection()
-      })
       function showFileError(msg) {
         $fileErrorFeedback.text(msg).addClass('d-block')
       }
@@ -408,6 +364,11 @@
           $submitBtn.prop('disabled', true)
         }
       }
+      $clearFileBtn.on('click', function (e) {
+        e.preventDefault()
+        e.stopPropagation()
+        clearFileSelection()
+      })
       // 4. Reset Button Action
       $resetBtn.on('click', function () {
         // Clear card active highlights
