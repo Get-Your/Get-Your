@@ -3,41 +3,73 @@
 {% block title %}Dashboard - Get FoCo{% endblock %}
 
 {% block content %}
-    <h1 class="border-bottom">{{ user.full_name }}</h1>
+    {% comment %} <h1 class="border-bottom">{{ user.full_name }}</h1> {% endcomment %}
     {% if user.eligibility_address is None %}
     <div class="alert alert-warning shadow-sm">
         <p class="mb-0"><i class="me-1 bi bi-exclamation-circle-fill"></i>There is no eligibility address on file. You have not completed your application! Access the <a href="{% url 'program_form' pk=user.pk %}">Program Form</a> to continue applying!</p>
     </div>
     {% endif %}
-    <p class="alert alert-light shadow-sm">Once your information is reviewed by the GetFoCo team, you will find the programs you were approved for here. Check back as it gets closer to your application's estimated date and be sure to check your email for communication from us.</p>
+    <p class="alert alert-info shadow-sm">Once your information is reviewed by the GetFoCo team, you will find the programs you were approved for here. Check back as it gets closer to your application's estimated date and be sure to check your email for communication from us.</p>
     <h2 class="border-bottom">Available Programs (limit these based on AMI?)</h2>
+    {% comment %} {% csrf_token %}
+    <div class="row">
+        {% for program in all_available_programs %}
+        <div class="mb-2 col-12 col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex flex-column flex-lg-row justify-content-between align-items-center">
+                    <p class="mb-0 fs-5">{{ program.friendly_name }}</p>
+                    {% if program.id in all_user_programs.enrolled %}
+                        {% if program.id in all_user_programs.renewals_needed %}
+                        <span class="ms-0 mt-1 ms-md-1 mt-md-0 badge text-bg-warning d-flex justify-content-center align-items-center shadow-sm">Renewal Needed</span>
+                        {% else %}
+                        <span class="badge text-bg-success d-flex justify-content-center align-items-center shadow-sm">Enrolled</span>
+                        {% endif %}
+                    {% elif program.id in all_user_programs.pending %}
+                    <span class="badge text-bg-info d-flex justify-content-center align-items-center shadow-sm">Pending Approval</span>
+                    {% else %}
+                    <span data-program-id="{{ program.id }}" role="button" class="badge text-bg-secondary d-flex justify-content-center align-items-center apply-button">Apply Now</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-column justify-content-around align-items-center">
+                        <p>{{ program.friendly_description }}</p>
+                        <p>{{ program.friendly_supplemental_info }}</p>
+                        <p class="mb-1"><small><a href="{{ program.learn_more_link }}">Learn More<i class="ms-1 bi bi-box-arrow-up-right"></i></a></small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div> {% endcomment %}
     <div class="card shadow-sm">
         <div class="card-body">
+            {% csrf_token %}
             <ul class="list-group list-group-flush">
                 {% for program in all_available_programs %}
-                <li class="list-group-item d-flex flex-column flex-md-row  justify-content-between align-items-center text-center text-md-start">
+                <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-center text-center text-md-start">
                     <div>
                         <p class="mb-0">{{ program.friendly_name }}</p>
                         <p class="mb-1"><small><a href="#">Learn More<i class="ms-1 bi bi-box-arrow-up-right"></i></a></small></p>
                     </div>
                     {% if program.id in all_user_programs.enrolled %}
-                    <div class="d-flex flex-column flex-md-row">
-                        <span class="badge text-bg-success d-flex justify-content-between align-items-center shadow-sm">Enrolled</span>
+                    <div class="d-flex flex-column flex-md-row justify-content-center align-items-center">
                         {% if program.id in all_user_programs.renewals_needed %}
                         <span class="ms-0 mt-1 ms-md-1 mt-md-0 badge text-bg-warning d-flex justify-content-between align-items-center shadow-sm">Renewal Needed</span>
+                        {% else %}
+                        <span class="badge text-bg-success d-flex justify-content-between align-items-center shadow-sm">Enrolled</span>
                         {% endif %}
                     </div>
                     {% elif program.id in all_user_programs.pending %}
-                    <span class="badge text-bg-info d-flex justify-content-between align-items-center shadow-sm">Pending Approval</span>
+                    <span class="badge text-bg-secondary d-flex justify-content-between align-items-center shadow-sm">Pending Approval</span>
                     {% else %}
-                    <a href="#"><span data-program-id="{{ program.id }}" class="badge text-bg-secondary d-flex justify-content-between align-items-center shadow-sm">Apply Now</span></a>
+                    <span data-program-id="{{ program.id }}" role="button" class="badge text-bg-light d-flex justify-content-between align-items-center apply-button">Apply Now</span>
                     {% endif %}
                 </li>
                 {% endfor %}
             </ul>
         </div>
     </div>
-    <h2 class="mt-4 border-bottom">Your Information</h2>
+    <h2 class="mt-4 border-bottom">Account Information</h2>
     <div class="row">
         <div class="mb-3 mb-md-0 col-12 col-lg-6">
             <div class="card shadow-sm">
@@ -124,4 +156,28 @@
             </div>
         </div>
     </div>
+    <script type="module">
+        $(function() {
+            $('.apply-button').on('click', function() {
+                let programId = $(this).data('programId');
+                $.ajax({
+                    url: '/dashboard/' + {{ user.id }} + '/apply_for_program/',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val()
+                    },
+                    data: JSON.stringify({ programId: programId }),
+                    success: function(response) {
+                        let span = $('span[data-program-id=' + response.programId + ']');
+                        span.removeAttr('role').removeData('program-id').removeClass('apply-button text-bg-secondary').addClass('text-bg-info').text('Pending Approval')
+                    },
+                    error: function(xhr, status, error) {
+                        // TODO: show an element/toast message if there's an error?
+                        console.error(error);
+                    }
+                });
+            });
+        })
+    </script>
 {% endblock %}
