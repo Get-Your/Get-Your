@@ -1,31 +1,21 @@
 {% extends 'base.html' %}
 {% load static i18n %}
 {% block title %}
-  {% translate 'Eligibility Survey ' %}- {{ block.super }}
+  {% translate 'Eligibility Programs ' %}- {{ block.super }}
 {% endblock %}
 {% block css %}
   {{ block.super }}
   <style>
-    /* Design Tokens & Theme Variables */
-    :root {
-      --survey-primary: #198754; /* Green for success/AMI 30 */
-      --survey-secondary: #0d6efd; /* Blue for AMI 60 */
-      --survey-bg-hover: rgba(25, 135, 84, 0.05);
-      --survey-border-active: #198754;
-      --survey-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    /* Survey Card Styling */
-    .survey-container {
+    .eligibility-programs-container {
       max-width: 800px;
       margin: 2rem auto;
     }
-    
     .program-card {
       border: 2px solid #e9ecef;
       border-radius: 10px;
       padding: 1.25rem;
       cursor: pointer;
-      transition: var(--survey-transition);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       height: 100%;
       background: #fff;
@@ -37,17 +27,17 @@
     }
     /* Active selection styles for AMI 30 */
     .program-card.active-ami30 {
-      border-color: var(--survey-primary);
+      border-color: #198754; /* Green for success/AMI 30 */
       background-color: rgba(25, 135, 84, 0.03);
     }
     /* Active selection styles for AMI 60 */
     .program-card.active-ami60 {
-      border-color: var(--survey-secondary);
+      border-color: #0d6efd; /* Blue for AMI 60 */
       background-color: rgba(13, 110, 253, 0.03);
     }
-    /* Survey Steps Animations */
+    /* Steps Animations */
     .workflow-step {
-      transition: var(--survey-transition);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .workflow-step.disabled {
       opacity: 0.5;
@@ -61,7 +51,7 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
 {% endblock %}
 {% block content %}
-  <div class="survey-container px-3">
+  <div class="eligibility-programs-container px-3">
     <!-- Header and Title -->
     <div class="text-center mb-3">
       <h1 class="display-5 fw-bold text-dark mb-3">{% translate 'Eligibility Verification' %}</h1>
@@ -69,7 +59,7 @@
         {% translate 'Select one program you are currently enrolled in to verify your household eligibility.' %}
       </p>
     </div>
-    <form method="post" enctype="multipart/form-data" id="survey-workflow-form" novalidate>
+    <form method="post" enctype="multipart/form-data" id="eligibility-programs-workflow-form" novalidate>
       {% csrf_token %}
       <!-- STEP 1: Program Selection -->
       <div class="card p-4 workflow-step" id="step-selection">
@@ -78,7 +68,7 @@
           <div class="mb-3">
             <h3 class="h6 text-uppercase fw-bold text-success mb-0 tracking-wider">{% translate 'Preferred Programs' %}</h3>
           </div>
-          <div class="row g-3">
+          <div class="row">
             <!-- Medicaid -->
             <div class="col-md-4">
               <div class="program-card text-center" data-program-id="medicaid" data-category="ami30" data-label="Medicaid">
@@ -122,7 +112,7 @@
           <div class="mb-3">
             <h3 class="h6 text-uppercase fw-bold text-primary mb-0 tracking-wider">{% translate 'Alternative Programs' %}</h3>
           </div>
-          <div class="row g-3">
+          <div class="row">
             <!-- CHP -->
             <div class="col-md-6">
               <div class="program-card text-center" data-program-id="chp" data-category="ami60" data-label="Child Health Plan Plus (CHP+)">
@@ -149,13 +139,13 @@
             </div>
           </div>
         </div>
-        <!-- Hidden Radio Fields to Store Selected Entity -->
+        <!-- Hidden Radio Fields to Store Selected program -->
         <div style="display:none;">
-          <input type="radio" name="selected_entity" id="radio-medicaid" value="medicaid" />
-          <input type="radio" name="selected_entity" id="radio-free_reduced_lunch" value="free_reduced_lunch" />
-          <input type="radio" name="selected_entity" id="radio-snap" value="snap" />
-          <input type="radio" name="selected_entity" id="radio-chp" value="chp" />
-          <input type="radio" name="selected_entity" id="radio-leap" value="leap" />
+          <input type="radio" name="selected_program" id="radio-medicaid" value="medicaid" />
+          <input type="radio" name="selected_program" id="radio-free_reduced_lunch" value="free_reduced_lunch" />
+          <input type="radio" name="selected_program" id="radio-snap" value="snap" />
+          <input type="radio" name="selected_program" id="radio-chp" value="chp" />
+          <input type="radio" name="selected_program" id="radio-leap" value="leap" />
         </div>
       </div>
       <!-- STEP 2: Document Upload -->
@@ -194,7 +184,7 @@
 {% block inline_javascript %}
   <script>
     $(document).ready(function () {
-      const $form = $('#survey-workflow-form')
+      const $form = $('#eligibility-programs-workflow-form')
       const $fileInput = $('#id_document')
       const $selectedFileName = $('#selected-file-name')
       const $clearFileBtn = $('#btn-clear-file')
@@ -289,9 +279,9 @@
       }
       // 3. Workflow Validation State Controller
       function validateForm() {
-        const isEntitySelected = $('input[name="selected_entity"]:checked').length > 0
+        const isProgramSelected = $('input[name="selected_program"]:checked').length > 0
         const isFileUploaded = $fileInput.val() !== ''
-        if (isEntitySelected && isFileUploaded) {
+        if (isProgramSelected && isFileUploaded) {
           $submitBtn.prop('disabled', false)
         } else {
           $submitBtn.prop('disabled', true)
@@ -307,7 +297,7 @@
         // Clear card active highlights
         $('.program-card').removeClass('active-ami30 active-ami60')
         // Uncheck radio buttons
-        $('input[name="selected_entity"]').prop('checked', false)
+        $('input[name="selected_program"]').prop('checked', false)
         // Clear file input
         clearFileSelection()
         $fileErrorFeedback.removeClass('d-block')

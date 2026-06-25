@@ -57,11 +57,11 @@ class EligibilitySurveyView(View):
             user_id=request.user.id,
         )
 
-        selected_entity = request.POST.get("selected_entity")
+        selected_program = request.POST.get("selected_program")
         document = request.FILES.get("document")
 
         # 1. Validation: Ensure both program selection and document are provided
-        if not selected_entity or not document:
+        if not selected_program or not document:
             messages.error(request, _("Both a program selection and a verification document are required."))
             return render(request, self.template_name)
 
@@ -80,7 +80,7 @@ class EligibilitySurveyView(View):
         try:
             with transaction.atomic():
                 # Fetch corresponding program reference
-                program_ref = EligibilityProgramRef.objects.get(program_name=selected_entity)
+                program_ref = EligibilityProgramRef.objects.get(program_name=selected_program)
 
                 # Initialize and populate EligibilityProgram
                 eligibility_program = EligibilityProgram(
@@ -101,7 +101,7 @@ class EligibilitySurveyView(View):
 
         except EligibilityProgramRef.DoesNotExist:
             log.error(
-                f"EligibilityProgramRef not found for name: {selected_entity}",
+                f"EligibilityProgramRef not found for name: {selected_program}",
                 function="EligibilitySurveyView.post",
                 user_id=request.user.id,
             )
@@ -121,7 +121,7 @@ class EligibilitySurveyView(View):
             messages.success(
                 request,
                 _("Your verification document for {program} was uploaded and saved successfully!").format(
-                    program=selected_entity.upper()
+                    program=selected_program.upper()
                 ),
             )
         else:
@@ -132,10 +132,10 @@ class EligibilitySurveyView(View):
                     "Your selection of {program} and file '{filename}' ({filesize} bytes) "
                     "was validated successfully (Simulation Mode: Database/storage not connected)."
                 ).format(
-                    program=selected_entity.upper(),
+                    program=selected_program.upper(),
                     filename=document.name,
                     filesize=document.size,
                 ),
             )
 
-        return redirect("dashboard")
+        return redirect("eligibility_form")
