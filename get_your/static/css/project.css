@@ -68,3 +68,9 @@ gmp-place-autocomplete::part(focus-ring) {
    /* Custom color (e.g., Tailwind blue-500) */
   /* outline-offset: 2px; */
 }
+
+@media screen and (min-width: 768px) {
+  .column-border {
+    border-right: 1px solid #dee2e6;
+  }
+}
