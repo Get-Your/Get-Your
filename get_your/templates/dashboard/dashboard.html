@@ -14,7 +14,7 @@
         <p class="alert alert-info shadow-sm">Once your information is reviewed by the GetFoCo team, you will find the programs you were approved for here. Check back as it gets closer to your application's estimated date and be sure to check your email for communication from us.</p>
 
         <div class="mb-3 px-3 py-2 border rounded dashboard-item shadow-sm">
-            <h3 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom text-center text-md-start">{% translate 'Available Programs' %}</h3>
+            <h2 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom text-center text-md-start">{% translate 'Available Programs' %}</h2>
             <div class="mb-3 row g-3">
                 {% for program in all_available_programs %}
                 <div class="col-md-4">
@@ -46,9 +46,9 @@
             </div>
         </div>
         <div class="mb-3 px-3 py-2 border rounded dashboard-item shadow-sm">
-            <h3 class="mb-3 pb-2 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom">{% translate 'Eligibility Information' %}</h3>
+            <h2 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom">{% translate 'Eligibility Information' %}</h2>
             <div class="mb-3 row g-3">
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-6 column-border">
                     <div class="p-3 d-flex flex-column justify-content-center align-items-center">
                         <div class="mb-2">
                             <h4 class="h6 fw-bold mb-1 border-bottom">{% translate 'Status' %}</h4>
@@ -65,20 +65,20 @@
                         <div class="mb-2">
                             <h4 class="h6 fw-bold mb-1 border-bottom">{% translate 'Selected Eligibility Program' %}</h4>
                         </div>
-                        <p class="mb-0">{{ user.eligibility_files.friendly_name }}</p>
-                        <p>{{ user.eligibility_files.friendly_description }}</p>
+                        <p class="mb-0">{{ user_eligibility_record.program.friendly_name }}</p>
+                        <p>{{ user_eligibility_record.program.friendly_description }}</p>
                     </div>
                 </div>
             </div>
             <hr>
             <div class="text-center text-md-start">
-                <a class="btn btn-sm btn-outline-primary" href="{% url 'program_form' pk=user.pk %}">Edit Eligibility Details</a>
+                <a class="btn btn-sm btn-outline-primary shadow-sm" href="{% url 'program_form' pk=user.pk %}">Edit Eligibility Details</a>
             </div>
         </div>
         <div class="mb-3 px-3 py-2 border rounded dashboard-item shadow-sm">
-            <h3 class="mb-3 pb-2 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom">{% translate 'Account Information' %}</h3>
+            <h2 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom">{% translate 'Account Information' %}</h2>
             <div class="mb-3 row g-3">
-                <div class="col-md-4">
+                <div class="col-md-4 column-border">
                     <div class="d-flex flex-column justify-content-center align-items-center">
                         <div class="mb-2">
                             <h4 class="h6 fw-bold mb-1 border-bottom">{% translate 'Personal' %}</h4>
@@ -88,7 +88,7 @@
                         <p>{{ user.phone_number }}</p>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 column-border">
                     <div class="d-flex flex-column justify-content-center align-items-center">
                         <div class="mb-2">
                             <h4 class="h6 fw-bold mb-1 border-bottom">{% translate 'Address' %}</h4>
@@ -117,7 +117,7 @@
                             <h4 class="h6 fw-bold mb-1 border-bottom">{% translate 'Household Members' %}</h4>
                         </div>
                         {% if user.householdmembers %}
-                        <div class="d-flex flex-column flex-md-row justify-content-around align-items-center w-100">
+                        <div class="d-flex flex-column flex-wrap flex-md-row justify-content-around align-items-center w-100">
                             {% for member in user.householdmembers.all %}
                             <ul class="list-unstyled">
                                 <li>{{ member.full_name }}</li>
@@ -131,11 +131,11 @@
             </div>
             <hr>
             <div class="text-center text-md-start">
-                <a class="btn btn-sm btn-outline-primary" href="{% url 'program_form' pk=user.pk %}">Edit Account Details</a>
+                <a class="btn btn-sm btn-outline-primary shadow-sm" href="{% url 'program_form' pk=user.pk %}">Edit Account Details</a>
             </div>
         </div>
         <div class="px-3 py-2 border rounded dashboard-item shadow-sm">
-            <h3 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom">{% translate 'Submit Feedback?' %}</h3>
+            <h2 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom">{% translate 'Submit Feedback?' %}</h2>
             <div class="mb-3 row g-3">
                 <div class="col-12">
                     <div class="d-flex flex-column justify-content-center align-items-center">
@@ -168,7 +168,7 @@
                                 <textarea class="form-control shadow-sm" name="feedback_comments" id="feedback-comments" rows="5" cols="10"></textarea>
                             </fieldset>
                             <hr>
-                            <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                            <button type="submit" class="btn btn-sm btn-primary">Submit<i class="ms-1 bi bi-send"></i></button>
                         </form>
                     </div>
                 </div>
