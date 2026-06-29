@@ -48,6 +48,7 @@ def dashboard(request, pk, **kwargs):
         'eligibility_files'
     ), pk=pk)
 
+    user_eligibility_record = user.eligibility_files.latest('created_at')
     one_year_ago = pendulum.now().subtract(years=1)
 
     all_available_programs = IQProgramRef.objects.filter(is_active=True).order_by('friendly_name')
@@ -83,6 +84,7 @@ def dashboard(request, pk, **kwargs):
         'dashboard/dashboard.html',
         {
             'user': user,
+            'user_eligibility_record': user_eligibility_record,
             'all_available_programs': all_available_programs,
             'all_user_programs': all_user_programs,
             "title": "Get FoCo Dashboard",
