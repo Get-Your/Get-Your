@@ -95,8 +95,8 @@ class EligibilityProgramsView(View):
                 db_stored = True
                 log.info(
                     f"Successfully saved EligibilityProgram {eligibility_program.id} for user {request.user.id}",
-                    function="EligibilityProgramsView.post",
-                    user_id=request.user.id,
+                    function = "EligibilityProgramsView.post",
+                    user_id = request.user.id,
                 )
 
         except EligibilityProgramRef.DoesNotExist:
@@ -105,16 +105,8 @@ class EligibilityProgramsView(View):
                 function="EligibilityProgramsView.post",
                 user_id=request.user.id,
             )
-            messages.error(request, _("The selected program is not configured in the system."))
+            messages.error(request, _("The selected eligibility program is not in the system."))
             return render(request, self.template_name)
-
-        except Exception as e:
-            # Gracefully catch operational database/storage exceptions when DB is not connected
-            log.exception(
-                f"Error writing to database/storage (running in simulation mode): {e}",
-                function="EligibilityProgramsView.post",
-                user_id=request.user.id,
-            )
 
         # 4. Response & feedback redirection
         if db_stored:
@@ -125,17 +117,17 @@ class EligibilityProgramsView(View):
                 ),
             )
         else:
-            # User feedback for simulation/offline mode when database is not connected
+            # User feedback for a problem saving the eligibility program
             messages.warning(
                 request,
                 _(
-                    "Your selection of {program} and file '{filename}' ({filesize} bytes) "
-                    "was validated successfully (Simulation Mode: Database/storage not connected)."
+                    "Your selection of {program} and file '{filename}'"
+                    "was not stored properly, please try again."
                 ).format(
                     program=selected_program.upper(),
-                    filename=document.name,
-                    filesize=document.size,
+                    filename=document.name
                 ),
             )
 
-        return redirect("eligibility_form")
+        # Redirect user to dash, after successfully saving
+        return redirect("dashboard")
