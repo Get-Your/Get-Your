@@ -36,16 +36,16 @@ from ref.models import EligibilityProgramRef
 log = LoggerWrapper(logging.getLogger(__name__))
 
 
-class EligibilitySurveyView(View):
+class EligibilityProgramsView(View):
     """
     View handling the program eligibility survey and verification document upload.
     """
-    template_name = "dashboard/new_eligibility.html"
+    template_name = "dashboard/eligibility_programs.html"
 
     def get(self, request, *args, **kwargs):
         log.debug(
             "Rendering eligibility survey page",
-            function="EligibilitySurveyView.get",
+            function="EligibilityProgramsView.get",
             user_id=request.user.id,
         )
         return render(request, self.template_name)
@@ -53,7 +53,7 @@ class EligibilitySurveyView(View):
     def post(self, request, *args, **kwargs):
         log.debug(
             "Processing eligibility survey submission",
-            function="EligibilitySurveyView.post",
+            function="EligibilityProgramsView.post",
             user_id=request.user.id,
         )
 
@@ -69,7 +69,7 @@ class EligibilitySurveyView(View):
         file_validated, validation_message = file_validation(
             document,
             request.user.id,
-            calling_function="EligibilitySurveyView.post",
+            calling_function="EligibilityProgramsView.post",
         )
         if not file_validated:
             messages.error(request, _(validation_message))
@@ -95,14 +95,14 @@ class EligibilitySurveyView(View):
                 db_stored = True
                 log.info(
                     f"Successfully saved EligibilityProgram {eligibility_program.id} for user {request.user.id}",
-                    function="EligibilitySurveyView.post",
+                    function="EligibilityProgramsView.post",
                     user_id=request.user.id,
                 )
 
         except EligibilityProgramRef.DoesNotExist:
             log.error(
                 f"EligibilityProgramRef not found for name: {selected_program}",
-                function="EligibilitySurveyView.post",
+                function="EligibilityProgramsView.post",
                 user_id=request.user.id,
             )
             messages.error(request, _("The selected program is not configured in the system."))
@@ -112,7 +112,7 @@ class EligibilitySurveyView(View):
             # Gracefully catch operational database/storage exceptions when DB is not connected
             log.exception(
                 f"Error writing to database/storage (running in simulation mode): {e}",
-                function="EligibilitySurveyView.post",
+                function="EligibilityProgramsView.post",
                 user_id=request.user.id,
             )
 
