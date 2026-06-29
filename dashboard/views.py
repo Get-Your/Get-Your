@@ -53,7 +53,7 @@ def dashboard(request, pk, **kwargs):
 
 @login_required(redirect_field_name='auth_next')
 def program_form(request, pk, **kwargs):
-    user = User.objects.prefetch_related('householdmembers').get(pk=pk)
+    user = get_object_or_404(User.objects.prefetch_related('householdmembers'), pk=pk)
 
     initial_address_queryset = AddressRef.objects.none()
 
