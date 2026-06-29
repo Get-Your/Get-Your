@@ -35,8 +35,7 @@ from ref.models import EligibilityProgramRef
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
 
-
-class EligibilityProgramsView(View):
+class EligibilityProgramsView(View, LoginRequiredMixin):
     """
     View handling the program eligibility survey and verification document upload.
     """
