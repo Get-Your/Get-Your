@@ -120,31 +120,31 @@ AZURE_CONTAINER_SUFFIX = env("DJANGO_AZURE_CONTAINER_SUFFIX")
 AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}{AZURE_CONTAINER_SUFFIX}"
 # STATIC & MEDIA
 # ------------------------
-# STORAGES = {
-#     "default": {
-#         "BACKEND": "storages.backends.azure_storage.AzureStorage",
-#         "OPTIONS": {
-#             "account_key": AZURE_ACCOUNT_KEY,
-#             "account_name": AZURE_ACCOUNT_NAME,
-#             # "connection_string": env("DJANGO_AZURE_CONNECTION_STRING"),
-#             "azure_container": AZURE_CONTAINER,
-#             "expiration_secs": 200,
-#             "endpoint_suffix": env("DJANGO_AZURE_CONTAINER_SUFFIX"),
-#             "location": "media",
-#         },
-#     },
-#     "staticfiles": {
-#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-#     },
-# }
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "storages.backends.azure_storage.AzureStorage",
+        "OPTIONS": {
+            "account_key": AZURE_ACCOUNT_KEY,
+            "account_name": AZURE_ACCOUNT_NAME,
+            "connection_string": env("DJANGO_AZURE_CONNECTION_STRING"),
+            "azure_container": AZURE_CONTAINER,
+            "expiration_secs": 200,
+            "endpoint_suffix": env("DJANGO_AZURE_CONTAINER_SUFFIX"),
+            "location": "media",
+        },
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+# STORAGES = {
+#     "default": {
+#         "BACKEND": "django.core.files.storage.FileSystemStorage",
+#     },
+#     "staticfiles": {
+#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+#     },
+# }
 MEDIA_URL = "media/"
 
 # EMAIL

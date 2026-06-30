@@ -16,6 +16,10 @@ if typing.TYPE_CHECKING:
 class AccountAdapter(DefaultAccountAdapter):
     def is_open_for_signup(self, request: HttpRequest) -> bool:
         return getattr(settings, "ACCOUNT_ALLOW_REGISTRATION", True)
+    
+    def get_login_redirect_url(self, request):
+        path = "/dashboard/{pk}/"
+        return path.format(pk=request.user.id)
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):

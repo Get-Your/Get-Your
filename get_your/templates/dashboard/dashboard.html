@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Get FoCo{% endblock %}
+
+{% block content %}
+    <h1>Stuff and Things</h1>
+    <p>Here are some things.</p>
+    <a href="{% url 'program_form' pk=user.pk %}">Program Form</a>
+{% endblock %}

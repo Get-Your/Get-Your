@@ -153,6 +153,12 @@ class User(AbstractUser):
 
     objects: ClassVar[UserManager] = UserManager()
 
+    def are_addresses_the_same(self):
+        if self.eligibility_address == self.mailing_address:
+            return True
+
+        return False
+
     def get_absolute_url(self) -> str:
         """Get URL for user's detail view.
 
