@@ -39,9 +39,15 @@ urlpatterns = [
          view_image,
          name='view_image',
          kwargs={'allow_direct_user': True},
-     ),
+    ),
     path(
-        'eligibility_form/<int:pk>/',
+        'program_form/<int:pk>/',
+        program_form,
+        name='program_form',
+        kwargs={'allow_direct_user': True},
+    ),
+    path(
+        'eligibility_form/',
         EligibilityProgramsView.as_view(),
         name='eligibility_form',
         kwargs={'allow_direct_user': True},
