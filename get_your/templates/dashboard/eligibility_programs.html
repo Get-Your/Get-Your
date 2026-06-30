@@ -45,11 +45,6 @@
     }
   </style>
 {% endblock %}
-{% block javascript %}
-  {{ block.super }}
-  <!-- Inject jQuery CDN for dynamic UI interactions -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
-{% endblock %}
 {% block content %}
   <div class="eligibility-programs-container px-3">
     <!-- Header and Title -->
@@ -69,42 +64,16 @@
             <h3 class="h6 text-uppercase fw-bold text-success mb-0 tracking-wider">{% translate 'Preferred Programs' %}</h3>
           </div>
           <div class="row">
-            <!-- Medicaid -->
-            <div class="col-md-4">
-              <div class="program-card text-center" data-program-id="medicaid" data-category="ami30" data-label="Medicaid">
-                <div class="fs-1 text-success mb-2">
-                  <i class="bi bi-heart-pulse"></i>
+            {% for program in ami30s %}
+              <div class="col-md-4">
+                <div class="program-card text-center" data-program-id="{{ program.id }}" data-category="ami30" data-label="{{ program.friendly_name }}" data-req="{{ program.friendly_description }}">
+                  <div class="fs-1 text-success mb-2">
+                    <i class="bi {{ program.bi_icon }}"></i>
+                  </div>
+                  <h4 class="h6 fw-bold mb-1">{% translate program.friendly_name %}</h4>
                 </div>
-                <h4 class="h6 fw-bold mb-1">{% translate 'Medicaid' %}</h4>
-                <p class="small text-muted mb-0">
-                  {% translate 'Healthcare support for eligible individuals.' %}
-                </p>
               </div>
-            </div>
-            <!-- Free/Reduced Lunch -->
-            <div class="col-md-4">
-              <div class="program-card text-center" data-program-id="free_reduced_lunch" data-category="ami30" data-label="Free/Reduced Price School Meals">
-                <div class="fs-1 text-success mb-2">
-                  <i class="bi bi-egg-fried"></i>
-                </div>
-                <h4 class="h6 fw-bold mb-1">{% translate 'Free/Reduced Lunch' %}</h4>
-                <p class="small text-muted mb-0">
-                  {% translate 'Poudre School District meal assistance for children.' %}
-                </p>
-              </div>
-            </div>
-            <!-- SNAP -->
-            <div class="col-md-4">
-              <div class="program-card text-center" data-program-id="snap" data-category="ami30" data-label="SNAP (Food Stamps)">
-                <div class="fs-1 text-success mb-2">
-                  <i class="bi bi-basket"></i>
-                </div>
-                <h4 class="h6 fw-bold mb-1">{% translate 'SNAP' %}</h4>
-                <p class="small text-muted mb-0">
-                  {% translate 'Supplemental nutrition assistance program.' %}
-                </p>
-              </div>
-            </div>
+            {% endfor %}
           </div>
         </div>
         <!-- Alternative Category: AMI 60 -->
@@ -113,30 +82,16 @@
             <h3 class="h6 text-uppercase fw-bold text-primary mb-0 tracking-wider">{% translate 'Alternative Programs' %}</h3>
           </div>
           <div class="row">
-            <!-- CHP -->
-            <div class="col-md-6">
-              <div class="program-card text-center" data-program-id="chp" data-category="ami60" data-label="Child Health Plan Plus (CHP+)">
-                <div class="fs-1 text-primary mb-2">
-                  <i class="bi bi-shield-plus"></i>
+            {% for program in ami60s %}
+              <div class="col-md-6">
+                <div class="program-card text-center" data-program-id="{{ program.id }}" data-category="ami60" data-label="{{ program.friendly_name }}" data-req="{{ program.friendly_description }}">
+                  <div class="fs-1 text-primary mb-2">
+                    <i class="bi {{ program.bi_icon }}"></i>
+                  </div>
+                  <h4 class="h6 fw-bold mb-1">{% translate program.friendly_name %}</h4>
                 </div>
-                <h4 class="h6 fw-bold mb-1">{% translate 'CHP+' %}</h4>
-                <p class="small text-muted mb-0">
-                  {% translate 'Child Health Plan Plus for children & pregnant women.' %}
-                </p>
               </div>
-            </div>
-            <!-- LEAP -->
-            <div class="col-md-6">
-              <div class="program-card text-center" data-program-id="leap" data-category="ami60" data-label="LEAP (Energy Assistance)">
-                <div class="fs-1 text-primary mb-2">
-                  <i class="bi bi-fire"></i>
-                </div>
-                <h4 class="h6 fw-bold mb-1">{% translate 'LEAP' %}</h4>
-                <p class="small text-muted mb-0">
-                  {% translate 'Low-Income Energy Assistance program.' %}
-                </p>
-              </div>
-            </div>
+            {% endfor %}
           </div>
         </div>
         <!-- Hidden Radio Fields to Store Selected program -->
@@ -162,11 +117,10 @@
             </div>
           </div>
         </div>
-        <!-- File Dropzone Area -->
         <div class="mb-3">
           <!-- Native File Input -->
           <label for="id_document" class="form-label">{% translate 'Select File' %}</label>
-          <input type="file" name="document" id="id_document" class="form-input shadow-sm" accept=".pdf,.png,.jpg,.jpeg" />
+          <input type="file" name="document" id="id_document" class="form-control shadow-sm" accept=".pdf,.png,.jpg,.jpeg" />
           <div class="invalid-feedback mt-2" id="file-error-feedback">
             {% translate 'Please upload a valid document to continue.' %}
           </div>
@@ -183,7 +137,7 @@
 {% endblock %}
 {% block inline_javascript %}
   <script>
-    $(document).ready(function () {
+    $(function () {
       const $form = $('#eligibility-programs-workflow-form')
       const $fileInput = $('#id_document')
       const $selectedFileName = $('#selected-file-name')
@@ -193,14 +147,18 @@
       const $stepUpload = $('#step-upload')
       const $requiredDocText = $('#required-doc-text')
       const $fileErrorFeedback = $('#file-error-feedback')
+    
       // 1. Program Selection Interactions
       $('.program-card').on('click', function () {
         const $card = $(this)
         const programId = $card.data('program-id')
         const category = $card.data('category')
         const label = $card.data('label')
+        const requirement = $card.data('req')
+    
         // Reset all active classes
         $('.program-card').removeClass('active-ami30 active-ami60')
+    
         // Apply specific active styling class depending on category selected
         if (category === 'ami30') {
           $card.addClass('active-ami30')
@@ -209,41 +167,19 @@
         }
         // Check the matching hidden radio button
         $(`#radio-${programId}`).prop('checked', true)
-        // Update the dynamic label instructions in Step 2
-        let docRequirement = ''
-        switch (programId) {
-          case 'medicaid':
-            docRequirement = "{% translate 'A copy of your current Medicaid enrollment card or recent letter of benefits.' %}"
-            break
-          case 'free_reduced_lunch':
-            docRequirement = "{% translate 'A school district notification letter indicating approval for the current school year.' %}"
-            break
-          case 'snap':
-            docRequirement = "{% translate 'A recent SNAP approval letter or electronic benefit transfer (EBT) card statement.' %}"
-            break
-          case 'chp':
-            docRequirement = "{% translate 'A Child Health Plan Plus card or recent insurance verification documentation.' %}"
-            break
-          case 'leap':
-            docRequirement = "{% translate 'Your utility bill showing a LEAP credit, or a LEAP award notification letter.' %}"
-            break
-        }
-        $requiredDocText.text(`{% translate "Please upload proof of enrollment for " %} ${label}. ${docRequirement}`)
+    
+        $requiredDocText.text(`{% translate "Please upload proof of enrollment for " %} ${label}. ${requirement}`)
         // Unlock Step 2 with smooth fade effect
         $stepUpload.removeClass('disabled').css('opacity', '1')
-        // Scroll smoothly to Step 2
-        $('html, body').animate(
-          {
-            scrollTop: $stepUpload.offset().top - 100
-          },
-          500
-        )
+    
         validateForm()
       })
+    
       // 2. Drag & Drop and File Input Interactions
       $fileInput.on('change', function () {
         handleFileSelection(this.files[0])
       })
+    
       function handleFileSelection(file) {
         if (!file) {
           clearFileSelection()
@@ -277,6 +213,7 @@
       function showFileError(msg) {
         $fileErrorFeedback.text(msg).addClass('d-block')
       }
+    
       // 3. Workflow Validation State Controller
       function validateForm() {
         const isProgramSelected = $('input[name="selected_program"]:checked').length > 0
@@ -292,6 +229,7 @@
         e.stopPropagation()
         clearFileSelection()
       })
+    
       // 4. Reset Button Action
       $resetBtn.on('click', function () {
         // Clear card active highlights
@@ -304,13 +242,6 @@
         // Lock and fade out Step 2
         $stepUpload.addClass('disabled').css('opacity', '0.5')
         $requiredDocText.text("{% translate 'Please select a program to view the document requirements.' %}")
-        // Scroll back to top
-        $('html, body').animate(
-          {
-            scrollTop: $('#step-selection').offset().top - 100
-          },
-          500
-        )
       })
     })
   </script>

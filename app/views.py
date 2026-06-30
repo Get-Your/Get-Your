@@ -42,12 +42,23 @@ class EligibilityProgramsView(View, LoginRequiredMixin):
     template_name = "dashboard/eligibility_programs.html"
 
     def get(self, request, *args, **kwargs):
+        ami_30_programs = EligibilityProgramRef.objects.filter(is_active=True).filter(ami_threshold=.3).order_by('friendly_name')
+
+        ami_60_programs = EligibilityProgramRef.objects.filter(is_active=True).filter(ami_threshold=.6).order_by('friendly_name')
+
         log.debug(
             "Rendering eligibility survey page",
             function="EligibilityProgramsView.get",
             user_id=request.user.id,
         )
-        return render(request, self.template_name)
+        return render(
+            request,
+            self.template_name,
+            {
+                'ami30s': ami_30_programs,
+                'ami60s': ami_60_programs
+            }
+        )
 
     def post(self, request, *args, **kwargs):
         log.debug(
