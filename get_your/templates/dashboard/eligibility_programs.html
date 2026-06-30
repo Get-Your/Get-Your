@@ -220,7 +220,7 @@
         clearFileSelection()
         $('#file-error-feedback').removeClass('d-block')
         // Lock and fade out Step 2
-        $stepUpload.addClass('disabled').css('opacity', '0.5')
+        $('#step-upload').addClass('disabled').css('opacity', '0.5')
         $requiredDocText.text("{% translate 'Please select a program to view the document requirements.' %}")
       })
     })
