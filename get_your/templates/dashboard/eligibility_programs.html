@@ -140,41 +140,37 @@
       // 1. Program Selection Interactions
       $('.program-card').on('click', function () {
         const $card = $(this)
-    
+
         // Reset all active classes
         $('.program-card').removeClass('active-ami30 active-ami60')
-    
+
         // Apply specific active styling class depending on category selected
         if ($card.data('category') === 'ami30') {
           $card.addClass('active-ami30')
         } else {
           $card.addClass('active-ami60')
         }
-    
+
         // Check the matching hidden radio button
         $(`#radio-${$card.data('program-name')}`).prop('checked', true)
-    
+
         $('#required-doc-text').text(`{% translate "Please upload proof of enrollment for " %} ${$card.data('label')}. ${$card.data('req')}`)
-    
+
         // Unlock Step 2 with smooth fade effect
         $('#step-upload').removeClass('disabled').css('opacity', '1')
-    
+
         validateForm()
       })
-    
-      // 2. Drag & Drop and File Input Interactions
+
+      // 2. File Input Interactions
       $('#id_document').on('change', function () {
-        handleFileSelection(this.files[0])
-      })
-    
-      function handleFileSelection(file) {
-        if (!file) {
+        if (!this.files[0]) {
           clearFileSelection()
           return
         }
         // Validate File Type (Allowed: PDF, PNG, JPG, JPEG)
         const allowedExtensions = ['pdf', 'png', 'jpg', 'jpeg']
-        const fileExtension = file.name.split('.').pop().toLowerCase()
+        const fileExtension = this.files[0].name.split('.').pop().toLowerCase()
         if (!allowedExtensions.includes(fileExtension)) {
           showFileError("{% translate 'Unsupported file type. Please upload a PDF, PNG, JPG, or JPEG.' %}")
           clearFileSelection()
@@ -182,27 +178,27 @@
         }
         // Validate File Size (Max 5MB)
         const maxSizeInBytes = 5 * 1024 * 1024
-        if (file.size > maxSizeInBytes) {
+        if (this.files[0].size > maxSizeInBytes) {
           showFileError("{% translate 'The selected file is too large. Maximum size allowed is 5MB.' %}")
           clearFileSelection()
           return
         }
         // File is valid
         $('#file-error-feedback').removeClass('d-block')
-        $('#selected-file-name').text(file.name)
+        $('#selected-file-name').text(fithis.files[0]le.name)
         validateForm()
-      }
-    
+      })
+
       function clearFileSelection() {
         $('#id_document').val('')
         $('#selected-file-name').text('')
         validateForm()
       }
-    
+
       function showFileError(msg) {
         $('#file-error-feedback').text(msg).addClass('d-block')
       }
-    
+
       // 3. Workflow Validation State Controller
       function validateForm() {
         const isProgramSelected = $('input[name="selected_program"]:checked').length > 0
@@ -213,7 +209,7 @@
           $('#btn-submit').prop('disabled', true)
         }
       }
-    
+
       // 4. Reset Button Action
       $('#btn-reset').on('click', function () {
         // Clear card active highlights
