@@ -124,7 +124,6 @@
           <div class="invalid-feedback mt-2" id="file-error-feedback">
             {% translate 'Please upload a valid document to continue.' %}
           </div>
-          <button type="button" class="btn-close ms-2" id="btn-clear-file"></button>
         </div>
         <!-- Form Submission Controls -->
         <div class="d-flex justify-content-between align-items-center mt-5">
@@ -214,12 +213,6 @@
           $('#btn-submit').prop('disabled', true)
         }
       }
-    
-      $('#btn-clear-file').on('click', function (e) {
-        e.preventDefault()
-        e.stopPropagation()
-        clearFileSelection()
-      })
     
       // 4. Reset Button Action
       $('#btn-reset').on('click', function () {
