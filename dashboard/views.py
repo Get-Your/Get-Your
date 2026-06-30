@@ -172,7 +172,7 @@ def view_image(request, pk, image_name, **kwargs):
     blob_data = b''
     for chunk in file.chunks():
         blob_data += chunk
-    
+
     return render(
         request,
         'dashboard/view_image.html',
