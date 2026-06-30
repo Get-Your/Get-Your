@@ -318,6 +318,14 @@ class EligibilityProgramRef(TimeStampedModel):
         ),
     )
 
+    bi_icon = models.CharField(
+        max_length=50,
+        null=True,
+        help_text=_(
+            "Bootstrap icon to use, when rendering the program"
+        ),
+    )
+
     class Meta:
         verbose_name = "eligibility program"
         verbose_name_plural = "eligibility programs"
