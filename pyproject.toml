@@ -37,7 +37,6 @@ dependencies = [
   "psycopg[binary]==3.3.4",
   # python-http-client is combined with sendgrid, but referenced directly in the scripts
   "python-http-client~=3.3.7",
-  "python-magic~=0.4.27",
   "python-magic-bin~=0.4.14",
   "python-slugify==8.0.4",
   "redis==7.4.0",
