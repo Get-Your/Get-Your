@@ -141,9 +141,6 @@
       // 1. Program Selection Interactions
       $('.program-card').on('click', function () {
         const $card = $(this)
-        const programName = $card.data('program-name')
-        const label = $card.data('label')
-        const requirement = $card.data('req')
     
         // Reset all active classes
         $('.program-card').removeClass('active-ami30 active-ami60')
@@ -156,9 +153,9 @@
         }
     
         // Check the matching hidden radio button
-        $(`#radio-${programName}`).prop('checked', true)
+        $(`#radio-${$card.data('program-name')}`).prop('checked', true)
     
-        $('#required-doc-text').text(`{% translate "Please upload proof of enrollment for " %} ${label}. ${requirement}`)
+        $('#required-doc-text').text(`{% translate "Please upload proof of enrollment for " %} ${$card.data('label')}. ${$card.data('req')}`)
     
         // Unlock Step 2 with smooth fade effect
         $('#step-upload').removeClass('disabled').css('opacity', '1')
