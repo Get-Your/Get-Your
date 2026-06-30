@@ -140,28 +140,28 @@
       // 1. Program Selection Interactions
       $('.program-card').on('click', function () {
         const $card = $(this)
-
+    
         // Reset all active classes
         $('.program-card').removeClass('active-ami30 active-ami60')
-
+    
         // Apply specific active styling class depending on category selected
         if ($card.data('category') === 'ami30') {
           $card.addClass('active-ami30')
         } else {
           $card.addClass('active-ami60')
         }
-
+    
         // Check the matching hidden radio button
         $(`#radio-${$card.data('program-name')}`).prop('checked', true)
-
+    
         $('#required-doc-text').text(`{% translate "Please upload proof of enrollment for " %} ${$card.data('label')}. ${$card.data('req')}`)
-
+    
         // Unlock Step 2 with smooth fade effect
         $('#step-upload').removeClass('disabled').css('opacity', '1')
-
+    
         validateForm()
       })
-
+    
       // 2. File Input Interactions
       $('#id_document').on('change', function () {
         if (!this.files[0]) {
@@ -185,20 +185,20 @@
         }
         // File is valid
         $('#file-error-feedback').removeClass('d-block')
-        $('#selected-file-name').text(fithis.files[0]le.name)
+        $('#selected-file-name').text(this.files[0].name)
         validateForm()
       })
-
+    
       function clearFileSelection() {
         $('#id_document').val('')
         $('#selected-file-name').text('')
         validateForm()
       }
-
+    
       function showFileError(msg) {
         $('#file-error-feedback').text(msg).addClass('d-block')
       }
-
+    
       // 3. Workflow Validation State Controller
       function validateForm() {
         const isProgramSelected = $('input[name="selected_program"]:checked').length > 0
@@ -209,7 +209,7 @@
           $('#btn-submit').prop('disabled', true)
         }
       }
-
+    
       // 4. Reset Button Action
       $('#btn-reset').on('click', function () {
         // Clear card active highlights
