@@ -66,7 +66,7 @@
           <div class="row">
             {% for program in ami30s %}
               <div class="col-md-4">
-                <div class="program-card text-center" data-program-id="{{ program.id }}" data-category="ami30" data-label="{{ program.friendly_name }}" data-req="{{ program.friendly_description }}">
+                <div class="program-card text-center" data-program-name="{{ program.program_name }}" data-category="ami30" data-label="{{ program.friendly_name }}" data-req="{{ program.friendly_description }}">
                   <div class="fs-1 text-success mb-2">
                     <i class="bi {{ program.bi_icon }}"></i>
                   </div>
@@ -84,7 +84,7 @@
           <div class="row">
             {% for program in ami60s %}
               <div class="col-md-6">
-                <div class="program-card text-center" data-program-id="{{ program.id }}" data-category="ami60" data-label="{{ program.friendly_name }}" data-req="{{ program.friendly_description }}">
+                <div class="program-card text-center" data-program-name="{{ program.program_name }}" data-category="ami60" data-label="{{ program.friendly_name }}" data-req="{{ program.friendly_description }}">
                   <div class="fs-1 text-primary mb-2">
                     <i class="bi {{ program.bi_icon }}"></i>
                   </div>
@@ -138,21 +138,10 @@
 {% block inline_javascript %}
   <script>
     $(function () {
-      const $form = $('#eligibility-programs-workflow-form')
-      const $fileInput = $('#id_document')
-      const $selectedFileName = $('#selected-file-name')
-      const $clearFileBtn = $('#btn-clear-file')
-      const $submitBtn = $('#btn-submit')
-      const $resetBtn = $('#btn-reset')
-      const $stepUpload = $('#step-upload')
-      const $requiredDocText = $('#required-doc-text')
-      const $fileErrorFeedback = $('#file-error-feedback')
-    
       // 1. Program Selection Interactions
       $('.program-card').on('click', function () {
         const $card = $(this)
-        const programId = $card.data('program-id')
-        const category = $card.data('category')
+        const programName = $card.data('program-name')
         const label = $card.data('label')
         const requirement = $card.data('req')
     
@@ -160,23 +149,25 @@
         $('.program-card').removeClass('active-ami30 active-ami60')
     
         // Apply specific active styling class depending on category selected
-        if (category === 'ami30') {
+        if ($card.data('category') === 'ami30') {
           $card.addClass('active-ami30')
         } else {
           $card.addClass('active-ami60')
         }
-        // Check the matching hidden radio button
-        $(`#radio-${programId}`).prop('checked', true)
     
-        $requiredDocText.text(`{% translate "Please upload proof of enrollment for " %} ${label}. ${requirement}`)
+        // Check the matching hidden radio button
+        $(`#radio-${programName}`).prop('checked', true)
+    
+        $('#required-doc-text').text(`{% translate "Please upload proof of enrollment for " %} ${label}. ${requirement}`)
+    
         // Unlock Step 2 with smooth fade effect
-        $stepUpload.removeClass('disabled').css('opacity', '1')
+        $('#step-upload').removeClass('disabled').css('opacity', '1')
     
         validateForm()
       })
     
       // 2. Drag & Drop and File Input Interactions
-      $fileInput.on('change', function () {
+      $('#id_document').on('change', function () {
         handleFileSelection(this.files[0])
       })
     
@@ -201,44 +192,47 @@
           return
         }
         // File is valid
-        $fileErrorFeedback.removeClass('d-block')
-        $selectedFileName.text(file.name)
+        $('#file-error-feedback').removeClass('d-block')
+        $('#selected-file-name').text(file.name)
         validateForm()
       }
+    
       function clearFileSelection() {
-        $fileInput.val('')
-        $selectedFileName.text('')
+        $('#id_document').val('')
+        $('#selected-file-name').text('')
         validateForm()
       }
+    
       function showFileError(msg) {
-        $fileErrorFeedback.text(msg).addClass('d-block')
+        $('#file-error-feedback').text(msg).addClass('d-block')
       }
     
       // 3. Workflow Validation State Controller
       function validateForm() {
         const isProgramSelected = $('input[name="selected_program"]:checked').length > 0
-        const isFileUploaded = $fileInput.val() !== ''
+        const isFileUploaded = $('#id_document').val() !== ''
         if (isProgramSelected && isFileUploaded) {
-          $submitBtn.prop('disabled', false)
+          $('#btn-submit').prop('disabled', false)
         } else {
-          $submitBtn.prop('disabled', true)
+          $('#btn-submit').prop('disabled', true)
         }
       }
-      $clearFileBtn.on('click', function (e) {
+    
+      $('#btn-clear-file').on('click', function (e) {
         e.preventDefault()
         e.stopPropagation()
         clearFileSelection()
       })
     
       // 4. Reset Button Action
-      $resetBtn.on('click', function () {
+      $('#btn-reset').on('click', function () {
         // Clear card active highlights
         $('.program-card').removeClass('active-ami30 active-ami60')
         // Uncheck radio buttons
         $('input[name="selected_program"]').prop('checked', false)
         // Clear file input
         clearFileSelection()
-        $fileErrorFeedback.removeClass('d-block')
+        $('#file-error-feedback').removeClass('d-block')
         // Lock and fade out Step 2
         $stepUpload.addClass('disabled').css('opacity', '0.5')
         $requiredDocText.text("{% translate 'Please select a program to view the document requirements.' %}")
