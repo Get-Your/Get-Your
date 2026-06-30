@@ -8,7 +8,7 @@ from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView
 from drf_spectacular.views import SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
-from dashboard.views import dashboard
+from dashboard.views import dashboard, program_form, view_image
 from app.views import EligibilityProgramsView
 
 urlpatterns = [
@@ -29,13 +29,19 @@ urlpatterns = [
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 
     path(
-        'dashboard',
+        'dashboard/<int:pk>/',
         dashboard,
         name='dashboard',
         kwargs={'allow_direct_user': True},
     ),
+     path(
+         'dashboard/<int:pk>/view_uploaded_file/<path:image_name>',
+         view_image,
+         name='view_image',
+         kwargs={'allow_direct_user': True},
+     ),
     path(
-        'eligibility_form',
+        'eligibility_form/<int:pk>/',
         EligibilityProgramsView.as_view(),
         name='eligibility_form',
         kwargs={'allow_direct_user': True},
