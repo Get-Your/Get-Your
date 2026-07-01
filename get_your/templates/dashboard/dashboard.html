@@ -2,6 +2,43 @@
 {% load static i18n %}
 
 {% block title %}Dashboard - Get FoCo{% endblock %}
+{% block css %}
+  {{ block.super }}
+  <style>
+    .apply-button {
+        &:hover {
+          box-shadow: none;
+        }
+        box-shadow: 3px 3px 1px rgba(0,0,0,0.3);
+    }
+    
+    #dashboard-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    }
+    
+    .iq-program-card {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 1.25rem;
+    transition: var(--survey-transition);
+    position: relative;
+    height: 100%;
+    background: #fff;
+    }
+    .iq-program-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+    border-color: #ced4da;
+    }
+    
+    @media screen and (min-width: 768px) {
+        .column-border {
+        border-right: 1px solid #dee2e6;
+        }
+    }
+  </style>
+{% endblock %}
 
 {% block content %}
     <div id="dashboard-container">
@@ -18,7 +55,7 @@
             <div class="mb-3 row g-3">
                 {% for program in all_available_programs %}
                 <div class="col-md-4">
-                    <div class="program-card d-flex flex-column justify-content-start align-items-center" data-program-id="{{ program.id }}">
+                    <div class="iq-program-card d-flex flex-column justify-content-start align-items-center" data-program-id="{{ program.id }}">
                         <div class="mb-2">
                             {% if program.id in all_user_programs.enrolled %}
                                 {% if program.id in all_user_programs.renewals_needed %}
@@ -46,7 +83,7 @@
             </div>
         </div>
         <div class="mb-3 px-3 py-2 border rounded dashboard-item shadow-sm">
-            <h2 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom">{% translate 'Eligibility Information' %}</h2>
+            <h2 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom text-center text-md-start">{% translate 'Eligibility Information' %}</h2>
             <div class="mb-3 row g-3">
                 <div class="col-12 col-md-6 column-border">
                     <div class="p-3 d-flex flex-column justify-content-center align-items-center">
@@ -72,11 +109,11 @@
             </div>
             <hr>
             <div class="text-center text-md-start">
-                <a class="btn btn-sm btn-outline-primary shadow-sm" href="{% url 'program_form' pk=user.pk %}">Edit Eligibility Details</a>
+                <a class="btn btn-sm btn-outline-primary shadow-sm" href="{% url 'eligibility_form' %}">Edit Eligibility Details</a>
             </div>
         </div>
         <div class="mb-3 px-3 py-2 border rounded dashboard-item shadow-sm">
-            <h2 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom">{% translate 'Account Information' %}</h2>
+            <h2 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom text-center text-md-start">{% translate 'Account Information' %}</h2>
             <div class="mb-3 row g-3">
                 <div class="col-md-4 column-border">
                     <div class="d-flex flex-column justify-content-center align-items-center">
@@ -85,7 +122,7 @@
                         </div>
                         <p class="mb-0">{{ user.full_name }}</p>
                         <p class="mb-0">{{ user.email }}</p>
-                        <p>{{ user.phone_number }}</p>
+                        <p id="phone-number">{{ user.phone_number }}</p>
                     </div>
                 </div>
                 <div class="col-md-4 column-border">
@@ -177,7 +214,11 @@
     </div>
     <script type="module">
         $(function() {
-            $('.program-card').on('click', '.apply-button', function() {
+            var numberWithoutOne = $('#phone-number').text().replace('+1', ''),
+                formattedNumber = numberWithoutOne.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+            $('#phone-number').text(!formattedNumber[2] ? formattedNumber[1] : '(' + formattedNumber[1] + ') ' + formattedNumber[2] + (formattedNumber[3] ? '-' + formattedNumber[3] : ''));
+            
+            $('.iq-program-card').on('click', '.apply-button', function() {
                 let programId = $(this).data('programId');
                 $.ajax({
                     url: '/dashboard/' + {{ user.id }} + '/apply_for_program/',
