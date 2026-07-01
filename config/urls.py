@@ -35,7 +35,7 @@ urlpatterns = [
         kwargs={'allow_direct_user': True},
     ),
     path(
-        'dashboard/view_uploaded_file/<path:image_name>',
+        'dashboard/<int:pk>/view_uploaded_file/<path:image_name>',
         view_image,
         name='view_image',
         kwargs={'allow_direct_user': True},
