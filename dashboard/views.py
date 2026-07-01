@@ -38,9 +38,9 @@ from .forms import UserForm, SameAddressForm, HouseholdForm, AddressFormSet, Hou
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
 
-@login_required(redirect_field_name='auth_next')
-def dashboard(request, pk, **kwargs):
-    user = get_object_or_404(User.objects.prefetch_related('householdmembers'), pk=pk)
+@login_required()
+def dashboard(request, **kwargs):
+    user = get_object_or_404(User.objects.prefetch_related('householdmembers'), pk=request.user.id)
 
     return render(
             request,
@@ -51,9 +51,9 @@ def dashboard(request, pk, **kwargs):
             },
         )
 
-@login_required(redirect_field_name='auth_next')
-def program_form(request, pk, **kwargs):
-    user = get_object_or_404(User.objects.prefetch_related('householdmembers'), pk=pk)
+@login_required()
+def program_form(request, **kwargs):
+    user = get_object_or_404(User.objects.prefetch_related('householdmembers'), pk=request.user.id)
 
     initial_address_queryset = AddressRef.objects.none()
 
@@ -165,7 +165,7 @@ def program_form(request, pk, **kwargs):
         },
     )
 
-@login_required(redirect_field_name='auth_next')
+@login_required()
 def view_image(request, pk, image_name, **kwargs):
     householdmember_obj = HouseholdMembers.objects.get(pk=pk)
     file = default_storage.open(image_name)

@@ -29,19 +29,19 @@ urlpatterns = [
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 
     path(
-        'dashboard/<int:pk>/',
+        'dashboard/',
         dashboard,
         name='dashboard',
         kwargs={'allow_direct_user': True},
     ),
-     path(
-         'dashboard/<int:pk>/view_uploaded_file/<path:image_name>',
-         view_image,
-         name='view_image',
-         kwargs={'allow_direct_user': True},
+    path(
+        'dashboard/view_uploaded_file/<path:image_name>',
+        view_image,
+        name='view_image',
+        kwargs={'allow_direct_user': True},
     ),
     path(
-        'program_form/<int:pk>/',
+        'program_form/',
         program_form,
         name='program_form',
         kwargs={'allow_direct_user': True},
