@@ -13,13 +13,13 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   # dependencies for building Python packages
   build-essential \
   # psycopg dependencies
-  libpq-dev
-
+  libpq-dev \
+  libmagic-dev
 
 # Requirements are installed here to ensure they will be cached.
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml,relabel=shared \
     uv sync --locked --no-install-project --no-dev
 COPY . ${APP_HOME}
 

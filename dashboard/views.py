@@ -113,7 +113,7 @@ def apply_for_program(request, pk):
 
 @login_required(redirect_field_name='auth_next')
 def program_form(request, pk, **kwargs):
-    user = User.objects.prefetch_related('householdmembers').get(pk=pk)
+    user = get_object_or_404(User.objects.prefetch_related('householdmembers'), pk=pk)
 
     initial_address_queryset = AddressRef.objects.none()
 
@@ -232,7 +232,7 @@ def view_image(request, pk, image_name, **kwargs):
     blob_data = b''
     for chunk in file.chunks():
         blob_data += chunk
-    
+
     return render(
         request,
         'dashboard/view_image.html',
