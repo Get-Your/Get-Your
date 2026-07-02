@@ -19,18 +19,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
 import json
+import pendulum
 import base64
 import logging
 
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render, redirect, reverse, get_object_or_404
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage
 
 from get_your.users.models import User
-from ref.models import AddressRef
-from app.models import HouseholdMembers
+from ref.models import AddressRef, IQProgramRef
+from app.models import HouseholdMembers, IQProgram
 from monitor.wrappers import LoggerWrapper
 
 from .forms import UserForm, SameAddressForm, HouseholdForm, AddressFormSet, HouseholdMembersFormSet
@@ -40,16 +42,74 @@ log = LoggerWrapper(logging.getLogger(__name__))
 
 @login_required(redirect_field_name='auth_next')
 def dashboard(request, pk, **kwargs):
-    user = get_object_or_404(User.objects.prefetch_related('householdmembers'), pk=pk)
+    user = get_object_or_404(User.objects.prefetch_related(
+        'householdmembers',
+        'iq_programs',
+        'eligibility_files'
+    ), pk=pk)
+
+    user_eligibility_record = user.eligibility_files.latest('created_at')
+    one_year_ago = pendulum.now().subtract(years=1)
+
+    all_available_programs = IQProgramRef.objects.filter(is_active=True).order_by('friendly_name')
+    user_programs_pending_ids = list(user.iq_programs.filter(
+        applied_at__isnull=False,
+        enrolled_at__isnull=True
+    ).values_list(
+        'program_id',
+        flat=True
+    ))
+
+    user_program_ids = list(user.iq_programs.filter(
+        enrolled_at__isnull=False
+    ).values_list(
+        'program_id',flat=True
+    ))
+
+    user_program_renewal_ids = list(user.iq_programs.filter(
+        enrolled_at__lt=one_year_ago,
+        program__renewal_interval_year__isnull=False
+    ).values_list(
+        'program_id',flat=True
+    ))
+
+    all_user_programs = {
+        'pending': user_programs_pending_ids,
+        'enrolled': user_program_ids,
+        'renewals_needed': user_program_renewal_ids
+    }
 
     return render(
-            request,
-            'dashboard/dashboard.html',
-            {
-                'user': user,
-                "title": "Get FoCo Dashboard",
-            },
-        )
+        request,
+        'dashboard/dashboard.html',
+        {
+            'user': user,
+            'user_eligibility_record': user_eligibility_record,
+            'all_available_programs': all_available_programs,
+            'all_user_programs': all_user_programs,
+            "title": "Get FoCo Dashboard",
+        },
+    )
+
+@login_required(redirect_field_name='auth_next')
+def apply_for_program(request, pk):
+    data = json.loads(request.body)
+    program_id = data.get('programId')
+    user_id = request.user.id
+    
+    program, created = IQProgram.objects.get_or_create(
+        program_id=program_id,
+        user_id=user_id,
+        defaults={'applied_at': pendulum.now(), 'program_id': program_id, 'user_id': user_id}
+    )
+    # TODO: add error handling here?
+    if created:
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Successfully applied for {program.program.friendly_name}',
+            'programId': program_id
+        })
+
 
 @login_required(redirect_field_name='auth_next')
 def program_form(request, pk, **kwargs):
