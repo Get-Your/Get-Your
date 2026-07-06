@@ -33,17 +33,17 @@ urlpatterns = [
         dashboard,
         name='dashboard',
         kwargs={'allow_direct_user': True},
-     ),
+    ),
     path(
-        'dashboard/<int:pk>/apply_for_program/',
+        'dashboard/apply_for_program/',
         apply_for_program,
         name='apply_for_program_ajax',
-     ),
-     path(
-         'dashboard/<int:pk>/view_uploaded_file/<path:image_name>',
-         view_image,
-         name='view_image',
-         kwargs={'allow_direct_user': True},
+    ),
+    path(
+        'dashboard/<int:pk>/view_uploaded_file/<path:image_name>',
+        view_image,
+        name='view_image',
+        kwargs={'allow_direct_user': True},
     ),
     path(
         'program_form/',
