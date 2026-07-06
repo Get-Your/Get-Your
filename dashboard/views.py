@@ -91,7 +91,6 @@ def dashboard(request, **kwargs):
         },
     )
 
-@login_required()
 def apply_for_program(request):
     data = json.loads(request.body)
     program_id = data.get('programId')
