@@ -111,8 +111,8 @@ def apply_for_program(request):
 
 
 @login_required()
-def program_form(request, pk, **kwargs):
-    user = get_object_or_404(User.objects.prefetch_related('householdmembers'), pk=pk)
+def program_form(request, **kwargs):
+    user = get_object_or_404(User.objects.prefetch_related('householdmembers'), pk=request.user.id)
 
     initial_address_queryset = AddressRef.objects.none()
 
@@ -225,8 +225,8 @@ def program_form(request, pk, **kwargs):
     )
 
 @login_required()
-def view_image(request, pk, image_name, **kwargs):
-    householdmember_obj = HouseholdMembers.objects.get(pk=pk)
+def view_image(request, household_member_id, image_name, **kwargs):
+    householdmember_obj = HouseholdMembers.objects.get(pk=household_member_id)
     file = default_storage.open(image_name)
     blob_data = b''
     for chunk in file.chunks():

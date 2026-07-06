@@ -40,7 +40,7 @@ urlpatterns = [
         name='apply_for_program_ajax',
     ),
     path(
-        'dashboard/<int:pk>/view_uploaded_file/<path:image_name>',
+        'dashboard/<int:household_member_id>/view_uploaded_file/<path:image_name>',
         view_image,
         name='view_image',
         kwargs={'allow_direct_user': True},
