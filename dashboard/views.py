@@ -40,13 +40,13 @@ from .forms import UserForm, SameAddressForm, HouseholdForm, AddressFormSet, Hou
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
 
-@login_required(redirect_field_name='auth_next')
-def dashboard(request, pk, **kwargs):
+@login_required()
+def dashboard(request, **kwargs):
     user = get_object_or_404(User.objects.prefetch_related(
         'householdmembers',
         'iq_programs',
         'eligibility_files'
-    ), pk=pk)
+    ), pk=request.user.id)
 
     user_eligibility_record = user.eligibility_files.latest('created_at')
     one_year_ago = pendulum.now().subtract(years=1)
@@ -91,8 +91,8 @@ def dashboard(request, pk, **kwargs):
         },
     )
 
-@login_required(redirect_field_name='auth_next')
-def apply_for_program(request, pk):
+@login_required()
+def apply_for_program(request):
     data = json.loads(request.body)
     program_id = data.get('programId')
     user_id = request.user.id
@@ -111,7 +111,7 @@ def apply_for_program(request, pk):
         })
 
 
-@login_required(redirect_field_name='auth_next')
+@login_required()
 def program_form(request, pk, **kwargs):
     user = get_object_or_404(User.objects.prefetch_related('householdmembers'), pk=pk)
 
