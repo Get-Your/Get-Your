@@ -48,7 +48,7 @@
     {% if user.eligibility_address is None %}
       <div class="alert alert-warning shadow-sm">
         <p class="mb-0">
-          <i class="me-1 bi bi-exclamation-circle-fill"></i>There is no eligibility address on file. You have not completed your application! Access the <a href="{% url 'program_form' pk=user.pk %}">Program Form</a> to continue applying!
+          <i class="me-1 bi bi-exclamation-circle-fill"></i>There is no eligibility address on file. You have not completed your application! Access the <a href="{% url 'program_form' %}">Program Form</a> to continue applying!
         </p>
       </div>
     {% endif %}
@@ -168,7 +168,7 @@
       </div>
       <hr />
       <div class="text-center text-md-start">
-        <a class="btn btn-sm btn-outline-primary shadow-sm" href="{% url 'program_form' pk=user.pk %}">Edit Account Details</a>
+        <a class="btn btn-sm btn-outline-primary shadow-sm" href="{% url 'program_form' %}">Edit Account Details</a>
       </div>
     </div>
     <div class="px-3 py-2 border rounded dashboard-item shadow-sm">

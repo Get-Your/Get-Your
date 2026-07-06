@@ -169,7 +169,7 @@
                       {% endif %}
                       {% if field.name == 'identification_path' %}
                         <p class="my-1">
-                          Current file: <a href="{% url 'view_image' pk=householdmembers_form.instance.id image_name=householdmembers_form.instance.identification_path.name %}">{{ householdmembers_form.instance.identification_path.name }}</a>
+                          Current file: <a href="{% url 'view_image' household_member_id=householdmembers_form.instance.id image_name=householdmembers_form.instance.identification_path.name %}">{{ householdmembers_form.instance.identification_path.name }}</a>
                         </p>
                       {% endif %}
                       <ul class="mb-0 errorlist list-unstyled">

@@ -91,6 +91,7 @@ def dashboard(request, **kwargs):
         },
     )
 
+
 def apply_for_program(request):
     data = json.loads(request.body)
     program_id = data.get('programId')
@@ -107,7 +108,8 @@ def apply_for_program(request):
             'status': 'success',
             'message': f'Successfully applied for {program.program.friendly_name}',
             'programId': program_id
-        })
+        }
+    )
 
 
 @login_required()
