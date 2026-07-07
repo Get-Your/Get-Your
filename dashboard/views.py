@@ -94,7 +94,7 @@ def dashboard(request, **kwargs):
                 _("Thank you! Your feedback has been saved successfully!"),
             )
 
-            return redirect('dashboard', pk=request.user.id)
+            return redirect('dashboard')
 
         # if validation fails
         return render(
@@ -212,7 +212,7 @@ def program_form(request, **kwargs):
         if householdmembers_form_set.is_valid():
             householdmembers_form_set.save()
 
-            return redirect('dashboard', pk=user.id)
+            return redirect('dashboard')
 
         # if validation fails, return form with input
         return render(
