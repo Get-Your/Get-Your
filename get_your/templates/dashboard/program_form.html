@@ -1,214 +1,232 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
-{% block title %}Program Form - Get FoCo{% endblock %}
+{% block title %}
+  Program Form - Get FoCo
+{% endblock %}
 
 {% block content %}
-    <div class="my-3 card shadow-sm">
-        <div class="card-body">
-            <form action="{% url 'program_form' pk=user.pk %}" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ address_form_set.management_form }}
-                {{ householdmembers_form_set.management_form }}
-                <fieldset>
-                    <legend class="border-bottom">Account Information</legend>
-                    <div class="row">
-                        {% for field in user_form %}
-                            <div class="mb-3 col-12 col-md-6">
-                            {{ field.label_tag }}
-                            {{ field }}
-                            {% if field.help_text %}
-                                <div class="form-text">{{ field.help_text }}</div>
-                            {% endif %}
-                            <ul class="mb-0 errorlist list-unstyled">
-                                {% for error in field.errors %}
-                                  <li class="text-danger">{{ error }}</li>
-                                {% endfor %}
-                            </ul>
-                            </div>
+  <div class="my-3 card shadow-sm">
+    <div class="card-body">
+      <form action="{% url 'program_form' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ address_form_set.management_form }}
+        {{ householdmembers_form_set.management_form }}
+        <fieldset>
+          <legend class="border-bottom">Account Information</legend>
+          <div class="row">
+            {% for field in user_form %}
+              <div class="mb-3 col-12 col-md-6">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}
+                  <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                <ul class="mb-0 errorlist list-unstyled">
+                  {% for error in field.errors %}
+                    <li class="text-danger">{{ error }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+        {{ address_form_set.non_form_errors }}
+        {% for address_form in address_form_set %}
+          {{ address_form.non_field_errors }}
+          {% if forloop.counter0 == 0 %}
+            <fieldset id="home-address-information">
+              <legend class="border-bottom">Home Address Information</legend>
+              <div class="mb-3">
+                <label for="eligibility-address-autocomplete" class="mb-0 form-label">Enter an Address:</label>
+                <!-- Bootstrap classes style this wrapper -->
+                <div id="eligibility-address-autocomplete-container" class="position-relative shadow-sm">
+                  <!-- Google PlaceAutocompleteElement will be injected here -->
+                </div>
+                <p class="fw-light">
+                  <small>Address fields below <strong>(except Apt, Suite, etc)</strong> will be filled after selection</small>
+                </p>
+              </div>
+              <div class="row">
+                {% for field in address_form %}
+                  {% if not field.is_hidden %}
+                    <div class="mb-3 col-12 col-md-6">
+                      {{ field.label_tag }}
+                      {{ field }}
+                      {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                      {% endif %}
+                      <ul class="mb-0 errorlist list-unstyled">
+                        {% for error in field.errors %}
+                          <li class="text-danger">{{ error }}</li>
                         {% endfor %}
+                      </ul>
                     </div>
-                </fieldset>
-                {{ address_form_set.non_form_errors }}
-                {% for address_form in address_form_set %}
-                    {{ address_form.non_field_errors }}
-                    {% if forloop.counter0 == 0 %}
-                    <fieldset id="home-address-information">
-                        <legend class="border-bottom">Home Address Information</legend>
-                        <div class="mb-3">
-                            <label for="eligibility-address-autocomplete" class="mb-0 form-label">Enter an Address:</label>
-                            <!-- Bootstrap classes style this wrapper -->
-                            <div id="eligibility-address-autocomplete-container" class="position-relative shadow-sm">
-                                <!-- Google PlaceAutocompleteElement will be injected here -->
-                            </div>
-                            <p class="fw-light"><small>Address fields below <strong>(except Apt, Suite, etc)</strong> will be filled after selection</small></p>
-                        </div>
-                        <div class="row">
-                            {% for field in address_form %}
-                                {% if not field.is_hidden %}
-                                <div class="mb-3 col-12 col-md-6">
-                                {{ field.label_tag }}
-                                {{ field }}
-                                {% if field.help_text %}
-                                    <div class="form-text">{{ field.help_text }}</div>
-                                {% endif %}
-                                <ul class="mb-0 errorlist list-unstyled">
-                                    {% for error in field.errors %}
-                                      <li class="text-danger">{{ error }}</li>
-                                    {% endfor %}
-                                </ul>
-                                </div>
-                                {% else %}
-                                {{ field }}
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                        <div class="mb-3 col-12 col-md-6">
-                            <p class="mb-1">Is your mailing address the same as your home address?</p>
-                            {% for field in same_address_form %}
-                                {% for radio in same_address_form.mailing_address_same_as_home %}
-                                <div class="form-check">
-                                    {{ radio.tag }}
-                                    <label for="{{ radio.id_for_label }}" class="form-check-label">{{ radio.choice_label }}</label>
-                                </div>
-                                {% endfor %}
-                                {% if field.help_text %}
-                                    <div class="form-text">{{ field.help_text }}</div>
-                                {% endif %}
-                                <ul class="mb-0 errorlist list-unstyled">
-                                    {% for error in field.errors %}
-                                    <li class="text-danger">{{ error }}</li>
-                                    {% endfor %}
-                                </ul>
-                            {% endfor %}
-                        </div>
-                    </fieldset>
-                    {% else %}
-                    <fieldset id="mailing_address_information" class="d-none">
-                        <legend class="border-bottom">Mailing Address Information</legend>
-                        <div class="mb-3">
-                            <label for="mailing-address-autocomplete" class="mb-0 form-label">Enter an Address:</label>
-                            <!-- Bootstrap classes style this wrapper -->
-                            <div id="mailing-address-autocomplete-container" class="position-relative shadow-sm">
-                                <!-- Google PlaceAutocompleteElement will be injected here -->
-                            </div>
-                            <p class="fw-light"><small>Address fields below <strong>(except Apt, Suite, etc)</strong> will be filled after selection</small></p>
-                        </div>
-                        <div class="row">
-                            {% for field in address_form %}
-                                {% if not field.is_hidden %}
-                                <div class="mb-3 col-12 col-md-6">
-                                {{ field.label_tag }}
-                                {{ field }}
-                                {% if field.help_text %}
-                                    <div class="form-text">{{ field.help_text }}</div>
-                                {% endif %}
-                                <ul class="mb-0 errorlist list-unstyled">
-                                    {% for error in field.errors %}
-                                      <li class="text-danger">{{ error }}</li>
-                                    {% endfor %}
-                                </ul>
-                                </div>
-                                {% else %}
-                                {{ field }}
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    </fieldset>
-                    {% endif %}
+                  {% else %}
+                    {{ field }}
+                  {% endif %}
                 {% endfor %}
-                <fieldset>
-                    <legend class="border-bottom">Household Information</legend>
-                    <div class="row">
-                        {% for field in household_form %}
-                            {% if not field.is_hidden %}
-                            <div class="mb-3 col-12 col-md-6">
-                                    {{ field.label_tag }}
-                                    {{ field }}
-                                {% if field.help_text %}
-                                <div class="form-text">{{ field.help_text }}</div>
-                                {% endif %}
-                                <ul class="mb-0 errorlist list-unstyled">
-                                    {% for error in field.errors %}
-                                    <li class="text-danger">{{ error }}</li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            {% else %}
-                            {{ field }}
-                            {% endif %}
+              </div>
+              <div class="mb-3 col-12 col-md-6">
+                <p class="mb-1">Is your mailing address the same as your home address?</p>
+                {% for field in same_address_form %}
+                  {% for radio in same_address_form.mailing_address_same_as_home %}
+                    <div class="form-check">
+                      {{ radio.tag }}
+                      <label for="{{ radio.id_for_label }}" class="form-check-label">{{ radio.choice_label }}</label>
+                    </div>
+                  {% endfor %}
+                  {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                  {% endif %}
+                  <ul class="mb-0 errorlist list-unstyled">
+                    {% for error in field.errors %}
+                      <li class="text-danger">{{ error }}</li>
+                    {% endfor %}
+                  </ul>
+                {% endfor %}
+              </div>
+            </fieldset>
+          {% else %}
+            <fieldset id="mailing_address_information" class="d-none">
+              <legend class="border-bottom">Mailing Address Information</legend>
+              <div class="mb-3">
+                <label for="mailing-address-autocomplete" class="mb-0 form-label">Enter an Address:</label>
+                <!-- Bootstrap classes style this wrapper -->
+                <div id="mailing-address-autocomplete-container" class="position-relative shadow-sm">
+                  <!-- Google PlaceAutocompleteElement will be injected here -->
+                </div>
+                <p class="fw-light">
+                  <small>Address fields below <strong>(except Apt, Suite, etc)</strong> will be filled after selection</small>
+                </p>
+              </div>
+              <div class="row">
+                {% for field in address_form %}
+                  {% if not field.is_hidden %}
+                    <div class="mb-3 col-12 col-md-6">
+                      {{ field.label_tag }}
+                      {{ field }}
+                      {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                      {% endif %}
+                      <ul class="mb-0 errorlist list-unstyled">
+                        {% for error in field.errors %}
+                          <li class="text-danger">{{ error }}</li>
                         {% endfor %}
+                      </ul>
                     </div>
-                    <div class="mb-3 text-center">
-                        <div class="mb-2 py-1 alert alert-warning"><i class="me-1 bi bi-exclamation-circle-fill text-danger"></i>Please, add all household members below, including yourself.</div>
-                        <button id="add-family-member" type="button" class="btn btn-sm btn-outline-secondary shadow-sm">Add Family Member</button>
-                    </div>
-                    <div id="householdmembers-formset-wrapper" class="row">
-                        {% for householdmembers_form in householdmembers_form_set %}
-                        <div class="mb-3 col-12 col-md-6 formset">
-                            <div class="mb-2 d-flex justify-content-between align-items-center border-bottom fw-semibold"><p class="mb-0 pb-1">Family Member <span class="family-member-count">{{ householdmembers_form.index|add:1 }}</span></p><span role="button" class="d-none badge text-bg-danger remove-family-member">Remove</span></div>
-                            {{ householdmembers_form.id }}
-                            {% for field in householdmembers_form %}
-                                {% if not field.is_hidden %}
-                                    <div class="mb-3">
-                                        {{ field.label_tag }}
-                                        {{ field }}
-                                        {% if field.help_text %}
-                                        <div class="form-text">{{ field.help_text }}</div>
-                                        {% endif %}
-                                        {% if field.name == 'identification_path' %}
-                                            <p class="my-1">Current file: <a href="{% url 'view_image' pk=householdmembers_form.instance.id image_name=householdmembers_form.instance.identification_path.name %}">{{ householdmembers_form.instance.identification_path.name }}</a></p>
-                                        {% endif %}
-                                        <ul class="mb-0 errorlist list-unstyled">
-                                            {% for error in field.errors %}
-                                            <li class="text-danger">{{ error }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                {% else %}
-                                {{ field }}
-                                {% endif %}
-                            {% endfor %}
-                            <div class="d-none image-preview-wrapper">
-                                <p>File to be uploaded:</p>
-                            </div>    
-                        </div>
+                  {% else %}
+                    {{ field }}
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </fieldset>
+          {% endif %}
+        {% endfor %}
+        <fieldset>
+          <legend class="border-bottom">Household Information</legend>
+          <div class="row">
+            {% for field in household_form %}
+              {% if not field.is_hidden %}
+                <div class="mb-3 col-12 col-md-6">
+                  {{ field.label_tag }}
+                  {{ field }}
+                  {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                  {% endif %}
+                  <ul class="mb-0 errorlist list-unstyled">
+                    {% for error in field.errors %}
+                      <li class="text-danger">{{ error }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% else %}
+                {{ field }}
+              {% endif %}
+            {% endfor %}
+          </div>
+          <div class="mb-3 text-center">
+            <div class="mb-2 py-1 alert alert-warning">
+              <i class="me-1 bi bi-exclamation-circle-fill text-danger"></i>Please, add all household members below, including yourself.
+            </div>
+            <button id="add-family-member" type="button" class="btn btn-sm btn-outline-secondary shadow-sm">Add Family Member</button>
+          </div>
+          <div id="householdmembers-formset-wrapper" class="row">
+            {% for householdmembers_form in householdmembers_form_set %}
+              <div class="mb-3 col-12 col-md-6 formset">
+                <div class="mb-2 d-flex justify-content-between align-items-center border-bottom fw-semibold">
+                  <p class="mb-0 pb-1">
+                    Family Member <span class="family-member-count">{{ householdmembers_form.index|add:1 }}</span>
+                  </p><span role="button" class="d-none badge text-bg-danger remove-family-member">Remove</span>
+                </div>
+                {{ householdmembers_form.id }}
+                {% for field in householdmembers_form %}
+                  {% if not field.is_hidden %}
+                    <div class="mb-3">
+                      {{ field.label_tag }}
+                      {{ field }}
+                      {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                      {% endif %}
+                      {% if field.name == 'identification_path' %}
+                        <p class="my-1">
+                          Current file: <a href="{% url 'view_image' household_member_id=householdmembers_form.instance.id image_name=householdmembers_form.instance.identification_path.name %}">{{ householdmembers_form.instance.identification_path.name }}</a>
+                        </p>
+                      {% endif %}
+                      <ul class="mb-0 errorlist list-unstyled">
+                        {% for error in field.errors %}
+                          <li class="text-danger">{{ error }}</li>
                         {% endfor %}
+                      </ul>
                     </div>
-                    <div id="empty-form-template" class="d-none">
-                        <div class="mb-3 col-12 col-md-6 formset">
-                            <div class="mb-2 d-flex justify-content-between align-items-center border-bottom fw-semibold"><p class="mb-0 pb-1">Family Member <span class="family-member-count">{{ householdmembers_form.index|add:1 }}</span></p><span role="button" class="badge text-bg-danger remove-family-member">Remove</span></div>
-                            {% for field in householdmembers_form_set.empty_form %}
-                                {% if not field.is_hidden %}
-                                    <div class="mb-3">
-                                        {{ field.label_tag }}
-                                        {{ field }}
-                                        {% if field.help_text %}
-                                        <div class="form-text">{{ field.help_text }}</div>
-                                        {% endif %}
-                                        <ul class="mb-0 errorlist list-unstyled">
-                                            {% for error in field.errors %}
-                                            <li class="text-danger">{{ error }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                {% else %}
-                                {{ field }}
-                                {% endif %}
-                            {% endfor %}
-                            <div class="d-none image-preview-wrapper">
-                                <p>File to be uploaded:</p>
-                            </div>    
-                        </div>
-                    </div>
-                </fieldset>
-                <hr class="my-3">
-                <button class="me-2 btn btn-primary" type="submit">Save Information</button>
-                <a href="{% url 'dashboard' pk=user.pk %}">Cancel</a>
-            </form>
-        </div>
+                  {% else %}
+                    {{ field }}
+                  {% endif %}
+                {% endfor %}
+                <div class="d-none image-preview-wrapper">
+                  <p>File to be uploaded:</p>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          <div id="empty-form-template" class="d-none">
+            <div class="mb-3 col-12 col-md-6 formset">
+              <div class="mb-2 d-flex justify-content-between align-items-center border-bottom fw-semibold">
+                <p class="mb-0 pb-1">
+                  Family Member <span class="family-member-count">{{ householdmembers_form.index|add:1 }}</span>
+                </p><span role="button" class="badge text-bg-danger remove-family-member">Remove</span>
+              </div>
+              {% for field in householdmembers_form_set.empty_form %}
+                {% if not field.is_hidden %}
+                  <div class="mb-3">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                      <div class="form-text">{{ field.help_text }}</div>
+                    {% endif %}
+                    <ul class="mb-0 errorlist list-unstyled">
+                      {% for error in field.errors %}
+                        <li class="text-danger">{{ error }}</li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                {% else %}
+                  {{ field }}
+                {% endif %}
+              {% endfor %}
+              <div class="d-none image-preview-wrapper">
+                <p>File to be uploaded:</p>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+        <hr class="my-3" />
+        <button class="me-2 btn btn-primary" type="submit">Save Information</button>
+        <a href="{% url 'dashboard' %}">Cancel</a>
+      </form>
     </div>
+  </div>
 
-    <script type="module">
+  <script type="module">
         let formIndex = {{ householdmembers_form_set.total_form_count|add:"-1" }},
             maxFormCount = $('#id_householdmembers-MAX_NUM_FORMS').val(),
             formsetWrapper = $('#householdmembers-formset-wrapper');
@@ -217,10 +235,10 @@
         if (formIndex > 0) {
             formsetWrapper.children('.formset').not('.formset:first').find('.remove-family-member').removeClass('d-none');
         }
-        
+
         // hide native Django DELETE checkboxes
         $('input[id$=DELETE]').parent().addClass('d-none');
-        
+
         // add formset
         $('#add-family-member').on('click', function() {
             // increment the form index
@@ -234,12 +252,12 @@
                         name = $(this).attr('name').replace(searchString, formIndex),
                         id = $(this).attr('id').replace(searchString, formIndex),
                         label = $(this).siblings('label');
-                    
+
                     // update input label with new form index
                     if (label.length) {
                         label.attr('for', label.attr('for').replace(searchString, formIndex));
                     }
-                    
+
                     // set attributes and clear the value of the input field
                     $(this).attr({
                         'name': name,
@@ -250,7 +268,7 @@
                     $(this).parent('div').parent('.formset').find('.family-member-count').text(formIndex+1);
                 }).end().find('input[name$=-id]').val('').end());
 
-                // set user_id 
+                // set user_id
                 $('#id_householdmembers-' + formIndex + '-user').val({{ request.user.id }});
 
                 // update the management form's TOTAL_FORMS count
@@ -262,7 +280,7 @@
         formsetWrapper.on('click', '.remove-family-member', function () {
             let parentFormset = $(this).parent().parent('.formset'),
                 idHiddenInput = parentFormset.find('input[name$=-id]');
-            
+
             if (idHiddenInput.val()) {
                 // if the id field has a value, check DELETE checkbox and hide form
                 // this will make sure the record is deleted from the DB
@@ -286,7 +304,7 @@
                 img = $('<img/>');
 
             pdfIcon.addClass('bi bi-filetype-pdf');
-            
+
             if (file && file.type.startsWith('image/')) {
                 if (imageWrap.find('i').length) {
                     imageWrap.find('i').remove();
@@ -299,7 +317,7 @@
                     } else {
                         img.prop('src', e.target.result);
                         img.addClass('preview-image');
-    
+
                         imageWrap.append(img);
                         imageWrap.removeClass('d-none');
                     }
@@ -348,12 +366,12 @@
         async function autoCompleteInit(wrapperElementId, formId) {
             // Request needed libraries.
             const { PlaceAutocompleteElement } = await google.maps.importLibrary('places');
-            
+
             // Create the input HTML element, and append it.
             const placeAutocomplete = new PlaceAutocompleteElement();
             placeAutocomplete.setAttribute('id', wrapperElementId.replace('-container', ''))
             document.getElementById(wrapperElementId).appendChild(placeAutocomplete);
-        
+
             // Add the gmp-select listener, and display the results.
             placeAutocomplete.addEventListener(
                 'gmp-select',
@@ -370,23 +388,23 @@
                             case 'street_number':
                                 document.getElementById(formId + '-address1').value = component.longText
                                 break;
-                            
+
                             case 'route':
                                 document.getElementById(formId + '-address1').value += ' ' + component.shortText
                                 break;
-                            
+
                             case 'locality':
                                 document.getElementById(formId + '-city').value = component.longText
                                 break;
-                            
+
                             case 'administrative_area_level_1':
                                 document.getElementById(formId + '-state').value = component.shortText
                                 break;
-                            
+
                             case 'postal_code':
                                 document.getElementById(formId + '-zip_code').value = component.longText
                                 break;
-                            
+
                             default:
                                 break;
                         }
@@ -397,7 +415,7 @@
                 }
             );
         }
-        
+
         void autoCompleteInit('eligibility-address-autocomplete-container', 'id_address-0');
     </script>
 {% endblock %}

@@ -42,13 +42,13 @@ from .forms import FeedbackForm, UserForm, SameAddressForm, HouseholdForm, Addre
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
 
-@login_required(redirect_field_name='auth_next')
-def dashboard(request, pk, **kwargs):
+@login_required()
+def dashboard(request, **kwargs):
     user = get_object_or_404(User.objects.prefetch_related(
         'householdmembers',
         'iq_programs',
         'eligibility_files'
-    ), pk=pk)
+    ), pk=request.user.id)
 
     user_eligibility_record = user.eligibility_files.latest('created_at')
     one_year_ago = pendulum.now().subtract(years=1)
@@ -124,12 +124,12 @@ def dashboard(request, pk, **kwargs):
         },
     )
 
-@login_required(redirect_field_name='auth_next')
-def apply_for_program(request, pk):
+
+def apply_for_program(request):
     data = json.loads(request.body)
     program_id = data.get('programId')
     user_id = request.user.id
-    
+
     program, created = IQProgram.objects.get_or_create(
         program_id=program_id,
         user_id=user_id,
@@ -141,12 +141,13 @@ def apply_for_program(request, pk):
             'status': 'success',
             'message': f'Successfully applied for {program.program.friendly_name}',
             'programId': program_id
-        })
+        }
+    )
 
 
-@login_required(redirect_field_name='auth_next')
-def program_form(request, pk, **kwargs):
-    user = get_object_or_404(User.objects.prefetch_related('householdmembers'), pk=pk)
+@login_required()
+def program_form(request, **kwargs):
+    user = get_object_or_404(User.objects.prefetch_related('householdmembers'), pk=request.user.id)
 
     initial_address_queryset = AddressRef.objects.none()
 
@@ -258,9 +259,9 @@ def program_form(request, pk, **kwargs):
         },
     )
 
-@login_required(redirect_field_name='auth_next')
-def view_image(request, pk, image_name, **kwargs):
-    householdmember_obj = HouseholdMembers.objects.get(pk=pk)
+@login_required()
+def view_image(request, household_member_id, image_name, **kwargs):
+    householdmember_obj = HouseholdMembers.objects.get(pk=household_member_id)
     file = default_storage.open(image_name)
     blob_data = b''
     for chunk in file.chunks():
