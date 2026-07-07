@@ -23,19 +23,21 @@ import pendulum
 import base64
 import logging
 
+from django.contrib import messages
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage
+from django.utils.translation import gettext_lazy as _
 
 from get_your.users.models import User
 from ref.models import AddressRef, IQProgramRef
 from app.models import HouseholdMembers, IQProgram
 from monitor.wrappers import LoggerWrapper
 
-from .forms import UserForm, SameAddressForm, HouseholdForm, AddressFormSet, HouseholdMembersFormSet
+from .forms import FeedbackForm, UserForm, SameAddressForm, HouseholdForm, AddressFormSet, HouseholdMembersFormSet
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -79,6 +81,36 @@ def dashboard(request, **kwargs):
         'renewals_needed': user_program_renewal_ids
     }
 
+    feedback_form = FeedbackForm()
+
+    if request.method == 'POST':
+        feedback_form = FeedbackForm(request.POST)
+
+        if feedback_form.is_valid():
+            feedback_form.save()
+
+            messages.success(
+                request,
+                _("Thank you! Your feedback has been saved successfully!"),
+            )
+
+            return redirect('dashboard', pk=request.user.id)
+
+        # if validation fails
+        return render(
+            request,
+            'dashboard/dashboard.html',
+            {
+                'user': user,
+                'user_eligibility_record': user_eligibility_record,
+                'all_available_programs': all_available_programs,
+                'all_user_programs': all_user_programs,
+                'title': 'Get FoCo Dashboard',
+                'feedback_form': feedback_form
+            },
+        )
+
+    # GET request
     return render(
         request,
         'dashboard/dashboard.html',
@@ -87,7 +119,8 @@ def dashboard(request, **kwargs):
             'user_eligibility_record': user_eligibility_record,
             'all_available_programs': all_available_programs,
             'all_user_programs': all_user_programs,
-            "title": "Get FoCo Dashboard",
+            'title': 'Get FoCo Dashboard',
+            'feedback_form': feedback_form
         },
     )
 

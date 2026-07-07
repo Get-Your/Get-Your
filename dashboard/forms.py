@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django import forms
 
+from .models import Feedback
 from ref.models import AddressRef
 from app.models import HouseholdMembers
 from get_your.users.models import User
@@ -27,6 +28,20 @@ from app.backend.address import validate_usps
 from app.constants import supported_content_types
 
 from phonenumber_field.widgets import RegionalPhoneNumberWidget
+
+
+class FeedbackForm(forms.ModelForm):
+    class Meta:
+        model = Feedback
+        fields = ['star_rating', 'feedback_comments']
+        labels = {
+            'star_rating': '',
+            'feedback_comments': "How can we do better? Don't worry, your feedback is anonymous!",
+        }
+        widgets = {
+            'star_rating': forms.RadioSelect(attrs={'class':'form-check-input shadow-sm'}),
+            'feedback_comments': forms.Textarea(attrs={'class': 'form-control shadow-sm'})
+        }
 
 class UserForm(forms.ModelForm):
     class Meta:
