@@ -25,6 +25,14 @@ from app.models import TimeStampedModel
 class Feedback(TimeStampedModel):
     star_rating = models.CharField(
         max_length=1,
+        choices=(
+            ('1', 'Very Poor'),
+            ('2', 'Poor'),
+            ('3', 'Neutral'),
+            ('4', 'Good'),
+            ('5', 'Great'),
+        ),
+        default=5
     )
     feedback_comments = models.TextField(
         max_length=500,
