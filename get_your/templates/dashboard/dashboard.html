@@ -168,12 +168,12 @@
       </div>
       <hr />
       <div class="text-center text-md-start">
-        <a class="btn btn-sm btn-outline-primary shadow-sm" href="{% url 'program_form' pk=user.pk %}">Edit Account Details</a>
+        <a class="btn btn-sm btn-outline-primary shadow-sm" href="{% url 'program_form' %}">Edit Account Details</a>
       </div>
     </div>
     <div class="px-3 py-2 border rounded dashboard-item shadow-sm">
       <h2 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom">{% translate 'Submit Feedback?' %}</h2>
-      <form action="{% url 'dashboard' pk=user.pk %}" method="post">
+      <form action="{% url 'dashboard' %}" method="post">
         {% csrf_token %}
         <div class="d-flex justify-content-center align-items-center">
           <fieldset>
