@@ -43,9 +43,9 @@
     {% block body %}
       <div class="mb-1">
         <nav class="navbar navbar-expand-md navbar-light bg-light">
-          <div class="container-fluid">
+          <div class="container">
             <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
-            <a class="navbar-brand" href="{% url 'home' %}">
+            <a class="navbar-brand" href="{% url 'landing_page' %}">
               <img src="{% static 'images/citylogoblue.png' %}" alt="City of Fort Collins Logo" height="30" class="d-inline-block align-text-top" />
               Get FoCo
             </a>
@@ -58,10 +58,10 @@
                   <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">{% translate 'About' %}</a>
                   <ul class="dropdown-menu">
                     <li>
-                      <a class="dropdown-item" href="#">{% translate 'Programs' %}</a>
+                      <a class="dropdown-item" href="{% url 'landing_page' %}#how-it-works">{% translate 'How It Works' %}</a>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="#">{% translate 'How It Works' %}</a>
+                      <a class="dropdown-item" href="{% url 'landing_page' %}#available-programs">{% translate 'Programs' %}</a>
                     </li>
                     <li>
                       <a class="dropdown-item" href="#">{% translate 'Something Else Here' %}</a>
@@ -124,5 +124,10 @@
                                                                                                                             </script>
       {% endcomment %}
     {% endblock %}
+    <footer class="py-3 text-center bg-light border-top">
+      <p class="mb-1">Service brought to you by the City of Fort Collins</p>
+      <a href="#" class="mb-4 d-block">Privacy Policy</a>
+      Get FoCo - Copyright<sup><i class="me-1 bi bi-c-circle"></i></sup>{% now 'Y' %}
+    </footer>
   </body>
 </html>
