@@ -30,11 +30,20 @@ from django.utils.translation import gettext_lazy as _
 from app.backend import file_validation
 from app.models import EligibilityProgram
 from monitor.wrappers import LoggerWrapper
-from ref.models import EligibilityProgramRef
+from ref.models import EligibilityProgramRef, IQProgramRef
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
 
+def landing_page(request, **kwargs):
+    return render(
+        request,
+        'landing/index.html',
+        {
+            'title': 'Landing Page',
+            "iq_programs": IQProgramRef.objects.filter(is_active=True).order_by('friendly_name'),
+        }
+    )
 class EligibilityProgramsView(View, LoginRequiredMixin):
     """
     View handling the program eligibility survey and verification document upload.
