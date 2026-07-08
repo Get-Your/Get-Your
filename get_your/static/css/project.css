@@ -1,5 +1,10 @@
 /* These styles are generated from project.scss. */
 
+body {
+  background: #C1D8E7;
+  background: linear-gradient(to bottom right, rgba(193, 216, 231, 1) 0%, rgba(70, 132, 188, 1) 65%, rgba(0, 70, 127, 1) 100%);
+}
+
 .alert-debug {
   color: black;
   background-color: white;
@@ -39,4 +44,8 @@ gmp-place-autocomplete::part(focus-ring) {
   outline: 0;
    /* Custom color (e.g., Tailwind blue-500) */
   /* outline-offset: 2px; */
+}
+
+.lg-icon {
+  font-size: 2em;
 }
