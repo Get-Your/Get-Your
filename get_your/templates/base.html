@@ -38,14 +38,13 @@
       <script defer src="{% static 'js/project.js' %}"></script>
     {% endblock %}
   </head>
-  <body class="{% block bodyclass %}
-    {% endblock %}">
+  <body class="d-flex flex-column min-vh-100">
     {% block body %}
-      <div class="mb-1">
+      <header class="mb-1">
         <nav class="navbar navbar-expand-md navbar-light bg-light">
-          <div class="container-fluid">
+          <div class="container">
             <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
-            <a class="navbar-brand" href="{% url 'home' %}">
+            <a class="navbar-brand" href="{% url 'landing_page' %}">
               <img src="{% static 'images/citylogoblue.png' %}" alt="City of Fort Collins Logo" height="30" class="d-inline-block align-text-top" />
               Get FoCo
             </a>
@@ -58,10 +57,10 @@
                   <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">{% translate 'About' %}</a>
                   <ul class="dropdown-menu">
                     <li>
-                      <a class="dropdown-item" href="#">{% translate 'Programs' %}</a>
+                      <a class="dropdown-item" href="{% url 'landing_page' %}#how-it-works">{% translate 'How It Works' %}</a>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="#">{% translate 'How It Works' %}</a>
+                      <a class="dropdown-item" href="{% url 'landing_page' %}#available-programs">{% translate 'Programs' %}</a>
                     </li>
                     <li>
                       <a class="dropdown-item" href="#">{% translate 'Something Else Here' %}</a>
@@ -92,37 +91,43 @@
             </div>
           </div>
         </nav>
-      </div>
-      <div class="py-3 container">
-        {% if messages %}
-          {% for message in messages %}
-            <div class="alert alert-dismissible {% if message.tags %}
-                alert-{{ message.tags }}
-              {% endif %}">
-              {{ message }}
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          {% endfor %}
-        {% endif %}
-        {% block main %}
-          {% block content %}
-            <p>Welcome to Get FoCo</p>
-            <p>An all-in-one application portal to the discounted services and municipal benefits offered by the City of Fort Collins, for income eligible residents. Get FoCo is a partnership between Fort Collins' Connexion and the City of Fort Collins' income eligible programming.</p>
+      </header>
+      <main class="flex-grow-1">
+        <div class="py-3 container">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-dismissible {% if message.tags %}
+                  alert-{{ message.tags }}
+                {% endif %}">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+          {% block main %}
+            {% block content %}
+              <p>Welcome to Get FoCo</p>
+              <p>An all-in-one application portal to the discounted services and municipal benefits offered by the City of Fort Collins, for income eligible residents. Get FoCo is a partnership between Fort Collins' Connexion and the City of Fort Collins' income eligible programming.</p>
+            {% endblock %}
           {% endblock %}
-        {% endblock %}
-      </div>
-    {% endblock %}
-    <!-- /container -->
-    {% block modal %}
+        </div> <!-- /container -->
+      </main>
+      {% block modal %}
 
-    {% endblock %}
-    {% block inline_javascript %}
-      {% comment %}Script tags with only code, no src (defer by default). To run with a "defer" so that you run inline code:<script>
-                                                                                                                              window.addEventListener('DOMContentLoaded', () => {
-                                                                                                                                /* Run whatever you want */
-                                                                                                                              })
-                                                                                                                            </script>
-      {% endcomment %}
+      {% endblock %}
+      {% block inline_javascript %}
+        {% comment %}Script tags with only code, no src (defer by default). To run with a "defer" so that you run inline code:<script>
+                                                                                                                                window.addEventListener('DOMContentLoaded', () => {
+                                                                                                                                  /* Run whatever you want */
+                                                                                                                                })
+                                                                                                                              </script>
+        {% endcomment %}
+      {% endblock %}
+      <footer class="py-3 text-center bg-light border-top">
+        <p class="mb-1">Service brought to you by the City of Fort Collins</p>
+        <a href="#" class="mb-4 d-block">Privacy Policy</a>
+        Get FoCo - Copyright<sup><i class="me-1 bi bi-c-circle"></i></sup>{% now 'Y' %}
+      </footer>
     {% endblock %}
   </body>
 </html>

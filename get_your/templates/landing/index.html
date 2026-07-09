@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block title %}
+  {{ title }} - Get FoCo
+{% endblock %}
+{% block css %}
+  {{ block.super }}
+  <style>    
+    .width-restricted {
+      max-width: 900px;
+    }
+    
+    .iq-program-card {
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      padding: 1.25rem;
+      transition: var(--survey-transition);
+      position: relative;
+      height: 100%;
+      background: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.075);
+    }
+    .iq-program-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 5px 8px 15px rgba(0, 0, 0, 0.1);
+      border-color: #ced4da;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="mx-auto px-5 py-3 width-restricted border rounded bg-white shadow">
+    <div id="intro">
+        <div class="mt-3 pb-3 pb-md-0 d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <h1>Welcome to <b>Get <span class="text-warning">FoCo</span></b></h1>
+            <a href="#" class="btn btn-small btn-primary shadow-sm">Apply</a>
+        </div>
+        <div class="d-flex flex-column justify-content-center align-items-center flex-md-row">
+            <img class="me-0 me-md-4" width="300" height="200" src="{% static 'images/WelcomeIllustration.svg' %}" alt="Welcome">
+            <p class="mb-3 mb-md-0">An all-in-one application portal to the discounted services and municipal benefits offered by the City of Fort Collins, for income eligible residents. Get FoCo is a partnership between Fort Collins' Connexion and the City of Fort Collins' income eligible programming.</p>
+        </div>
+    </div>
+    <div id="how-it-works" class="mb-3">
+        <h2 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom text-center text-md-start">{% translate 'How it Works' %}</h2>
+        <p class="mb-1">With Get Foco, you'll be able to do more with your City of Fort Collins program applications than ever before.</p>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <span class="text-warning"><i class="bi bi-controller lg-icon"></i></span>
+                    <p class="ms-3 mb-0"><strong>Control Your Application</strong>: Manage applications in real time with up-to-date application status.</p>
+                </div>
+                <hr>
+                <div class="d-flex align-items-center">
+                    <span class="text-warning"><i class="bi bi-cash-coin lg-icon"></i></span>
+                    <p class="ms-3 mb-0"><strong>Do More, Save More</strong>: If you qualify, you'll get access to specific City of Fort Collins' income qualified programs that are tailored to save you money.</p>
+                </div>
+                <hr>
+                <div class="d-flex align-items-center">
+                    <span class="text-warning"><i class="bi bi-calendar lg-icon"></i></span>
+                    <p class="ms-3 mb-0"><strong>Forget "Forgetting"</strong>: Never forget to renew your application with easy reminders - making information updates a breeze.</p>
+                </div>
+                <hr>
+                <div class="d-flex align-items-center">
+                    <span class="text-warning"><i class="bi bi-chat-square lg-icon"></i></span>
+                    <p class="ms-3 mb-0"><strong>Stay in the Know</strong>: Be informed with the latest news &amp; updates from both Connexion &amp; the City.</p>
+                </div>
+            </div>
+        </div>
+        <!-- TODO: maybe a little more information can go here? Qualifications (address within GMA, Income verification), AMI info, etc?-->
+    </div>
+    <div id="available-programs">
+        <h2 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom text-center text-md-start">{% translate 'Available Income Qualified Programs' %}</h2>
+        <div class="mb-3 row g-3">
+            {% for iq_program in iq_programs %}
+            <div class="col-md-4">
+                <div class="iq-program-card d-flex flex-column justify-content-start align-items-center" data-program-id="{{ program.id }}">
+                    <h4 class="h6 fw-bold mb-1 border-bottom">{% translate iq_program.friendly_name %}</h4>
+                    <p class="small text-muted mb-3">{{ iq_program.friendly_description }}</p>
+                    <p class="mb-2 text-center small">{{ iq_program.friendly_supplemental_info }}</p>
+                    <a href="{{ iq_program.learn_more_link }}" target="_blank">{% translate 'Learn More' %}<i class="ms-1 bi bi-box-arrow-up-right"></i></a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div id="check-availability">
+        <h2 class="mb-3 h5 text-uppercase fw-bold mb-0 tracking-wider border-bottom text-center text-md-start">{% translate 'Curious?' %}</h2>
+        <p class="mb-1">Enter your address to check if you qualify for City of Fort Collins' income eligible programs.</p>
+        {# TODO: Save input and add logic for checking zipcode #}
+        <form action="" method="post" autocomplete="false" enctype="multipart/form-data" class="mb-3 p-3 border rounded shadow-sm bg-white">
+            {% csrf_token %}
+            {# TODO: change this to dropdown menu with data #}
+            <div class="mb-3">
+                <label class="form-label fs-4" for="{{ form.address.id_for_label }}">Address</label>
+                <input class="form-control shadow-sm" name="{{ form.address.name }}" id="{{ form.address.id_for_label }}" maxlength="{{ form.address.max_length }}" type="text" required autocomplete="off">
+            </div>
+            <hr>
+            <div>
+                <button class="btn btn-primary" type="submit">Check Address</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
