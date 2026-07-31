@@ -104,8 +104,8 @@ tag_mapping = {
 retry_strategy = {
     # Retry up to 5 times
     "total": 5,
-    # Don't retry for 'read' errors
-    "read": 0,
+    # Only retry twice for 'read' errors
+    "read": 2,
     # Follow up to 10 redirects
     "redirect": 10,
     # Force 'bad' statuses to retry
