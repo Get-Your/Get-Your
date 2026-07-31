@@ -61,4 +61,8 @@ DATABASES = {
 # Logging modifications - set logging level to DEBUG and overwrite DEBUG_LOGGER
 # env var for clarity
 LOGGING['loggers']['app']['level'] = 'DEBUG'
+
+# Always use debug logging for USPS audit logs
+LOGGING['loggers']['usps']['level'] = 'DEBUG'
+
 DEBUG_LOGGING = True

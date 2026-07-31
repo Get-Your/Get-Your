@@ -61,6 +61,9 @@ DATABASES = {
 if DEBUG_LOGGING:
     LOGGING['loggers']['app']['level'] = 'DEBUG'
 
+# Always use debug logging for USPS audit logs
+LOGGING['loggers']['usps']['level'] = 'DEBUG'
+
 Q_CLUSTER = {
     'name': 'DJRedis',
     'workers': 4,

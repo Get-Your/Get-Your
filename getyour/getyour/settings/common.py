@@ -228,6 +228,10 @@ LOGGING = {
             'class': 'logger.handlers.DatabaseLogHandler',
             'formatter': 'simple',
         },
+        'usps_audit_log': {
+            'class': 'logger.handlers.USPSAuditLogHandler',
+            'formatter': 'simple',
+        },
     },
     'loggers': {
         '': {
@@ -243,6 +247,11 @@ LOGGING = {
         },
         'django.request': {
             'handlers': ['db_log'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'usps': {
+            'handlers': ['usps_audit_log'],
             'level': 'ERROR',
             'propagate': False,
         },
