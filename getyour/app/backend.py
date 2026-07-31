@@ -225,6 +225,11 @@ def address_lookup(street_address, zip_code):
         "outSR": default_spatial_reference,
     }
 
+    log.debug(
+        "Getting address coordinates...",
+        function="address_lookup",
+    )
+
     # Gather response, with retries
     try:
         with requests.Session() as s:
@@ -293,7 +298,16 @@ def address_lookup(street_address, zip_code):
 
     # Raise an exception if coord_string remains None
     if not coord_string:
+        log.warning(
+            "Address coordinates not found",
+            function="gma_lookup",
+        )
         raise NameError("Matching address not found")
+
+    log.debug(
+        "Address coordinates found",
+        function="gma_lookup",
+    )
 
     # Return the found coordinate string and the returned 'WKID' from the lookup
     return (coord_string, outVal["spatialReference"]["wkid"])
@@ -343,8 +357,10 @@ def gma_lookup(coord_string, target_wkid):
     }
 
     try:
-        ## TEST ##
-        usps_log.info("Starting GMA request")
+        log.debug(
+            "Finding GMA for address...",
+            function="gma_lookup",
+        )
 
         # Gather response, with retries
         try:
@@ -364,16 +380,13 @@ def gma_lookup(coord_string, target_wkid):
             log.error(
                 "Connection timed out after %s retries",
                 retry_strategy["total"],
+                function="gma_lookup",
             )
             # Raise empty HTTPError (to match the API error, below)
             raise requests.exceptions.HTTPError()
 
         except:
             raise
-
-        else:
-            ## TEST ##
-            usps_log.info("Ending GMA request")
 
         if response.status_code != requests.codes.ok:
             log.error(
@@ -394,6 +407,11 @@ def gma_lookup(coord_string, target_wkid):
                 function="gma_lookup",
             )
             raise requests.exceptions.HTTPError(errDict["code"], errDict["message"])
+
+        log.debug(
+            "GMA found",
+            function="gma_lookup",
+        )
 
         if len(outVal["features"]) > 0:
             return True
@@ -451,10 +469,12 @@ def get_usps_token():
         usps_log.error(
             "Connection timed out after %s retries",
             retry_strategy["total"],
+            function="get_usps_token",
         )
         log.error(
             "Connection timed out after %s retries",
             retry_strategy["total"],
+            function="get_usps_token",
         )
         # Raise empty HTTPError (to match raise_for_status(), below)
         raise requests.exceptions.HTTPError()
@@ -557,10 +577,12 @@ def validate_usps(inobj):
         usps_log.error(
             "Connection timed out after %s retries",
             retry_strategy["total"],
+            function="validate_usps",
         )
         log.error(
             "Connection timed out after %s retries",
             retry_strategy["total"],
+            function="validate_usps",
         )
         # Raise empty HTTPError (to match raise_for_status(), below)
         raise requests.exceptions.HTTPError()
