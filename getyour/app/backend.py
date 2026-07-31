@@ -259,7 +259,7 @@ def address_lookup(street_address, zip_code):
             # Time out after 1 second to connect, 3 to read
             response = s.get(url, params=payload, timeout=(1, 3))
 
-    except requests.exceptions.ConnectTimeout:
+    except requests.exceptions.ConnectionError:
         usps_log.info("Connection timed out after %s retries", retry_strategy['total'])
         raise
 
@@ -375,7 +375,7 @@ def gma_lookup(coord_string, target_wkid):
                 # Time out after 1 second to connect, 3 to read
                 response = s.get(url, params=payload, timeout=(1, 3))
 
-        except requests.exceptions.ConnectTimeout:
+        except requests.exceptions.ConnectionError:
             usps_log.info("Connection timed out after %s retries", retry_strategy['total'])
             raise
 
@@ -408,7 +408,7 @@ def gma_lookup(coord_string, target_wkid):
         else:
             return False
 
-    except (requests.exceptions.HTTPError, requests.exceptions.ConnectTimeout):
+    except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError):
         return False
 
 
@@ -528,7 +528,7 @@ def validate_usps(inobj):
                 timeout=(1, 3),
             )
 
-    except requests.exceptions.ConnectTimeout:
+    except requests.exceptions.ConnectionError:
         usps_log.info("Connection timed out after %s retries", retry_strategy['total'])
         raise
 
