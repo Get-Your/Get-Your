@@ -40,7 +40,37 @@ class Detail(models.Model):
         verbose_name_plural = verbose_name = 'Logging'
         indexes = [
             models.Index(
-                fields=['process_id', 'thread_id'],
+                fields=('process_id', 'thread_id'),
                 name='logger_det_process_712f94_idx',
+            ),
+        ]
+
+
+class USPSAudit(models.Model):
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Created at',
+    )
+
+    process_id = models.CharField(max_length=100, db_index=True)
+    thread_id = models.CharField(max_length=100, db_index=True)
+
+    function = models.CharField(max_length=50, null=True)
+    user_id = models.PositiveBigIntegerField(null=True)
+
+    message = models.TextField()
+    trace = models.TextField(blank=True)
+
+    def __str__(self):
+        return str(self.message)
+
+    class Meta:
+        ordering = ('-created_at',)
+        verbose_name_plural = verbose_name = 'USPS Audit Logging'
+        indexes = [
+            models.Index(
+                fields=('process_id', 'thread_id'),
+                name='logger_usps_process_712f94_idx',
             ),
         ]
