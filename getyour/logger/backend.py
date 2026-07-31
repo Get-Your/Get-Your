@@ -1,5 +1,7 @@
 from requests.packages.urllib3.util.retry import Retry
 
+from logger.constants import retry_strategy
+
 
 class LogRetry(Retry):
     """
@@ -9,25 +11,15 @@ class LogRetry(Retry):
     def __init__(self, *args, logger=None, function=None, **kwargs):
         self.logger = logger
         self.function = function
-        self.url = ''
-        if 'url' in kwargs:
-            self.url = kwargs['url']
-
-        if self.logger:
-            self.logger.debug(
-                "Running URL request...",
-                function=self.function,
-            )
         super().__init__(*args, **kwargs)
 
     def increment(self, *args, **kwargs):
         incr = super().increment(*args, **kwargs)
         if self.logger:
             self.logger.debug(
-                # "Incremented Retry for url='%s': %s",
-                "Incremented Retry for url='%s'",
-                self.url,
-                # incr.new_retry,
+                "Retrying %i (of up to %i)...",
+                retry_strategy['total']-incr.total,
+                retry_strategy['total'],
                 function=self.function,
             )
         return incr

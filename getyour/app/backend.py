@@ -62,6 +62,7 @@ from app.constants import (
 )
 from logger.wrappers import LoggerWrapper
 from logger.backend import LogRetry
+from logger.constants import retry_strategy
 
 # Initialize loggers
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -98,22 +99,6 @@ tag_mapping = {
     'PlaceName': 'city',
     'StateName': 'state',
     'ZipCode': 'ZIPCode',
-}
-
-# Set the API-call retry strategy dict
-retry_strategy = {
-    # Retry up to 5 times
-    'total': 5,
-    # Only retry twice for 'read' errors
-    'read': 2,
-    # Follow up to 10 redirects
-    'redirect': 10,
-    # Force 'bad' statuses to retry
-    'status_forcelist': [502, 503, 504],
-    # The factor to 'back off' at each retry (as a multiple of the retry
-    # iteration), to a maximum overall
-    'backoff_factor': 0.1,
-    'backoff_max': 1,
 }
 
 
