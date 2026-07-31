@@ -248,8 +248,8 @@ def address_lookup(street_address, zip_code):
                 HTTPAdapter(
                     max_retries=LogRetry(
                         **retry_strategy,
-                        logger_obj=usps_log,
-                        logger_function="gma_lookup",
+                        logger=usps_log,
+                        function="gma_lookup",
                     )
                 ),
             )
@@ -366,8 +366,8 @@ def gma_lookup(coord_string, target_wkid):
                     HTTPAdapter(
                         max_retries=LogRetry(
                             **retry_strategy,
-                            logger_obj=usps_log,
-                            logger_function="gma_lookup",
+                            logger=usps_log,
+                            function="gma_lookup",
                         )
                     ),
                 )
@@ -508,8 +508,8 @@ def validate_usps(inobj):
                 HTTPAdapter(
                     max_retries=LogRetry(
                         **retry_strategy,
-                        logger_obj=usps_log,
-                        logger_function="gma_lookup",
+                        logger=usps_log,
+                        function="gma_lookup",
                     )
                 ),
             )
