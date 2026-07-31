@@ -433,18 +433,47 @@ def get_usps_token():
         "Getting USPS token...",
         function='get_usps_token',
     )
+    log.debug(
+        "Getting USPS token...",
+        function='get_usps_token',
+    )
 
     # Gather the token with the 'addresses' scope
-    response = requests.post(
-        'https://apis.usps.com/oauth2/v3/token',
-        data={
-            'grant_type': 'client_credentials',
-            'scope': 'addresses',
-            'client_id': settings.USPS_KEY,
-            'client_secret': settings.USPS_SECRET,
-        },
-        timeout=10,
-    )
+    try:
+        with requests.Session() as s:
+            s.mount(
+                'https://',
+                HTTPAdapter(
+                    max_retries=LogRetry(
+                        **retry_strategy,
+                        logger=usps_log,
+                        function='get_usps_token',
+                    )
+                )
+            )
+            response = requests.post(
+                'https://apis.usps.com/oauth2/v3/token',
+                data={
+                    'grant_type': 'client_credentials',
+                    'scope': 'addresses',
+                    'client_id': settings.USPS_KEY,
+                    'client_secret': settings.USPS_SECRET,
+                },
+                # Time out after 1 second to connect, 3 for read
+                timeout=(1, 3),
+            )
+
+    except requests.exceptions.ConnectionError:
+        usps_log.error(
+            "Connection timed out after %s retries",
+            retry_strategy['total'],
+        )
+        log.error(
+            "Connection timed out after %s retries",
+            retry_strategy['total'],
+        )
+        # Raise empty HTTPError (to match raise_for_status(), below)
+        raise requests.exceptions.HTTPError()
 
     response_dict = response.json()
     if not response.ok or 'access_token' not in response_dict:
@@ -459,6 +488,10 @@ def get_usps_token():
         response.raise_for_status()
 
     usps_log.info(
+        "Token acquired",
+        function='get_usps_token',
+    )
+    log.debug(
         "Token acquired",
         function='get_usps_token',
     )
