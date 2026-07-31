@@ -868,11 +868,19 @@ def take_usps_address(request, **kwargs):
                 return redirect(f"{reverse('app:user_settings')}?page_updated=address")
 
         except (KeyError, TypeError):
-            log.warning(
-                f"USPS couldn't out the address: {dict_address}",
-                function='take_usps_address',
-                user_id=request.user.id,
-            )
+            try:
+                log.warning(
+                    f"USPS couldn't figure out the address: {dict_address}",
+                    function='take_usps_address',
+                    user_id=request.user.id,
+                )
+            except UnboundLocalError:
+                # Address doesn't exist
+                log.warning(
+                    "USPS couldn't figure out the (unknown) address",
+                    function='take_usps_address',
+                    user_id=request.user.id,
+                )
             # HTTP_REFERER sends this button press back to the same page
             # (e.g. removes the button functionality)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
