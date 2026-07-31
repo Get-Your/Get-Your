@@ -251,8 +251,6 @@ def address_lookup(street_address, zip_code):
                 HTTPAdapter(
                     max_retries=LogRetry(
                         **retry_strategy,
-                        logger=usps_log,
-                        function='gma_lookup',
                     )
                 )
             )
@@ -260,8 +258,13 @@ def address_lookup(street_address, zip_code):
             response = s.get(url, params=payload, timeout=(1, 3))
 
     except requests.exceptions.ConnectionError:
-        usps_log.info("Connection timed out after %s retries", retry_strategy['total'])
-        raise
+        log.error(
+            "Connection timed out after %s retries",
+            retry_strategy['total'],
+            function='address_lookup',
+        )
+        # Raise empty HTTPError (to match the API error case, below)
+        raise requests.exceptions.HTTPError()
 
     if response.status_code != requests.codes.ok:
         log.error(
@@ -367,8 +370,6 @@ def gma_lookup(coord_string, target_wkid):
                     HTTPAdapter(
                         max_retries=LogRetry(
                             **retry_strategy,
-                            logger=usps_log,
-                            function='gma_lookup',
                         )
                     )
                 )
@@ -376,7 +377,14 @@ def gma_lookup(coord_string, target_wkid):
                 response = s.get(url, params=payload, timeout=(1, 3))
 
         except requests.exceptions.ConnectionError:
-            usps_log.info("Connection timed out after %s retries", retry_strategy['total'])
+            log.error(
+                "Connection timed out after %s retries",
+                retry_strategy['total'],
+            )
+            # Raise empty HTTPError (to match the API error, below)
+            raise requests.exceptions.HTTPError()
+
+        except:
             raise
 
         else:
@@ -408,7 +416,7 @@ def gma_lookup(coord_string, target_wkid):
         else:
             return False
 
-    except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError):
+    except requests.exceptions.HTTPError:
         return False
 
 
@@ -508,7 +516,7 @@ def validate_usps(inobj):
                     max_retries=LogRetry(
                         **retry_strategy,
                         logger=usps_log,
-                        function='gma_lookup',
+                        function='validate_usps',
                     )
                 )
             )
@@ -529,8 +537,16 @@ def validate_usps(inobj):
             )
 
     except requests.exceptions.ConnectionError:
-        usps_log.info("Connection timed out after %s retries", retry_strategy['total'])
-        raise
+        usps_log.error(
+            "Connection timed out after %s retries",
+            retry_strategy['total'],
+        )
+        log.error(
+            "Connection timed out after %s retries",
+            retry_strategy['total'],
+        )
+        # Raise empty HTTPError (to match raise_for_status(), below)
+        raise requests.exceptions.HTTPError()
 
     # Log then raise an error and raise if status_code != 200
     if not response.ok:
