@@ -6,7 +6,7 @@ class LogRetry(Retry):
     Adding extra logs before making a retry request     
     """
 
-    def __init__(self, *args, function, logger=None, **kwargs):
+    def __init__(self, *args, logger=None, function=None, **kwargs):
         self.logger = logger
         self.function = function
         self.url = ''
@@ -34,7 +34,7 @@ class LogRetry(Retry):
 
     def new(self, **kwargs):
         return super().new(
-            function=self.function,
             logger=self.logger,
+            function=self.function,
             **kwargs,
         )
