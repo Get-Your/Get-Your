@@ -17,8 +17,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from getyour.settings.common import *
-from getyour.settings.common import env
+from .common import *
+from .common import env
+from .common import INSTALLED_APPS
+from .common import MIDDLEWARE
 
 # Read the environment-specific secrets
 env.read_env(BASE_DIR.joinpath(".dev.env"))
