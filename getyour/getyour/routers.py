@@ -16,22 +16,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from app import constants
+
 
 class LogRouter:
     """
     A router to control all database operations on models for the logger.
 
     """
+
     route_app_labels = constants.logger_app_labels
 
     def db_for_read(self, model, **hints):
         """
         Attempts to read log models go to analytics.
-        
+
         """
         if model._meta.app_label in self.route_app_labels:
-            return 'analytics'
+            return "analytics"
         return None
 
     def db_for_write(self, model, **hints):
@@ -39,7 +42,7 @@ class LogRouter:
         Attempts to write log models go to analytics.
         """
         if model._meta.app_label in self.route_app_labels:
-            return 'analytics'
+            return "analytics"
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
@@ -47,8 +50,8 @@ class LogRouter:
         Allow relations if a model in the log app is involved.
         """
         if (
-            obj1._meta.app_label in self.route_app_labels or
-            obj2._meta.app_label in self.route_app_labels
+            obj1._meta.app_label in self.route_app_labels
+            or obj2._meta.app_label in self.route_app_labels
         ):
             return True
         return None
@@ -60,6 +63,6 @@ class LogRouter:
 
         """
         if app_label in self.route_app_labels:
-            return db == 'analytics'
+            return db == "analytics"
         # Redirect all other app labels to default database
-        return db == 'default'
+        return db == "default"

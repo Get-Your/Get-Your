@@ -16,7 +16,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from functools import wraps
+
 from django.shortcuts import redirect
 
 
@@ -24,15 +26,16 @@ def set_update_mode(view_func):
     """
     Decorator to set the update mode in the session.
     """
+
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         # Get the update_mode query string parameter
-        update_mode = request.GET.get('update_mode')
+        update_mode = request.GET.get("update_mode")
 
         # Check explicitly in case the query string is used another way later
-        if update_mode == '1':
+        if update_mode == "1":
             # This session var will be the global bool for update_mode
-            request.session['update_mode'] = True
+            request.session["update_mode"] = True
             return redirect(request.path)
 
         # Call the original view function

@@ -21,7 +21,7 @@ from getyour.settings.common import *
 from getyour.settings.common import env
 
 # Read the environment-specific secrets
-env.read_env(BASE_DIR.joinpath('.prod.deploy'))
+env.read_env(BASE_DIR.joinpath(".prod.deploy"))
 
 SECRET_KEY = env("SECRET_KEY")
 AZURE_ACCOUNT_NAME = env("AZURE_ACCOUNT_NAME")
@@ -40,34 +40,34 @@ ALLOWED_HOSTS = env.list("HOSTS")
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'getyour_stage',
-        'USER': env("DB_USER"),
-        'PASSWORD': env("DB_PASS"),
-        'HOST': env("DB_HOST"),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "getyour_stage",
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASS"),
+        "HOST": env("DB_HOST"),
     },
-    'analytics': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'getyour_stage_analytics',
-        'USER': env("DB_USER"),
-        'PASSWORD': env("DB_PASS"),
-        'HOST': env("DB_HOST"),
-    }
+    "analytics": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "getyour_stage_analytics",
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASS"),
+        "HOST": env("DB_HOST"),
+    },
 }
 
 # Logging modifications
 # This uses an Azure App Service environment var
 if DEBUG_LOGGING:
-    LOGGING['loggers']['app']['level'] = 'DEBUG'
+    LOGGING["loggers"]["app"]["level"] = "DEBUG"
 
 Q_CLUSTER = {
-    'name': 'DJRedis',
-    'workers': 4,
-    'timeout': 30,
+    "name": "DJRedis",
+    "workers": 4,
+    "timeout": 30,
     # Limit the number of retries
-    'max_attempts': 1,
-    'bulk': 10,
-    'django_redis': 'default',
-    'catch_up': False,
+    "max_attempts": 1,
+    "bulk": 10,
+    "django_redis": "default",
+    "catch_up": False,
 }

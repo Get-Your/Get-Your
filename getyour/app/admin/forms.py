@@ -16,21 +16,21 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from django import forms
 from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
 from django.forms.widgets import Textarea
+from django.utils.translation import gettext_lazy as _
 
+from app.backend import get_iqprogram_requires_fields, get_users_iq_programs
 from app.models import (
-    User,
+    AddressRD,
+    EligibilityProgramRD,
     Household,
     HouseholdMembers,
-    AddressRD,
-    EligibilityProgram,
-    EligibilityProgramRD,
     IQProgramRD,
+    User,
 )
-from app.backend import get_users_iq_programs, get_iqprogram_requires_fields
 
 
 class ProgramChangeForm(forms.Form):
@@ -39,18 +39,17 @@ class ProgramChangeForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         # Return the available Eligibility Programs, sorted by friendly_name
-        self.fields['program_name'].choices = list(map(
-            lambda x:
-            (str(x.id), x.friendly_name),
-            EligibilityProgramRD.objects.filter(
-                is_active=True
-            ).order_by(
-                'friendly_name'
+        self.fields["program_name"].choices = list(
+            map(
+                lambda x: (str(x.id), x.friendly_name),
+                EligibilityProgramRD.objects.filter(is_active=True).order_by(
+                    "friendly_name"
+                ),
             )
-        ))
+        )
 
     program_name = forms.ChoiceField(
-        label='Select the program to use for this record',
+        label="Select the program to use for this record",
         choices=(),
         widget=forms.Select(),
     )
@@ -74,17 +73,21 @@ class IQProgramAddForm(forms.Form):
             household.income_as_fraction_of_ami,
             eligibility_address,
         )
-        
+
         # Return the available IQ Programs the user is not currently applied
         # (IQProgramRD objects are those that the user qualifies for but is not
         # enrolled in). Sort by friendly_name
-        self.fields['program_name'].choices = sorted(
-            [(str(x.id), x.friendly_name) for x in users_iq_programs if isinstance(x, IQProgramRD)],
+        self.fields["program_name"].choices = sorted(
+            [
+                (str(x.id), x.friendly_name)
+                for x in users_iq_programs
+                if isinstance(x, IQProgramRD)
+            ],
             key=lambda x: x[1],
         )
 
     program_name = forms.ChoiceField(
-        label='Select the program to add',
+        label="Select the program to add",
         widget=forms.Select(),
     )
 
@@ -96,22 +99,21 @@ class EligProgramAddForm(forms.Form):
 
         # Return the available Eligibility Programs, sorted by friendly_name
         # Prepend empty (and unusable) option
-        self.fields['program_name'].choices = [('', '')] + list(map(
-            lambda x:
-            (str(x.id), x.friendly_name),
-            EligibilityProgramRD.objects.filter(
-                is_active=True
-            ).order_by(
-                'friendly_name'
+        self.fields["program_name"].choices = [("", "")] + list(
+            map(
+                lambda x: (str(x.id), x.friendly_name),
+                EligibilityProgramRD.objects.filter(is_active=True).order_by(
+                    "friendly_name"
+                ),
             )
-        ))
+        )
 
     program_name = forms.ChoiceField(
-        label='Select the program to add',
+        label="Select the program to add",
         choices=(),
     )
 
-    document_path = forms.FileField(label='Select a file')
+    document_path = forms.FileField(label="Select a file")
 
 
 class EligibilityProgramRDForm(forms.ModelForm):
@@ -119,16 +121,16 @@ class EligibilityProgramRDForm(forms.ModelForm):
         model = EligibilityProgramRD
 
         fields = [
-            'program_name',
-            'ami_threshold',
-            'is_active',
-            'friendly_name',
-            'friendly_description',
+            "program_name",
+            "ami_threshold",
+            "is_active",
+            "friendly_name",
+            "friendly_description",
         ]
 
         # Override the widgets for description field
         widgets = {
-            'friendly_description': Textarea,
+            "friendly_description": Textarea,
         }
 
 
@@ -138,11 +140,11 @@ class IQProgramRDForm(forms.ModelForm):
 
         # Raise a ValidationError on the form if there isn't at least one True
         # `requires_` field
-        if not any(
-            cleaned_data.get(x[0]) for x in get_iqprogram_requires_fields()
-        ):
+        if not any(cleaned_data.get(x[0]) for x in get_iqprogram_requires_fields()):
             msg = ValidationError(
-                _("At least one 'Requires' box must be checked (otherwise any address anywhere is eligible)."),
+                _(
+                    "At least one 'Requires' box must be checked (otherwise any address anywhere is eligible)."
+                ),
                 code="invalid",
             )
             for fd, x in get_iqprogram_requires_fields():
@@ -154,20 +156,20 @@ class IQProgramRDForm(forms.ModelForm):
         req_fields = get_iqprogram_requires_fields()
 
         program_fields = [
-            'program_name',
-            'ami_threshold',
-            'is_active',
-            'enable_autoapply',
-            'renewal_interval_year',
+            "program_name",
+            "ami_threshold",
+            "is_active",
+            "enable_autoapply",
+            "renewal_interval_year",
         ]
         display_fields = [
-            'friendly_name',
-            'friendly_category',
-            'friendly_description',
-            'friendly_supplemental_info',
-            'learn_more_link',
-            'friendly_eligibility_review_period',
-            'additional_external_form_link',
+            "friendly_name",
+            "friendly_category",
+            "friendly_description",
+            "friendly_supplemental_info",
+            "learn_more_link",
+            "friendly_eligibility_review_period",
+            "additional_external_form_link",
         ]
         address_fields = [x[0] for x in req_fields]
 
@@ -175,50 +177,44 @@ class IQProgramRDForm(forms.ModelForm):
 
         # Override the widgets for description field
         widgets = {
-            'friendly_description': Textarea,
+            "friendly_description": Textarea,
         }
 
         # Override the labels for the 'requires_' fields to capitalize the first
         # word and place single quotes around the field name
         labels = {}
         for req, x in req_fields:
-            label_list = req.capitalize().split('_')
+            label_list = req.capitalize().split("_")
 
             # Insert single quotes at the beginning and end of the field name
             label_list[1] = f"'{label_list[1]}"
             label_list[-1] = f"{label_list[-1]}'"
 
-            labels[req] = ' '.join(label_list)
+            labels[req] = " ".join(label_list)
 
 
 class HouseholdMembersReplaceIDForm(forms.Form):
     def __init__(self, user_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        household = HouseholdMembers.objects.get(
-            user_id=user_id
-        )
-        persons = household.household_info['persons_in_household']
-        
+        household = HouseholdMembers.objects.get(user_id=user_id)
+        persons = household.household_info["persons_in_household"]
+
         household_members = []
         for person in persons:
-            household_members.append((person['identification_path'], person['name']))
+            household_members.append((person["identification_path"], person["name"]))
 
         # Prepend empty (and unusable) option
         # append user household member names
-        self.fields['member_name'].choices = [('', '')] + household_members
+        self.fields["member_name"].choices = [("", "")] + household_members
 
-    #Form fields
+    # Form fields
     member_name = forms.ChoiceField(
-        label='Select household member',
-        choices=(),
-        required=True
+        label="Select household member", choices=(), required=True
     )
 
     document_path = forms.FileField(
-        label='Choose file',
+        label="Choose file",
         required=True,
-        widget=forms.FileInput(
-            attrs={'accept': '.jpg, .jpeg, .png, .pdf'}
-        )
+        widget=forms.FileInput(attrs={"accept": ".jpg, .jpeg, .png, .pdf"}),
     )

@@ -16,22 +16,22 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 import logging
 
-from django.shortcuts import render, redirect, reverse
-from django.contrib.auth import get_user_model, authenticate
-from django.http import HttpResponse
-from django.core.mail import BadHeaderError
+from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import PasswordResetForm
-from django.template.loader import render_to_string
-from django.db.models.query_utils import Q
-from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import BadHeaderError
+from django.db.models.query_utils import Q
+from django.http import HttpResponse
+from django.shortcuts import redirect, render, reverse
+from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
-
-from app.backend import login, what_page, broadcast_email_pw_reset
+from django.utils.http import urlsafe_base64_encode
 from logger.wrappers import LoggerWrapper
 
+from app.backend import broadcast_email_pw_reset, login, what_page
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -42,7 +42,7 @@ def password_reset_request(request, **kwargs):
     try:
         log.debug(
             "Entering function",
-            function='password_reset_request',
+            function="password_reset_request",
             user_id=request.user.id,
         )
 
@@ -50,28 +50,28 @@ def password_reset_request(request, **kwargs):
         if request.method == "POST":
             password_reset_form = PasswordResetForm(request.POST)
             if password_reset_form.is_valid():
-                data = password_reset_form.cleaned_data['email']
+                data = password_reset_form.cleaned_data["email"]
                 associated_users = User.objects.filter(Q(email=data))
                 if associated_users.exists():
                     for user in associated_users:
                         email_template_name = "authentication/password_reset_email.txt"
                         c = {
                             "email": user.email,
-                            'domain': 'getfoco.fcgov.com',  # 'getfoco.azurewebsites.net' | '127.0.0.1:8000'
-                            'site_name': 'Get FoCo',
+                            "domain": "getfoco.fcgov.com",  # 'getfoco.azurewebsites.net' | '127.0.0.1:8000'
+                            "site_name": "Get FoCo",
                             "uid": urlsafe_base64_encode(force_bytes(user.pk)),
                             "user": user,
-                            'token': default_token_generator.make_token(user),
-                            'protocol': 'http',
+                            "token": default_token_generator.make_token(user),
+                            "protocol": "http",
                         }
                         email = render_to_string(email_template_name, c)
                         try:
                             broadcast_email_pw_reset(user.email, email)
                         except BadHeaderError:
-                            msg = 'Invalid header found'
+                            msg = "Invalid header found"
                             log.exception(
                                 msg,
-                                function='password_reset_request',
+                                function="password_reset_request",
                                 user_id=request.user.id,
                             )
                             return HttpResponse(msg)
@@ -85,10 +85,10 @@ def password_reset_request(request, **kwargs):
             "authentication/password_reset.html",
             {
                 "password_reset_form": password_reset_form,
-                'title': "Password Reset Request",
+                "title": "Password Reset Request",
             },
         )
-    
+
     # General view-level exception catching
     except:
         try:
@@ -96,8 +96,8 @@ def password_reset_request(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='password_reset_request',
+            "Uncaught view-level exception",
+            function="password_reset_request",
             user_id=user_id,
         )
         raise
@@ -108,7 +108,7 @@ def login_user(request, **kwargs):
     try:
         log.debug(
             "Entering function",
-            function='login_user',
+            function="login_user",
             user_id=request.user.id,
         )
 
@@ -124,24 +124,24 @@ def login_user(request, **kwargs):
                 # update application_user "modified" per login
                 obj = request.user
                 obj.save()
-                
+
                 # Push user to correct page
 
                 # If auth_next exists, use it for the redirection
-                if request.session.get('auth_next', None) is not None:
-                    return redirect(request.session['auth_next'])
-                
+                if request.session.get("auth_next", None) is not None:
+                    return redirect(request.session["auth_next"])
+
                 # Workaround for https://github.com/Get-Your/Get-Your/issues/251:
                 # existing data in last_renewal_action implies the user logged out
                 # during a renewal and therefore should be taken directly to the
                 # dashboard
                 if request.user.last_renewal_action is not None:
                     return redirect(reverse("app:dashboard"))
-                
+
                 page = what_page(request.user, request)
                 log.info(
                     f"Continuing application: what_page() returned {page}",
-                    function='login_user',
+                    function="login_user",
                     user_id=request.user.id,
                 )
                 if page == "app:dashboard":
@@ -155,7 +155,7 @@ def login_user(request, **kwargs):
                     "authentication/login.html",
                     {
                         "message": "Invalid username and/or password",
-                        'title': "Login",
+                        "title": "Login",
                     },
                 )
 
@@ -165,7 +165,7 @@ def login_user(request, **kwargs):
             page = what_page(request.user, request)
             log.info(
                 f"what_page() returned {page}",
-                function='login_user',
+                function="login_user",
                 user_id=request.user.id,
             )
             if page == "app:dashboard":
@@ -179,10 +179,10 @@ def login_user(request, **kwargs):
                 request,
                 "authentication/login.html",
                 {
-                    'title': "Login",
+                    "title": "Login",
                 },
             )
-        
+
     # General view-level exception catching
     except:
         try:
@@ -190,8 +190,8 @@ def login_user(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='login_user',
+            "Uncaught view-level exception",
+            function="login_user",
             user_id=user_id,
         )
         raise

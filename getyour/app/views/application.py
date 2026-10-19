@@ -16,75 +16,72 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import json
-import usaddress
-import pendulum
-import logging
+
 import base64
 import io
-import re
+import json
+import logging
 from urllib.parse import urlencode
 
-from django.shortcuts import render, redirect, reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.http import QueryDict, HttpResponseRedirect, JsonResponse
+import pendulum
+import usaddress
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models.query_utils import Q
+from django.core.files.storage import default_storage
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
 from django.forms.utils import ErrorList
-from django.core.files.storage import default_storage
-from django.contrib.auth.decorators import login_required
-
-from app.forms import (
-    HouseholdForm,
-    UserForm,
-    AddressForm,
-    HouseholdMembersForm,
-    UserUpdateForm,
-    FileUploadForm,
-)
-from app.models import (
-    userfiles_path,
-    AddressRD,
-    Address,
-    EligibilityProgram,
-    Household,
-    User,
-    EligibilityProgramRD,
-    Admin as AppAdmin,
-)
-from app.backend import (
-    login,
-    form_page_number,
-    serialize_household_members,
-    get_in_progress_eligiblity_file_uploads,
-    what_page,
-    broadcast_email,
-    broadcast_sms,
-    save_renewal_action,
-    file_validation,
-    tag_mapping,
-    address_check,
-    validate_usps,
-    finalize_address,
-    finalize_application,
-)
-from app.decorators import set_update_mode
-from app.constants import supported_content_types
+from django.http import HttpResponseRedirect, JsonResponse, QueryDict
+from django.shortcuts import redirect, render, reverse
 from logger.wrappers import LoggerWrapper
 
+from app.backend import (
+    address_check,
+    broadcast_email,
+    broadcast_sms,
+    file_validation,
+    finalize_address,
+    finalize_application,
+    form_page_number,
+    get_in_progress_eligiblity_file_uploads,
+    login,
+    save_renewal_action,
+    serialize_household_members,
+    tag_mapping,
+    validate_usps,
+    what_page,
+)
+from app.constants import supported_content_types
+from app.decorators import set_update_mode
+from app.forms import (
+    AddressForm,
+    FileUploadForm,
+    HouseholdForm,
+    HouseholdMembersForm,
+    UserForm,
+    UserUpdateForm,
+)
+from app.models import (
+    Address,
+    AddressRD,
+    EligibilityProgram,
+    EligibilityProgramRD,
+    Household,
+    User,
+    userfiles_path,
+)
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
 
 
-@login_required(redirect_field_name='auth_next')
+@login_required(redirect_field_name="auth_next")
 def notify_remaining(request, **kwargs):
 
     try:
         log.debug(
             "Entering function",
-            function='notify_remaining',
+            function="notify_remaining",
             user_id=request.user.id,
         )
 
@@ -97,7 +94,7 @@ def notify_remaining(request, **kwargs):
                 "title": "Notify Remaining Steps",
             },
         )
-    
+
     # General view-level exception catching
     except:
         try:
@@ -105,8 +102,8 @@ def notify_remaining(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='notify_remaining',
+            "Uncaught view-level exception",
+            function="notify_remaining",
             user_id=user_id,
         )
         raise
@@ -117,7 +114,7 @@ def household_definition(request, **kwargs):
     try:
         log.debug(
             "Entering function",
-            function='household_definition',
+            function="household_definition",
             user_id=request.user.id,
         )
 
@@ -133,48 +130,53 @@ def household_definition(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='household_definition',
+            "Uncaught view-level exception",
+            function="household_definition",
             user_id=user_id,
         )
         raise
+
 
 def get_ready(request, **kwargs):
 
     try:
         log.debug(
             "Entering function",
-            function='get_ready',
+            function="get_ready",
             user_id=request.user.id,
         )
 
-        renewal_mode = request.session.get(
-            'renewal_mode') if request.session.get('renewal_mode') else False
+        renewal_mode = (
+            request.session.get("renewal_mode")
+            if request.session.get("renewal_mode")
+            else False
+        )
         eligiblity_programs = EligibilityProgramRD.objects.filter(
-            is_active=True).order_by('friendly_name')
+            is_active=True
+        ).order_by("friendly_name")
 
         # Check if the next query param is set
         # If so, save the renewal action and redirect to the account page
-        if request.GET.get('next', False):
+        if request.GET.get("next", False):
             log.info(
                 "Starting renewal process",
-                function='get_ready',
+                function="get_ready",
                 user_id=request.user.id,
             )
-            save_renewal_action(request, 'get_ready')
-            return redirect('app:account')
+            save_renewal_action(request, "get_ready")
+            return redirect("app:account")
         return render(
             request,
-            'application/get_ready.html',
+            "application/get_ready.html",
             {
-                'step': 0,
-                'form_page_number': form_page_number,
-                'title': "Ready some Necessary Documents",
-                'eligiblity_programs': eligiblity_programs,
-                'renewal_mode': renewal_mode,
+                "step": 0,
+                "form_page_number": form_page_number,
+                "title": "Ready some Necessary Documents",
+                "eligiblity_programs": eligiblity_programs,
+                "renewal_mode": renewal_mode,
             },
         )
-    
+
     # General view-level exception catching
     except:
         try:
@@ -182,8 +184,8 @@ def get_ready(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='get_ready',
+            "Uncaught view-level exception",
+            function="get_ready",
             user_id=user_id,
         )
         raise
@@ -195,21 +197,34 @@ def account(request, **kwargs):
     try:
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
-        update_mode = request.session.get(
-            'update_mode') if request.session.get('update_mode') else False
-        renewal_mode = request.session.get(
-            'renewal_mode') if request.session.get('renewal_mode') else False
+        update_mode = (
+            request.session.get("update_mode")
+            if request.session.get("update_mode")
+            else False
+        )
+        renewal_mode = (
+            request.session.get("renewal_mode")
+            if request.session.get("renewal_mode")
+            else False
+        )
 
         if request.method == "POST":
             log.debug(
                 "Leaving function (POST)",
-                function='account',
+                function="account",
                 user_id=request.user.id,
             )
-            
+
             try:
                 existing = request.user
-                if update_mode or renewal_mode or (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard):
+                if (
+                    update_mode
+                    or renewal_mode
+                    or (
+                        hasattr(request.user, "has_viewed_dashboard")
+                        and not request.user.has_viewed_dashboard
+                    )
+                ):
                     form = UserUpdateForm(request.POST, instance=existing)
                 else:
                     form = UserForm(request.POST, instance=existing)
@@ -219,7 +234,14 @@ def account(request, **kwargs):
             # Checking the `has_viewed_dashboard` attribute of the user object
             # allows us to determine if the user has already completed the application
             # or if they're returning to update their information from the initial application
-            if form.is_valid() and (update_mode or renewal_mode or (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard)):
+            if form.is_valid() and (
+                update_mode
+                or renewal_mode
+                or (
+                    hasattr(request.user, "has_viewed_dashboard")
+                    and not request.user.has_viewed_dashboard
+                )
+            ):
                 instance = form.save(commit=False)
 
                 # Set the attributes to let pre_save know to save history
@@ -230,30 +252,31 @@ def account(request, **kwargs):
                 if renewal_mode:
                     # Call save_renewal_action after .save() so as not to save
                     # renewal metadata as data updates
-                    save_renewal_action(request, 'account')
+                    save_renewal_action(request, "account")
                     return JsonResponse({"redirect": f"{reverse('app:address')}"})
-                elif (hasattr(request.user, 'has_viewed_dashboard') and not request.user.has_viewed_dashboard):
+                elif (
+                    hasattr(request.user, "has_viewed_dashboard")
+                    and not request.user.has_viewed_dashboard
+                ):
                     return JsonResponse({"redirect": f"{reverse('app:address')}"})
                 else:
-                    return JsonResponse({"redirect": f"{reverse('app:user_settings')}?page_updated=account"})
+                    return JsonResponse(
+                        {
+                            "redirect": f"{reverse('app:user_settings')}?page_updated=account"
+                        }
+                    )
             elif form.is_valid():
                 passwordCheck = form.passwordCheck()
                 passwordCheckDuplicate = form.passwordCheckDuplicate()
                 # AJAX data function below, sends data to AJAX function in account.html. If client makes a mistake in password, AJAX lets them know, no page refresh
                 # if passwordCheck finds an error like too common a password, no numbers, etc.
                 if passwordCheck != None:
-                    data = {
-                        'result': "error",
-                        'message': passwordCheck
-                    }
+                    data = {"result": "error", "message": passwordCheck}
                     return JsonResponse(data)
                 # AJAX data function below, sends data to AJAX function in account.html. If client makes a mistake in password, AJAX lets them know, no page refresh
                 # Checks if password is the same as the "Enter Password Again" Field
-                elif str(passwordCheckDuplicate) != str(form.cleaned_data['password']):
-                    data = {
-                        'result': "error",
-                        'message': passwordCheckDuplicate
-                    }
+                elif str(passwordCheckDuplicate) != str(form.cleaned_data["password"]):
+                    data = {"result": "error", "message": passwordCheckDuplicate}
                     return JsonResponse(data)
 
                 try:
@@ -262,18 +285,18 @@ def account(request, **kwargs):
 
                     log.info(
                         "User account creation successful",
-                        function='account',
+                        function="account",
                         user_id=user.id,
                     )
 
                     data = {
-                        'result': "success",
+                        "result": "success",
                     }
                     return JsonResponse(data)
                 except AttributeError:
                     log.warning(
                         f"Login failed. User is: {user}",
-                        function='account',
+                        function="account",
                         user_id=request.user.id,
                     )
 
@@ -287,35 +310,41 @@ def account(request, **kwargs):
                 # Create message_dict by parsing strings or all items of ErrorList,
                 # where applicable. Use the prettified field name as each key
                 message_dict = {}
-                for keyitm in error_messages.keys():
+                for keyitm in error_messages:
                     val = error_messages[keyitm]
 
                     # Gather the list of error messages and flatten it
-                    message_list = [[y for y in val]
-                                    if isinstance(val, ErrorList) else val]
+                    message_list = [
+                        [y for y in val] if isinstance(val, ErrorList) else val
+                    ]
                     flattened_messages = [
-                        item for items in message_list for item in items]
+                        item for items in message_list for item in items
+                    ]
 
                     # Write the messages as a string
-                    message_dict.update({
-                        keyitm.replace('_', ' ').title(): '. '.join(flattened_messages)
-                    })
+                    message_dict.update(
+                        {
+                            keyitm.replace("_", " ").title(): ". ".join(
+                                flattened_messages
+                            )
+                        }
+                    )
                 # Create error message data by prepending the prettified field name
                 # and joining as newlines
                 data = {
-                    'result': 'error',
-                    'message': '\n'.join(
-                        [f"{keyitm}: {message_dict[keyitm]}" for keyitm in message_dict.keys()]
-                    )
+                    "result": "error",
+                    "message": "\n".join(
+                        [f"{keyitm}: {message_dict[keyitm]}" for keyitm in message_dict]
+                    ),
                 }
                 return JsonResponse(data)
         else:
             log.debug(
                 "Entering function (GET)",
-                function='account',
+                function="account",
                 user_id=request.user.id,
             )
-            
+
             try:
                 user = User.objects.get(id=request.user.id)
                 form = UserUpdateForm(instance=user)
@@ -325,17 +354,17 @@ def account(request, **kwargs):
 
         return render(
             request,
-            'application/account.html',
+            "application/account.html",
             {
-                'form': form,
-                'step': 1,
-                'form_page_number': form_page_number,
-                'title': "Account",
-                'update_mode': update_mode,
-                'renewal_mode': renewal_mode,
+                "form": form,
+                "step": 1,
+                "form_page_number": form_page_number,
+                "title": "Account",
+                "update_mode": update_mode,
+                "renewal_mode": renewal_mode,
             },
         )
-    
+
     # General view-level exception catching
     except:
         try:
@@ -343,130 +372,136 @@ def account(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='account',
+            "Uncaught view-level exception",
+            function="account",
             user_id=user_id,
         )
         raise
 
 
-@login_required(redirect_field_name='auth_next')
+@login_required(redirect_field_name="auth_next")
 @set_update_mode
 def address(request, **kwargs):
 
     try:
-        if request.session.get('application_addresses'):
-            del request.session['application_addresses']
+        if request.session.get("application_addresses"):
+            del request.session["application_addresses"]
 
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
-        update_mode = request.session.get(
-            'update_mode') if request.session.get('update_mode') else False
-        renewal_mode = request.session.get(
-            'renewal_mode') if request.session.get('renewal_mode') else False
+        update_mode = (
+            request.session.get("update_mode")
+            if request.session.get("update_mode")
+            else False
+        )
+        renewal_mode = (
+            request.session.get("renewal_mode")
+            if request.session.get("renewal_mode")
+            else False
+        )
 
         if request.method == "POST":
             log.debug(
                 "Leaving function (POST)",
-                function='address',
+                function="address",
                 user_id=request.user.id,
             )
-            
+
             addresses = []
 
             if not update_mode:
                 eligibility_address = {
-                    'address1': request.POST['address1'],
-                    'address2': request.POST['address2'],
-                    'city': request.POST['city'],
-                    'state': request.POST['state'],
-                    'zipcode': request.POST['zip_code'],
+                    "address1": request.POST["address1"],
+                    "address2": request.POST["address2"],
+                    "city": request.POST["city"],
+                    "state": request.POST["state"],
+                    "zipcode": request.POST["zip_code"],
                 }
                 addresses.append(
                     {
-                        'address': eligibility_address,
-                        'type': 'eligibility',
-                        'processed': False
-                    })
+                        "address": eligibility_address,
+                        "type": "eligibility",
+                        "processed": False,
+                    }
+                )
 
             # 'no' means the user has a different mailing address
             # compared to their eligibility address
-            if request.POST.get('mailing_address') == 'no' or update_mode:
-
-                if request.POST.get('mailing_address') == 'no':
+            if request.POST.get("mailing_address") == "no" or update_mode:
+                if request.POST.get("mailing_address") == "no":
                     log.info(
                         "Mailing and eligibility addresses are different",
-                        function='address',
+                        function="address",
                         user_id=request.user.id,
                     )
 
                 mailing_address = {
-                    'address1': request.POST['mailing_address1'],
-                    'address2': request.POST['mailing_address2'],
-                    'city': request.POST['mailing_city'],
-                    'state': request.POST['mailing_state'],
-                    'zipcode': request.POST['mailing_zip_code'],
+                    "address1": request.POST["mailing_address1"],
+                    "address2": request.POST["mailing_address2"],
+                    "city": request.POST["mailing_city"],
+                    "state": request.POST["mailing_state"],
+                    "zipcode": request.POST["mailing_zip_code"],
                 }
                 addresses.append(
-                    {
-                        'address': mailing_address,
-                        'type': 'mailing',
-                        'processed': False
-                    })
+                    {"address": mailing_address, "type": "mailing", "processed": False}
+                )
 
-            request.session['application_addresses'] = json.dumps(
-                addresses)
+            request.session["application_addresses"] = json.dumps(addresses)
             log.info(
                 f"Sending to address correction: {request.session['application_addresses']}",
-                function='address',
+                function="address",
                 user_id=request.user.id,
             )
             return redirect(reverse("app:address_correction"))
         else:
             log.debug(
                 "Entering function (GET)",
-                function='address',
+                function="address",
                 user_id=request.user.id,
             )
 
             same_address = True
             if update_mode:
                 existing = Address.objects.get(user=request.user)
-                mailing_address = AddressRD.objects.get(
-                    id=existing.mailing_address_id)
+                mailing_address = AddressRD.objects.get(id=existing.mailing_address_id)
                 mailing_address = AddressForm(instance=mailing_address)
                 # Will be unused if the user is in update mode
                 eligibility_address = AddressForm()
             else:
                 try:
                     existing = Address.objects.get(user=request.user)
-                    same_address = True if existing.mailing_address_id == existing.eligibility_address_id else False
+                    same_address = (
+                        True
+                        if existing.mailing_address_id
+                        == existing.eligibility_address_id
+                        else False
+                    )
                     eligibility_address = AddressForm(
                         instance=AddressRD.objects.get(
-                            id=existing.eligibility_address_id)
+                            id=existing.eligibility_address_id
+                        )
                     )
                     mailing_address = AddressForm(
-                        instance=AddressRD.objects.get(
-                            id=existing.mailing_address_id)
+                        instance=AddressRD.objects.get(id=existing.mailing_address_id)
                     )
                 except Address.DoesNotExist:
                     eligibility_address = AddressForm()
                     mailing_address = AddressForm()
             return render(
                 request,
-                'application/address.html',
+                "application/address.html",
                 {
-                    'eligibility_address_form': eligibility_address,
-                    'mailing_address_form': mailing_address,
-                    'same_address': same_address,
-                    'step': 2,
-                    'form_page_number': form_page_number,
-                    'title': "Address",
-                    'update_mode': update_mode,
-                    'renewal_mode': renewal_mode,
+                    "eligibility_address_form": eligibility_address,
+                    "mailing_address_form": mailing_address,
+                    "same_address": same_address,
+                    "step": 2,
+                    "form_page_number": form_page_number,
+                    "title": "Address",
+                    "update_mode": update_mode,
+                    "renewal_mode": renewal_mode,
                 },
             )
-        
+
     # General view-level exception catching
     except:
         try:
@@ -474,30 +509,30 @@ def address(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='address',
+            "Uncaught view-level exception",
+            function="address",
             user_id=user_id,
         )
         raise
 
 
-@login_required(redirect_field_name='auth_next')
+@login_required(redirect_field_name="auth_next")
 def address_correction(request, **kwargs):
 
     try:
         log.debug(
             "Entering function",
-            function='address_correction',
+            function="address_correction",
             user_id=request.user.id,
         )
 
         try:
-            addresses = json.loads(request.session['application_addresses'])
+            addresses = json.loads(request.session["application_addresses"])
             in_progress_address = [
-                address for address in addresses if not address['processed']][0]
-            q = QueryDict(urlencode(in_progress_address['address']), mutable=True)
-            q_orig = QueryDict(
-                urlencode(in_progress_address['address']), mutable=True)
+                address for address in addresses if not address["processed"]
+            ][0]
+            q = QueryDict(urlencode(in_progress_address["address"]), mutable=True)
+            q_orig = QueryDict(urlencode(in_progress_address["address"]), mutable=True)
 
             # Loop through total_iterations times to try different methods of
             # parsing the address
@@ -507,11 +542,11 @@ def address_correction(request, **kwargs):
             # Loop 2: user input with keyword replacements > USPS API
             total_iterations = 3  # Loop index 0 -> 2
             max_loop_idx = total_iterations - 1
-            validation_msg = ''
+            validation_msg = ""
             for idx in range(total_iterations):
                 log.info(
                     f"Starting address loop {idx}...",
-                    function='address_correction',
+                    function="address_correction",
                     user_id=request.user.id,
                 )
                 validationResult = None
@@ -519,25 +554,24 @@ def address_correction(request, **kwargs):
                 # If this is the second iteration and 'address2' is not blank,
                 # replace the apt/suite keywords with "unit"
                 if idx == 1:
-                    if q['address2'] != '':
+                    if q["address2"] != "":
                         log.info(
                             "Attempting keyword replacement for the secondary address",
-                            function='address_correction',
+                            function="address_correction",
                             user_id=request.user.id,
                         )
-                        removeList = ['apt', 'unit', '#']
+                        removeList = ["apt", "unit", "#"]
                         for wrd in removeList:
-                            q['address2'] = q['address2'].lower().replace(wrd, '')
+                            q["address2"] = q["address2"].lower().replace(wrd, "")
 
-                        q['address2'] = 'Unit {}'.format(
-                            q['address2'].lstrip())
-                        
+                        q["address2"] = "Unit {}".format(q["address2"].lstrip())
+
                     else:
                         # Otherwise if 'address2' is blank, skip this iteration
                         # (it would be the same as idx==0)
                         log.info(
                             "No 'address2' to update; continuing to next iteration",
-                            function='address_correction',
+                            function="address_correction",
                             user_id=request.user.id,
                         )
                         continue
@@ -546,11 +580,12 @@ def address_correction(request, **kwargs):
                     # Combine the address into a string so that it can then be
                     # parsed by usaddress
                     addressStr = "{ad1} {ad2}, {ct}, {st} {zp}".format(
-                        ad1=q['address1'].replace('#', ''),
-                        ad2=q['address2'].replace('#', ''),
-                        ct=q['city'],
-                        st=q['state'],
-                        zp=q['zipcode'])
+                        ad1=q["address1"].replace("#", ""),
+                        ad2=q["address2"].replace("#", ""),
+                        ct=q["city"],
+                        st=q["state"],
+                        zp=q["zipcode"],
+                    )
 
                     try:
                         rawAddressDict, _ = usaddress.tag(
@@ -563,7 +598,7 @@ def address_correction(request, **kwargs):
                     except usaddress.RepeatedLabelError:
                         log.warning(
                             "Issue found in usaddress labels - continuing to next iteration",
-                            function='address_correction',
+                            function="address_correction",
                             user_id=request.user.id,
                         )
                         continue
@@ -574,20 +609,20 @@ def address_correction(request, **kwargs):
                     if idx in (0, 1):
                         log.info(
                             f"Attempting USPS validation with rawAddressDict: {rawAddressDict}",
-                            function='address_correction',
+                            function="address_correction",
                             user_id=request.user.id,
                         )
                         validationResult = validate_usps(rawAddressDict)
                     else:
                         log.info(
                             f"Attempting USPS validation with input QueryDict: {q}",
-                            function='address_correction',
+                            function="address_correction",
                             user_id=request.user.id,
                         )
                         validationResult = validate_usps(q)
                     log.info(
                         f"USPS Validation returned {validationResult}",
-                        function='address_correction',
+                        function="address_correction",
                         user_id=request.user.id,
                     )
                 except:
@@ -599,45 +634,51 @@ def address_correction(request, **kwargs):
                 # Break from this loop if validationResult has a value and a
                 # match is found
                 if validationResult:
-                    if validationResult['matches'][0]['code'] != '':
+                    if validationResult["matches"][0]["code"] != "":
                         break
 
                     # If no match is found, store the validation message if it
                     # exists (and overwrite any prior message)
-                    if validationResult['corrections'][0]['code'] != '':
-                        validation_msg = validationResult['corrections'][0]['text']
+                    if validationResult["corrections"][0]["code"] != "":
+                        validation_msg = validationResult["corrections"][0]["text"]
 
                 # If this is the final iteration, raise an exception that a
                 # match wasn't found
                 if idx == max_loop_idx:
                     log.info(
                         "Address not found - end of loop",
-                        function='address_correction',
+                        function="address_correction",
                         user_id=request.user.id,
                     )
                     # If no validation message from USPS exists, raise KeyError;
                     # else raise TypeError with the message
-                    if validation_msg == '':
+                    if validation_msg == "":
                         raise KeyError
                     else:
                         raise TypeError(validation_msg)
 
             # Link to the next page from address_correction.html
             link_next_page = True
-            validated_address = validationResult['address']
-            address_feedback = [validated_address['streetAddress'],
-                                validated_address['secondaryAddress'],
-                                validated_address['city'] + " " + validated_address['state'] + " " + validated_address['ZIPCode']]
+            validated_address = validationResult["address"]
+            address_feedback = [
+                validated_address["streetAddress"],
+                validated_address["secondaryAddress"],
+                validated_address["city"]
+                + " "
+                + validated_address["state"]
+                + " "
+                + validated_address["ZIPCode"],
+            ]
             log.info(
                 f"address_feedback is: {address_feedback}",
-                function='address_correction',
+                function="address_correction",
                 user_id=request.user.id,
             )
 
         except TypeError as msg:
             log.info(
                 f"More address information is needed from user: {msg}",
-                function='address_correction',
+                function="address_correction",
                 user_id=request.user.id,
             )
             # Don't link to the next page from address_correction.html
@@ -646,7 +687,7 @@ def address_correction(request, **kwargs):
             # Pass the validation message directly to the user
             msg = str(msg)
             address_feedback = [
-                msg.replace('Default address: ', ''),
+                msg.replace("Default address: ", ""),
                 "Please press 'back' and re-enter.",
             ]
 
@@ -657,18 +698,18 @@ def address_correction(request, **kwargs):
                 "Sorry, we couldn't verify this address through USPS.",
                 "Please press 'back' and re-enter.",
             ]
-            log.warning(    
+            log.warning(
                 "USPS couldn't figure it out; no validation message for additional information was returned",
-                function='address_correction',
+                function="address_correction",
                 user_id=request.user.id,
             )
 
         else:
-            dict_address = validationResult['address']
-            request.session['usps_address_validate'] = dict_address
+            dict_address = validationResult["address"]
+            request.session["usps_address_validate"] = dict_address
             log.info(
                 f"Address match found: {dict_address}",
-                function='address_correction',
+                function="address_correction",
                 user_id=request.user.id,
             )
 
@@ -677,39 +718,41 @@ def address_correction(request, **kwargs):
             # skip addressCorrection()
 
             # Run the QueryDict 'q' to get just dict
-            if 'usps_address_validate' in request.session.keys() and \
-                dict_address['streetAddress'].lower() == q_orig['address1'].lower() and \
-                dict_address['secondaryAddress'].lower() == q_orig['address2'].lower() and \
-                dict_address['city'].lower() == q_orig['city'].lower() and \
-                dict_address['state'].lower() == q_orig['state'].lower() and \
-                str(dict_address['ZIPCode']).lower() == q_orig['zipcode'].lower():
-
+            if (
+                "usps_address_validate" in request.session.keys()
+                and dict_address["streetAddress"].lower() == q_orig["address1"].lower()
+                and dict_address["secondaryAddress"].lower()
+                == q_orig["address2"].lower()
+                and dict_address["city"].lower() == q_orig["city"].lower()
+                and dict_address["state"].lower() == q_orig["state"].lower()
+                and str(dict_address["ZIPCode"]).lower() == q_orig["zipcode"].lower()
+            ):
                 log.info(
                     "Exact (case-insensitive) address match found",
-                    function='address_correction',
+                    function="address_correction",
                     user_id=request.user.id,
                 )
                 return redirect(reverse("app:take_usps_address"))
 
         log.info(
             "Proceeding to user verification of the address result",
-            function='address_correction',
+            function="address_correction",
             user_id=request.user.id,
         )
 
         return render(
             request,
-            'application/address_correction.html',
+            "application/address_correction.html",
             {
-                'step': 2,
-                'form_page_number': form_page_number,
-                'link_next_page': link_next_page,
-                'address_feedback': address_feedback,
-                'address_type': in_progress_address['type'],
-                'title': "Address Correction",
+                "step": 2,
+                "form_page_number": form_page_number,
+                "link_next_page": link_next_page,
+                "address_feedback": address_feedback,
+                "address_type": in_progress_address["type"],
+                "title": "Address Correction",
             },
         )
-    
+
     # General view-level exception catching
     except:
         try:
@@ -717,34 +760,40 @@ def address_correction(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='address_correction',
+            "Uncaught view-level exception",
+            function="address_correction",
             user_id=user_id,
         )
         raise
 
 
-@login_required(redirect_field_name='auth_next')
+@login_required(redirect_field_name="auth_next")
 def take_usps_address(request, **kwargs):
 
     try:
         log.debug(
             "Entering function",
-            function='take_usps_address',
+            function="take_usps_address",
             user_id=request.user.id,
         )
 
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
-        update_mode = request.session.get(
-            'update_mode') if request.session.get('update_mode') else False
-        renewal_mode = request.session.get(
-            'renewal_mode') if request.session.get('renewal_mode') else False
+        update_mode = (
+            request.session.get("update_mode")
+            if request.session.get("update_mode")
+            else False
+        )
+        renewal_mode = (
+            request.session.get("renewal_mode")
+            if request.session.get("renewal_mode")
+            else False
+        )
 
         try:
             # Use the session var created in addressCorrection(), then remove it
-            dict_address = request.session['usps_address_validate']
-            del request.session['usps_address_validate']
+            dict_address = request.session["usps_address_validate"]
+            del request.session["usps_address_validate"]
 
             # Check for and store GMA and Connexion status
             is_in_gma, has_connexion = address_check(dict_address)
@@ -753,23 +802,24 @@ def take_usps_address(request, **kwargs):
             # dict_address. If the address is not found, create a new one.
             try:
                 field_map = [
-                    ('streetAddress', 'address1'),
-                    ('secondaryAddress', 'address2'),
-                    ('city', 'city'),
-                    ('state', 'state'),
-                    ('ZIPCode', 'zip_code'),
+                    ("streetAddress", "address1"),
+                    ("secondaryAddress", "address2"),
+                    ("city", "city"),
+                    ("state", "state"),
+                    ("ZIPCode", "zip_code"),
                 ]
                 instance = AddressRD.objects.get(
                     address_sha1=AddressRD.hash_address(
-                        {key: dict_address[ref_key] for ref_key, key in field_map})
+                        {key: dict_address[ref_key] for ref_key, key in field_map}
+                    )
                 )
             except AddressRD.DoesNotExist:
                 instance = AddressRD(
-                    address1=dict_address['streetAddress'],
-                    address2=dict_address['secondaryAddress'],
-                    city=dict_address['city'],
-                    state=dict_address['state'],
-                    zip_code=int(dict_address['ZIPCode']),
+                    address1=dict_address["streetAddress"],
+                    address2=dict_address["secondaryAddress"],
+                    city=dict_address["city"],
+                    state=dict_address["state"],
+                    zip_code=int(dict_address["ZIPCode"]),
                 )
                 instance.clean()
 
@@ -778,28 +828,29 @@ def take_usps_address(request, **kwargs):
 
             # Get the first address in the list of addresses
             # that is not yet processed
-            addresses = json.loads(request.session['application_addresses'])
-            address = [
-                address for address in addresses if not address['processed']][0]
+            addresses = json.loads(request.session["application_addresses"])
+            address = [address for address in addresses if not address["processed"]][0]
 
             # Mark the address as processed and create a new key on the
             # dictionary for storing the instance.
-            address['processed'] = True
-            address['instance'] = instance.pk
+            address["processed"] = True
+            address["instance"] = instance.pk
 
             # Save the updated list of addresses to the session
-            request.session['application_addresses'] = json.dumps(addresses)
+            request.session["application_addresses"] = json.dumps(addresses)
 
             # Check if we need to process any other addresses
-            if [address for address in addresses if not address['processed']]:
-                return redirect(reverse('app:address_correction'))
+            if [address for address in addresses if not address["processed"]]:
+                return redirect(reverse("app:address_correction"))
 
             # Check to see if a address with the type 'eligibility' exists in the
             # request.session['application_addresses'].
             eligibility_addresses = [
-                address for address in addresses if address['type'] == 'eligibility']
+                address for address in addresses if address["type"] == "eligibility"
+            ]
             mailing_addresses = [
-                address for address in addresses if address['type'] == 'mailing']
+                address for address in addresses if address["type"] == "mailing"
+            ]
             if eligibility_addresses:
                 try:
                     # Create and save a record for the user's address using
@@ -808,18 +859,21 @@ def take_usps_address(request, **kwargs):
                         Address.objects.create(
                             user=request.user,
                             eligibility_address=AddressRD.objects.get(
-                                id=eligibility_addresses[0]['instance']),
+                                id=eligibility_addresses[0]["instance"]
+                            ),
                             mailing_address=AddressRD.objects.get(
-                                id=mailing_addresses[0]['instance']
+                                id=mailing_addresses[0]["instance"]
                             ),
                         )
                     else:
                         Address.objects.create(
                             user=request.user,
                             eligibility_address=AddressRD.objects.get(
-                                id=eligibility_addresses[0]['instance']),
+                                id=eligibility_addresses[0]["instance"]
+                            ),
                             mailing_address=AddressRD.objects.get(
-                                id=eligibility_addresses[0]['instance']),
+                                id=eligibility_addresses[0]["instance"]
+                            ),
                         )
                 except IntegrityError:
                     # Update the user's address record if it already exists
@@ -827,18 +881,18 @@ def take_usps_address(request, **kwargs):
                     if mailing_addresses:
                         address = Address.objects.get(user=request.user)
                         address.eligibility_address = AddressRD.objects.get(
-                            id=eligibility_addresses[0]['instance']
+                            id=eligibility_addresses[0]["instance"]
                         )
                         address.mailing_address = AddressRD.objects.get(
-                            id=mailing_addresses[0]['instance']
+                            id=mailing_addresses[0]["instance"]
                         )
                     else:
                         address = Address.objects.get(user=request.user)
                         address.eligibility_address = AddressRD.objects.get(
-                            id=eligibility_addresses[0]['instance']
+                            id=eligibility_addresses[0]["instance"]
                         )
                         address.mailing_address = AddressRD.objects.get(
-                            id=eligibility_addresses[0]['instance']
+                            id=eligibility_addresses[0]["instance"]
                         )
 
                     # Set the attributes to let pre_save know to save history
@@ -850,15 +904,15 @@ def take_usps_address(request, **kwargs):
                 if renewal_mode:
                     # Call save_renewal_action after .save() so as not to save
                     # renewal metadata as data updates
-                    save_renewal_action(request, 'address')
+                    save_renewal_action(request, "address")
 
-                return redirect(reverse('app:household'))
+                return redirect(reverse("app:household"))
             else:
                 # We're in update_mode here, so we're only updating the users
                 # mailing address. Then redirecting them to their settings page.
                 address = Address.objects.get(user=request.user)
                 address.mailing_address = AddressRD.objects.get(
-                    id=mailing_addresses[0]['instance']
+                    id=mailing_addresses[0]["instance"]
                 )
 
                 # Set the attributes to let pre_save know to save history
@@ -870,13 +924,13 @@ def take_usps_address(request, **kwargs):
         except (KeyError, TypeError):
             log.warning(
                 f"USPS couldn't out the address: {dict_address}",
-                function='take_usps_address',
+                function="take_usps_address",
                 user_id=request.user.id,
             )
             # HTTP_REFERER sends this button press back to the same page
             # (e.g. removes the button functionality)
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-        
+            return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
+
     # General view-level exception catching
     except:
         try:
@@ -884,32 +938,38 @@ def take_usps_address(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='take_usps_address',
+            "Uncaught view-level exception",
+            function="take_usps_address",
             user_id=user_id,
         )
         raise
 
 
-@login_required(redirect_field_name='auth_next')
+@login_required(redirect_field_name="auth_next")
 @set_update_mode
 def household(request, **kwargs):
 
     try:
-        if request.session.get('application_addresses'):
-            del request.session['application_addresses']
+        if request.session.get("application_addresses"):
+            del request.session["application_addresses"]
 
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
-        update_mode = request.session.get(
-            'update_mode') if request.session.get('update_mode') else False
-        renewal_mode = request.session.get(
-            'renewal_mode') if request.session.get('renewal_mode') else False
+        update_mode = (
+            request.session.get("update_mode")
+            if request.session.get("update_mode")
+            else False
+        )
+        renewal_mode = (
+            request.session.get("renewal_mode")
+            if request.session.get("renewal_mode")
+            else False
+        )
 
         if request.method == "POST":
             log.debug(
                 "Leaving function (POST)",
-                function='household',
+                function="household",
                 user_id=request.user.id,
             )
 
@@ -935,41 +995,40 @@ def household(request, **kwargs):
             if renewal_mode:
                 # Call save_renewal_action after .save() so as not to save
                 # renewal metadata as data updates
-                save_renewal_action(request, 'household')
+                save_renewal_action(request, "household")
 
             if update_mode:
-                return redirect(f'{reverse("app:household_members")}?update_mode=1')
+                return redirect(f"{reverse('app:household_members')}?update_mode=1")
             else:
                 return redirect(reverse("app:household_members"))
 
         else:
             log.debug(
                 "Entering function (GET)",
-                function='household',
+                function="household",
                 user_id=request.user.id,
             )
 
             try:
                 # Query the users table for the user's data
-                eligibility = Household.objects.get(
-                    user_id=request.user.id)
+                eligibility = Household.objects.get(user_id=request.user.id)
                 form = HouseholdForm(instance=eligibility)
             except Exception:
                 form = HouseholdForm()
 
         return render(
             request,
-            'application/household.html',
+            "application/household.html",
             {
-                'form': form,
-                'step': 3,
-                'form_page_number': form_page_number,
-                'title': "Household",
-                'update_mode': update_mode,
-                'renewal_mode': renewal_mode,
+                "form": form,
+                "step": 3,
+                "form_page_number": form_page_number,
+                "title": "Household",
+                "update_mode": update_mode,
+                "renewal_mode": renewal_mode,
             },
         )
-    
+
     # General view-level exception catching
     except:
         try:
@@ -977,37 +1036,42 @@ def household(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='household',
+            "Uncaught view-level exception",
+            function="household",
             user_id=user_id,
         )
         raise
 
 
-@login_required(redirect_field_name='auth_next')
+@login_required(redirect_field_name="auth_next")
 @set_update_mode
 def household_members(request, **kwargs):
 
     try:
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
-        update_mode = request.session.get(
-            'update_mode') if request.session.get('update_mode') else False
-        renewal_mode = request.session.get(
-            'renewal_mode') if request.session.get('renewal_mode') else False
+        update_mode = (
+            request.session.get("update_mode")
+            if request.session.get("update_mode")
+            else False
+        )
+        renewal_mode = (
+            request.session.get("renewal_mode")
+            if request.session.get("renewal_mode")
+            else False
+        )
 
         if request.method == "POST":
             log.debug(
                 "Leaving function (POST)",
-                function='household_members',
+                function="household_members",
                 user_id=request.user.id,
             )
 
             try:
                 existing = request.user.householdmembers
 
-                form = HouseholdMembersForm(
-                    request.POST, instance=existing)
+                form = HouseholdMembersForm(request.POST, instance=existing)
             except (AttributeError, ObjectDoesNotExist):
                 form = HouseholdMembersForm(request.POST or None)
 
@@ -1017,7 +1081,7 @@ def household_members(request, **kwargs):
 
                 # Loop 1: scans files
                 # Loop 2: saves file(s) if valid
-                identification_paths = request.POST.getlist('identification_path')
+                identification_paths = request.POST.getlist("identification_path")
                 updated_identification_paths = []
 
                 for _, base64_content in enumerate(identification_paths):
@@ -1029,12 +1093,14 @@ def household_members(request, **kwargs):
                     file_validated, failure_message_or_file_extension = file_validation(
                         buffer,
                         request.user.id,
-                        calling_function='household_members',
+                        calling_function="household_members",
                     )
                     if not file_validated:
                         # Attempt to define household_info to load
                         try:
-                            household_info = request.user.householdmembers.household_info
+                            household_info = (
+                                request.user.householdmembers.household_info
+                            )
                         except AttributeError:
                             household_info = None
 
@@ -1042,21 +1108,31 @@ def household_members(request, **kwargs):
                             request,
                             "application/household_members.html",
                             {
-                                'step': 3,
+                                "step": 3,
                                 "message": failure_message_or_file_extension,
-                                'dependent': str(request.user.household.number_persons_in_household),
-                                'list': list(range(request.user.household.number_persons_in_household)),
-                                'form': form,
-                                'form_page_number': form_page_number,
-                                'title': "Household Members",
-                                'update_mode': update_mode,
-                                'form_data': json.dumps(household_info) if household_info else [],
+                                "dependent": str(
+                                    request.user.household.number_persons_in_household
+                                ),
+                                "list": list(
+                                    range(
+                                        request.user.household.number_persons_in_household
+                                    )
+                                ),
+                                "form": form,
+                                "form_page_number": form_page_number,
+                                "title": "Household Members",
+                                "update_mode": update_mode,
+                                "form_data": json.dumps(household_info)
+                                if household_info
+                                else [],
                             },
                         )
 
                     # File was successfully validated; file_validation() output
                     # will be the file extension
-                    file_name = f"household_member_id.{failure_message_or_file_extension}"
+                    file_name = (
+                        f"household_member_id.{failure_message_or_file_extension}"
+                    )
                     # Assuming file_name is already defined
                     updated_base64_content = base64_content + "," + file_name
                     updated_identification_paths.append(updated_base64_content)
@@ -1079,33 +1155,32 @@ def household_members(request, **kwargs):
 
                     file_path = userfiles_path(
                         request.user,
-                        pendulum.now(
-                            'utc'
-                        ).format(
+                        pendulum.now("utc").format(
                             f"YYYY-MM-DD[T]HHmmss[Z_{fileAmount}_{file_name}]"
                         ),
                     )
 
                     uploaded_file = SimpleUploadedFile(
-                        file_name, buffer.read(), content_type)
+                        file_name, buffer.read(), content_type
+                    )
                     file_paths.append(file_path)
                     default_storage.save(file_path, uploaded_file)
                     log.debug(
                         f"Identification file {file_path} saved successfully",
-                        function='household_members',
+                        function="household_members",
                         user_id=request.user.id,
                     )
 
                 if fileAmount > 0:
                     log.info(
-                        'Identification file(s) saved successfully',
-                        function='household_members',
+                        "Identification file(s) saved successfully",
+                        function="household_members",
                         user_id=request.user.id,
                     )
                 else:
                     log.info(
-                        'No identification files to upload were found',
-                        function='household_members',
+                        "No identification files to upload were found",
+                        function="household_members",
                         user_id=request.user.id,
                     )
             else:
@@ -1113,26 +1188,33 @@ def household_members(request, **kwargs):
                 error_message = "The following errors occurred: "
                 for field, error_messages in errors.items():
                     for error_message in error_messages:
-                        error_message += f"Field: {field} errored because of {error_message}\n"
+                        error_message += (
+                            f"Field: {field} errored because of {error_message}\n"
+                        )
                 return render(
                     request,
                     "application/household_members.html",
                     {
-                        'step': 3,
+                        "step": 3,
                         "message": error_message,
-                        'dependent': str(request.user.household.number_persons_in_household),
-                        'list': list(range(request.user.household.number_persons_in_household)),
-                        'form': form,
-                        'form_page_number': form_page_number,
-                        'title': "Household Members",
-                        'update_mode': update_mode,
-                        'form_data': json.dumps(household_info) if household_info else [],
+                        "dependent": str(
+                            request.user.household.number_persons_in_household
+                        ),
+                        "list": list(
+                            range(request.user.household.number_persons_in_household)
+                        ),
+                        "form": form,
+                        "form_page_number": form_page_number,
+                        "title": "Household Members",
+                        "update_mode": update_mode,
+                        "form_data": json.dumps(household_info)
+                        if household_info
+                        else [],
                     },
                 )
 
             instance.user_id = request.user.id
-            instance.household_info = serialize_household_members(
-                request, file_paths)
+            instance.household_info = serialize_household_members(request, file_paths)
 
             # Set the attribute to let pre_save know to save history
             instance.update_mode = update_mode
@@ -1143,16 +1225,18 @@ def household_members(request, **kwargs):
             if renewal_mode:
                 # Call save_renewal_action after .save() so as not to save
                 # renewal metadata as data updates
-                save_renewal_action(request, 'household_members')
+                save_renewal_action(request, "household_members")
 
             if update_mode:
-                return redirect(f"{reverse('app:user_settings')}?page_updated=household")
+                return redirect(
+                    f"{reverse('app:user_settings')}?page_updated=household"
+                )
             return redirect(reverse("app:programs"))
-        
+
         else:
             log.debug(
                 "Entering function (GET)",
-                function='household_members',
+                function="household_members",
                 user_id=request.user.id,
             )
 
@@ -1166,18 +1250,18 @@ def household_members(request, **kwargs):
             request,
             "application/household_members.html",
             {
-                'step': 3,
-                'dependent': str(request.user.household.number_persons_in_household),
-                'list': list(range(request.user.household.number_persons_in_household)),
-                'form': form,
-                'form_page_number': form_page_number,
-                'title': "Household Members",
-                'update_mode': update_mode,
-                'form_data': json.dumps(household_info) if household_info else [],
-                'renewal_mode': renewal_mode,
+                "step": 3,
+                "dependent": str(request.user.household.number_persons_in_household),
+                "list": list(range(request.user.household.number_persons_in_household)),
+                "form": form,
+                "form_page_number": form_page_number,
+                "title": "Household Members",
+                "update_mode": update_mode,
+                "form_data": json.dumps(household_info) if household_info else [],
+                "renewal_mode": renewal_mode,
             },
         )
-    
+
     # General view-level exception catching
     except:
         try:
@@ -1185,25 +1269,28 @@ def household_members(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='household_members',
+            "Uncaught view-level exception",
+            function="household_members",
             user_id=user_id,
         )
         raise
 
 
-@login_required(redirect_field_name='auth_next')
+@login_required(redirect_field_name="auth_next")
 def programs(request, **kwargs):
 
     try:
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
-        renewal_mode = request.session.get(
-            'renewal_mode') if request.session.get('renewal_mode') else False
+        renewal_mode = (
+            request.session.get("renewal_mode")
+            if request.session.get("renewal_mode")
+            else False
+        )
         if request.method == "POST":
             log.debug(
                 "Leaving function (POST)",
-                function='programs',
+                function="programs",
                 user_id=request.user.id,
             )
 
@@ -1214,7 +1301,8 @@ def programs(request, **kwargs):
             if renewal_mode:
                 # get the user's eligibility programs
                 eligibility_programs = EligibilityProgram.objects.filter(
-                    user_id=request.user.id)
+                    user_id=request.user.id
+                )
                 # for every program loop through and delete the program
                 for program in eligibility_programs:
                     program.renewal_mode = True
@@ -1236,42 +1324,41 @@ def programs(request, **kwargs):
             # separate row in the database.
             selected_eligibility_programs = []
             for value in eligibility_programs.values():
-                selected_eligibility_programs.append(EligibilityProgram(
-                    user_id=request.user.id,
-                    program_id=value,
-                    renewal_mode=renewal_mode,
-                ))
+                selected_eligibility_programs.append(
+                    EligibilityProgram(
+                        user_id=request.user.id,
+                        program_id=value,
+                        renewal_mode=renewal_mode,
+                    )
+                )
 
             if renewal_mode:
-                save_renewal_action(request, 'eligibility_programs')
+                save_renewal_action(request, "eligibility_programs")
 
-            EligibilityProgram.objects.bulk_create(
-                selected_eligibility_programs)
+            EligibilityProgram.objects.bulk_create(selected_eligibility_programs)
             return redirect(reverse("app:files"))
         else:
             log.debug(
                 "Entering function (GET)",
-                function='programs',
+                function="programs",
                 user_id=request.user.id,
             )
 
             # Get all of the programs (except the one with identification and where is_active is False) from the application_EligibilityProgramRD table
             # ordered by the friendly_name field acending
-            programs = EligibilityProgramRD.objects.filter(
-                is_active=True
-            ).order_by(
-                'friendly_name'
+            programs = EligibilityProgramRD.objects.filter(is_active=True).order_by(
+                "friendly_name"
             )
 
         return render(
             request,
-            'application/programs.html',
+            "application/programs.html",
             {
-                'programs': programs,
-                'step': 4,
-                'form_page_number': form_page_number,
-                'title': "Programs",
-                'renewal_mode': renewal_mode,
+                "programs": programs,
+                "step": 4,
+                "form_page_number": form_page_number,
+                "title": "Programs",
+                "renewal_mode": renewal_mode,
             },
         )
 
@@ -1282,72 +1369,78 @@ def programs(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='programs',
+            "Uncaught view-level exception",
+            function="programs",
             user_id=user_id,
         )
         raise
 
-@login_required(redirect_field_name='auth_next')
+
+@login_required(redirect_field_name="auth_next")
 @set_update_mode
 def files(request, **kwargs):
-    '''
+    """
     Variables:
     fileNames - used to name the files in the database and file upload
     fileAmount - number of file uploads per income verified documentation
-    '''
+    """
 
     try:
         # Check the boolean value of update_mode session var
         # Set as false if session var DNE
-        renewal_mode = request.session.get(
-            'renewal_mode') if request.session.get('renewal_mode') else False
+        renewal_mode = (
+            request.session.get("renewal_mode")
+            if request.session.get("renewal_mode")
+            else False
+        )
         users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
-            request)
+            request
+        )
 
         if request.method == "POST":
             log.debug(
                 "Leaving function (POST)",
-                function='files',
+                function="files",
                 user_id=request.user.id,
             )
 
-            user_file_upload = EligibilityProgram.objects.get(
-                pk=request.POST['id'])
-            form = FileUploadForm(request.POST, request.FILES,
-                                instance=user_file_upload)
+            user_file_upload = EligibilityProgram.objects.get(pk=request.POST["id"])
+            form = FileUploadForm(
+                request.POST, request.FILES, instance=user_file_upload
+            )
             if form.is_valid():
                 instance = form.save(commit=False)
                 fileNames = []
                 fileAmount = 0
-                
+
                 # Loop 1: scans files
                 # Loop 2: saves file(s) if valid
-                for f in request.FILES.getlist('document_path'):
+                for f in request.FILES.getlist("document_path"):
                     file_validated, failure_message_or_file_extension = file_validation(
                         f,
                         request.user.id,
-                        calling_function='files',
+                        calling_function="files",
                     )
                     if not file_validated:
-                        users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
-                            request)
+                        users_programs_without_uploads = (
+                            get_in_progress_eligiblity_file_uploads(request)
+                        )
                         return render(
                             request,
-                            'application/files.html',
+                            "application/files.html",
                             {
                                 "message": failure_message_or_file_extension,
-                                'form': form,
-                                'eligiblity_programs': users_programs_without_uploads,
-                                'step': 5,
-                                'form_page_number': form_page_number,
-                                'title': "Files",
-                                'file_upload': json.dumps({'success_status': False}),
-                                'renewal_mode': renewal_mode,
+                                "form": form,
+                                "eligiblity_programs": users_programs_without_uploads,
+                                "step": 5,
+                                "form_page_number": form_page_number,
+                                "title": "Files",
+                                "file_upload": json.dumps({"success_status": False}),
+                                "renewal_mode": renewal_mode,
                             },
                         )
 
-                for f in request.FILES.getlist('document_path'):
+                for f in request.FILES.getlist("document_path"):
                     fileAmount += 1
                     instance.renewal_mode = renewal_mode
 
@@ -1356,9 +1449,7 @@ def files(request, **kwargs):
                     # each time this loop is run, plus again for the final save()
                     # afterward
                     instance.document_path.save(
-                        pendulum.now(
-                            'utc'
-                        ).format(
+                        pendulum.now("utc").format(
                             f"YYYY-MM-DD[T]HHmmss[Z_{fileAmount}_{f}]"
                         ),
                         f,
@@ -1366,7 +1457,7 @@ def files(request, **kwargs):
                     fileNames.append(str(instance.document_path))
                     log.debug(
                         f"Eligibility file {instance.document_path} saved successfully",
-                        function='files',
+                        function="files",
                         user_id=request.user.id,
                     )
 
@@ -1376,25 +1467,26 @@ def files(request, **kwargs):
 
                 if fileAmount == 0:
                     log.info(
-                        'No Eligibility Program files to upload were found',
-                        function='files',
+                        "No Eligibility Program files to upload were found",
+                        function="files",
                         user_id=request.user.id,
                     )
 
-                users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
-                    request)
+                users_programs_without_uploads = (
+                    get_in_progress_eligiblity_file_uploads(request)
+                )
                 if users_programs_without_uploads.count():
                     return render(
                         request,
-                        'application/files.html',
+                        "application/files.html",
                         {
-                            'form': form,
-                            'eligiblity_programs': users_programs_without_uploads,
-                            'step': 5,
-                            'form_page_number': form_page_number,
-                            'title': "Files",
-                            'file_upload': json.dumps({'success_status': True}),
-                            'renewal_mode': renewal_mode,
+                            "form": form,
+                            "eligiblity_programs": users_programs_without_uploads,
+                            "step": 5,
+                            "form_page_number": form_page_number,
+                            "title": "Files",
+                            "file_upload": json.dumps({"success_status": True}),
+                            "renewal_mode": renewal_mode,
                         },
                     )
                 else:
@@ -1413,25 +1505,25 @@ def files(request, **kwargs):
         else:
             log.debug(
                 "Entering function (GET)",
-                function='files',
+                function="files",
                 user_id=request.user.id,
             )
 
             form = FileUploadForm()
             return render(
                 request,
-                'application/files.html',
+                "application/files.html",
                 {
-                    'form': form,
-                    'eligiblity_programs': users_programs_without_uploads,
-                    'step': 5,
-                    'form_page_number': form_page_number,
-                    'title': "Files",
-                    'file_upload': json.dumps({'success_status': None}),
-                    'renewal_mode': renewal_mode,
+                    "form": form,
+                    "eligiblity_programs": users_programs_without_uploads,
+                    "step": 5,
+                    "form_page_number": form_page_number,
+                    "title": "Files",
+                    "file_upload": json.dumps({"success_status": None}),
+                    "renewal_mode": renewal_mode,
                 },
             )
-        
+
     # General view-level exception catching
     except:
         try:
@@ -1439,20 +1531,20 @@ def files(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='files',
+            "Uncaught view-level exception",
+            function="files",
             user_id=user_id,
         )
         raise
 
 
-@login_required(redirect_field_name='auth_next')
+@login_required(redirect_field_name="auth_next")
 def broadcast(request, **kwargs):
 
     try:
         log.debug(
             "Entering function",
-            function='broadcast',
+            function="broadcast",
             user_id=request.user.id,
         )
 
@@ -1462,7 +1554,7 @@ def broadcast(request, **kwargs):
         except Exception:
             log.exception(
                 "There was a problem with sending the email (Sendgrid)",
-                function='broadcast',
+                function="broadcast",
                 user_id=request.user.id,
             )
             # TODO store / save for later: client getting feedback that SendGrid may be down
@@ -1472,14 +1564,14 @@ def broadcast(request, **kwargs):
         except Exception:
             log.exception(
                 "Twilio servers may be down",
-                function='broadcast',
+                function="broadcast",
                 user_id=request.user.id,
             )
             # TODO store / save for later: client getting feedback that twilio may be down
 
         log.info(
             "Application completed successfully",
-            function='broadcast',
+            function="broadcast",
             user_id=request.user.id,
         )
 
@@ -1489,12 +1581,12 @@ def broadcast(request, **kwargs):
 
         return render(
             request,
-            'application/broadcast.html',
+            "application/broadcast.html",
             {
-                'program_string': current_user.email,
-                'step': 6,
-                'form_page_number': form_page_number,
-                'title': "Broadcast",
+                "program_string": current_user.email,
+                "step": 6,
+                "form_page_number": form_page_number,
+                "title": "Broadcast",
             },
         )
 
@@ -1505,8 +1597,8 @@ def broadcast(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='broadcast',
+            "Uncaught view-level exception",
+            function="broadcast",
             user_id=user_id,
         )
         raise

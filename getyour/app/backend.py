@@ -16,53 +16,52 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import json
+
 import datetime
-import requests
-import pendulum
+import json
+import logging
 from enum import Enum
 from itertools import chain
-import logging
+from urllib.parse import quote, urlencode
+
 import httpagentparser
 import magic
-from urllib.parse import quote, urlencode
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
-
-from twilio.rest import Client
-from sendgrid.helpers.mail import Mail
-from sendgrid import SendGridAPIClient
-
-from python_http_client.exceptions import HTTPError as SendGridHTTPError
-from twilio.base.exceptions import TwilioRestException
-
+import pendulum
+import requests
 from django import http
-from django.shortcuts import reverse
-from django.contrib.auth.backends import UserModel
-from django.contrib.auth import login as django_auth_login
 from django.conf import settings
+from django.contrib.auth import login as django_auth_login
+from django.contrib.auth.backends import UserModel
+from django.core.files.uploadedfile import UploadedFile
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 from django.db.models.fields.files import FieldFile
-from django.core.serializers.json import DjangoJSONEncoder
-from django.core.files.uploadedfile import UploadedFile
+from django.shortcuts import reverse
+from logger.wrappers import LoggerWrapper
 from phonenumber_field.phonenumber import PhoneNumber
-from app.models import (
-    HouseholdMembers,
-    EligibilityProgram,
-    IQProgramRD,
-    IQProgram,
-    User,
-    Household,
-    AddressRD,
-)
+from python_http_client.exceptions import HTTPError as SendGridHTTPError
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+from twilio.base.exceptions import TwilioRestException
+from twilio.rest import Client
+
 from app.constants import (
-    supported_content_types,
-    enable_calendar_year_renewal,
     application_pages,
     default_spatial_reference,
+    enable_calendar_year_renewal,
+    supported_content_types,
 )
-from logger.wrappers import LoggerWrapper
-
+from app.models import (
+    AddressRD,
+    EligibilityProgram,
+    Household,
+    HouseholdMembers,
+    IQProgram,
+    IQProgramRD,
+    User,
+)
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -73,32 +72,32 @@ form_page_number = 6
 
 # Use the following tag mapping for USPS standards for all functions
 tag_mapping = {
-    'Recipient': 'recipient',
-    'AddressNumber': 'streetAddress',
-    'AddressNumberPrefix': 'streetAddress',
-    'AddressNumberSuffix': 'streetAddress',
-    'StreetName': 'streetAddress',
-    'StreetNamePreDirectional': 'streetAddress',
-    'StreetNamePreModifier': 'streetAddress',
-    'StreetNamePreType': 'streetAddress',
-    'StreetNamePostDirectional': 'streetAddress',
-    'StreetNamePostModifier': 'streetAddress',
-    'StreetNamePostType': 'streetAddress',
-    'CornerOf': 'streetAddress',
-    'IntersectionSeparator': 'streetAddress',
-    'LandmarkName': 'streetAddress',
-    'USPSBoxGroupID': 'streetAddress',
-    'USPSBoxGroupType': 'streetAddress',
-    'USPSBoxID': 'streetAddress',
-    'USPSBoxType': 'streetAddress',
-    'BuildingName': 'secondaryAddress',
-    'OccupancyType': 'secondaryAddress',
-    'OccupancyIdentifier': 'secondaryAddress',
-    'SubaddressIdentifier': 'secondaryAddress',
-    'SubaddressType': 'secondaryAddress',
-    'PlaceName': 'city',
-    'StateName': 'state',
-    'ZipCode': 'ZIPCode',
+    "Recipient": "recipient",
+    "AddressNumber": "streetAddress",
+    "AddressNumberPrefix": "streetAddress",
+    "AddressNumberSuffix": "streetAddress",
+    "StreetName": "streetAddress",
+    "StreetNamePreDirectional": "streetAddress",
+    "StreetNamePreModifier": "streetAddress",
+    "StreetNamePreType": "streetAddress",
+    "StreetNamePostDirectional": "streetAddress",
+    "StreetNamePostModifier": "streetAddress",
+    "StreetNamePostType": "streetAddress",
+    "CornerOf": "streetAddress",
+    "IntersectionSeparator": "streetAddress",
+    "LandmarkName": "streetAddress",
+    "USPSBoxGroupID": "streetAddress",
+    "USPSBoxGroupType": "streetAddress",
+    "USPSBoxID": "streetAddress",
+    "USPSBoxType": "streetAddress",
+    "BuildingName": "secondaryAddress",
+    "OccupancyType": "secondaryAddress",
+    "OccupancyIdentifier": "secondaryAddress",
+    "SubaddressIdentifier": "secondaryAddress",
+    "SubaddressType": "secondaryAddress",
+    "PlaceName": "city",
+    "StateName": "state",
+    "ZipCode": "ZIPCode",
 }
 
 # Set the API-call retry strategy
@@ -119,14 +118,13 @@ retry_strategy = Retry(
 
 
 class QualificationStatus(Enum):
-    NOTQUALIFIED = 'NOT QUALIFIED'
-    PENDING = 'PENDING'
-    ACTIVE = 'ACTIVE'
+    NOTQUALIFIED = "NOT QUALIFIED"
+    PENDING = "PENDING"
+    ACTIVE = "ACTIVE"
 
 
 def broadcast_sms(phone_Number):
-    message_to_broadcast = (
-        "Thank you for creating an account with Get FoCo! Be sure to review the programs you qualify for on your dashboard and click on Apply Now to finish the application process!")
+    message_to_broadcast = "Thank you for creating an account with Get FoCo! Be sure to review the programs you qualify for on your dashboard and click on Apply Now to finish the application process!"
     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
 
     try:
@@ -136,7 +134,7 @@ def broadcast_sms(phone_Number):
             body=message_to_broadcast,
         )
     except TwilioRestException as e:
-        log.exception(e, function='broadcast_sms')
+        log.exception(e, function="broadcast_sms")
 
 
 def address_check(address_dict):
@@ -161,8 +159,8 @@ def address_check(address_dict):
         # Gather the coordinate string and the 'WKID' from the lookup, for use
         # in future queries
         coord_string, result_wkid = address_lookup(
-            address_dict['streetAddress'],
-            address_dict['ZIPCode'],
+            address_dict["streetAddress"],
+            address_dict["ZIPCode"],
         )
 
     except NameError:
@@ -171,12 +169,10 @@ def address_check(address_dict):
         # service area
 
         # Log a potential error if the city is 'Fort Collins'
-        if address_dict['city'].lower() == 'fort collins':    
+        if address_dict["city"].lower() == "fort collins":
             log.error(
-                "Potential issue: Fort Collins address marked 'not in GMA': {}".format(
-                    address_dict,
-                ),
-                function='address_check',
+                f"Potential issue: Fort Collins address marked 'not in GMA': {address_dict}",
+                function="address_check",
             )
 
         return (False, False)
@@ -186,8 +182,8 @@ def address_check(address_dict):
         has_connexion = False
 
         is_in_gma = gma_lookup(coord_string, result_wkid)
-        msg = 'Address is in GMA' if is_in_gma else 'Address is outside of GMA'
-        log.info(msg, function='address_check')
+        msg = "Address is in GMA" if is_in_gma else "Address is outside of GMA"
+        log.info(msg, function="address_check")
 
         return (is_in_gma, has_connexion)
 
@@ -226,34 +222,34 @@ def address_lookup(street_address, zip_code):
 
     # API documentation at
     # https://developers.arcgis.com/rest/geocode/find-address-candidates
-    url = 'https://maps1.larimer.org/arcgis/rest/services/Locators/LETA_PLN_ASR_Composite/GeocodeServer/findAddressCandidates'
+    url = "https://maps1.larimer.org/arcgis/rest/services/Locators/LETA_PLN_ASR_Composite/GeocodeServer/findAddressCandidates"
 
     payload = {
         # Return JSON
-        'f': 'pjson',
-        'Street': street_address,
-        'ZIP': zip_code,
+        "f": "pjson",
+        "Street": street_address,
+        "ZIP": zip_code,
         # Gather the coordinates (location), ZIP Code (ZIP), and wkid
         # (spatialReference)
-        'outFields': 'location,ZIP,spatialReference',
+        "outFields": "location,ZIP,spatialReference",
         # Return a single match
-        'maxLocations': 1,
+        "maxLocations": 1,
         # Match addresses outside the area, if possible
-        'matchOutOfRange': True,
+        "matchOutOfRange": True,
         # Return results in the global Spatial Reference
-        'outSR': default_spatial_reference,
+        "outSR": default_spatial_reference,
     }
 
     # Gather response, with retries
     with requests.Session() as s:
-        s.mount('https://', HTTPAdapter(max_retries=retry_strategy))
+        s.mount("https://", HTTPAdapter(max_retries=retry_strategy))
         # Time out after 1 second to connect, 3 to read
         response = s.get(url, params=payload, timeout=(1, 3))
 
     if response.status_code != requests.codes.ok:
         log.error(
             f"API error {response.status_code}: {response.reason}; {response.content}",
-            function='address_lookup',
+            function="address_lookup",
         )
         raise requests.exceptions.HTTPError(response.reason, response.content)
 
@@ -262,13 +258,13 @@ def address_lookup(street_address, zip_code):
 
     # An HTTP 200 still could have an error output; check the JSON for an
     # 'error' key
-    if 'error' in outVal:
-        errDict = outVal['error']
+    if "error" in outVal:
+        errDict = outVal["error"]
         log.error(
             f"API error {errDict['code']}: {errDict['message']}",
-            function='address_lookup',
+            function="address_lookup",
         )
-        raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
+        raise requests.exceptions.HTTPError(errDict["code"], errDict["message"])
 
     # Ensure candidate(s) exist and that they either
     #   a) have a ZIP Code and have a good match score (a ZIP Code in the result
@@ -282,17 +278,15 @@ def address_lookup(street_address, zip_code):
 
     # Define the coordinate string to be used in future queries
     coord_string = None
-    if len(outVal['candidates']) > 0:
-        found_zip = outVal['candidates'][0]['attributes']['ZIP']
-        match_score = outVal['candidates'][0]['score']
-        if (
-            found_zip != '' and match_score >= 95
-        ) or (
-            found_zip == '' and match_score > 99.9
+    if len(outVal["candidates"]) > 0:
+        found_zip = outVal["candidates"][0]["attributes"]["ZIP"]
+        match_score = outVal["candidates"][0]["score"]
+        if (found_zip != "" and match_score >= 95) or (
+            found_zip == "" and match_score > 99.9
         ):
-            coord_string = '{x},{y}'.format(
-                x=outVal['candidates'][0]['location']['x'],
-                y=outVal['candidates'][0]['location']['y'],
+            coord_string = "{x},{y}".format(
+                x=outVal["candidates"][0]["location"]["x"],
+                y=outVal["candidates"][0]["location"]["y"],
             )
 
     # Raise an exception if coord_string remains None
@@ -300,7 +294,7 @@ def address_lookup(street_address, zip_code):
         raise NameError("Matching address not found")
 
     # Return the found coordinate string and the returned 'WKID' from the lookup
-    return (coord_string, outVal['spatialReference']['wkid'])
+    return (coord_string, outVal["spatialReference"]["wkid"])
 
 
 def gma_lookup(coord_string, target_wkid):
@@ -315,7 +309,7 @@ def gma_lookup(coord_string, target_wkid):
     Raises
     ------
     requests.exceptions.HTTPError
-        An issue with the lookup endpoint.    
+        An issue with the lookup endpoint.
 
     Returns
     -------
@@ -324,35 +318,39 @@ def gma_lookup(coord_string, target_wkid):
 
     """
 
-    url = 'https://gis.fortcollins.gov/arcgis/rest/services/GMA/MapServer/0/query'
+    url = "https://gis.fortcollins.gov/arcgis/rest/services/GMA/MapServer/0/query"
 
     payload = {
         # Manually stringify 'geometry' - requests and json.dumps do this
         # incorrectly
-        'geometry': """{"points":[["""+coord_string+"""]],"spatialReference":{"wkid":"""+str(target_wkid)+"""}}""",
-        'geometryType': 'esriGeometryMultipoint',
+        "geometry": """{"points":[["""
+        + coord_string
+        + """]],"spatialReference":{"wkid":"""
+        + str(target_wkid)
+        + """}}""",
+        "geometryType": "esriGeometryMultipoint",
         # Use the global Spatial Reference
-        'inSR': default_spatial_reference,
-        'spatialRel': 'esriSpatialRelIntersects',
-        'where': '',
-        'returnGeometry': 'false',
+        "inSR": default_spatial_reference,
+        "spatialRel": "esriSpatialRelIntersects",
+        "where": "",
+        "returnGeometry": "false",
         # Return results in the global Spatial Reference
-        'outSR': default_spatial_reference,
-        'outFields': '*',
-        'f': 'pjson',
+        "outSR": default_spatial_reference,
+        "outFields": "*",
+        "f": "pjson",
     }
 
     try:
         # Gather response, with retries
         with requests.Session() as s:
-            s.mount('https://', HTTPAdapter(max_retries=retry_strategy))
+            s.mount("https://", HTTPAdapter(max_retries=retry_strategy))
             # Time out after 1 second to connect, 3 to read
             response = s.get(url, params=payload, timeout=(1, 3))
 
         if response.status_code != requests.codes.ok:
             log.error(
                 f"API error {response.status_code}: {response.reason}; {response.content}",
-                function='gma_lookup',
+                function="gma_lookup",
             )
             raise requests.exceptions.HTTPError(response.reason, response.content)
 
@@ -361,15 +359,15 @@ def gma_lookup(coord_string, target_wkid):
 
         # Since the endpoint seems to always return an HTTP 200, also check
         # the JSON for an 'error' key
-        if 'error' in outVal:
-            errDict = outVal['error']
+        if "error" in outVal:
+            errDict = outVal["error"]
             log.error(
                 f"API error {errDict['code']}: {errDict['message']}",
-                function='gma_lookup',
+                function="gma_lookup",
             )
-            raise requests.exceptions.HTTPError(errDict['code'], errDict['message'])
+            raise requests.exceptions.HTTPError(errDict["code"], errDict["message"])
 
-        if len(outVal['features']) > 0:
+        if len(outVal["features"]) > 0:
             return True
         else:
             return False
@@ -383,58 +381,58 @@ def get_usps_token():
 
     # Gather the token with the 'addresses' scope
     response = requests.post(
-        'https://apis.usps.com/oauth2/v3/token',
+        "https://apis.usps.com/oauth2/v3/token",
         data={
-            'grant_type': 'client_credentials',
-            'scope': 'addresses',
-            'client_id': settings.USPS_KEY,
-            'client_secret': settings.USPS_SECRET,
+            "grant_type": "client_credentials",
+            "scope": "addresses",
+            "client_id": settings.USPS_KEY,
+            "client_secret": settings.USPS_SECRET,
         },
         timeout=10,
     )
 
     response_dict = response.json()
-    if not response.ok or 'access_token' not in response_dict:
+    if not response.ok or "access_token" not in response_dict:
         log.exception(
             response.text,
-            function='get_usps_token',
+            function="get_usps_token",
         )
         response.raise_for_status()
-    return response_dict['access_token']
+    return response_dict["access_token"]
 
 
 def validate_usps(inobj):
     if isinstance(inobj, http.request.QueryDict):
         # Define the mapper of inobj keys to arguments used in the USPS v3 API
         key_map = {
-            'address1': 'streetAddress',
-            'address2': 'secondaryAddress',
-            'city': 'city',
-            'state': 'state',
-            'zipcode': 'ZIPCode',
+            "address1": "streetAddress",
+            "address2": "secondaryAddress",
+            "city": "city",
+            "state": "state",
+            "zipcode": "ZIPCode",
         }
         # Create address, using only non-blank values
-        address = {key_map[key]: val for key, val in inobj.items() if val!=''}
+        address = {key_map[key]: val for key, val in inobj.items() if val != ""}
 
     elif isinstance(inobj, dict):
         # Create address, using only non-blank values
-        address = {key: val for key, val in inobj.items() if val!=''}
+        address = {key: val for key, val in inobj.items() if val != ""}
 
     else:
-        raise AttributeError('Unknown validation input')
+        raise AttributeError("Unknown validation input")
 
     # Ensure 'state' is uppercase (otherwise the API will error)
-    address['state'] = address['state'].upper()
-    
+    address["state"] = address["state"].upper()
+
     # TODO: Update this to use an existing token, if still valid (rather than
     # calling this each time)
     access_token = get_usps_token()
-    
+
     # Call the USPS 'addresses' API with the parsed input and retries.
     # urljoin(), urlencode(), and quote are used so that spaces are escaped with
     # '%20' instead of '+' (as requests-native functionality does)
     with requests.Session() as s:
-        s.mount('https://', HTTPAdapter(max_retries=retry_strategy))
+        s.mount("https://", HTTPAdapter(max_retries=retry_strategy))
         response = s.get(
             "https://apis.usps.com/addresses/v3/address?{}".format(
                 urlencode(
@@ -454,7 +452,7 @@ def validate_usps(inobj):
     if not response.ok:
         log.exception(
             f"Address could not be found; error {response.text}",
-            function='validate_usps',
+            function="validate_usps",
         )
         response.raise_for_status()
 
@@ -462,15 +460,13 @@ def validate_usps(inobj):
     response_dict = response.json()
     log.info(
         f"Address dict found: {response_dict}",
-        function='validate_usps',
+        function="validate_usps",
     )
     return response_dict
 
 
 def broadcast_email(email):
-    message = Mail(
-        from_email=settings.CONTACT_EMAIL,
-        to_emails=email)
+    message = Mail(from_email=settings.CONTACT_EMAIL, to_emails=email)
 
     message.template_id = settings.WELCOME_EMAIL_TEMPLATE
     try:
@@ -478,21 +474,21 @@ def broadcast_email(email):
         response = sg.send(message)
         log.info(
             f"Sendgrid returned HTTP {response.status_code}",
-            function='broadcast_email',
+            function="broadcast_email",
         )
     except Exception as e:
-        log.exception(e, function='broadcast_email')
+        log.exception(e, function="broadcast_email")
 
 
 def broadcast_email_pw_reset(email, content):
     message = Mail(
-        subject='Password Reset Requested',
+        subject="Password Reset Requested",
         from_email=settings.CONTACT_EMAIL,
         to_emails=email,
     )
     message.dynamic_template_data = {
-        'subject': 'Password Reset Requested',
-        'html_content': content,
+        "subject": "Password Reset Requested",
+        "html_content": content,
     }
     message.template_id = settings.PW_RESET_EMAIL_TEMPLATE
     try:
@@ -500,19 +496,17 @@ def broadcast_email_pw_reset(email, content):
         response = sg.send(message)
         log.info(
             f"Sendgrid returned HTTP {response.status_code}",
-            function='broadcast_email_pw_reset',
+            function="broadcast_email_pw_reset",
         )
     except Exception as e:
         log.exception(
             e,
-            function='broadcast_email_pw_reset',
+            function="broadcast_email_pw_reset",
         )
 
 
 def broadcast_renewal_email(email):
-    message = Mail(
-        from_email=settings.CONTACT_EMAIL,
-        to_emails=email)
+    message = Mail(from_email=settings.CONTACT_EMAIL, to_emails=email)
 
     message.template_id = settings.RENEWAL_EMAIL_TEMPLATE
     try:
@@ -520,22 +514,22 @@ def broadcast_renewal_email(email):
         response = sg.send(message)
         log.info(
             f"Sendgrid returned: HTTP {response.status_code}",
-            function='broadcast_renewal_email',
+            function="broadcast_renewal_email",
         )
 
     except SendGridHTTPError as response:
         log.exception(
             f"Sendgrid returned: {response}",
-            function='broadcast_renewal_email',
+            function="broadcast_renewal_email",
         )
 
     return response.status_code
 
 
 def changed_modelfields_to_dict(
-        previous_instance,
-        current_instance,
-        pre_delete=False,
+    previous_instance,
+    current_instance,
+    pre_delete=False,
 ):
     """
     Convert a model object to a dictionary. If a property is a datetime object,
@@ -564,7 +558,7 @@ def changed_modelfields_to_dict(
                     model_dict[field.name] = str(value)
                 else:
                     if isinstance(value, datetime.datetime):
-                        value = value.strftime('%Y-%m-%d %H:%M:%S')
+                        value = value.strftime("%Y-%m-%d %H:%M:%S")
                     elif isinstance(value, PhoneNumber):
                         value = value.as_e164
                     model_dict[field.name] = value
@@ -575,7 +569,9 @@ def changed_modelfields_to_dict(
         # Compare the current instance with the previous instance
         for field in current_instance._meta.fields:
             field_name = field.name
-            if getattr(current_instance, field_name) != getattr(previous_instance, field_name):
+            if getattr(current_instance, field_name) != getattr(
+                previous_instance, field_name
+            ):
                 try:
                     value = getattr(previous_instance, field_name)
                     if field.is_relation:
@@ -587,7 +583,7 @@ def changed_modelfields_to_dict(
                         model_dict[field.name] = str(value)
                     else:
                         if isinstance(value, datetime.datetime):
-                            value = value.strftime('%Y-%m-%d %H:%M:%S')
+                            value = value.strftime("%Y-%m-%d %H:%M:%S")
                         elif isinstance(value, PhoneNumber):
                             value = value.as_e164
                         model_dict[field.name] = value
@@ -609,20 +605,24 @@ def serialize_household_members(request, file_paths):
     household_members_data = {
         k: request.POST.getlist(k)
         for k in request.POST.keys()
-        if k != 'csrfmiddlewaretoken'
+        if k != "csrfmiddlewaretoken"
     }
 
     # Create a list of dictionaries with 'name' and 'birthdate' keys
-    household_members = [{
-        'name': household_members_data['name'][i],
-        'birthdate': household_members_data['birthdate'][i],
-        'identification_path': file_paths[i]
-    } for i in range(len(household_members_data['name']))]
+    household_members = [
+        {
+            "name": household_members_data["name"][i],
+            "birthdate": household_members_data["birthdate"][i],
+            "identification_path": file_paths[i],
+        }
+        for i in range(len(household_members_data["name"]))
+    ]
 
-    household_info = json.loads(json.dumps(
-        {'persons_in_household': household_members}, cls=DjangoJSONEncoder))
+    household_info = json.loads(
+        json.dumps({"persons_in_household": household_members}, cls=DjangoJSONEncoder)
+    )
     return household_info
-    
+
 
 def login(request, user):
 
@@ -632,15 +632,15 @@ def login(request, user):
     try:
         log.info(
             "User logged in; agent is {}".format(
-                httpagentparser.simple_detect(request.META['HTTP_USER_AGENT'])
+                httpagentparser.simple_detect(request.META["HTTP_USER_AGENT"])
             ),
-            function='login',
+            function="login",
             user_id=request.user.id,
         )
     except Exception:
         log.exception(
             "HTTP agent parsing failed!",
-            function='login',
+            function="login",
             user_id=request.user.id,
         )
 
@@ -662,19 +662,20 @@ def what_page(user, request):
         except AttributeError:
             return "app:household"
 
-        if (HouseholdMembers.objects.all().filter(user_id=request.user.id).exists()):
+        if HouseholdMembers.objects.all().filter(user_id=request.user.id).exists():
             pass
         else:
             return "app:household_members"
 
         # Check to see if the user has selected any eligibility programs
-        if (request.user.eligibility_files.count()):
+        if request.user.eligibility_files.count():
             pass
         else:
             return "app:programs"
 
         users_programs_without_uploads = get_in_progress_eligiblity_file_uploads(
-            request)
+            request
+        )
         if users_programs_without_uploads.count():
             return "app:files"
 
@@ -686,26 +687,10 @@ def what_page(user, request):
 def build_qualification_button(users_enrollment_status):
     # Create a dictionary to hold the button information
     return {
-        'PENDING': {
-            "text": "Applied",
-            "color": "green",
-            "textColor": "white"
-        },
-        'ACTIVE': {
-            "text": "Enrolled!",
-            "color": "blue",
-            "textColor": "white"
-        },
-        'RENEWAL': {
-            "text": "Renew",
-            "color": "orange",
-            "textColor": "white"
-        },
-        '': {
-            "text": "Apply Now",
-            "color": "",
-            "textColor": ""
-        },
+        "PENDING": {"text": "Applied", "color": "green", "textColor": "white"},
+        "ACTIVE": {"text": "Enrolled!", "color": "blue", "textColor": "white"},
+        "RENEWAL": {"text": "Renew", "color": "orange", "textColor": "white"},
+        "": {"text": "Apply Now", "color": "", "textColor": ""},
     }.get(users_enrollment_status, "")
 
 
@@ -715,24 +700,28 @@ def map_iq_enrollment_status(program, needs_renewal=False):
         # programs to be marked as renewal
         if not program.is_enrolled:
             return "PENDING"
-        # If the user is enrolled in a "lifetime" program (i.e. a program that 
+        # If the user is enrolled in a "lifetime" program (i.e. a program that
         # does not have a renewal_interval_year), don't set the status to
         # renewal
-        elif program.is_enrolled and needs_renewal and program.renewal_interval_year is not None:
+        elif (
+            program.is_enrolled
+            and needs_renewal
+            and program.renewal_interval_year is not None
+        ):
             return "RENEWAL"
         elif program.is_enrolled:
             return "ACTIVE"
-        
+
     except Exception:
-        return ''
+        return ""
 
 
 def get_users_iq_programs(
-        user_id,
-        users_income_as_fraction_of_ami,
-        users_eligiblity_address,
+    user_id,
+    users_income_as_fraction_of_ami,
+    users_eligiblity_address,
 ):
-    """ 
+    """
     Get the iq programs for the user where the user is geographically eligible,
     as well as where their ami range is less than or equal to the users max ami
     range or where the user has already applied to the program. Additionaly
@@ -746,25 +735,34 @@ def get_users_iq_programs(
         a list of users iq programs
     """
     # Get the IQ programs that a user has already applied to
-    users_iq_programs = list(IQProgram.objects.select_related(
-        'program').filter(user_id=user_id))
+    users_iq_programs = list(
+        IQProgram.objects.select_related("program").filter(user_id=user_id)
+    )
 
     # Filter only programs that are active
     users_iq_programs = [x for x in users_iq_programs if x.program.is_active]
 
     # Get the IQ programs a user is eligible for
-    users_iq_programs_ids = [
-        program.program_id for program in users_iq_programs]
-    active_iq_programs = list(IQProgramRD.objects.filter(
-        (Q(is_active=True) & Q(ami_threshold__gte=users_income_as_fraction_of_ami) & ~Q(
-            id__in=users_iq_programs_ids))
-    ))
+    users_iq_programs_ids = [program.program_id for program in users_iq_programs]
+    active_iq_programs = list(
+        IQProgramRD.objects.filter(
+            Q(is_active=True)
+            & Q(ami_threshold__gte=users_income_as_fraction_of_ami)
+            & ~Q(id__in=users_iq_programs_ids)
+        )
+    )
 
     # Filter out the active programs that the user is not geographically eligible for.
     # If the IQ program's requires_is_city_covered is true, then check to make sure
     # the user's eligibility address is_city_covered.
     active_iq_programs = [
-        program for program in active_iq_programs if not (program.requires_is_city_covered and not users_eligiblity_address.is_city_covered)]
+        program
+        for program in active_iq_programs
+        if not (
+            program.requires_is_city_covered
+            and not users_eligiblity_address.is_city_covered
+        )
+    ]
 
     # Gather list of active programs
     programs = list(chain(users_iq_programs, active_iq_programs))
@@ -773,46 +771,84 @@ def get_users_iq_programs(
     needs_renewal = check_if_user_needs_to_renew(user_id)
 
     for program in programs:
-        program.renewal_interval_year = program.program.renewal_interval_year if hasattr(
-            program, 'program') else program.renewal_interval_year
+        program.renewal_interval_year = (
+            program.program.renewal_interval_year
+            if hasattr(program, "program")
+            else program.renewal_interval_year
+        )
         status_for_user = map_iq_enrollment_status(program, needs_renewal=needs_renewal)
-        program.button = build_qualification_button(
-            status_for_user)
+        program.button = build_qualification_button(status_for_user)
         program.status_for_user = status_for_user
-        program.quick_apply_link = reverse('app:quick_apply', kwargs={
-                                           'iq_program': program.program.program_name if hasattr(program, 'program') else program.program_name})
-        program.title = program.program.friendly_name if hasattr(
-            program, 'program') else program.friendly_name
-        program.subtitle = program.program.friendly_category if hasattr(
-            program, 'program') else program.friendly_category
-        program.description = program.program.friendly_description if hasattr(
-            program, 'program') else program.friendly_description
-        program.supplemental_info = program.program.friendly_supplemental_info if hasattr(
-            program, 'program') else program.friendly_supplemental_info
-        program.eligibility_review_status = 'We are reviewing your application! Stay tuned here and check your email for updates.' if status_for_user == 'PENDING' else '',
-        program.eligibility_review_time_period = program.program.friendly_eligibility_review_period if hasattr(
-            program, 'program') else program.friendly_eligibility_review_period
-        program.learn_more_link = program.program.learn_more_link if hasattr(
-            program, 'program') else program.learn_more_link
-        program.enable_autoapply = program.program.enable_autoapply if hasattr(
-            program, 'program') else program.enable_autoapply
-        program.ami_threshold = program.program.ami_threshold if hasattr(
-            program, 'program') else program.ami_threshold
-        program.id = program.program.id if hasattr(
-            program, 'program') else program.id
-        program.additional_form = program.program.additional_external_form_link if hasattr(
-            program, 'program') else program.additional_external_form_link
+        program.quick_apply_link = reverse(
+            "app:quick_apply",
+            kwargs={
+                "iq_program": program.program.program_name
+                if hasattr(program, "program")
+                else program.program_name
+            },
+        )
+        program.title = (
+            program.program.friendly_name
+            if hasattr(program, "program")
+            else program.friendly_name
+        )
+        program.subtitle = (
+            program.program.friendly_category
+            if hasattr(program, "program")
+            else program.friendly_category
+        )
+        program.description = (
+            program.program.friendly_description
+            if hasattr(program, "program")
+            else program.friendly_description
+        )
+        program.supplemental_info = (
+            program.program.friendly_supplemental_info
+            if hasattr(program, "program")
+            else program.friendly_supplemental_info
+        )
+        program.eligibility_review_status = (
+            "We are reviewing your application! Stay tuned here and check your email for updates."
+            if status_for_user == "PENDING"
+            else "",
+        )
+        program.eligibility_review_time_period = (
+            program.program.friendly_eligibility_review_period
+            if hasattr(program, "program")
+            else program.friendly_eligibility_review_period
+        )
+        program.learn_more_link = (
+            program.program.learn_more_link
+            if hasattr(program, "program")
+            else program.learn_more_link
+        )
+        program.enable_autoapply = (
+            program.program.enable_autoapply
+            if hasattr(program, "program")
+            else program.enable_autoapply
+        )
+        program.ami_threshold = (
+            program.program.ami_threshold
+            if hasattr(program, "program")
+            else program.ami_threshold
+        )
+        program.id = program.program.id if hasattr(program, "program") else program.id
+        program.additional_form = (
+            program.program.additional_external_form_link
+            if hasattr(program, "program")
+            else program.additional_external_form_link
+        )
     return programs
 
 
 def get_eligible_iq_programs(
-        user,
-        eligibility_address,
-    ):
-    """ 
+    user,
+    eligibility_address,
+):
+    """
     Return IQ Programs that the user is eligible for, without accounting for
     current enrollment or program-specific application.
-    
+
     """
 
     # Get all active IQ Programs with an AMI Threshold >= the user's income
@@ -855,8 +891,11 @@ def get_eligible_iq_programs(
     # For each program, take (<address Boolean> or not <requires_>) for all
     # `requires_` fields, and AND them together (via all())
     eligible_iq_programs = [
-        prog for prog in income_eligible_iq_programs if all(
-            (getattr(eligibility_address, cor) or not getattr(prog, req)) for req, cor in req_fields
+        prog
+        for prog in income_eligible_iq_programs
+        if all(
+            (getattr(eligibility_address, cor) or not getattr(prog, req))
+            for req, cor in req_fields
         )
     ]
 
@@ -869,30 +908,37 @@ def get_in_progress_eligiblity_file_uploads(request):
     Returns:
         list: List of eligibility programs
     """
-    users_in_progress_file_uploads = EligibilityProgram.objects.filter(
-        Q(user_id=request.user.id) & Q(document_path='')
-    ).select_related('program').values('id', 'program__id', 'program__friendly_name')
+    users_in_progress_file_uploads = (
+        EligibilityProgram.objects.filter(
+            Q(user_id=request.user.id) & Q(document_path="")
+        )
+        .select_related("program")
+        .values("id", "program__id", "program__friendly_name")
+    )
     return users_in_progress_file_uploads
 
 
-def save_renewal_action(request, action, status='completed', data={}):
+def save_renewal_action(request, action, status="completed", data={}):
     """Saves a renewal action to the database
     Args:
         request (HttpRequest): The request object
         action (str): The action to save
     """
     user = UserModel.objects.get(id=request.user.id)
-    if hasattr(user, 'last_renewal_action'):
-        last_renewal_action = user.last_renewal_action if user.last_renewal_action else {}
+    if hasattr(user, "last_renewal_action"):
+        last_renewal_action = (
+            user.last_renewal_action if user.last_renewal_action else {}
+        )
 
         # Check if the action exists in the last renewal action
         if action in last_renewal_action:
-            last_renewal_action[action] = {'status': status, 'data': data}
+            last_renewal_action[action] = {"status": status, "data": data}
         else:
-            last_renewal_action[action] = {'status': status, 'data': data}
+            last_renewal_action[action] = {"status": status, "data": data}
 
         user.last_renewal_action = json.loads(
-            json.dumps(last_renewal_action, cls=DjangoJSONEncoder))
+            json.dumps(last_renewal_action, cls=DjangoJSONEncoder)
+        )
         user.save()
 
 
@@ -921,23 +967,28 @@ def check_if_user_needs_to_renew(user_id):
 
     # Get the highest frequency renewal_interval_year from the IQProgramRD
     # table and filter out any null renewal_interval_year
-    highest_freq_program = IQProgramRD.objects.filter(
-        renewal_interval_year__isnull=False
-    ).order_by('renewal_interval_year').first()
-    
+    highest_freq_program = (
+        IQProgramRD.objects.filter(renewal_interval_year__isnull=False)
+        .order_by("renewal_interval_year")
+        .first()
+    )
+
     # If there are no programs without lifetime enrollment (e.g. without
     # non-null renewal_interval_year), always return False for needs_renewal
     if highest_freq_program is None:
         return False
-    
+
     highest_freq_renewal_interval = highest_freq_program.renewal_interval_year
 
     # The highest_freq_renewal_interval is measured in years. We need to check
     # if the user's next renewal date is greater than or equal to the current
     # date.
-    needs_renewal = pendulum.instance(
-        user_profile.last_completed_at).add(
-        years=highest_freq_renewal_interval) <= pendulum.now()
+    needs_renewal = (
+        pendulum.instance(user_profile.last_completed_at).add(
+            years=highest_freq_renewal_interval
+        )
+        <= pendulum.now()
+    )
 
     return needs_renewal
 
@@ -950,33 +1001,29 @@ def finalize_application(user, renewal_mode=False, update_user=True):
     The defaults are:
         - not in renewal_mode
         - do update the user object (last_completed_at, etc)
-    
+
     """
 
     log.debug(
         f"Entering function with renewal_mode=={renewal_mode}",
-        function='finalize_application',
+        function="finalize_application",
         user_id=user.id,
     )
 
     # Get all of the user's eligiblity programs and find the one with the lowest
     # 'ami_threshold' value which can be found in the related
     # eligiblityprogramrd table
-    lowest_ami = EligibilityProgram.objects.filter(
-        Q(user_id=user.id)
-    ).select_related(
-        'program'
-    ).values(
-        'program__ami_threshold'
-    ).order_by(
-        'program__ami_threshold'
-    ).first()
+    lowest_ami = (
+        EligibilityProgram.objects.filter(Q(user_id=user.id))
+        .select_related("program")
+        .values("program__ami_threshold")
+        .order_by("program__ami_threshold")
+        .first()
+    )
 
     # Now save the value of the ami_threshold to the user's household
-    household = Household.objects.get(
-        Q(user_id=user.id)
-    )
-    household.income_as_fraction_of_ami = lowest_ami['program__ami_threshold']
+    household = Household.objects.get(Q(user_id=user.id))
+    household.income_as_fraction_of_ami = lowest_ami["program__ami_threshold"]
 
     if renewal_mode:
         household.is_income_verified = False
@@ -993,14 +1040,11 @@ def finalize_application(user, renewal_mode=False, update_user=True):
 
         # Get every IQ program for the user that have a renewal_interval_year
         # in the IQProgramRD table that is not null
-        users_current_iq_programs = IQProgram.objects.filter(
-            Q(user_id=user.id)
-        ).select_related(
-            'program'
-        ).order_by(
-            'program__renewal_interval_year'
-        ).exclude(
-            program__renewal_interval_year__isnull=True
+        users_current_iq_programs = (
+            IQProgram.objects.filter(Q(user_id=user.id))
+            .select_related("program")
+            .order_by("program__renewal_interval_year")
+            .exclude(program__renewal_interval_year__isnull=True)
         )
 
         # For each element in users_current_iq_programs, delete the program.
@@ -1011,12 +1055,13 @@ def finalize_application(user, renewal_mode=False, update_user=True):
 
         # Get the user's eligibility address
         eligibility_address = AddressRD.objects.filter(
-            id=user.address.eligibility_address_id).first()
+            id=user.address.eligibility_address_id
+        ).first()
 
         # Now get all of the IQ Programs for which the user is eligible
         users_iq_programs = get_users_iq_programs(
             user.id,
-            lowest_ami['program__ami_threshold'],
+            lowest_ami["program__ami_threshold"],
             eligibility_address,
         )
 
@@ -1036,7 +1081,9 @@ def finalize_application(user, renewal_mode=False, update_user=True):
         for program in users_iq_programs:
             # First, check if `program`` is in users_current_iq_programs; if so,
             # the user is both eligible and were previously applied/enrolled
-            if program.id in [program.program.id for program in users_current_iq_programs]:
+            if program.id in [
+                program.program.id for program in users_current_iq_programs
+            ]:
                 # Re-apply by creating the element
                 IQProgram.objects.create(
                     user_id=user.id,
@@ -1047,8 +1094,7 @@ def finalize_application(user, renewal_mode=False, update_user=True):
             elif program.enable_autoapply:
                 # Check if the user already has the program in the IQProgram table
                 if not IQProgram.objects.filter(
-                    Q(user_id=user.id) & Q(
-                        program_id=program.id)
+                    Q(user_id=user.id) & Q(program_id=program.id)
                 ).exists():
                     # If the user doesn't have the program in the IQProgram
                     # table, then create it
@@ -1059,14 +1105,14 @@ def finalize_application(user, renewal_mode=False, update_user=True):
 
         # Return the target page and a dictionary of <session var>: <value>
         return (
-            'app:dashboard',
+            "app:dashboard",
             {
-                'app_renewed': True,
-                'renewal_eligible': sorted(renewal_eligible),
-                'renewal_ineligible': sorted(renewal_ineligible),
-            }
+                "app_renewed": True,
+                "renewal_eligible": sorted(renewal_eligible),
+                "renewal_ineligible": sorted(renewal_ineligible),
+            },
         )
-    
+
     else:
         household.save()
 
@@ -1076,12 +1122,13 @@ def finalize_application(user, renewal_mode=False, update_user=True):
 
         # Get the user's eligibility address
         eligibility_address = AddressRD.objects.filter(
-            id=user.address.eligibility_address_id).first()
+            id=user.address.eligibility_address_id
+        ).first()
 
         # Now get all of the IQ Programs for which the user is eligible
         users_iq_programs = get_users_iq_programs(
             user.id,
-            lowest_ami['program__ami_threshold'],
+            lowest_ami["program__ami_threshold"],
             eligibility_address,
         )
         # For every IQ program, check if the user should be automatically
@@ -1095,12 +1142,12 @@ def finalize_application(user, renewal_mode=False, update_user=True):
                 )
                 log.debug(
                     f"User auto-applied for '{program.program_name}' IQ program",
-                    function='finalize_application',
+                    function="finalize_application",
                     user_id=user.id,
                 )
 
         # Return the target page and an (empty) dictionary of <session var>: <value>
-        return ('app:broadcast', {})
+        return ("app:broadcast", {})
 
 
 def enable_renew_now(user_id):
@@ -1113,16 +1160,22 @@ def enable_renew_now(user_id):
 
     # Get the highest frequency renewal_interval_year from the IQProgramRD
     # table and filter out any null renewal_interval_year
-    highest_freq_program = IQProgramRD.objects.filter(
-        renewal_interval_year__isnull=False
-    ).order_by('renewal_interval_year').first()
+    highest_freq_program = (
+        IQProgramRD.objects.filter(renewal_interval_year__isnull=False)
+        .order_by("renewal_interval_year")
+        .first()
+    )
 
     # If there are no programs without lifetime enrollment (e.g. without
     # non-null renewal_interval_year), always return False
     if highest_freq_program is None:
         return False
 
-    if enable_calendar_year_renewal and pendulum.now().year == last_completed_at + highest_freq_program.renewal_interval_year:
+    if (
+        enable_calendar_year_renewal
+        and pendulum.now().year
+        == last_completed_at + highest_freq_program.renewal_interval_year
+    ):
         return True
     else:
         return False
@@ -1134,24 +1187,26 @@ def get_iqprogram_requires_fields():
     corresponding AddressRD Boolean.
 
     """
-    field_prefix = 'requires_'
+    field_prefix = "requires_"
     req_fields = [
-        (x.name, x.name.replace(field_prefix, '')) for x in IQProgramRD._meta.fields if x.name.startswith(field_prefix)
+        (x.name, x.name.replace(field_prefix, ""))
+        for x in IQProgramRD._meta.fields
+        if x.name.startswith(field_prefix)
     ]
 
     return req_fields
 
 
 def file_validation(
-        obj,
-        user_id,
-        calling_function=None,
-    ):
+    obj,
+    user_id,
+    calling_function=None,
+):
     """
     Validate the uploaded file with ``python-magic``.
-    
+
     Returns a tuple of whether validation was successful and any error messages.
-    
+
     """
 
     # If obj is an uploaded file, use the first chunk; else, take directly from
@@ -1173,26 +1228,26 @@ def file_validation(
     # If a match is found, return 'success' and the file extension
     if matched_file_extension:
         return (True, matched_file_extension)
-    
+
     # A match was not found, so return 'failed' and the error message
     log.error(
         "File{} is not a valid file type ({})".format(
             f" from {calling_function}" if calling_function else "",
             filetype,
         ),
-        function='file_validation',
+        function="file_validation",
         user_id=user_id,
     )
     return (
         False,
         "File is not a valid type. Only these file types are supported: {}".format(
-            ', '.join(supported_content_types)
+            ", ".join(supported_content_types)
         ),
     )
 
 
 def finalize_address(instance, is_in_gma, has_connexion):
-    """ Finalize the address, given inputs calculated earlier. """
+    """Finalize the address, given inputs calculated earlier."""
 
     # Record the service area and Connexion status
     instance.is_in_gma = is_in_gma
@@ -1240,13 +1295,11 @@ def remove_ineligible_programs(user_id):
     # currently enrolled
 
     # If a user is enrolled in any program, raise an exception
-    enrolled_programs = [
-        x for x in ineligible_current_programs if x.is_enrolled
-    ]
+    enrolled_programs = [x for x in ineligible_current_programs if x.is_enrolled]
     if len(enrolled_programs) > 0:
         raise AttributeError(
             "User is enrolled in {} but would no longer be eligible with the proposed change".format(
-                ', '.join([x.program.program_name for x in enrolled_programs]),
+                ", ".join([x.program.program_name for x in enrolled_programs]),
             )
         )
 
@@ -1256,4 +1309,4 @@ def remove_ineligible_programs(user_id):
         program.delete()
         msg.append(f"User was removed from {program.program.program_name}")
 
-    return '; '.join(msg)
+    return "; ".join(msg)

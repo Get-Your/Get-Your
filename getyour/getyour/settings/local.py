@@ -21,7 +21,7 @@ from getyour.settings.common import *
 from getyour.settings.common import env
 
 # Read the environment-specific secrets
-env.read_env(BASE_DIR.joinpath('.dev.env'))
+env.read_env(BASE_DIR.joinpath(".dev.env"))
 
 SECRET_KEY = env("SECRET_KEY")
 AZURE_ACCOUNT_NAME = env("AZURE_ACCOUNT_NAME")
@@ -42,28 +42,28 @@ ALLOWED_HOSTS = []
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR.joinpath('getyour', 'db.sqlite3'),
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR.joinpath("getyour", "db.sqlite3"),
     },
     # Note that a separate file is needed for proper concurrency
-    'analytics': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR.joinpath('getyour', 'db_analytics.sqlite3'),
-    }
+    "analytics": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR.joinpath("getyour", "db_analytics.sqlite3"),
+    },
 }
 
 # Logging modifications - set logging level to DEBUG and overwrite DEBUG_LOGGER
 # env var for clarity
-LOGGING['loggers']['app']['level'] = 'DEBUG'
+LOGGING["loggers"]["app"]["level"] = "DEBUG"
 DEBUG_LOGGING = True
 
 Q_CLUSTER = {
-    'name': 'DJRedis',
-    'workers': 4,
-    'timeout': 30,
-    'bulk': 10,
-    'django_redis': 'default',
-    'catch_up': False,
-    'sync': True,   # this is required for Windows
+    "name": "DJRedis",
+    "workers": 4,
+    "timeout": 30,
+    "bulk": 10,
+    "django_redis": "default",
+    "catch_up": False,
+    "sync": True,  # this is required for Windows
 }

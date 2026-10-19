@@ -16,27 +16,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
+import base64
 import logging
 import re
-import base64
-import pendulum
-import json
 from pathlib import PurePosixPath
 
-from django.shortcuts import render
-from django.core.files.storage import default_storage
-from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
-from django.contrib.contenttypes.models import ContentType
+import pendulum
 from azure.core.exceptions import ResourceNotFoundError
-
-from app.models import User, EligibilityProgram, EligibilityProgramRD, HouseholdMembers
-from app.constants import supported_content_types
-from app.backend import file_validation, finalize_application
-from app.admin.forms import EligProgramAddForm, HouseholdMembersReplaceIDForm
-
+from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.contenttypes.models import ContentType
+from django.core.files.storage import default_storage
+from django.shortcuts import render
 from logger.wrappers import LoggerWrapper
 
+from app.admin.forms import EligProgramAddForm, HouseholdMembersReplaceIDForm
+from app.backend import file_validation, finalize_application
+from app.constants import supported_content_types
+from app.models import EligibilityProgram, EligibilityProgramRD, HouseholdMembers, User
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -47,24 +45,24 @@ def view_blob(request, blob_name, **kwargs):
     try:
         log.debug(
             "Entering function",
-            function='view_blob',
+            function="view_blob",
             user_id=request.user.id,
         )
 
         # Open the blob and extract the data
         file = default_storage.open(blob_name)
         try:
-            blob_data = b''
+            blob_data = b""
             for chunk in file.chunks():
                 blob_data += chunk
         except ResourceNotFoundError as e:
             log.exception(
                 f"ResourceNotFoundError: {e}",
-                function='view_blob',
+                function="view_blob",
                 user_id=request.user.id,
             )
             raise ResourceNotFoundError(message=e)
-        
+
         # Gather the content type from the blob_name extension
         blob_name_path = PurePosixPath(blob_name)
         # Use the lowercase suffix (without the leading dot) as the key to the
@@ -74,56 +72,62 @@ def view_blob(request, blob_name, **kwargs):
         # Load only the following content type regexes (regardless of
         # constants.supported_content_types), for safety
         content_type_regex_filter = {
-            'allow': [
+            "allow": [
                 # For 'application/*', allow only doc, docx, and pdf (respectively)
-                r'^application\/(msword$|vnd\.openxmlformats-officedocument\.wordprocessingml\.document$|pdf$)',
+                r"^application\/(msword$|vnd\.openxmlformats-officedocument\.wordprocessingml\.document$|pdf$)",
                 # Allow all 'image/*' (minus the exceptions below)
-                r'^image\/.*$',
+                r"^image\/.*$",
             ],
             # This blocklist includes only subsets of the strict allowlist,
             # since blocking anything outside of the allowlist would be redundant
-            'block': [
+            "block": [
                 # Block subtypes containing 'xml' or vendor-specific subtypes
                 # (starting with 'vnd.') from 'image/*'
-                r'^image\/(.*?xml|vnd\.).*$',
+                r"^image\/(.*?xml|vnd\.).*$",
             ],
         }
 
         # Filter for content type (allowlist first, then block if applicable).
         # Using all() instead of 'and' here to more-easily break apart the
         # next() statements for readability
-        ok_to_view = all((
-            # Check each element of the allowlist (ok==True if a match is found)
-            next((
-                True for x in content_type_regex_filter['allow'] if re.match(
-                    x,
-                    content_type,
-                    flags=re.IGNORECASE,
-                )),
-                False
-            ),
-            # Check each element of the blocklist (ok==False if a match is found)
-            next((
-                False for x in content_type_regex_filter['block'] if re.match(
-                    x,
-                    content_type,
-                    flags=re.IGNORECASE
-                )),
-                True
-            ),
-        ))
+        ok_to_view = all(
+            (
+                # Check each element of the allowlist (ok==True if a match is found)
+                next(
+                    (
+                        True
+                        for x in content_type_regex_filter["allow"]
+                        if re.match(
+                            x,
+                            content_type,
+                            flags=re.IGNORECASE,
+                        )
+                    ),
+                    False,
+                ),
+                # Check each element of the blocklist (ok==False if a match is found)
+                next(
+                    (
+                        False
+                        for x in content_type_regex_filter["block"]
+                        if re.match(x, content_type, flags=re.IGNORECASE)
+                    ),
+                    True,
+                ),
+            )
+        )
 
         if not ok_to_view:
             log.info(
                 f"Blob '{blob_name_path}' is NOT ok to view.",
-                function='view_blob',
+                function="view_blob",
                 user_id=request.user.id,
             )
             return render(
                 request,
-                'admin/405.html',
+                "admin/405.html",
                 {
-                    'error_message': 'This file is not viewable on the portal. Contact your system administrator.',
+                    "error_message": "This file is not viewable on the portal. Contact your system administrator.",
                 },
                 status=405,
             )
@@ -131,15 +135,15 @@ def view_blob(request, blob_name, **kwargs):
         # Display the blob to the user
         log.debug(
             f"Blob '{blob_name_path}' is ok to view.",
-            function='view_blob',
+            function="view_blob",
             user_id=request.user.id,
         )
         return render(
             request,
-            'admin/view_blob.html',
+            "admin/view_blob.html",
             {
-                'blob_data': base64.b64encode(blob_data).decode('utf-8'),
-                'content_type': content_type,
+                "blob_data": base64.b64encode(blob_data).decode("utf-8"),
+                "content_type": content_type,
             },
         )
 
@@ -150,8 +154,8 @@ def view_blob(request, blob_name, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='view_blob',
+            "Uncaught view-level exception",
+            function="view_blob",
             user_id=user_id,
         )
         raise
@@ -162,17 +166,17 @@ def add_elig_program(request, **kwargs):
     try:
         log.debug(
             "Entering function",
-            function='add_elig_program',
+            function="add_elig_program",
             user_id=request.user.id,
         )
 
         # Define the application user (not the admin)
-        user = User.objects.get(id=kwargs['user_id'])
+        user = User.objects.get(id=kwargs["user_id"])
 
         if request.method == "POST":
             log.debug(
                 "Leaving function (POST)",
-                function='add_elig_program',
+                function="add_elig_program",
                 user_id=request.user.id,
             )
 
@@ -180,21 +184,21 @@ def add_elig_program(request, **kwargs):
 
             if form.is_valid():
                 file_validated, validation_message = file_validation(
-                    request.FILES.getlist('document_path')[0],
+                    request.FILES.getlist("document_path")[0],
                     request.user.id,
-                    calling_function='add_elig_program',
+                    calling_function="add_elig_program",
                 )
                 if not file_validated:
                     return render(
                         request,
                         "admin/program_add_elig.html",
                         {
-                            'form': form,
-                            'error_message': validation_message,
+                            "form": form,
+                            "error_message": validation_message,
                             # Set some page-specific text
-                            'site_header': 'Get FoCo administration',
-                            'title': f"Add Eligibility Program for {user.full_name}",
-                            'site_title': 'Get FoCo administration',
+                            "site_header": "Get FoCo administration",
+                            "title": f"Add Eligibility Program for {user.full_name}",
+                            "site_title": "Get FoCo administration",
                         },
                     )
 
@@ -202,19 +206,15 @@ def add_elig_program(request, **kwargs):
                 instance = EligibilityProgram.objects.create(
                     user=user,
                     program=EligibilityProgramRD.objects.get(
-                        id=int(form.cleaned_data['program_name'])
+                        id=int(form.cleaned_data["program_name"])
                     ),
                 )
                 fileNames = []
-                
+
                 # Save the upload to blob storage
-                fileobj = request.FILES.getlist('document_path')[0]
+                fileobj = request.FILES.getlist("document_path")[0]
                 instance.document_path.save(
-                    pendulum.now(
-                        'utc'
-                    ).format(
-                        f"YYYY-MM-DD[T]HHmmss[Z_1_{fileobj}]"
-                    ),
+                    pendulum.now("utc").format(f"YYYY-MM-DD[T]HHmmss[Z_1_{fileobj}]"),
                     fileobj,
                 )
                 fileNames.append(str(instance.document_path))
@@ -231,7 +231,7 @@ def add_elig_program(request, **kwargs):
                     object_id=user.id,
                     object_repr=str(user),
                     action_flag=CHANGE,
-                    change_message=f'Added User eligibility program "{str(instance)}".'
+                    change_message=f'Added User eligibility program "{instance!s}".',
                 )
 
                 # Add a log entry to EligibilityProgram admin that the program
@@ -243,17 +243,22 @@ def add_elig_program(request, **kwargs):
                     object_id=instance.id,
                     object_repr=str(instance),
                     action_flag=ADDITION,
-                    change_message=f'Added User eligibility program "{str(instance)}".'
+                    change_message=f'Added User eligibility program "{instance!s}".',
                 )
 
                 # Finalize the application with the new program, if applicable
                 if user.last_completed_at is not None:
-                    prev_income_as_fraction_of_ami = user.household.income_as_fraction_of_ami
+                    prev_income_as_fraction_of_ami = (
+                        user.household.income_as_fraction_of_ami
+                    )
                     _ = finalize_application(user, update_user=False)
 
                     # Add a log entry to UserAdmin if income was changed
                     # IQ Program changes are planned for a later date
-                    if user.household.income_as_fraction_of_ami != prev_income_as_fraction_of_ami:
+                    if (
+                        user.household.income_as_fraction_of_ami
+                        != prev_income_as_fraction_of_ami
+                    ):
                         _ = LogEntry.objects.log_action(
                             user_id=request.user.id,
                             # Use the target (user) object from here
@@ -261,28 +266,26 @@ def add_elig_program(request, **kwargs):
                             object_id=user.id,
                             object_repr=str(user),
                             action_flag=CHANGE,
-                            change_message='Changed Income relative to AMI.'
+                            change_message="Changed Income relative to AMI.",
                         )
 
                 return render(
                     request,
                     "admin/program_add_elig.html",
                     {
-                        'form': form,
-                        'success_message': "Program added successfully. Close this window and refresh the User page to view it.",
+                        "form": form,
+                        "success_message": "Program added successfully. Close this window and refresh the User page to view it.",
                         # Set some page-specific text
-                        'site_header': 'Get FoCo administration',
-                        'title': f"Add Eligibility Program for {user.full_name}",
-                        'site_title': 'Get FoCo administration',
+                        "site_header": "Get FoCo administration",
+                        "title": f"Add Eligibility Program for {user.full_name}",
+                        "site_title": "Get FoCo administration",
                     },
                 )
-                
 
-        
         else:
             log.debug(
                 "Entering function (GET)",
-                function='add_elig_program',
+                function="add_elig_program",
                 user_id=request.user.id,
             )
 
@@ -292,14 +295,14 @@ def add_elig_program(request, **kwargs):
             request,
             "admin/program_add_elig.html",
             {
-                'form': form,
+                "form": form,
                 # Set some page-specific text
-                'site_header': 'Get FoCo administration',
-                'title': f"Add Eligibility Program for {user.full_name}",
-                'site_title': 'Get FoCo administration',
+                "site_header": "Get FoCo administration",
+                "title": f"Add Eligibility Program for {user.full_name}",
+                "site_title": "Get FoCo administration",
             },
         )
-    
+
     # General view-level exception catching
     except:
         try:
@@ -307,88 +310,94 @@ def add_elig_program(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='add_elig_program',
+            "Uncaught view-level exception",
+            function="add_elig_program",
             user_id=user_id,
         )
         raise
+
 
 @staff_member_required
 def replace_household_member_id(request, user_id, **kwargs):
     try:
         log.debug(
             "Entering function",
-            function='replace_household_member_id',
+            function="replace_household_member_id",
             user_id=request.user.id,
         )
 
-        #TODO maybe show more user info than just an ID, fetch user and show name
+        # TODO maybe show more user info than just an ID, fetch user and show name
         if request.method == "POST":
-            file_obj = request.FILES['document_path'] #django.core.files.uploadedfile.InMemoryUploadedFile
-            
+            file_obj = request.FILES[
+                "document_path"
+            ]  # django.core.files.uploadedfile.InMemoryUploadedFile
+
             # file_validation() checks file extensions
             file_validated, file_extension = file_validation(
                 file_obj,
                 request.user.id,
-                calling_function='replace_household_member_id',
+                calling_function="replace_household_member_id",
             )
             if not file_validated:
                 return render(
                     request,
                     "admin/replace_household_member_id.html",
                     {
-                        'form': HouseholdMembersReplaceIDForm(user_id=user_id),
-                        'error_message': file_extension,
+                        "form": HouseholdMembersReplaceIDForm(user_id=user_id),
+                        "error_message": file_extension,
                         # Set some page-specific text
-                        'site_header': 'Get FoCo administration',
-                        'title': f"Replace Household Member ID for {user_id}",
-                        'site_title': 'Get FoCo administration',
+                        "site_header": "Get FoCo administration",
+                        "title": f"Replace Household Member ID for {user_id}",
+                        "site_title": "Get FoCo administration",
                     },
                 )
 
             # request.POST['member_name'] is the existing document_path
             # chop off the old filename but leave the user_XXXX prefix
-            new_filename = request.POST['member_name'].split('/')[0] + '/' + pendulum.now(
-                    'utc'
-                ).format(
-                    f"YYYY-MM-DD[T]HHmmss[Z]" # append datetime for uniqueness
-                ) + file_obj.name.replace(' ', '_') # append new filename with no spaces
-            
+            new_filename = (
+                request.POST["member_name"].split("/")[0]
+                + "/"
+                + pendulum.now("utc").format(
+                    "YYYY-MM-DD[T]HHmmss[Z]"  # append datetime for uniqueness
+                )
+                + file_obj.name.replace(" ", "_")
+            )  # append new filename with no spaces
+
             # upload new file with user filename
             new_filename = default_storage.save(new_filename, file_obj)
 
             # Update file path for any existing household members with matching old file path
             household_members = HouseholdMembers.objects.get(user_id=user_id)
-            for person in household_members.household_info['persons_in_household']:
+            for person in household_members.household_info["persons_in_household"]:
                 # request.POST['member_name'] is the existing document_path
-                if person['identification_path'] == request.POST['member_name']:
-                    person['identification_path'] = new_filename
+                if person["identification_path"] == request.POST["member_name"]:
+                    person["identification_path"] = new_filename
 
             # Save changes to household member object
             household_members.save()
 
             return render(
                 request,
-                "admin/replace_household_member_id.html", 
+                "admin/replace_household_member_id.html",
                 {
-                    'form': HouseholdMembersReplaceIDForm(user_id=user_id),
-                    'success_message': "Household Member ID replaced. Close this window and refresh the HouseholdMembers page to view it.",
+                    "form": HouseholdMembersReplaceIDForm(user_id=user_id),
+                    "success_message": "Household Member ID replaced. Close this window and refresh the HouseholdMembers page to view it.",
                     # Set some page-specific text
-                    'site_header': 'Get FoCo administration',
-                    'title': f"Replace Household Member ID for {user_id}",
-                    'site_title': 'Get FoCo administration',
+                    "site_header": "Get FoCo administration",
+                    "title": f"Replace Household Member ID for {user_id}",
+                    "site_title": "Get FoCo administration",
                 },
             )
         else:
             return render(
                 request,
-                "admin/replace_household_member_id.html", 
+                "admin/replace_household_member_id.html",
                 {
-                    'form': HouseholdMembersReplaceIDForm(user_id=user_id),
+                    "form": HouseholdMembersReplaceIDForm(user_id=user_id),
                     # Set some page-specific text
-                    'site_header': 'Get FoCo administration',
-                    'title': f"Replace Household Member ID for {user_id}",
-                    'site_title': 'Get FoCo administration',
+                    "site_header": "Get FoCo administration",
+                    "title": f"Replace Household Member ID for {user_id}",
+                    "site_title": "Get FoCo administration",
                 },
             )
     except:
@@ -397,8 +406,8 @@ def replace_household_member_id(request, user_id, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='replace_household_member_id',
+            "Uncaught view-level exception",
+            function="replace_household_member_id",
             user_id=user_id,
         )
         raise

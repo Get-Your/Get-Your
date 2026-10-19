@@ -18,35 +18,36 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import logging
-import pendulum
 from pathlib import Path
 from typing import Union
-import pandas as pd
 
-from django.db.models import Count, Q
+import pandas as pd
+import pendulum
+from app.models import HouseholdMembersHist, IQProgram, IQProgramRD, User
 from django.core.files.storage import default_storage
-from app import models
-from app.models import IQProgramRD, IQProgram, User, HouseholdMembersHist
+from django.db.models import Count, Q
 from logger.wrappers import LoggerWrapper
+
+from app import models
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
 
+
 # TODO: update to use typer
 class Extract:
-    
     def __init__(
-            self,
-            output_file_dir=None,
-            user_files_dir=None,
-            filename_suffix='IQ Applicants.csv',
-            interactive=False,
-            **kwargs,
-            ):
+        self,
+        output_file_dir=None,
+        user_files_dir=None,
+        filename_suffix="IQ Applicants.csv",
+        interactive=False,
+        **kwargs,
+    ):
 
         self.output_file_dir = output_file_dir
         self.user_files_dir = user_files_dir
-        
+
         self._initialize_vars()
         self.select_framework = """
             select {fields} from public.app_user u
@@ -59,31 +60,37 @@ class Extract:
             {wherePlaceholder}
             
             order by u.id asc
-            """   
+            """
         # Start filtering with non-archived records
         self.where_framework = """ where u."is_archived"=false """
 
         # Use different fields for certain program(s)
         self.table_fields = [
-                ('u', 'id', 'Primary ID'),
-                ('u', 'first_name', 'First Name'),
-                ('u', 'last_name', 'Last Name'),
-                ('u', 'email', 'Email Address'),
-                ('u', 'phone_number', 'Phone Number'),
-                ('am', 'address1', 'Mailing Address 1'),
-                ('am', 'address2', 'Mailing Address 2'),
-                ('am', 'city', 'City'),
-                ('am', 'state', 'State'),
-                ('am', 'zip_code', 'Zip Code'),
-                ('m', 'household_info', 'Individuals in Household')
-            ]
+            ("u", "id", "Primary ID"),
+            ("u", "first_name", "First Name"),
+            ("u", "last_name", "Last Name"),
+            ("u", "email", "Email Address"),
+            ("u", "phone_number", "Phone Number"),
+            ("am", "address1", "Mailing Address 1"),
+            ("am", "address2", "Mailing Address 2"),
+            ("am", "city", "City"),
+            ("am", "state", "State"),
+            ("am", "zip_code", "Zip Code"),
+            ("m", "household_info", "Individuals in Household"),
+        ]
 
         self.hist_tables = [
-            ('u', 'UserHist', 'historical_values', 'app_user', 'User'),
-            ('am', 'AddressHist', 'historical_values', 'app_address', 'Address'),
-            ('h', 'HouseholdHist', 'historical_values', 'app_household', 'Household'),
-            ('m', 'HouseholdMembersHist', 'historical_values', 'app_householdmembers', 'HouseholdMembers'),
-            ]
+            ("u", "UserHist", "historical_values", "app_user", "User"),
+            ("am", "AddressHist", "historical_values", "app_address", "Address"),
+            ("h", "HouseholdHist", "historical_values", "app_household", "Household"),
+            (
+                "m",
+                "HouseholdMembersHist",
+                "historical_values",
+                "app_householdmembers",
+                "HouseholdMembers",
+            ),
+        ]
 
         if self.output_file_dir is None:
             self.output_file_dir = Path(self.OUTPUT_FILES_DIR)
@@ -91,16 +98,16 @@ class Extract:
         #     self.user_files_dir = Path(self.USER_FILES_SAVE_DIR)
 
         self.filename_suffix = filename_suffix
-        self.interactive = interactive      
-        
+        self.interactive = interactive
+
         # Initialize params
         self.kwargs = kwargs
 
     def _convert_extract(
-            self,
-            field_list: Union[list, tuple],
-            db_output: Union[list, tuple],
-            ) -> pd.core.frame.DataFrame:
+        self,
+        field_list: Union[list, tuple],
+        db_output: Union[list, tuple],
+    ) -> pd.core.frame.DataFrame:
         """
         Convert input to pandas dataframe.
 
@@ -122,67 +129,86 @@ class Extract:
             Pandas DataFrame represenation of the database output data.
 
         """
-        
-        if not (isinstance(db_output, (list, tuple)) and isinstance(db_output[0], (list, tuple))):
-            raise TypeError("db_output must be a list/tuple of list/tuples (directly from database output)")
-            
+
+        if not (
+            isinstance(db_output, (list, tuple))
+            and isinstance(db_output[0], (list, tuple))
+        ):
+            raise TypeError(
+                "db_output must be a list/tuple of list/tuples (directly from database output)"
+            )
+
         if not isinstance(field_list, (list, tuple)):
             raise TypeError("field_list must be a list/tuple")
-        
+
         df = pd.DataFrame(db_output, columns=field_list)
-        
+
         # Massage the phone number value (if exists)
         try:
-            df['Phone Number'] = df[['Phone Number']].applymap(
-                lambda x: f"NEW VALUE: ({x[-10:-7]}) {x[-7:-4]}-{x[-4:]}" if x is not None and not x.startswith('+') \
-                    else f"({x[2:5]}) {x[5:8]}-{x[8:12]}" if x is not None else None
+            df["Phone Number"] = df[["Phone Number"]].applymap(
+                lambda x: (
+                    f"NEW VALUE: ({x[-10:-7]}) {x[-7:-4]}-{x[-4:]}"
+                    if x is not None and not x.startswith("+")
+                    else f"({x[2:5]}) {x[5:8]}-{x[8:12]}"
+                    if x is not None
+                    else None
                 )
+            )
         except KeyError:
             pass
-        
+
         # Convert the 'Individuals in Household' dictionary to pretty format
         # (if exists)
         try:
-            df['Individuals in Household'] = df[['Individuals in Household']].applymap(
-                lambda x: f"{x['modifier']}" + f"{len(x['persons_in_household'])} individual(s); " + ', '.join(
-                    [f"{y['name']} (DOB: {y['birthdate']})" for y in x['persons_in_household']]
-                    ) if x is not None else None
+            df["Individuals in Household"] = df[["Individuals in Household"]].applymap(
+                lambda x: (
+                    f"{x['modifier']}"
+                    + f"{len(x['persons_in_household'])} individual(s); "
+                    + ", ".join(
+                        [
+                            f"{y['name']} (DOB: {y['birthdate']})"
+                            for y in x["persons_in_household"]
+                        ]
+                    )
+                    if x is not None
+                    else None
                 )
+            )
         except KeyError:
             pass
-        
-        return(df)  
-            
+
+        return df
+
     def _initialize_vars(self):
         ## Initialize global vars
         try:
             fileDir = Path(__file__).parent
-        except NameError:   # dev
+        except NameError:  # dev
             fileDir = Path.cwd()
 
         self.output_file_dir = fileDir
-        
+
         # with open(
         #         fileDir.parent.parent.joinpath('.env.deploy'),
         #         'r',
         #         encoding='utf-8',
         #         ) as f:
         #     secrets_dict = loads(f.read())
-            
+
         # for key in secrets_dict.keys():
         #     setattr(self, key, secrets_dict[key])
-            
+
     def _mark_updates(
-            self,
-            # cursor: psycopg2.extensions.cursor,
-            field_list: list,
-            record_list: list,
-            ) -> (list, list):
+        self,
+        # cursor: psycopg2.extensions.cursor,
+        field_list: list,
+        record_list: list,
+    ) -> (list, list):
         """
         Mark each record in record_list with any updates and output all
         records.
-        
-        While all input records are included in the output, only the values in 
+
+        While all input records are included in the output, only the values in
         each record that are either identifying or have been updated (or both)
         will be included.
 
@@ -208,19 +234,17 @@ class Extract:
             been updated), respectively.
 
         """
-        idFieldIdx = next(iter(inidx for inidx,x in enumerate(field_list) if x[1]=='id'))
+        idFieldIdx = next(
+            iter(inidx for inidx, x in enumerate(field_list) if x[1] == "id")
+        )
         truncFieldsToUse = [x[:2] for x in field_list]
-        outputList = []    # initialize output list
-        isUpdatedList = []    # initialize the output list of bools
-        
-        for idxitm,itm in enumerate(record_list):
+        outputList = []  # initialize output list
+        isUpdatedList = []  # initialize the output list of bools
+
+        for idxitm, itm in enumerate(record_list):
             # Gather the table(s) that were updated
             tableCheckList = sorted(
-                list(
-                    set(
-                        [x[0] for x in field_list]
-                    )
-                ),
+                list(set([x[0] for x in field_list])),
                 reverse=True,
             )
 
@@ -228,76 +252,105 @@ class Extract:
             # household members, mailing address) or just ['u'] (user); ensure
             # valueListFields matches the order of each
             valueListFields = [
-                'is_updated',
-                'householdmembers__is_updated',
-                'address__is_updated',
+                "is_updated",
+                "householdmembers__is_updated",
+                "address__is_updated",
             ]
 
             if len(tableCheckList) == 1:
                 # Take only the first value (still in a list) to match tableCheckList
                 valueListFields = valueListFields[:1]
-            
-            tableCheckOut = list(User.objects.select_related(
-                'householdmembers',
-                'household',
-                'address__mailing_address'
-            ).filter(
-                is_archived=False,
-                id=itm[idFieldIdx] # user id in list
-            ).values_list(
-                *valueListFields
-            ))[0]
-            
+
+            tableCheckOut = list(
+                User.objects.select_related(
+                    "householdmembers", "household", "address__mailing_address"
+                )
+                .filter(
+                    is_archived=False,
+                    id=itm[idFieldIdx],  # user id in list
+                )
+                .values_list(*valueListFields)
+            )[0]
+
             # Initialize list of updated fields and define the identifying
             # fields to include in the extract regardless of update
             updatedFields = []
             identifyingFields = [
-                ('u', 'id'),
-                ('u', 'first_name'),
-                ('u', 'last_name'),
-                ('u', 'email'),
-                ]
-            for updidx,isupdated in enumerate(tableCheckOut):
+                ("u", "id"),
+                ("u", "first_name"),
+                ("u", "last_name"),
+                ("u", "email"),
+            ]
+            for updidx, isupdated in enumerate(tableCheckOut):
                 if isupdated:
-                    # If updated, get the fields that changed and add the 
+                    # If updated, get the fields that changed and add the
                     # new values to the output
-                    tableRef = next(iter(x for x in self.hist_tables if x[0]==tableCheckList[updidx]))
+                    tableRef = next(
+                        iter(
+                            x
+                            for x in self.hist_tables
+                            if x[0] == tableCheckList[updidx]
+                        )
+                    )
                     modelName = tableRef[1]
                     modelClass = getattr(models, modelName)
 
-                    histQuerySet = modelClass.objects.filter(
-                        user_id=itm[idFieldIdx]
-                    ).values(
-                        tableRef[2]
-                    ).order_by(
-                        '-id'
-                    ).first()
-                    
+                    histQuerySet = (
+                        modelClass.objects.filter(user_id=itm[idFieldIdx])
+                        .values(tableRef[2])
+                        .order_by("-id")
+                        .first()
+                    )
+
                     if histQuerySet is not None:
-                        histOut = histQuerySet['historical_values']
+                        histOut = histQuerySet["historical_values"]
                     else:
-                        if modelName == 'AddressHist':
-                            histOut = {"mailing_address_id": 0, "eligibility_address_id": 0}
+                        if modelName == "AddressHist":
+                            histOut = {
+                                "mailing_address_id": 0,
+                                "eligibility_address_id": 0,
+                            }
                         else:
                             histOut = {}
-                    
-                    # Define updatedFields as (index of record_list, 
-                    # historical value) (if the historical value is an 
+
+                    # Define updatedFields as (index of record_list,
+                    # historical value) (if the historical value is an
                     # identifying field)
-                    
+
                     # Address is the only field that stores IDs - strip
                     # '_id' and use the mailing address (only) parts
-                    if tableCheckList[updidx] == 'am':
-                        if 'mailing_address_id' in histOut.keys():
+                    if tableCheckList[updidx] == "am":
+                        if "mailing_address_id" in histOut.keys():
                             updatedFields.extend(
                                 [
-                                    (truncFieldsToUse.index((tableRef[0], 'address1')), None),
-                                    (truncFieldsToUse.index((tableRef[0], 'address2')), None),
-                                    (truncFieldsToUse.index((tableRef[0], 'city')), None),
-                                    (truncFieldsToUse.index((tableRef[0], 'state')), None),
-                                    (truncFieldsToUse.index((tableRef[0], 'zip_code')), None),
-                                    ]
-                                )
+                                    (
+                                        truncFieldsToUse.index(
+                                            (tableRef[0], "address1")
+                                        ),
+                                        None,
+                                    ),
+                                    (
+                                        truncFieldsToUse.index(
+                                            (tableRef[0], "address2")
+                                        ),
+                                        None,
+                                    ),
+                                    (
+                                        truncFieldsToUse.index((tableRef[0], "city")),
+                                        None,
+                                    ),
+                                    (
+                                        truncFieldsToUse.index((tableRef[0], "state")),
+                                        None,
+                                    ),
+                                    (
+                                        truncFieldsToUse.index(
+                                            (tableRef[0], "zip_code")
+                                        ),
+                                        None,
+                                    ),
+                                ]
+                            )
                     else:
                         # Loop through each key to determine what to do with it
                         for key in histOut.keys():
@@ -306,33 +359,36 @@ class Extract:
                             if (tableRef[0], key) in identifyingFields:
                                 histVal = histOut[key]
                             else:
-                                histVal =  None
-                                
+                                histVal = None
+
                             # Check for whether the field in question is in the
                             # list of fields to output (truncFieldsToUse)
                             try:
                                 outVal = (
-                                    truncFieldsToUse.index(
-                                        (tableRef[0], key)),
+                                    truncFieldsToUse.index((tableRef[0], key)),
                                     histVal,
-                                    )
-                                
+                                )
+
                             except ValueError:  # index not found
                                 pass
                             else:
                                 updatedFields.append(outVal)
-                     
+
             # Define indices to keep in the extract, regardless of whether they
             # have updates
-            nonUpdatedIdxToKeep = [truncFieldsToUse.index(x[:2]) for x in identifyingFields]
+            nonUpdatedIdxToKeep = [
+                truncFieldsToUse.index(x[:2]) for x in identifyingFields
+            ]
             # Mark updated values as well as 'old value' for identifying
             # fields
             updatedVals = []
             updatedIdx = [x[0] for x in updatedFields]
-            for iteridx,iteritm in enumerate(itm):
+            for iteridx, iteritm in enumerate(itm):
                 try:
-                    updatedFieldVal = next(iter(x for x in updatedFields if x[0]==iteridx))
-                except StopIteration:   # index is not in updatedFields
+                    updatedFieldVal = next(
+                        iter(x for x in updatedFields if x[0] == iteridx)
+                    )
+                except StopIteration:  # index is not in updatedFields
                     updatedVals.append(None)
                 else:
                     # If this is the JSON value, insert 'NEW VALUE' as a key
@@ -344,100 +400,131 @@ class Extract:
                         # for details). If this isn't an actually-updated
                         # field, this copies the functionality of the
                         # StopIteration case
-                        
+
                         # Verify this is the jsonIdx value (the household_info
                         # field from GetFoco.table_fields)
-                        jsonIdx = next(iter(idx for idx,x in enumerate(self.table_fields) if x[1]=='household_info'))
+                        jsonIdx = next(
+                            iter(
+                                idx
+                                for idx, x in enumerate(self.table_fields)
+                                if x[1] == "household_info"
+                            )
+                        )
                         if iteridx != jsonIdx:  # shouldn't exist
-                            raise Exception("is_updated workaround: JSON value found that isn't from app_householdmembers")
-                            
+                            raise Exception(
+                                "is_updated workaround: JSON value found that isn't from app_householdmembers"
+                            )
+
                         # Re-gather the historical values
-                        histOut = HouseholdMembersHist.objects.filter(
-                            user_id=itm[idFieldIdx]
-                        ).values(
-                            'historical_values'
-                        ).order_by(
-                            '-created'
-                        ).first()
-                    
+                        histOut = (
+                            HouseholdMembersHist.objects.filter(user_id=itm[idFieldIdx])
+                            .values("historical_values")
+                            .order_by("-created")
+                            .first()
+                        )
+
                         # Build new dicts with just name and birthdate
                         # (since that's what we care about for the updates)
-                        
+
                         iterCheck = [
-                            {
-                                key: listitm[key] for key in ['name', 'birthdate']
-                                }
-                            for listitm in iteritm['persons_in_household']
-                            ]
-                        
+                            {key: listitm[key] for key in ["name", "birthdate"]}
+                            for listitm in iteritm["persons_in_household"]
+                        ]
+
                         histCheck = [
-                            {
-                                key: listitm[key] for key in ['name', 'birthdate']
-                                }
-                            for listitm in histOut['historical_values']['household_info']['persons_in_household']
-                            ]
+                            {key: listitm[key] for key in ["name", "birthdate"]}
+                            for listitm in histOut["historical_values"][
+                                "household_info"
+                            ]["persons_in_household"]
+                        ]
                         if iterCheck == histCheck:
                             updatedVals.append(None)
                         else:
-                        ############
-                        
-                            iteritm.update({'modifier': 'NEW VALUE: '})
+                            ############
+
+                            iteritm.update({"modifier": "NEW VALUE: "})
                             updatedVals.append(iteritm)
                     else:
-                        updatedVals.append(f"OLD VALUE: {updatedFieldVal[1]}, NEW VALUE: {iteritm}" if updatedFieldVal[1] is not None else f"NEW VALUE: {iteritm}")
-                    
+                        updatedVals.append(
+                            f"OLD VALUE: {updatedFieldVal[1]}, NEW VALUE: {iteritm}"
+                            if updatedFieldVal[1] is not None
+                            else f"NEW VALUE: {iteritm}"
+                        )
+
             # If any of the affected fields are actual updates, write them to
             # the isUpdatedList for reference
-            if all(x is None for idx,x in enumerate(updatedVals)):
+            if all(x is None for idx, x in enumerate(updatedVals)):
                 isUpdatedList.append(False)
             else:
                 isUpdatedList.append(True)
                 # Then, go through the nonUpdatedIdxToKeep and replace None
                 # with the original values (to ensure the record is identifiable)
                 for nidx in nonUpdatedIdxToKeep:
-                    updatedVals[nidx] = itm[nidx] if updatedVals[nidx] is None else updatedVals[nidx]
+                    updatedVals[nidx] = (
+                        itm[nidx] if updatedVals[nidx] is None else updatedVals[nidx]
+                    )
 
             # Append the updated values to the output list. If no business
             # values were truly updated, this will only include identifying
             # vals
             outputList.append(tuple(updatedVals))
-            
+
         return (outputList, isUpdatedList)
-        
+
     def export_programs(self):
         """
         Export the program-specific standard extracts (for individual program
         lead(s)).
-        
+
         Parameters
         ----------
         self
-    
+
         Returns
         -------
         None.
-    
+
         """
-        
+
         # Parse kwargs; start with initialized defaults
-        save_file = True if not 'save_file' in self.kwargs.keys() else self.kwargs['save_file']
-        reset_updates = True if not 'reset_updates' in self.kwargs.keys() else self.kwargs['reset_updates']
-        ids_to_warn = [] if not 'ids_to_warn' in self.kwargs.keys() else self.kwargs['ids_to_warn']
-        mark_enrolled = True if not 'mark_enrolled' in self.kwargs.keys() else self.kwargs['mark_enrolled']
-        
+        save_file = (
+            True if not "save_file" in self.kwargs.keys() else self.kwargs["save_file"]
+        )
+        reset_updates = (
+            True
+            if not "reset_updates" in self.kwargs.keys()
+            else self.kwargs["reset_updates"]
+        )
+        ids_to_warn = (
+            []
+            if not "ids_to_warn" in self.kwargs.keys()
+            else self.kwargs["ids_to_warn"]
+        )
+        mark_enrolled = (
+            True
+            if not "mark_enrolled" in self.kwargs.keys()
+            else self.kwargs["mark_enrolled"]
+        )
+
         if reset_updates != mark_enrolled:
-            raise TypeError("reset_updates and mark_enrolled must be set to the same value")
+            raise TypeError(
+                "reset_updates and mark_enrolled must be set to the same value"
+            )
 
         # Keep list of *all* users involved in extracts - these users will have
         # is_updated reset for all applicable tables after extracts are saved
         # (because any updates will have been part of the applicable extracts)
-        activePrograms = IQProgramRD.objects.filter(is_active=True).values_list(
-            'id',
-            'program_name',
-            'friendly_name',
-        ).order_by('id')
+        activePrograms = (
+            IQProgramRD.objects.filter(is_active=True)
+            .values_list(
+                "id",
+                "program_name",
+                "friendly_name",
+            )
+            .order_by("id")
+        )
         affectedUpdateUsers = []
-        for programId,programname,friendlyname in activePrograms:
+        for programId, programname, friendlyname in activePrograms:
             # Initialize dbOut (there will be multiple queries) and their
             # respective 'notes' (to be combined in the extract)
             dbOut = []
@@ -445,138 +532,156 @@ class Extract:
             # Keep running list of users for this program that were processed
             # in previous steps (to ignore in subsequent steps)
             alreadyProcessedUsers = []
-            
-            if programname in ('spin', 'gardens'):
-                fieldsToUse = [x for x in self.table_fields if x[1] in (
-                    'id',
-                    'first_name',
-                    'last_name',
-                    'email'
-                    )]
+
+            if programname in ("spin", "gardens"):
+                fieldsToUse = [
+                    x
+                    for x in self.table_fields
+                    if x[1] in ("id", "first_name", "last_name", "email")
+                ]
                 valueListFields = [x[1] for x in fieldsToUse]
             else:
                 fieldsToUse = self.table_fields
                 valueListFields = [
-                    'id',
-                    'first_name',
-                    'last_name',
-                    'email',
-                    'phone_number',
-                    'address__mailing_address__address1',
-                    'address__mailing_address__address2',
-                    'address__mailing_address__city',
-                    'address__mailing_address__state',
-                    'address__mailing_address__zip_code',
-                    'householdmembers__household_info'
+                    "id",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "phone_number",
+                    "address__mailing_address__address1",
+                    "address__mailing_address__address2",
+                    "address__mailing_address__city",
+                    "address__mailing_address__state",
+                    "address__mailing_address__zip_code",
+                    "householdmembers__household_info",
                 ]
             # Define the output fields for the extract
-            outFieldList = [('','','Notes'),] + fieldsToUse
-            
+            outFieldList = [
+                ("", "", "Notes"),
+            ] + fieldsToUse
+
             # Find the index of the 'id' field for later reference
-            idFieldIdx = next(iter(inidx for inidx,x in enumerate(fieldsToUse) if x[1]=='id'))
-            
+            idFieldIdx = next(
+                iter(inidx for inidx, x in enumerate(fieldsToUse) if x[1] == "id")
+            )
+
             ## Gather new applicants for the current program
-            
+
             # For additionalJoin:
-                # - brings in the IQ programs' information        
+            # - brings in the IQ programs' information
             # Note that mailing and eligibility address verifications are
             # checked before income verification, so they don't need to be
             # duplicated here
-            
-            # In the where clause:
-                # - i.is_enrolled=false filters out already-enrolled users (the
-                # user has applied when a record exists
 
-            usersStuckInRenewal = User.objects.select_related(
-                'household',
-                'iq_programs__program',
-            ).values_list(
-                'iq_programs__user_id',
-                'iq_programs__program_id',
-            ).annotate(
-                program_count=Count('iq_programs__program_id')
-            ).filter(
-                is_archived=False,
-                household__is_income_verified=True,
-                iq_programs__program__program_name=programname,
-                iq_programs__is_enrolled=False,
-                program_count__gt=1
+            # In the where clause:
+            # - i.is_enrolled=false filters out already-enrolled users (the
+            # user has applied when a record exists
+
+            usersStuckInRenewal = (
+                User.objects.select_related(
+                    "household",
+                    "iq_programs__program",
+                )
+                .values_list(
+                    "iq_programs__user_id",
+                    "iq_programs__program_id",
+                )
+                .annotate(program_count=Count("iq_programs__program_id"))
+                .filter(
+                    is_archived=False,
+                    household__is_income_verified=True,
+                    iq_programs__program__program_name=programname,
+                    iq_programs__is_enrolled=False,
+                    program_count__gt=1,
+                )
             )
 
             usersStuckInRenewalIds = [item[0] for item in usersStuckInRenewal]
 
-            newOut = list(User.objects.select_related(
-                'householdmembers',
-                'household',
-                'iq_programs__program',
-                'address__mailing_address'
-            ).filter(
-                is_archived=False,
-                household__is_income_verified=True,
-                iq_programs__program__program_name=programname,
-                iq_programs__is_enrolled=False,
-            ).values_list(
-                *valueListFields
-            ).exclude(
-                # id__in=alreadyProcessedUsers, alreadyProcessedUsers is empty here
-                id__in=usersStuckInRenewalIds,
-            ).order_by('id'))
-            
+            newOut = list(
+                User.objects.select_related(
+                    "householdmembers",
+                    "household",
+                    "iq_programs__program",
+                    "address__mailing_address",
+                )
+                .filter(
+                    is_archived=False,
+                    household__is_income_verified=True,
+                    iq_programs__program__program_name=programname,
+                    iq_programs__is_enrolled=False,
+                )
+                .values_list(*valueListFields)
+                .exclude(
+                    # id__in=alreadyProcessedUsers, alreadyProcessedUsers is empty here
+                    id__in=usersStuckInRenewalIds,
+                )
+                .order_by("id")
+            )
+
             # Add empty 'modifier' key to 'household_info' JSON values, if
             # applicable (empty indicates 'not a modified value')
             try:
-                jsonIdx = next(iter(idx for idx,x in enumerate(fieldsToUse) if x[1]=='household_info'))
+                jsonIdx = next(
+                    iter(
+                        idx
+                        for idx, x in enumerate(fieldsToUse)
+                        if x[1] == "household_info"
+                    )
+                )
             except StopIteration:
                 pass
             else:
-                for idx,itm in enumerate(newOut):
+                for idx, itm in enumerate(newOut):
                     if itm[jsonIdx] is not None:
-                        itm[jsonIdx].update({'modifier': ''})
-                    newOut[idx] = tuple(list(itm[:jsonIdx])+[itm[jsonIdx]]+list(itm[jsonIdx+1:]))
-            
+                        itm[jsonIdx].update({"modifier": ""})
+                    newOut[idx] = tuple(
+                        list(itm[:jsonIdx]) + [itm[jsonIdx]] + list(itm[jsonIdx + 1 :])
+                    )
+
             dbOut.extend(newOut)
-            notesList.extend([None]*len(newOut))
+            notesList.extend([None] * len(newOut))
             alreadyProcessedUsers.extend([x[idFieldIdx] for x in newOut])
 
             ## Gather currently-enrolled applicants of the current program who
             ## have updated their information
-            
+
             # For additionalJoin:
-                # - brings in the IQ programs' information        
-        
+            # - brings in the IQ programs' information
+
             # In the where clause:
-                # - i.is_enrolled=true already covers h.is_income_verified, so
-                # there's no need for this
+            # - i.is_enrolled=true already covers h.is_income_verified, so
+            # there's no need for this
 
             # Define the Q filter based on the fields in the extract
             # Start with the User model (because it's always included)
             filter_q = Q(is_updated=True)
             # Get just the linkages from the User model from valueListFields
-            referencedFields = [x for x in valueListFields if '__' in x]
-            linkedTables = set(
-                [x.split('__')[0] for x in referencedFields]
-            )
+            referencedFields = [x for x in valueListFields if "__" in x]
+            linkedTables = set([x.split("__")[0] for x in referencedFields])
             for x in linkedTables:
                 # OR each additional Q(...__is_updated=True)
                 filter_q |= Q(**{f"{x}__is_updated": True})
-            
-            updateOut = User.objects.select_related(
-                'householdmembers',
-                'household',
-                'iq_programs__program',
-                'address__mailing_address'
-            ).filter(
-                filter_q,
-                is_archived=False,
-                iq_programs__program__program_name=programname,
-                iq_programs__is_enrolled=True,
-                # address__is_updated=True,
-                # householdmembers__is_updated=True
-            ).exclude(
-                id__in=alreadyProcessedUsers
-            ).values_list(
-                *valueListFields
-            ).order_by('id')
+
+            updateOut = (
+                User.objects.select_related(
+                    "householdmembers",
+                    "household",
+                    "iq_programs__program",
+                    "address__mailing_address",
+                )
+                .filter(
+                    filter_q,
+                    is_archived=False,
+                    iq_programs__program__program_name=programname,
+                    iq_programs__is_enrolled=True,
+                    # address__is_updated=True,
+                    # householdmembers__is_updated=True
+                )
+                .exclude(id__in=alreadyProcessedUsers)
+                .values_list(*valueListFields)
+                .order_by("id")
+            )
 
             # Add all updateOut users (regardless of whether an update was
             # actually found) to the list for is_updated to be reset (if
@@ -596,22 +701,22 @@ class Extract:
                 # cursor,
                 fieldsToUse,
                 updateOut,
-                )
+            )
 
             # Use updatedBools to remove records with erroneous is_updated val
-            updateList = [x for x,y in zip(recordsOut, updatedBools) if y]
-            
+            updateList = [x for x, y in zip(recordsOut, updatedBools) if y]
+
             dbOut.extend(updateList)
-            notesList.extend(['UPDATE ONLY']*len(updateList))
+            notesList.extend(["UPDATE ONLY"] * len(updateList))
             alreadyProcessedUsers.extend([x[idFieldIdx] for x in updateList])
-           
-            if len(dbOut)>0:
+
+            if len(dbOut) > 0:
                 # Convert to dataframe, using the friendly field names in outFieldList
                 # Append each element of notesList to the end of each dbOut element
                 df = self._convert_extract(
                     [x[2] for x in outFieldList],
-                    [tuple([x] + list(y)) for x,y in zip(notesList, dbOut)],
-                    )
+                    [tuple([x] + list(y)) for x, y in zip(notesList, dbOut)],
+                )
 
                 # Add column for 'Enrolled in Program' (if `not mark_enrolled`)
                 # and set based on notes field
@@ -619,49 +724,50 @@ class Extract:
                     # NOTE that this assumes a user is already enrolled only if
                     # notes starts with 'update' (case-insensitive)
                     df = df.assign(
-                        **{'Enrolled in Program': [True if isinstance(x, str) and x.lower().startswith('update') else False for x in df['Notes']]},
-                        )
+                        **{
+                            "Enrolled in Program": [
+                                True
+                                if isinstance(x, str) and x.lower().startswith("update")
+                                else False
+                                for x in df["Notes"]
+                            ]
+                        },
+                    )
 
                 # Determine output
                 outMsg = []
                 if save_file:
                     # Write to file
-                    # TODO: write this to a buffer instead 
+                    # TODO: write this to a buffer instead
                     save_filepath = self.output_file_dir.joinpath(
-                        '{dt} {prg} {suf}'.format(
-                            dt=pendulum.now().date(),
-                            prg=friendlyname,
-                            suf=self.filename_suffix,
-                        ),
+                        f"{pendulum.now().date()} {friendlyname} {self.filename_suffix}",
                     )
                     df.to_csv(
                         save_filepath,
                         index=False,
                     )
                     # Write the file to blob storage, for posterity
-                    with open(save_filepath, 'rb') as fp:
-                        default_storage.save(f'extracts/{save_filepath.name}', fp)
+                    with open(save_filepath, "rb") as fp:
+                        default_storage.save(f"extracts/{save_filepath.name}", fp)
 
-                    outMsg.append("'{}' extract saved".format(programname))
-                    
+                    outMsg.append(f"'{programname}' extract saved")
+
                 if mark_enrolled:
-                    for id in df['Primary ID'].tolist():
+                    for id in df["Primary ID"].tolist():
                         iqprogramRecord = IQProgram.objects.filter(
-                            user_id=id,
-                            program_id=programId
+                            user_id=id, program_id=programId
                         ).get()
                         iqprogramRecord.is_enrolled = True
                         iqprogramRecord.enrolled_at = pendulum.now()
                         iqprogramRecord.save()
-                    
+
                 else:
                     outMsg.append("users were not enrolled")
-                    
+
                 # Print any output to the user
                 if len(outMsg) > 0:
-                    log.info("{}!".format(' and '.join(outMsg)).capitalize())
-                    
-                
+                    log.info("{}!".format(" and ".join(outMsg)).capitalize())
+
         # Only reset is_updated values if save_file==True (to ensure the
         # extracts were exported)
         if reset_updates and save_file and len(affectedUpdateUsers) > 0:
@@ -674,8 +780,8 @@ class Extract:
                 modelClass = getattr(models, modelName)
 
                 allModelsOfClass = modelClass.objects.all()
-                
-                if modelName == 'User':
+
+                if modelName == "User":
                     filteredClassModels = allModelsOfClass.filter(
                         id__in=affectedUpdateUsers
                     )
@@ -684,13 +790,16 @@ class Extract:
                         user_id__in=affectedUpdateUsers
                     )
 
-                filteredClassModels.update(
-                    is_updated=False
-                )
-            log.info("All 'is_updated' designations in the database were successfully reset")
-            
+                filteredClassModels.update(is_updated=False)
+            log.info(
+                "All 'is_updated' designations in the database were successfully reset"
+            )
+
         else:
             log.info("No 'is_updated' designations in the database were reset")
 
-        return [x for x in self.output_file_dir.iterdir() if x.name.startswith(str(pendulum.today().year))]
-        
+        return [
+            x
+            for x in self.output_file_dir.iterdir()
+            if x.name.startswith(str(pendulum.today().year))
+        ]

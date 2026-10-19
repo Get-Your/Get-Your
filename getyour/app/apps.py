@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import sys
+
 from django.apps import AppConfig
 from django.conf import settings
 

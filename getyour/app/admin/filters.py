@@ -16,31 +16,32 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.db.models import Exists, OuterRef
+
 from django.contrib import admin
+from django.db.models import Exists, OuterRef
 from django.utils.translation import gettext_lazy as _
 
-from app.models import User, EligibilityProgram
+from app.models import EligibilityProgram, User
 
 
 def needs_income_verification_filter(queryset):
     """
     Filter a queryset for users that need income verification.
-    
+
     """
 
     # Gather EligibilityProgram objects for each user that are 'active'
     selected_active_programs = EligibilityProgram.objects.filter(
-        user_id=OuterRef('id'),
+        user_id=OuterRef("id"),
         program__is_active=True,
     )
 
     # Gather EligibilityProgram objects for each user that are 'active' and have
-    # an uploaded file 
+    # an uploaded file
     active_incomplete_programs = EligibilityProgram.objects.filter(
-        user_id=OuterRef('id'),
+        user_id=OuterRef("id"),
         program__is_active=True,
-        document_path='',
+        document_path="",
     )
 
     queryset = queryset.filter(
@@ -60,8 +61,9 @@ def needs_income_verification_filter(queryset):
     # Ensure all identification is included
     filter_ids = []
     for usr in queryset:
-        if 'persons_in_household' in usr.householdmembers.household_info and all(
-            'identification_path' in x and x['identification_path'] is not None for x in usr.householdmembers.household_info['persons_in_household']
+        if "persons_in_household" in usr.householdmembers.household_info and all(
+            "identification_path" in x and x["identification_path"] is not None
+            for x in usr.householdmembers.household_info["persons_in_household"]
         ):
             filter_ids.append(usr.id)
 
@@ -72,10 +74,10 @@ def needs_income_verification_filter(queryset):
 class NeedsVerificationListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
     # right admin sidebar just above the filter options
-    title = _('income verification')
+    title = _("income verification")
 
     # Parameter for the filter that will be used in the URL query
-    parameter_name = 'needsverification'
+    parameter_name = "needsverification"
 
     def lookups(self, request, model_admin):
         """
@@ -86,10 +88,10 @@ class NeedsVerificationListFilter(admin.SimpleListFilter):
 
         """
         return (
-            ('new', _('New Needs Verification')),
-            ('hold', _('Awaiting Response')),
-            ('all', _('All Needs Verification')),
-            ('done', _('Has Been Verified')),
+            ("new", _("New Needs Verification")),
+            ("hold", _("Awaiting Response")),
+            ("all", _("All Needs Verification")),
+            ("done", _("Has Been Verified")),
         )
 
     def queryset(self, request, queryset):
@@ -99,33 +101,29 @@ class NeedsVerificationListFilter(admin.SimpleListFilter):
 
         """
         # Compare the requested value to decide how to filter the queryset
-        if self.value() == 'new':
-            return needs_income_verification_filter(
-                queryset
-            ).exclude(
+        if self.value() == "new":
+            return needs_income_verification_filter(queryset).exclude(
                 admin__awaiting_user_response=True,
             )
-        if self.value() == 'hold':
-            return needs_income_verification_filter(
-                queryset
-            ).filter(
+        if self.value() == "hold":
+            return needs_income_verification_filter(queryset).filter(
                 admin__awaiting_user_response=True,
             )
-        if self.value() == 'all':
+        if self.value() == "all":
             return needs_income_verification_filter(queryset)
-        if self.value() == 'done':
+        if self.value() == "done":
             return queryset.filter(
                 household__is_income_verified=True,
             )
-    
+
 
 class GMAListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
     # right admin sidebar just above the filter options
-    title = _('GMA')
+    title = _("GMA")
 
     # Parameter for the filter that will be used in the URL query
-    parameter_name = 'gma'
+    parameter_name = "gma"
 
     def lookups(self, request, model_admin):
         """
@@ -136,8 +134,8 @@ class GMAListFilter(admin.SimpleListFilter):
 
         """
         return (
-            ('in', _('Within GMA')),
-            ('out', _('Outside of GMA')),
+            ("in", _("Within GMA")),
+            ("out", _("Outside of GMA")),
         )
 
     def queryset(self, request, queryset):
@@ -147,11 +145,11 @@ class GMAListFilter(admin.SimpleListFilter):
 
         """
         # Compare the requested value to decide how to filter the queryset
-        if self.value() == 'in':
+        if self.value() == "in":
             return queryset.filter(
                 is_in_gma=True,
             )
-        if self.value() == 'out':
+        if self.value() == "out":
             return queryset.filter(
                 is_in_gma=False,
             )
@@ -160,10 +158,10 @@ class GMAListFilter(admin.SimpleListFilter):
 class CityCoveredListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
     # right admin sidebar just above the filter options
-    title = _('City coverage')
+    title = _("City coverage")
 
     # Parameter for the filter that will be used in the URL query
-    parameter_name = 'citycovered'
+    parameter_name = "citycovered"
 
     def lookups(self, request, model_admin):
         """
@@ -171,11 +169,11 @@ class CityCoveredListFilter(admin.SimpleListFilter):
         value for the option that will appear in the URL query (and therefore
         should be a string). The second element is the human-readable name for
         the option that will appear in the right sidebar.
-        
+
         """
         return (
-            ('yes', _('City covered')),
-            ('no', _('not City covered')),
+            ("yes", _("City covered")),
+            ("no", _("not City covered")),
         )
 
     def queryset(self, request, queryset):
@@ -185,11 +183,11 @@ class CityCoveredListFilter(admin.SimpleListFilter):
 
         """
         # Compare the requested value to decide how to filter the queryset
-        if self.value() == 'yes':
+        if self.value() == "yes":
             return queryset.filter(
                 is_city_covered=True,
             )
-        if self.value() == 'no':
+        if self.value() == "no":
             return queryset.filter(
                 is_city_covered=False,
             )
@@ -198,10 +196,10 @@ class CityCoveredListFilter(admin.SimpleListFilter):
 class AccountDisabledListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
     # right admin sidebar just above the filter options
-    title = _('account disabled')
+    title = _("account disabled")
 
     # Parameter for the filter that will be used in the URL query
-    parameter_name = 'disabled'
+    parameter_name = "disabled"
 
     def lookups(self, request, model_admin):
         """
@@ -209,22 +207,25 @@ class AccountDisabledListFilter(admin.SimpleListFilter):
         value for the option that will appear in the URL query (and therefore
         should be a string). The second element is the human-readable name for
         the option that will appear in the right sidebar.
-        
+
         """
         return (
-            (None, _('Not disabled')),
-            ('true', _('Disabled')),
-            ('all', _('All')),
+            (None, _("Not disabled")),
+            ("true", _("Disabled")),
+            ("all", _("All")),
         )
-    
+
     def choices(self, cl):
         for lookup, title in self.lookup_choices:
             yield {
-                'selected': self.value() == lookup,
-                'query_string': cl.get_query_string({
-                    self.parameter_name: lookup,
-                }, []),
-                'display': title,
+                "selected": self.value() == lookup,
+                "query_string": cl.get_query_string(
+                    {
+                        self.parameter_name: lookup,
+                    },
+                    [],
+                ),
+                "display": title,
             }
 
     def queryset(self, request, queryset):
@@ -238,9 +239,9 @@ class AccountDisabledListFilter(admin.SimpleListFilter):
             return queryset.filter(
                 is_archived=False,
             )
-        if self.value() == 'true':
+        if self.value() == "true":
             return queryset.filter(
                 is_archived=True,
             )
-        if self.value() == 'all':
+        if self.value() == "all":
             return queryset

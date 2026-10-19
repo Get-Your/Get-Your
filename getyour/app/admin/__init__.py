@@ -16,73 +16,73 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import json
-import io
-import zipfile
-import os
-import logging
-import gettext
-from django.http.response import HttpResponse
-import pendulum
 
-from django.http.response import HttpResponse
+import gettext
+import io
+import json
+import logging
+import os
+import zipfile
+
+import pendulum
+from azure.core.exceptions import ResourceNotFoundError
 from django.conf import settings
+from django.contrib import admin, messages
+from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
+from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import default_storage
-from django.shortcuts import render, reverse
-from django.http import HttpResponseRedirect
-from django.utils.html import format_html
-from django.utils.translation import ngettext
 from django.db import transaction
 from django.db.models import JSONField
 from django.db.models.functions import Lower
 from django.db.models.query import QuerySet
-from django.contrib import admin, messages
-from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
+from django.http import HttpResponseRedirect
+from django.http.response import HttpResponse
+from django.shortcuts import render, reverse
+from django.utils.html import format_html
+from django.utils.translation import ngettext
 from django_json_widget.widgets import JSONEditorWidget
-from azure.core.exceptions import ResourceNotFoundError
-
 from get_your_utils.python.run_extracts import Extract
+from logger.wrappers import LoggerWrapper
 
-from app.models import (
-    User,
-    Address,
-    AddressRD,
-    Household,
-    HouseholdMembers,
-    EligibilityProgram,
-    EligibilityProgramRD,
-    IQProgram,
-    IQProgramRD,
-    Admin as AppAdmin,
-    Feedback,
-)
-from app.backend import (
-    get_eligible_iq_programs,
-    get_iqprogram_requires_fields,
-    finalize_address,
-    finalize_application,
-    remove_ineligible_programs,
-    address_check,
-)
-from app.constants import application_pages
 from app.admin.filters import (
-    GMAListFilter,
+    AccountDisabledListFilter,
     CityCoveredListFilter,
+    GMAListFilter,
     NeedsVerificationListFilter,
     needs_income_verification_filter,
-    AccountDisabledListFilter,
 )
 from app.admin.forms import (
-    ProgramChangeForm,
-    IQProgramAddForm,
     EligibilityProgramRDForm,
+    IQProgramAddForm,
     IQProgramRDForm,
+    ProgramChangeForm,
 )
-
-from logger.wrappers import LoggerWrapper
+from app.backend import (
+    address_check,
+    finalize_address,
+    finalize_application,
+    get_eligible_iq_programs,
+    get_iqprogram_requires_fields,
+    remove_ineligible_programs,
+)
+from app.constants import application_pages
+from app.models import (
+    Address,
+    AddressRD,
+    EligibilityProgram,
+    EligibilityProgramRD,
+    Feedback,
+    Household,
+    HouseholdMembers,
+    IQProgram,
+    IQProgramRD,
+    User,
+)
+from app.models import (
+    Admin as AppAdmin,
+)
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -91,33 +91,33 @@ log = LoggerWrapper(logging.getLogger(__name__))
 # Customize admin site text
 
 # Text to put at the end of each page's <title>
-admin.site.site_title = 'Get FoCo administration'
+admin.site.site_title = "Get FoCo administration"
 
 # Text to put in each page's <h1> (and above login form)
-admin.site.site_header = 'Get FoCo administration'
+admin.site.site_header = "Get FoCo administration"
 
 # Text to put at the top of the admin index page and in the page header
-admin.site.index_title = 'Admin menu'
+admin.site.index_title = "Admin menu"
 
 
 def create_modeladmin(
-        modeladmin,
-        model,
-        name=None,
-        pretty_name=None,
-    ):
+    modeladmin,
+    model,
+    name=None,
+    pretty_name=None,
+):
     """
     Create a proxy ModelAdmin to allow different views for different users on
     the same model.
-    
+
     """
-    
+
     class Meta:
         proxy = True
         app_label = model._meta.app_label
         verbose_name = pretty_name
 
-    attrs = {'__module__': '', 'Meta': Meta}
+    attrs = {"__module__": "", "Meta": Meta}
 
     newmodel = type(name, (model,), attrs)
 
@@ -133,76 +133,69 @@ def document_path_parsed(obj):
     This function spoofs the URLs that ``django-storages`` creates
     automatically; this could be eliminated (except for the headers) if the
     data model was updated to save one file per record.
-    
+
     """
     # Parse the stringified list of document_path values. Dynamically
     # converting to a list would be dangerous, so this is processed manually.
-    if obj.document_path.name != '':
-        blob_list = obj.document_path.name.replace(
-            "[", ''
-        ).replace(
-            "]", ''
-        ).replace(
-            "'", ''
-        ).split(
-            ', '
+    if obj.document_path.name != "":
+        blob_list = (
+            obj.document_path.name.replace("[", "")
+            .replace("]", "")
+            .replace("'", "")
+            .split(", ")
         )
         url_list = []
         for idx, itm in enumerate(blob_list):
             url_list.append(
                 """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Document {nm} of {tot}</a>""".format(
                     trg=reverse(
-                        'app:admin_view_blob',
-                        kwargs={'blob_name': itm},
+                        "app:admin_view_blob",
+                        kwargs={"blob_name": itm},
                     ),
-                    nm=idx+1,
+                    nm=idx + 1,
                     tot=len(blob_list),
                 )
             )
     else:
-        url_list = ['No document available']
+        url_list = ["No document available"]
 
-    return format_html('<br />'.join(url_list))
+    return format_html("<br />".join(url_list))
 
 
-def get_admin_url(obj, urltype='change'):
+def get_admin_url(obj, urltype="change"):
     """
     Return the admin URL of the specific object.
-    
+
     Uses the built-in URL patterns documented at
     https://docs.djangoproject.com/en/4.2/ref/contrib/admin/#reversing-admin-urls.
-    
+
     """
     return reverse(
-        "admin:{al}_{md}_{tp}".format(
-            al=obj._meta.app_label,
-            md=obj._meta.model_name,
-            tp=urltype,
-        ),
+        f"admin:{obj._meta.app_label}_{obj._meta.model_name}_{urltype}",
         args=(obj.id,),
     )
 
 
 class AddressInline(admin.TabularInline):
     model = Address
-    
+
     fk_name = "user"
 
     fields = readonly_fields = [
-        'created_at',
-        'modified_at',
-        'mailing_addr',
-        'eligibility_addr',
+        "created_at",
+        "modified_at",
+        "mailing_addr",
+        "eligibility_addr",
     ]
 
     # Adding directly to this inline is always disabled (proper logic DNE)
     def has_add_permission(self, request, obj=None):
         return False
 
-    @admin.display(description='mailing address')
+    @admin.display(description="mailing address")
     def mailing_addr(self, obj):
         addr = AddressRD.objects.get(id=obj.mailing_address_id)
-        if addr.address2 == '':
+        if addr.address2 == "":
             return format_html(
                 f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
             )
@@ -211,10 +204,10 @@ class AddressInline(admin.TabularInline):
                 f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.address2}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
             )
 
-    @admin.display(description='eligibility address')
+    @admin.display(description="eligibility address")
     def eligibility_addr(self, obj):
         addr = AddressRD.objects.get(id=obj.eligibility_address_id)
-        if addr.address2 == '':
+        if addr.address2 == "":
             return format_html(
                 f'<a href="{get_admin_url(addr)}">{addr.address1}<br />{addr.city}, {addr.state} {addr.zip_code}</a>'
             )
@@ -229,17 +222,17 @@ class AddressInline(admin.TabularInline):
 
 class HouseholdInline(admin.TabularInline):
     model = Household
-    
+
     fk_name = "user"
 
     fields = [
-        'created_at',
-        'modified_at',
-        'duration_at_address',
-        'rent_own',
-        'number_persons_in_household',
-        'income_percent',
-        'is_income_verified',
+        "created_at",
+        "modified_at",
+        "duration_at_address",
+        "rent_own",
+        "number_persons_in_household",
+        "income_percent",
+        "is_income_verified",
     ]
 
     def get_readonly_fields(self, request, obj):
@@ -247,12 +240,14 @@ class HouseholdInline(admin.TabularInline):
         Return readonly fields based on user type and groups. Note that this
         follows zero-trust; it starts with all fields read-only and removes them
         based on permissions.
-        
+
         """
 
         # Store is_income_verified in session var, for use with
         # has_delete_permission
-        request.session['is_income_verified'] = hasattr(obj, 'household') and obj.household.is_income_verified
+        request.session["is_income_verified"] = (
+            hasattr(obj, "household") and obj.household.is_income_verified
+        )
 
         # Global readonly fields. Note that @property and calculated fields must
         # be read-only
@@ -260,13 +255,13 @@ class HouseholdInline(admin.TabularInline):
 
         # Remove fields from readonly_fields based on permissions group
         income_remove = [
-            'is_income_verified',
+            "is_income_verified",
         ]
         # admin_remove extends income_remove
         admin_remove = income_remove + [
-            'rent_own',
-            'duration_at_address',
-            'number_persons_in_household',
+            "rent_own",
+            "duration_at_address",
+            "number_persons_in_household",
         ]
         # superuser_remove extends admin_remove
         superuser_remove = admin_remove
@@ -275,24 +270,20 @@ class HouseholdInline(admin.TabularInline):
         if request.user.is_superuser:
             # Remove the following readonly fields for superusers
             readonly_remove.extend(superuser_remove)
-        if request.user.groups.filter(
-            name__istartswith='income'
-        ).exists():
+        if request.user.groups.filter(name__istartswith="income").exists():
             # Remove these fields from read-only if the user is in the
             # 'income...' group
             readonly_remove.extend(income_remove)
-        if request.user.groups.filter(
-            name__istartswith='admin'
-        ).exists():
+        if request.user.groups.filter(name__istartswith="admin").exists():
             # Remove these fields from read-only if the user is in the
             # 'admin...' group
             readonly_remove.extend(admin_remove)
-        
+
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
-    
+
     def has_delete_permission(self, request, obj=None):
-        if request.session.get('is_income_verified', True):
+        if request.session.get("is_income_verified", True):
             # If the user's income has been verified (or the session var DNE),
             # nobody has delete permissions
             return False
@@ -300,18 +291,16 @@ class HouseholdInline(admin.TabularInline):
             # Otherwise, use the django.auth permissions for this admin user
             return request.user.has_perm(
                 "{}.{}".format(
-                    ContentType.objects.get_for_model(
-                        Household
-                    ).app_label,
-                    'delete_household',
+                    ContentType.objects.get_for_model(Household).app_label,
+                    "delete_household",
                 )
             )
 
-    @admin.display(description='income relative to AMI')
+    @admin.display(description="income relative to AMI")
     def income_percent(self, obj):
         # As some point when the stack is called, income_as_fraction_of_ami may
         # return None; the 'or' ensures this won't error out
-        return "{:.0f}%".format(100*(obj.income_as_fraction_of_ami or 0))
+        return f"{100 * (obj.income_as_fraction_of_ami or 0):.0f}%"
 
     # Show zero extra (unfilled) options
     extra = 0
@@ -323,46 +312,50 @@ class HouseholdMembersInline(admin.TabularInline):
     fk_name = "user"
 
     fields = readonly_fields = [
-        'created_at',
-        'modified_at',
-        'record_edit',
-        'household_info_parsed'
+        "created_at",
+        "modified_at",
+        "record_edit",
+        "household_info_parsed",
     ]
 
     # Adding/deleting directly from this inline is always disabled since these
     # data are currently stored as JSON
     def has_add_permission(self, request, obj=None):
         return False
+
     def has_delete_permission(self, request, obj=None):
         return False
 
-    @admin.display(description='individuals in household')
+    @admin.display(description="individuals in household")
     def household_info_parsed(self, obj):
         person_list = []
         if obj.household_info is not None:
-            for itm in obj.household_info['persons_in_household']:
+            for itm in obj.household_info["persons_in_household"]:
                 # Add information, then path to identification file and a blank line
                 person_list.append(f"{itm['name']} (DOB: {itm['birthdate']})")
 
                 # Parse each document_path into a link that can be used to view the
                 # file
-                if 'identification_path' in itm and itm['identification_path'] is not None:
+                if (
+                    "identification_path" in itm
+                    and itm["identification_path"] is not None
+                ):
                     document_link = """<a href="{trg}" onclick="javascript:window.open(this.href, 'newwindow', 'width=600, height=600'); return false;">View Identification</a>""".format(
                         trg=reverse(
-                            'app:admin_view_blob',
-                            kwargs={'blob_name': itm['identification_path']},
+                            "app:admin_view_blob",
+                            kwargs={"blob_name": itm["identification_path"]},
                         ),
                     )
                 else:
                     document_link = "No identification available"
                 person_list.append(document_link)
-                person_list.append('')
+                person_list.append("")
 
-        return format_html('<br />'.join(person_list))
-    
-    @admin.display(description='Edit Record')
+        return format_html("<br />".join(person_list))
+
+    @admin.display(description="Edit Record")
     def record_edit(self, obj):
-        #custom implementation of get_admin_url(), to use the user_id as PK
+        # custom implementation of get_admin_url(), to use the user_id as PK
         url = reverse(
             "admin:{al}_{md}_{tp}".format(
                 al=obj._meta.app_label,
@@ -372,9 +365,7 @@ class HouseholdMembersInline(admin.TabularInline):
             args=(obj.user_id,),
         )
 
-        return format_html(
-            f'<a href="{url}">Edit Household Members</a>'
-        )
+        return format_html(f'<a href="{url}">Edit Household Members</a>')
 
     # Show zero extra (unfilled) options
     extra = 0
@@ -382,19 +373,18 @@ class HouseholdMembersInline(admin.TabularInline):
 
 class EligibilityProgramInline(admin.TabularInline):
     def get_queryset(self, request):
-        """ Override ordering to use program friendly name instead. """
+        """Override ordering to use program friendly name instead."""
         qs = super().get_queryset(request)
         qs = qs.filter(
             program__is_active=True,
-        ).order_by(
-            'program__friendly_name'
-        )
+        ).order_by("program__friendly_name")
         return qs
-    
+
     # Adding/deleting directly from this inline is always disabled since these
     # wouldn't be governed by the same logic as via EligibilityProgramAdmin
     def has_add_permission(self, request, obj=None):
         return False
+
     def has_delete_permission(self, request, obj=None):
         return False
 
@@ -403,30 +393,28 @@ class EligibilityProgramInline(admin.TabularInline):
     fk_name = "user"
 
     fields = readonly_fields = [
-        'created_at',
-        'modified_at',
-        'program_name',
-        'record_edit',
-        'display_document_link',
+        "created_at",
+        "modified_at",
+        "program_name",
+        "record_edit",
+        "display_document_link",
     ]
 
-    @admin.display(description='program name')
+    @admin.display(description="program name")
     def program_name(self, obj):
         return obj.program.friendly_name
-    
-    @admin.display(description='edit record')
+
+    @admin.display(description="edit record")
     def record_edit(self, obj):
         # Record can only be edited if is_income_verified is False
         if obj.user.household.is_income_verified is False:
-            return format_html(
-                f'<a href="{get_admin_url(obj)}">Edit Record</a>'
-            )
+            return format_html(f'<a href="{get_admin_url(obj)}">Edit Record</a>')
         else:
             return "Cannot Be Edited"
 
-    @admin.display(description='document')
+    @admin.display(description="document")
     def display_document_link(self, obj):
-        """ Display a link to each document. """
+        """Display a link to each document."""
         return document_path_parsed(obj)
 
     # Show zero extra (unfilled) options
@@ -435,29 +423,29 @@ class EligibilityProgramInline(admin.TabularInline):
 
 class IQProgramInline(admin.TabularInline):
     def get_queryset(self, request):
-        """ Override ordering to use program friendly name instead. """
+        """Override ordering to use program friendly name instead."""
         qs = super().get_queryset(request)
-        qs = qs.order_by('program__friendly_name')
+        qs = qs.order_by("program__friendly_name")
         return qs
-    
+
     def has_add_permission(self, request, obj=None):
         # Adding directly from this inline is always disabled since it wouldn't
         # be governed by the same logic as via IQProgramAdmin
         return False
-    
+
     fields = [
-        'program_name',
-        'applied_at',
-        'is_enrolled',
-        'enrollment_status',
+        "program_name",
+        "applied_at",
+        "is_enrolled",
+        "enrollment_status",
     ]
-    
+
     def get_readonly_fields(self, request, obj):
         """
         Return readonly fields based on user type and groups. Note that this
         follows zero-trust; it starts with all fields read-only and removes them
         based on permissions.
-        
+
         """
 
         # Global readonly fields. Note that @property and calculated fields must
@@ -466,18 +454,20 @@ class IQProgramInline(admin.TabularInline):
 
         readonly_remove = []
         # Enrollment status can only be altered if income has been verified
-        if hasattr(obj, 'household') and obj.household.is_income_verified is True:
+        if hasattr(obj, "household") and obj.household.is_income_verified is True:
             # Remove fields from readonly_fields based on permissions group
             if request.user.is_superuser:
-            # # Stub of planned functionality
-            # if request.user.is_superuser or request.user.groups.filter(
-            #     name__istartswith='program'
-            # ).exists():
+                # # Stub of planned functionality
+                # if request.user.is_superuser or request.user.groups.filter(
+                #     name__istartswith='program'
+                # ).exists():
                 # Remove is_enrolled
-                readonly_remove.extend([
-                    'is_enrolled',
-                ])
-        
+                readonly_remove.extend(
+                    [
+                        "is_enrolled",
+                    ]
+                )
+
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
 
@@ -485,26 +475,22 @@ class IQProgramInline(admin.TabularInline):
 
     fk_name = "user"
 
-    @admin.display(description='program name')
+    @admin.display(description="program name")
     def program_name(self, obj):
         return obj.program.friendly_name
 
-    @admin.display(description='enrolled at')
+    @admin.display(description="enrolled at")
     def enrollment_status(self, obj):
         if obj.is_enrolled:
             # Convert the timestamp to the (Django) system timezone for formatting
-            ts = pendulum.instance(
-                obj.enrolled_at
-            ).in_timezone(
-                settings.TIME_ZONE
-            )
+            ts = pendulum.instance(obj.enrolled_at).in_timezone(settings.TIME_ZONE)
             ts_formatted = "{} {}.".format(
-                ts.format('MMM D, YYYY, h:mm'),
+                ts.format("MMM D, YYYY, h:mm"),
                 # Manually format the am/pm designator to match the Django ones
-                '.'.join(ts.format('A').lower()),
+                ".".join(ts.format("A").lower()),
             )
             return ts_formatted
-        
+
         return self.get_empty_value_display()
 
     # Show zero extra (unfilled) options
@@ -513,12 +499,12 @@ class IQProgramInline(admin.TabularInline):
 
 class AppAdminInline(admin.StackedInline):
     model = AppAdmin
-    
+
     fk_name = "user"
 
     fields = [
-        'awaiting_user_response',
-        'internal_notes',
+        "awaiting_user_response",
+        "internal_notes",
     ]
 
     # Show zero extra (unfilled) options
@@ -526,52 +512,60 @@ class AppAdminInline(admin.StackedInline):
 
 
 class UserAdmin(admin.ModelAdmin):
-    search_fields = ('last_name__startswith', 'first_name__startswith', 'email')
-    list_display = ('last_name', 'first_name', 'email', 'last_completed_at')
-    ordering = (Lower('last_name'), Lower('first_name'))    # case-insensitive
-    list_display_links = ('email', )
+    search_fields = ("last_name__startswith", "first_name__startswith", "email")
+    list_display = ("last_name", "first_name", "email", "last_completed_at")
+    ordering = (Lower("last_name"), Lower("first_name"))  # case-insensitive
+    list_display_links = ("email",)
     list_filter = (
         NeedsVerificationListFilter,
-        'last_completed_at',
+        "last_completed_at",
         AccountDisabledListFilter,
     )
-    date_hierarchy = 'last_completed_at'
-    actions = ('export_users', 'mark_awaiting_response', 'mark_verified', 'run_extracts')
+    date_hierarchy = "last_completed_at"
+    actions = (
+        "export_users",
+        "mark_awaiting_response",
+        "mark_verified",
+        "run_extracts",
+    )
 
     user_fields = [
-        'full_name',
-        'email',
-        'phone_number',
-        'user_message',
-        'id',
-        'is_archived',
+        "full_name",
+        "email",
+        "phone_number",
+        "user_message",
+        "id",
+        "is_archived",
     ]
     application_fields = [
-        'date_joined',
-        'last_login',
-        'last_completed_at',
-        'last_action_notification_at',
+        "date_joined",
+        "last_login",
+        "last_completed_at",
+        "last_action_notification_at",
         # 'last_application_parsed',
-        'renewal_action_parsed',
+        "renewal_action_parsed",
     ]
 
-    @admin.display(description='last renewal action')
+    @admin.display(description="last renewal action")
     def renewal_action_parsed(self, obj):
         if obj.last_renewal_action is not None:
-            status_list = ['Remaining steps:', '']
+            status_list = ["Remaining steps:", ""]
             # Output the uncompleted pages in application page order. Include if
             # key DNE in last_renewal_action or status is not 'completed'
-            status_list.extend([
-                key.replace('_', ' ').title() for key in application_pages.keys() \
-                    if key not in obj.last_renewal_action.keys() or \
-                    obj.last_renewal_action[key].get('status')!='completed'
-            ])
+            status_list.extend(
+                [
+                    key.replace("_", " ").title()
+                    for key in application_pages.keys()
+                    if key not in obj.last_renewal_action.keys()
+                    or obj.last_renewal_action[key].get("status") != "completed"
+                ]
+            )
 
-            return '\n'.join(status_list)
-        
+            return "\n".join(status_list)
+
         return self.get_empty_value_display()
-        
-    @admin.display(description='message to user')
+
+    @admin.display(description="message to user")
     def user_message(self, obj):
         msg = []
 
@@ -594,26 +588,29 @@ class UserAdmin(admin.ModelAdmin):
             # The second element holds the field requirements in AddressRD
             for req, fd in req_fields:
                 if not getattr(eligibility_address, fd):
-                    msg[-1] += " User's address has False `{}`; IQ Programs may require it to be True (see '{}' on the 'IQ Programs' page).".format(
-                        fd,
-                        # Somewhat match the formatting of the 'IQ programs'
-                        # admin page
-                        req.capitalize().replace('_', ' '),
+                    msg[-1] += (
+                        " User's address has False `{}`; IQ Programs may require it to be True (see '{}' on the 'IQ Programs' page).".format(
+                            fd,
+                            # Somewhat match the formatting of the 'IQ programs'
+                            # admin page
+                            req.capitalize().replace("_", " "),
+                        )
                     )
 
         if len(msg) > 0:
-            return "- {}".format('\n- '.join(msg))
+            return "- {}".format("\n- ".join(msg))
         return self.get_empty_value_display()
-        
+
     def has_add_permission(self, request, obj=None):
         # Adding directly from the admin panel is disallowed for everyone
         return False
-        
+
     def has_income_verification_permission(self, request, obj=None):
         # Define income_verification permissions
-        if request.user.is_superuser or request.user.groups.filter(
-            name__istartswith='income'
-        ).exists():
+        if (
+            request.user.is_superuser
+            or request.user.groups.filter(name__istartswith="income").exists()
+        ):
             return True
         return False
 
@@ -621,14 +618,14 @@ class UserAdmin(admin.ModelAdmin):
         """
         Return fieldsets based on user type. All users get the default fieldset,
         then additional fields are added for superusers.
-        
+
         """
 
         # Log entrance to this changelist. This attempts to track called
         # functions
         log.info(
             "Entering admin changelist",
-            function='UserAdmin',
+            function="UserAdmin",
             user_id=request.user.id,
         )
 
@@ -636,49 +633,52 @@ class UserAdmin(admin.ModelAdmin):
         if AppAdmin.objects.filter(user=obj).count() == 0:
             AppAdmin.objects.create(user=obj)
 
-
         fieldsets = [
             (
-                'USER',
+                "USER",
                 {
                     # Take a copy of the object to avoid duplicates on page refresh
-                    'fields': [x for x in self.user_fields],
+                    "fields": [x for x in self.user_fields],
                 },
             ),
             (
-                'APPLICATION',
+                "APPLICATION",
                 {
                     # Take a copy of the object to avoid duplicates on page refresh
-                    'fields': [x for x in self.application_fields],
+                    "fields": [x for x in self.application_fields],
                 },
             ),
         ]
 
         if request.user.is_superuser:
             for idx, elem in enumerate(fieldsets):
-                if elem[0] == 'USER':
-                    fieldsets[idx][1]['fields'].extend([
-                        'first_name',
-                        'last_name',
-                        'is_active',
-                        'is_staff',
-                        'is_superuser',
-                        'groups',
-                    ])
-                elif elem[0] == 'APPLICATION':
-                    fieldsets[idx][1]['fields'].extend([
-                        'has_viewed_dashboard',
-                    ])
+                if elem[0] == "USER":
+                    elem[1]["fields"].extend(
+                        [
+                            "first_name",
+                            "last_name",
+                            "is_active",
+                            "is_staff",
+                            "is_superuser",
+                            "groups",
+                        ]
+                    )
+                elif elem[0] == "APPLICATION":
+                    elem[1]["fields"].extend(
+                        [
+                            "has_viewed_dashboard",
+                        ]
+                    )
 
         return fieldsets
 
     def get_form(self, *args, **kwargs):
         # Use this function to add help_text to the display-only fields
         help_texts = {
-            'renewal_action_parsed': "The uncompleted steps in a user's renewal flow. An empty value indicates the user is not mid-renewal.",
-            'user_message': "Message to the user regarding their application or account. Aspects shown here may not yet be available to the user.",
+            "renewal_action_parsed": "The uncompleted steps in a user's renewal flow. An empty value indicates the user is not mid-renewal.",
+            "user_message": "Message to the user regarding their application or account. Aspects shown here may not yet be available to the user.",
         }
-        kwargs.update({'help_texts': help_texts})
+        kwargs.update({"help_texts": help_texts})
         return super().get_form(*args, **kwargs)
 
     def get_readonly_fields(self, request, obj):
@@ -686,7 +686,7 @@ class UserAdmin(admin.ModelAdmin):
         Return readonly fields based on user type and groups. Note that this
         follows zero-trust; it starts with all fields read-only and removes them
         based on permissions.
-        
+
         """
 
         # Global readonly fields. Note that @property and calculated fields must
@@ -697,22 +697,24 @@ class UserAdmin(admin.ModelAdmin):
         readonly_remove = []
         if request.user.is_superuser:
             # Remove all readonly fields except the calculated fields
-            readonly_remove.extend([
-                'email',
-                'phone_number',
-                'is_archived',
-                'last_completed_at',
-            ])
-        if request.user.groups.filter(
-            name__istartswith='admin'
-        ).exists():
+            readonly_remove.extend(
+                [
+                    "email",
+                    "phone_number",
+                    "is_archived",
+                    "last_completed_at",
+                ]
+            )
+        if request.user.groups.filter(name__istartswith="admin").exists():
             # Remove these fields from read-only if the user is in the
             # 'income...' group
-            readonly_remove.extend([
-                'phone_number',
-                'is_archived',
-            ])
-        
+            readonly_remove.extend(
+                [
+                    "phone_number",
+                    "is_archived",
+                ]
+            )
+
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
 
@@ -752,11 +754,16 @@ class UserAdmin(admin.ModelAdmin):
         # Warn the user that the specified programs weren't deleted. Unicode
         # quotes are used in order to match the stock Django messages
         if enrolled_iq_programs:
-            self.message_user(request, ngettext(
-                'Program “%s” cannot be deleted; user is already enrolled.',
-                'Programs “%s” cannot be deleted; user is already enrolled.',
-                len(enrolled_iq_programs),
-            ) % '”, “'.join(enrolled_iq_programs), messages.WARNING)
+            self.message_user(
+                request,
+                ngettext(
+                    "Program “%s” cannot be deleted; user is already enrolled.",
+                    "Programs “%s” cannot be deleted; user is already enrolled.",
+                    len(enrolled_iq_programs),
+                )
+                % "”, “".join(enrolled_iq_programs),
+                messages.WARNING,
+            )
 
     @admin.action(
         description="Mark selected users as 'awaiting response'",
@@ -767,20 +774,18 @@ class UserAdmin(admin.ModelAdmin):
 
         log.info(
             "Entering admin action",
-            function='mark_awaiting_response',
+            function="mark_awaiting_response",
             user_id=request.user.id,
         )
 
         # Create Admin queryset of the same users and update the field
-        AppAdmin.objects.filter(
-            user__in=[usr for usr in queryset]
-        ).update(
+        AppAdmin.objects.filter(user__in=[usr for usr in queryset]).update(
             awaiting_user_response=True
         )
 
     @admin.action(
         # Only allow this action with 'income_verification' permissions
-        permissions=['income_verification'],
+        permissions=["income_verification"],
         description="Mark selected users as 'income verified'",
     )
     def mark_verified(self, request, queryset):
@@ -791,7 +796,7 @@ class UserAdmin(admin.ModelAdmin):
         # functions
         log.info(
             "Entering admin action",
-            function='mark_verified',
+            function="mark_verified",
             user_id=request.user.id,
         )
 
@@ -804,24 +809,25 @@ class UserAdmin(admin.ModelAdmin):
             # is on a related model; instead, loop through queryset and update
             # each related model (in order to avoid .save() calls)
             for usr in queryset:
-                Household.objects.filter(
-                    user=usr
-                ).update(
-                    is_income_verified=True
-                )
+                Household.objects.filter(user=usr).update(is_income_verified=True)
 
             log.info(
                 f"{len(queryset)} users marked as verified.",
-                function='mark_verified',
+                function="mark_verified",
                 user_id=request.user.id,
             )
-            
+
             # Add a message to the user when complete
-            self.message_user(request, ngettext(
-                'Income was verified for %d user.',
-                'Income was verified for %d users.',
-                len(queryset),
-            ) % len(queryset), messages.SUCCESS)
+            self.message_user(
+                request,
+                ngettext(
+                    "Income was verified for %d user.",
+                    "Income was verified for %d users.",
+                    len(queryset),
+                )
+                % len(queryset),
+                messages.SUCCESS,
+            )
 
         else:
             # Add an error message to the user
@@ -829,15 +835,19 @@ class UserAdmin(admin.ModelAdmin):
 
             log.error(
                 f"Not all users are applicable (only {len(check_queryset)} of the {len(queryset)} selected could have been verified).",
-                function='mark_verified',
+                function="mark_verified",
                 user_id=request.user.id,
             )
 
-            self.message_user(request, ngettext(
-                'Cancelled: the user is not applicable for income verification.',
-                'Cancelled: not all users are applicable for income verification.',
-                error_count,
-            ), messages.ERROR)
+            self.message_user(
+                request,
+                ngettext(
+                    "Cancelled: the user is not applicable for income verification.",
+                    "Cancelled: not all users are applicable for income verification.",
+                    error_count,
+                ),
+                messages.ERROR,
+            )
 
     @admin.action(
         description="Export selected users",
@@ -848,66 +858,69 @@ class UserAdmin(admin.ModelAdmin):
         from operator import attrgetter
 
         # Define the output filename without extension (always CSV)
-        filename_root = 'User Export'
+        filename_root = "User Export"
         # Define field names as a nested dictionary. Each field has a transform
         # for display and a pretty name for headers; the top-level keys are the
         # model linkage (None is the base 'user' object)
         fields_to_export = {
             None: {
-                'first_name': {
-                    'pretty_name': 'First Name',
+                "first_name": {
+                    "pretty_name": "First Name",
                 },
-                'last_name': {
-                    'pretty_name': 'Last Name',
+                "last_name": {
+                    "pretty_name": "Last Name",
                 },
-                'email': {
-                    'pretty_name': 'Email',
+                "email": {
+                    "pretty_name": "Email",
                 },
-                'phone_number': {
-                    'transform': 'as_national',
-                    'pretty_name': 'Phone Number',
+                "phone_number": {
+                    "transform": "as_national",
+                    "pretty_name": "Phone Number",
                 },
             },
-            'address.mailing_address': {
-                'address1': {
-                    'pretty_name': 'Mailing Address1',
+            "address.mailing_address": {
+                "address1": {
+                    "pretty_name": "Mailing Address1",
                 },
-                'address2': {
-                    'pretty_name': 'Mailing Address2',
+                "address2": {
+                    "pretty_name": "Mailing Address2",
                 },
-                'city': {
-                    'pretty_name': 'Mailing City',
+                "city": {
+                    "pretty_name": "Mailing City",
                 },
-                'state': {
-                    'pretty_name': 'Mailing State',
+                "state": {
+                    "pretty_name": "Mailing State",
                 },
-                'zip_code': {
-                    'pretty_name': 'Mailing Zip Code',
+                "zip_code": {
+                    "pretty_name": "Mailing Zip Code",
                 },
-            }
+            },
         }
 
         # The code below is modular and based solely on the filename string and
         # fields_to_export dict
 
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f"attachment; filename={filename_root}.csv"
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f"attachment; filename={filename_root}.csv"
         writer = csv.writer(response)
 
         # Write headers from a flattened list of pretty_name
         headers = [
-            x for itm in [
-                [x['pretty_name'] for x in val.values()] for val in fields_to_export.values()
-            ] for x in itm
+            x
+            for itm in [
+                [x["pretty_name"] for x in val.values()]
+                for val in fields_to_export.values()
+            ]
+            for x in itm
         ]
         writer.writerow(headers)
 
         # Loop through each user, gather the data, and write to a row
 
         # Chain the top-level non-base models to load in the initial db call
-        for key in fields_to_export.keys():
+        for key in fields_to_export:
             if key is not None:
-                queryset = queryset.select_related(key.split('.')[0])
+                queryset = queryset.select_related(key.split(".")[0])
         for obj in queryset:
             # Get each object data, if exists, using the specified transform
             # where applicable
@@ -928,24 +941,19 @@ class UserAdmin(admin.ModelAdmin):
 
                 else:
                     # Get the starting index based on the headers
-                    start_idx = headers.index(
-                        list(fields_to_export[model].values())[0]['pretty_name']
-                    )
+                    start_idx = headers.index(list(params.values())[0]["pretty_name"])
                     # Ensure row_data is padded to the proper starting index
-                    row_data.extend([None]*(start_idx-len(row_data)))
+                    row_data.extend([None] * (start_idx - len(row_data)))
 
                     # Add the current-modelobj data to the row
-                    row_data.extend([
-                        str(
-                            getattr(
-                                getattr(modelobj, fd), itm['transform']
-                            )
-                        ) if 'transform' in itm else str(
-                            getattr(
-                                modelobj, fd
-                            )
-                        ) for fd, itm in params.items()
-                    ])
+                    row_data.extend(
+                        [
+                            str(getattr(getattr(modelobj, fd), itm["transform"]))
+                            if "transform" in itm
+                            else str(getattr(modelobj, fd))
+                            for fd, itm in params.items()
+                        ]
+                    )
 
             if row_data:
                 writer.writerow(row_data)
@@ -963,29 +971,28 @@ class UserAdmin(admin.ModelAdmin):
         if len(extractFiles) < 1:
             # early return to avoid downloading an empty zip
             self.message_user(
-                request,
-                gettext.gettext('Nothing to extract.'),
-                messages.WARNING
-                )
+                request, gettext.gettext("Nothing to extract."), messages.WARNING
+            )
             return self.get_empty_value_display()
 
         memoryFile = io.BytesIO()
-        with zipfile.ZipFile(memoryFile, 'w') as zf:
+        with zipfile.ZipFile(memoryFile, "w") as zf:
             for file in extractFiles:
                 zf.write(file, arcname=file.name)
                 os.remove(file)
-        
-        memoryFile.seek(0)
-        response = HttpResponse(memoryFile.getvalue(), content_type='application/zip')
-        response['Content-Disposition'] = 'attachment; filename="extracts.zip"'
 
-        return response        
+        memoryFile.seek(0)
+        response = HttpResponse(memoryFile.getvalue(), content_type="application/zip")
+        response["Content-Disposition"] = 'attachment; filename="extracts.zip"'
+
+        return response
 
     # Add custom buttons to the save list in the admin template (from
     # https://stackoverflow.com/a/34899874/5438550 and
     # https://stackoverflow.com/a/69487616/5438550)
-    change_form_template = 'admin/custom_button_change_form.html'
-    def change_view(self, request, object_id, form_url='', extra_context=None):
+    change_form_template = "admin/custom_button_change_form.html"
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
 
         # Add any custom buttons. This must be a list/tuple of list/tuples, as
@@ -993,40 +1000,43 @@ class UserAdmin(admin.ModelAdmin):
         # "if 'url' in request.POST:" section of response_change()
 
         obj = User.objects.get(pk=object_id)
-        extra_context['custom_buttons'] = []
+        extra_context["custom_buttons"] = []
         # Only superusers and admins have access to custom buttons
         # IQ Programs can be added at any time after the user has completed the
         # application
         if obj.last_completed_at is not None and (
-            request.user.is_superuser or request.user.groups.filter(
-                name__istartswith='admin'
-            ).exists()
+            request.user.is_superuser
+            or request.user.groups.filter(name__istartswith="admin").exists()
         ):
             # ...but Eligibility Program addition is disallowed once income has
             # been verified
             if obj.household.is_income_verified is False:
-                extra_context['custom_buttons'].extend([
+                extra_context["custom_buttons"].extend(
+                    [
+                        {
+                            "title": "Add Eligibility Program",
+                            "link": reverse(
+                                "app:admin_add_elig_program",
+                                kwargs={"user_id": obj.id},
+                            ),
+                            # Open in new window for proper request methods
+                            "target": "new",
+                        },
+                    ]
+                )
+            extra_context["custom_buttons"].extend(
+                [
                     {
-                        'title': 'Add Eligibility Program',
-                        'link': reverse(
-                            'app:admin_add_elig_program',
-                            kwargs={'user_id': obj.id},
-                        ),
-                        # Open in new window for proper request methods
-                        'target': 'new',
+                        "title": "Add IQ Program",
+                        "link": "_add_iq_program",
                     },
-                ])
-            extra_context['custom_buttons'].extend([
-                {
-                    'title': 'Add IQ Program',
-                    'link': '_add_iq_program',
-                },
-            ])
+                ]
+            )
 
         opts = self.model._meta
         pk_value = object_id
         preserved_filters = self.get_preserved_filters(request)
-        if '_add_iq_program_submit' in request.POST:
+        if "_add_iq_program_submit" in request.POST:
             # Handle 'Update Program' after 'submit' has been selected
             form = IQProgramAddForm(object_id, request.POST)
             if form.is_valid():
@@ -1034,7 +1044,7 @@ class UserAdmin(admin.ModelAdmin):
                 # add the program to the current model
                 new_obj = IQProgram.objects.create(
                     user_id=object_id,
-                    program_id=int(form.cleaned_data['program_name']),
+                    program_id=int(form.cleaned_data["program_name"]),
                 )
 
                 # Add a log entry to user admin that the program was added
@@ -1046,7 +1056,7 @@ class UserAdmin(admin.ModelAdmin):
                     object_id=user.id,
                     object_repr=str(user),
                     action_flag=CHANGE,
-                    change_message=f'Added User IQ program "{str(new_obj)}".'
+                    change_message=f'Added User IQ program "{new_obj!s}".',
                 )
 
                 # Add a log entry to IQProgram admin that the program was added
@@ -1057,7 +1067,7 @@ class UserAdmin(admin.ModelAdmin):
                     object_id=new_obj.id,
                     object_repr=str(new_obj),
                     action_flag=ADDITION,
-                    change_message=f'Added User IQ program "{str(new_obj)}".'
+                    change_message=f'Added User IQ program "{new_obj!s}".',
                 )
 
                 # Add a message to the user when complete
@@ -1071,7 +1081,7 @@ class UserAdmin(admin.ModelAdmin):
                 # Form is not valid; notify the user
                 self.message_user(
                     request,
-                    'Cancelled: something went wrong.',
+                    "Cancelled: something went wrong.",
                     messages.ERROR,
                 )
 
@@ -1082,18 +1092,18 @@ class UserAdmin(admin.ModelAdmin):
             )
             redirect_url = add_preserved_filters(
                 {
-                    'preserved_filters': preserved_filters,
-                    'opts': opts,
+                    "preserved_filters": preserved_filters,
+                    "opts": opts,
                 },
                 redirect_url,
             )
             return HttpResponseRedirect(redirect_url)
 
-        elif '_add_iq_program_cancel' in request.POST:
+        elif "_add_iq_program_cancel" in request.POST:
             # User selected 'cancel'
             self.message_user(
                 request,
-                'Program add cancelled.',
+                "Program add cancelled.",
                 messages.INFO,
             )
 
@@ -1104,8 +1114,8 @@ class UserAdmin(admin.ModelAdmin):
             )
             redirect_url = add_preserved_filters(
                 {
-                    'preserved_filters': preserved_filters,
-                    'opts': opts,
+                    "preserved_filters": preserved_filters,
+                    "opts": opts,
                 },
                 redirect_url,
             )
@@ -1117,7 +1127,7 @@ class UserAdmin(admin.ModelAdmin):
             form_url,
             extra_context=extra_context,
         )
-    
+
     def response_change(self, request, obj):
         if "_add_iq_program" in request.POST:
             # Handle 'Add Program': load the page to select the program name
@@ -1127,13 +1137,13 @@ class UserAdmin(admin.ModelAdmin):
             request.current_app = self.admin_site.name
             return render(
                 request,
-                'admin/program_add_iq.html',
+                "admin/program_add_iq.html",
                 {
-                    'form': form,
+                    "form": form,
                     # Set some page-specific text
-                    'site_header': 'Get FoCo administration',
-                    'title': 'Add IQ Program',
-                    'site_title': 'Get FoCo administration',
+                    "site_header": "Get FoCo administration",
+                    "title": "Add IQ Program",
+                    "site_title": "Get FoCo administration",
                 },
             )
 
@@ -1142,21 +1152,21 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class AddressAdmin(admin.ModelAdmin):
-    search_fields = ('address1__icontains', 'address2__icontains')
-    list_display = ('address1', 'address2', 'is_in_gma', 'is_city_covered')
-    ordering = list_display_links = ('address1', 'address2')
+    search_fields = ("address1__icontains", "address2__icontains")
+    list_display = ("address1", "address2", "is_in_gma", "is_city_covered")
+    ordering = list_display_links = ("address1", "address2")
     list_filter = (GMAListFilter, CityCoveredListFilter)
-    actions = ['update_gma']
+    actions = ["update_gma"]
 
     fields = [
-        'pretty_address',
-        'is_in_gma',
-        'is_city_covered',
+        "pretty_address",
+        "is_in_gma",
+        "is_city_covered",
     ]
 
-    @admin.display(description='address')
+    @admin.display(description="address")
     def pretty_address(self, obj):
-        if obj.address2 == '':
+        if obj.address2 == "":
             return f"{obj.address1}\n{obj.city}, {obj.state} {obj.zip_code}"
         else:
             return f"{obj.address1}\n{obj.address2}\n{obj.city}, {obj.state} {obj.zip_code}"
@@ -1169,21 +1179,21 @@ class AddressAdmin(admin.ModelAdmin):
 
         Existing addresses can only update is_city_covered, when applicable.
         New addresses can only enter the address information itself.
-        
+
         """
 
         if obj is None:
             fields = [
-                'address1',
-                'address2',
-                ('city', 'state'),
-                'zip_code',
+                "address1",
+                "address2",
+                ("city", "state"),
+                "zip_code",
             ]
         else:
             fields = [
-                'pretty_address',
-                'is_in_gma',
-                'is_city_covered',
+                "pretty_address",
+                "is_in_gma",
+                "is_city_covered",
             ]
 
         return fields
@@ -1191,14 +1201,14 @@ class AddressAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj):
         """
         Return readonly fields based on GMA status.
-        
+
         """
 
         # Log entrance to this changelist. This attempts to track called
         # functions
         log.info(
             "Entering admin changelist",
-            function='AddressAdmin',
+            function="AddressAdmin",
             user_id=request.user.id,
         )
 
@@ -1214,33 +1224,32 @@ class AddressAdmin(admin.ModelAdmin):
         # is_city_covered can be modified only if is_in_gma==False and user is
         # either superuser or in 'admin' group
         if not obj.is_in_gma and (
-            request.user.is_superuser or request.user.groups.filter(
-                name__istartswith='admin'
-            ).exists()
+            request.user.is_superuser
+            or request.user.groups.filter(name__istartswith="admin").exists()
         ):
-            readonly_remove.append('is_city_covered')
-        
+            readonly_remove.append("is_city_covered")
+
         # Remove the fields and re-listify
         return list(set(readonly_fields) - set(readonly_remove))
 
-    @admin.action(description='Update GMA for selected addresses')
+    @admin.action(description="Update GMA for selected addresses")
     def update_gma(self, request, input_object):
         """
         Update the GMA of the selected object(s).
-        
+
         This is used both as a changelist action and a page-specific button, so
         ``input_object`` can be either a single object (of the modeladmin type)
         or a queryset from the changelist actions.
-        
+
         """
-        
+
         # Log entrance to this action. This attempts to track called
         # functions
         log.info(
             "Entering admin action",
-            function='update_gma',
+            function="update_gma",
             user_id=request.user.id,
-        )        
+        )
 
         # If the input_object is not a QuerySet, coerce it into a list so for
         # similar operation
@@ -1255,11 +1264,11 @@ class AddressAdmin(admin.ModelAdmin):
             # Format for address_check. All addresses in the database have been
             # through USPS, so no need to re-validate (just copy formatting)
             address_dict = {
-                'streetAddress': obj.address1,
-                'secondaryAddress': obj.address2,
-                'city': obj.city,
-                'state': obj.state,
-                'ZIPCode': obj.zip_code,
+                "streetAddress": obj.address1,
+                "secondaryAddress": obj.address2,
+                "city": obj.city,
+                "state": obj.state,
+                "ZIPCode": obj.zip_code,
             }
 
             # Run the address check and make the final adjustments
@@ -1278,7 +1287,7 @@ class AddressAdmin(admin.ModelAdmin):
                     object_id=obj.id,
                     object_repr=str(obj),
                     action_flag=CHANGE,
-                    change_message='Changed Is in GMA.'
+                    change_message="Changed Is in GMA.",
                 )
 
                 # Loop through any users with this as their eligibility address
@@ -1292,19 +1301,24 @@ class AddressAdmin(admin.ModelAdmin):
 
         log.info(
             f"{len(queryset)} addresses checked; updates applied to {updated_addr_count}.",
-            function='update_gma',
+            function="update_gma",
             user_id=request.user.id,
         )
 
         # Add a message to the user when complete
-        self.message_user(request, ngettext(
-            'GMA update was executed for %d address.',
-            'GMA update was executed for %d addresses.',
-            len(queryset),
-        ) % len(queryset), messages.SUCCESS)
+        self.message_user(
+            request,
+            ngettext(
+                "GMA update was executed for %d address.",
+                "GMA update was executed for %d addresses.",
+                len(queryset),
+            )
+            % len(queryset),
+            messages.SUCCESS,
+        )
 
     # Temporarily redirect the user to an error message if trying to add new
-    def add_view(self, request, form_url='', extra_context=None):
+    def add_view(self, request, form_url="", extra_context=None):
 
         self.message_user(
             request,
@@ -1320,8 +1334,8 @@ class AddressAdmin(admin.ModelAdmin):
         )
         redirect_url = add_preserved_filters(
             {
-                'preserved_filters': preserved_filters,
-                'opts': opts,
+                "preserved_filters": preserved_filters,
+                "opts": opts,
             },
             redirect_url,
         )
@@ -1330,23 +1344,27 @@ class AddressAdmin(admin.ModelAdmin):
     # Add custom buttons to the save list in the admin template (from
     # https://stackoverflow.com/a/34899874/5438550 and
     # https://stackoverflow.com/a/69487616/5438550)
-    change_form_template = 'admin/custom_button_change_form.html'
-    def change_view(self, request, object_id, form_url='', extra_context=None):
+    change_form_template = "admin/custom_button_change_form.html"
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
 
         # Add any custom buttons. This must be a list/tuple of list/tuples, as
         # (name, url). The 'url' portion must match the
         # "if 'url' in request.POST:" section of response_change()
-        extra_context['custom_buttons'] = [
+        extra_context["custom_buttons"] = [
             {
-                'title': 'Update GMA',
-                'link': '_update_gma',
+                "title": "Update GMA",
+                "link": "_update_gma",
             },
         ]
         return super().change_view(
-            request, object_id, form_url, extra_context=extra_context,
+            request,
+            object_id,
+            form_url,
+            extra_context=extra_context,
         )
-    
+
     def response_change(self, request, obj):
         opts = self.model._meta
         pk_value = obj._get_pk_val()
@@ -1364,8 +1382,8 @@ class AddressAdmin(admin.ModelAdmin):
             )
             redirect_url = add_preserved_filters(
                 {
-                    'preserved_filters': preserved_filters,
-                    'opts': opts,
+                    "preserved_filters": preserved_filters,
+                    "opts": opts,
                 },
                 redirect_url,
             )
@@ -1377,29 +1395,29 @@ class AddressAdmin(admin.ModelAdmin):
 
 class EligibilityProgramAdmin(admin.ModelAdmin):
     search_fields = (
-        'user__last_name__startswith',
-        'user__first_name__startswith',
-        'user__email__contains',
+        "user__last_name__startswith",
+        "user__first_name__startswith",
+        "user__email__contains",
     )
     list_display = (
-        'user_last_name',
-        'user_first_name',
-        'user_email',
-        'program_name',
+        "user_last_name",
+        "user_first_name",
+        "user_email",
+        "program_name",
     )
-    list_display_links = ('program_name', )
-    ordering = (Lower('user__last_name'), Lower('user__first_name'))    # case-insensitive
+    list_display_links = ("program_name",)
+    ordering = (Lower("user__last_name"), Lower("user__first_name"))  # case-insensitive
 
     # def get_list_display(self, request):
     #     return None
 
     eligibility_fields = [
-        'created_at',
-        'modified_at',
-        'program_name',
-        'display_document_link',
+        "created_at",
+        "modified_at",
+        "program_name",
+        "display_document_link",
     ]
-    readonly_fields = eligibility_fields + ['user_email', 'full_name']
+    readonly_fields = eligibility_fields + ["user_email", "full_name"]
 
     def has_add_permission(self, request, obj=None):
         # Adding directly from the admin panel is disallowed for everyone
@@ -1409,50 +1427,50 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         """
         Return fieldsets based on user type. All users get the default fieldset,
         then additional fields are added for superusers.
-        
+
         """
 
         # Log entrance to this changelist. This attempts to track called
         # functions
         log.info(
             "Entering admin changelist",
-            function='EligibilityProgramAdmin',
+            function="EligibilityProgramAdmin",
             user_id=request.user.id,
         )
 
         # Store is_income_verified in session var, for use with
         # has_delete_permission
-        request.session['is_income_verified'] = obj.user.household.is_income_verified
+        request.session["is_income_verified"] = obj.user.household.is_income_verified
 
         fieldsets = [
             (
-                'USER',
+                "USER",
                 {
-                    'fields': [
-                        'full_name',
-                        'user_email',
+                    "fields": [
+                        "full_name",
+                        "user_email",
                     ],
                 },
             ),
             (
-                'PROGRAM',
+                "PROGRAM",
                 {
                     # Take a copy of the object to avoid duplicates on page refresh
-                    'fields': [x for x in self.eligibility_fields],
+                    "fields": [x for x in self.eligibility_fields],
                 },
             ),
         ]
 
         return fieldsets
-    
+
     @admin.display
     def full_name(self, obj):
         return obj.user.full_name
-    
+
     @admin.display
     def user_last_name(self, obj):
         return obj.user.last_name
-    
+
     @admin.display
     def user_first_name(self, obj):
         return obj.user.first_name
@@ -1461,19 +1479,19 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
     def user_email(self, obj):
         return obj.user.email
 
-    @admin.display(description='program name')
+    @admin.display(description="program name")
     def program_name(self, obj):
         return obj.program.friendly_name
-    
-    @admin.display(description='document')
+
+    @admin.display(description="document")
     def display_document_link(self, obj):
-        """ Display a link to each document. """
+        """Display a link to each document."""
         return document_path_parsed(obj)
 
     list_per_page = 100
 
     def has_delete_permission(self, request, obj=None):
-        if request.session.get('is_income_verified', True):
+        if request.session.get("is_income_verified", True):
             # If the user's income has been verified (or the session var DNE),
             # nobody has delete permissions
             return False
@@ -1481,18 +1499,17 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             # Otherwise, use the django.auth permissions for this admin user
             return request.user.has_perm(
                 "{}.{}".format(
-                    ContentType.objects.get_for_model(
-                        EligibilityProgram
-                    ).app_label,
-                    'delete_eligibilityprogram',
+                    ContentType.objects.get_for_model(EligibilityProgram).app_label,
+                    "delete_eligibilityprogram",
                 )
             )
 
     # Add custom buttons to the save list in the admin template (from
     # https://stackoverflow.com/a/34899874/5438550 and
     # https://stackoverflow.com/a/69487616/5438550)
-    change_form_template = 'admin/custom_button_change_form.html'
-    def change_view(self, request, object_id, form_url='', extra_context=None):
+    change_form_template = "admin/custom_button_change_form.html"
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
 
         # Add any custom buttons. This must be a list/tuple of list/tuples, as
@@ -1502,10 +1519,10 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         # Editing is disallowed once income has been verified
         obj = EligibilityProgram.objects.get(pk=object_id)
         if obj.user.household.is_income_verified is False:
-            extra_context['custom_buttons'] = [
+            extra_context["custom_buttons"] = [
                 {
-                    'title': 'Change Program',
-                    'link': '_change_program',
+                    "title": "Change Program",
+                    "link": "_change_program",
                 },
             ]
 
@@ -1513,7 +1530,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
         # calling super() (so that super() only handles the following GET)
         opts = self.model._meta
         preserved_filters = self.get_preserved_filters(request)
-        if '_change_program_submit' in request.POST:
+        if "_change_program_submit" in request.POST:
             # Handle 'Update Program' after 'submit' has been selected
             form = ProgramChangeForm(request.POST)
             if form.is_valid():
@@ -1525,7 +1542,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                         # Extract the program ID (in the 'program_name' form field) and
                         # update the current model with the new program
                         obj.program = EligibilityProgramRD.objects.get(
-                            id=int(form.cleaned_data['program_name'])
+                            id=int(form.cleaned_data["program_name"])
                         )
                         obj.save()
 
@@ -1537,7 +1554,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                             object_id=obj.id,
                             object_repr=str(obj),
                             action_flag=CHANGE,
-                            change_message=f'Changed program name for User eligibility program "{str(obj)}".'
+                            change_message=f'Changed program name for User eligibility program "{obj!s}".',
                         )
 
                         # Finalize the user's application to update their income
@@ -1568,7 +1585,7 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                 # Form is not valid; notify the user
                 self.message_user(
                     request,
-                    'Cancelled: something went wrong.',
+                    "Cancelled: something went wrong.",
                     messages.ERROR,
                 )
 
@@ -1579,18 +1596,18 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             )
             redirect_url = add_preserved_filters(
                 {
-                    'preserved_filters': preserved_filters,
-                    'opts': opts,
+                    "preserved_filters": preserved_filters,
+                    "opts": opts,
                 },
                 redirect_url,
             )
             return HttpResponseRedirect(redirect_url)
-        
-        elif '_change_program_cancel' in request.POST:
+
+        elif "_change_program_cancel" in request.POST:
             # User selected 'cancel'
             self.message_user(
                 request,
-                'Program update cancelled.',
+                "Program update cancelled.",
                 messages.WARNING,
             )
 
@@ -1601,8 +1618,8 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             )
             redirect_url = add_preserved_filters(
                 {
-                    'preserved_filters': preserved_filters,
-                    'opts': opts,
+                    "preserved_filters": preserved_filters,
+                    "opts": opts,
                 },
                 redirect_url,
             )
@@ -1614,30 +1631,30 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             form_url,
             extra_context=extra_context,
         )
-    
+
     def response_change(self, request, obj):
         if "_change_program" in request.POST:
             # Handle 'Update Program': load the page to select the program name
             form = ProgramChangeForm(
-                    initial={
-                        "program_name": (
-                            str(obj.program.id),
-                            obj.program.friendly_name,
-                        ),
-                    },
-                )
+                initial={
+                    "program_name": (
+                        str(obj.program.id),
+                        obj.program.friendly_name,
+                    ),
+                },
+            )
 
             # Set the current_app for the admin base template
             request.current_app = self.admin_site.name
             return render(
                 request,
-                'admin/program_change.html',
+                "admin/program_change.html",
                 {
-                    'form': form,
+                    "form": form,
                     # Set some page-specific text
-                    'site_header': 'Get FoCo administration',
-                    'title': 'Update Program',
-                    'site_title': 'Get FoCo administration',
+                    "site_header": "Get FoCo administration",
+                    "title": "Update Program",
+                    "site_title": "Get FoCo administration",
                 },
             )
 
@@ -1659,10 +1676,10 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             preserved_filters = self.get_preserved_filters(request)
 
             self.message_user(
-                    request,
-                    "Cancelled: can't delete this user's only program.",
-                    messages.ERROR,
-                )
+                request,
+                "Cancelled: can't delete this user's only program.",
+                messages.ERROR,
+            )
 
             redirect_url = reverse(
                 f"admin:{opts.app_label}_{opts.model_name}_change",
@@ -1671,8 +1688,8 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
             )
             redirect_url = add_preserved_filters(
                 {
-                    'preserved_filters': preserved_filters,
-                    'opts': opts,
+                    "preserved_filters": preserved_filters,
+                    "opts": opts,
                 },
                 redirect_url,
             )
@@ -1697,12 +1714,14 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
                 _ = finalize_application(obj.user, update_user=False)
 
                 # Remove any no-longer-eligible programs
-                request.session['remove_ineligible_message'] = remove_ineligible_programs(
-                    obj.user.id,
+                request.session["remove_ineligible_message"] = (
+                    remove_ineligible_programs(
+                        obj.user.id,
+                    )
                 )
-                
+
     def response_delete(self, request, obj_display, obj_id):
-        msg = request.session.pop('remove_ineligible_message', '')
+        msg = request.session.pop("remove_ineligible_message", "")
 
         # Add a message to the user when complete
         self.message_user(
@@ -1715,15 +1734,15 @@ class EligibilityProgramAdmin(admin.ModelAdmin):
 
 class EligibilityProgramRDAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
-        """ Override ordering to use friendly name instead. """
+        """Override ordering to use friendly name instead."""
         qs = super().get_queryset(request)
-        qs = qs.order_by('friendly_name')
+        qs = qs.order_by("friendly_name")
         return qs
 
-    search_fields = ('friendly_name__contains', )
-    list_display = ('friendly_name', 'is_active', 'ami_threshold')
-    list_filter = ('is_active', )
-    list_display_links = ('friendly_name', )
+    search_fields = ("friendly_name__contains",)
+    list_display = ("friendly_name", "is_active", "ami_threshold")
+    list_filter = ("is_active",)
+    list_display_links = ("friendly_name",)
 
     def get_form(self, request, obj=None, **kwargs):
         kwargs["form"] = EligibilityProgramRDForm
@@ -1734,15 +1753,15 @@ class EligibilityProgramRDAdmin(admin.ModelAdmin):
 
 class IQProgramRDAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
-        """ Override ordering to use friendly name instead. """
+        """Override ordering to use friendly name instead."""
         qs = super().get_queryset(request)
-        qs = qs.order_by('friendly_name')
+        qs = qs.order_by("friendly_name")
         return qs
 
-    search_fields = ('friendly_name__contains', )
-    list_display = ('friendly_name', 'is_active')
-    list_filter = ('is_active', )
-    list_display_links = ('friendly_name', )
+    search_fields = ("friendly_name__contains",)
+    list_display = ("friendly_name", "is_active")
+    list_filter = ("is_active",)
+    list_display_links = ("friendly_name",)
 
     def get_form(self, request, obj=None, **kwargs):
         kwargs["form"] = IQProgramRDForm
@@ -1752,16 +1771,16 @@ class IQProgramRDAdmin(admin.ModelAdmin):
 
 
 class FeedbackAdmin(admin.ModelAdmin):
-    search_fields = ('feedback_comments__contains', )
-    list_display = list_display_links = ('created', 'star_rating')
-    list_filter = ('star_rating', )
-    ordering = ('-created', )
-    date_hierarchy = 'created'
+    search_fields = ("feedback_comments__contains",)
+    list_display = list_display_links = ("created", "star_rating")
+    list_filter = ("star_rating",)
+    ordering = ("-created",)
+    date_hierarchy = "created"
 
     fields = readonly_fields = [
-        'created',
-        'star_rating',
-        'feedback_comments',
+        "created",
+        "star_rating",
+        "feedback_comments",
     ]
 
     list_per_page = 100
@@ -1773,79 +1792,85 @@ class FeedbackAdmin(admin.ModelAdmin):
 
 class HouseholdMembersAdmin(admin.ModelAdmin):
     fields = [
-        'user_id',
-        'modified_at',
-        'household_info',
+        "user_id",
+        "modified_at",
+        "household_info",
     ]
 
     readonly_fields = [
-        'user_id',
-        'modified_at',
+        "user_id",
+        "modified_at",
     ]
 
     formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget(
-            options = {
-                'mainMenuBar': False,
-            }
-        )},
+        JSONField: {
+            "widget": JSONEditorWidget(
+                options={
+                    "mainMenuBar": False,
+                }
+            )
+        },
     }
 
     # Bring in template with custom button support
-    change_form_template = 'admin/custom_button_change_form.html'
+    change_form_template = "admin/custom_button_change_form.html"
 
     def has_add_permission(self, request, obj=None):
         # Adding directly from the admin panel is disallowed for everyone
         return False
-    
-    def change_view(self, request, object_id, form_url='', extra_context={}):
+
+    def change_view(self, request, object_id, form_url="", extra_context={}):
         # add custom button to upload/replace an ID
-        extra_context['custom_buttons'] = [
+        extra_context["custom_buttons"] = [
             {
-                'title': 'Replace An ID',
-                'link': reverse(
-                    'app:admin_replace_household_member_id',
-                    kwargs={'user_id': object_id},
+                "title": "Replace An ID",
+                "link": reverse(
+                    "app:admin_replace_household_member_id",
+                    kwargs={"user_id": object_id},
                 ),
                 # Open in new window for proper request methods
-                'target': 'new',
+                "target": "new",
             },
         ]
 
         if request.method == "POST":
             # validate birthdate, identification_path
-            #TODO validate non-empty name?
-            if 'household_info' in request.POST:
-                household_json = json.loads(request.POST['household_info'])
-                household_members = household_json['persons_in_household']
+            # TODO validate non-empty name?
+            if "household_info" in request.POST:
+                household_json = json.loads(request.POST["household_info"])
+                household_members = household_json["persons_in_household"]
                 for person in household_members:
                     # validate birthdate as date
                     try:
-                        date = pendulum.parse(person['birthdate'])
+                        date = pendulum.parse(person["birthdate"])
                     except pendulum.parsing.ParserError as e:
                         log.exception(
                             f"Pendulum parsing error: {e}",
-                            function='admin.views.HouseholdMembersAdmin:change_view',
+                            function="admin.views.HouseholdMembersAdmin:change_view",
                             user_id=request.user.id,
                         )
-                        return self.notifyAndRedirect(request, object_id, 'A birthdate was not valid')
+                        return self.notifyAndRedirect(
+                            request, object_id, "A birthdate was not valid"
+                        )
 
                     # validate identification_path as existing file
-                    file = default_storage.open(person['identification_path'])
+                    file = default_storage.open(person["identification_path"])
                     try:
-                        blob_data = b''
+                        blob_data = b""
                         for chunk in file.chunks():
                             blob_data += chunk
                     except ResourceNotFoundError as e:
                         log.exception(
                             f"ResourceNotFoundError: {e}",
-                            function='admin.views.HouseholdMembersAdmin:change_view',
+                            function="admin.views.HouseholdMembersAdmin:change_view",
                             user_id=request.user.id,
                         )
-                        
-                        return self.notifyAndRedirect(request, object_id, 'An identification_path was not valid')
+
+                        return self.notifyAndRedirect(
+                            request, object_id, "An identification_path was not valid"
+                        )
             else:
-                raise Exception('No household_info field was received')
+                raise Exception("No household_info field was received")
 
         # If it all validated, send to superclass for storage and redirection
         return super().change_view(
@@ -1872,9 +1897,9 @@ class HouseholdMembersAdmin(admin.ModelAdmin):
 
             # redirect to the user view instead on save
             user_edit_url = reverse(
-                f"admin:app_user_change",
+                "admin:app_user_change",
                 args=(object.user_id,),
-                current_app=self.admin_site.name
+                current_app=self.admin_site.name,
             )
             return HttpResponseRedirect(user_edit_url)
 
