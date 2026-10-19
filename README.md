@@ -791,11 +791,11 @@ Then, `DROP USER <username>;` should be able to be executed successfully. If an 
 
         DROP OWNED BY <username>;
 
-[1]: ./media/twilio_quick_deploy_forwarding.png
-[2]: ./media/twilio_pin_functions_and_assets.png
-[3]: ./media/twilio_functions_services.png
-[4]: ./media/twilio_forward_call_initial_screen.png
-[5]: ./media/twilio_forward_call_env_vars.png
-[6]: ./media/twilio_forward_call_update_phone_number.png
-[7]: ./media/powerbi_postgres_connection.png
-[8]: ./media/powerbi_postgres_auth.png
+[1]: ./repo_reference/media/twilio_quick_deploy_forwarding.png
+[2]: ./repo_reference/media/twilio_pin_functions_and_assets.png
+[3]: ./repo_reference/media/twilio_functions_services.png
+[4]: ./repo_reference/media/twilio_forward_call_initial_screen.png
+[5]: ./repo_reference/media/twilio_forward_call_env_vars.png
+[6]: ./repo_reference/media/twilio_forward_call_update_phone_number.png
+[7]: ./repo_reference/media/powerbi_postgres_connection.png
+[8]: ./repo_reference/media/powerbi_postgres_auth.png
