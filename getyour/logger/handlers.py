@@ -1,17 +1,15 @@
 import logging
 
-
 db_default_formatter = logging.Formatter()
 
 
 class DatabaseLogHandler(logging.Handler):
-
     def emit(self, record):
 
         from logger.models import Detail
 
         # Format trace, if exception exists
-        trace = ''
+        trace = ""
         if record.exc_info:
             trace = db_default_formatter.formatException(record.exc_info)
 
@@ -20,21 +18,21 @@ class DatabaseLogHandler(logging.Handler):
         msg = self.format(record)
 
         # Add stock 'extra' parameters if they don't exist
-        if not hasattr(record, 'user_id'):
+        if not hasattr(record, "user_id"):
             record.user_id = None
-        if not hasattr(record, 'function'):
+        if not hasattr(record, "function"):
             record.function = None
 
         kwargs = {
-            'user_id': record.user_id,
-            'function': record.function,
-            'process_id': record.process,
-            'thread_id': record.thread,
-            'app_name': record.name.split('.', 1)[0],
-            'logger_name': record.name,
-            'log_level': record.levelno,
-            'message': msg,
-            'trace': trace
+            "user_id": record.user_id,
+            "function": record.function,
+            "process_id": record.process,
+            "thread_id": record.thread,
+            "app_name": record.name.split(".", 1)[0],
+            "logger_name": record.name,
+            "log_level": record.levelno,
+            "message": msg,
+            "trace": trace,
         }
 
         Detail.objects.create(**kwargs)

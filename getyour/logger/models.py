@@ -9,10 +9,9 @@ class LevelRD(models.Model):
 
 
 class Detail(models.Model):
-
     created_at = models.DateTimeField(
         auto_now_add=True,
-        verbose_name='Created at',
+        verbose_name="Created at",
     )
 
     process_id = models.CharField(max_length=100, db_index=True)
@@ -36,11 +35,11 @@ class Detail(models.Model):
         return str(self.message)
 
     class Meta:
-        ordering = ('-created_at',)
-        verbose_name_plural = verbose_name = 'Logging'
+        ordering = ("-created_at",)
+        verbose_name_plural = verbose_name = "Logging"
         indexes = [
             models.Index(
-                fields=['process_id', 'thread_id'],
-                name='logger_det_process_712f94_idx',
+                fields=["process_id", "thread_id"],
+                name="logger_det_process_712f94_idx",
             ),
         ]

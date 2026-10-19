@@ -16,25 +16,26 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 import logging
+
 import pendulum
-
-from sendgrid.helpers.mail import Mail
-from sendgrid import SendGridAPIClient
-
-from python_http_client.exceptions import (
-    HTTPError as SendGridHTTPError,
-    BadRequestsError as SendGridBadRequest,
-)
-
 from django.conf import settings
 from django.core.cache import cache
 from django_q.tasks import async_task
+from logger.wrappers import LoggerWrapper
+from python_http_client.exceptions import (
+    BadRequestsError as SendGridBadRequest,
+)
+from python_http_client.exceptions import (
+    HTTPError as SendGridHTTPError,
+)
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 from app.backend import broadcast_renewal_email, check_if_user_needs_to_renew
-from app.models import User
 from app.constants import notification_buffer_month
-from logger.wrappers import LoggerWrapper
+from app.models import User
 
 
 def populate_cache_task():
@@ -51,14 +52,16 @@ def populate_redis_cache():
         needs_renewal = check_if_user_needs_to_renew(user.id)
 
         if needs_renewal and user.last_action_notification_at:
-            cache.set(cache_key, str(user.last_action_notification_at), timeout=3600 * 24 * 30)
+            cache.set(
+                cache_key, str(user.last_action_notification_at), timeout=3600 * 24 * 30
+            )
 
 
 def run_renewal_task():
     """
     Run the task to send an automated 'renewal required' email to each affected
     user.
-    
+
     """
 
     # Initialize logger
@@ -66,7 +69,7 @@ def run_renewal_task():
 
     log.debug(
         "Entering function",
-        function='run_renewal_task',
+        function="run_renewal_task",
     )
 
     # For every user in the database that isn't archived or has a NULL
@@ -78,10 +81,11 @@ def run_renewal_task():
         cache_key = f"user_last_notified_{user.id}"
         last_notified = cache.get(cache_key)
         should_enqueue = (
-            last_notified is None or 
-            (pendulum.now() - pendulum.parse(last_notified)).in_months() > notification_buffer_month
+            last_notified is None
+            or (pendulum.now() - pendulum.parse(last_notified)).in_months()
+            > notification_buffer_month
         )
-        
+
         if should_enqueue:
             async_task(send_renewal_email, user)
 
@@ -91,7 +95,7 @@ def send_renewal_email(user):
     Determine if the user
     a) needs to renew and
     b) hasn't been notified within the buffer period
-    
+
     and kick off the 'renewal required' email.
 
     """
@@ -109,22 +113,23 @@ def send_renewal_email(user):
         # Check if the user has been notified within the specified period
         # Note that the user will be notified each `notification_buffer_month`
         # months
-        
+
         # `.months` specifies number of months within a year,
         # where `in_months()` (used here) specifies overall number of months
         # (e.g. period.months + period.years*12 = period.in_months())
         last_notified = cache.get(cache_key)
         should_notify = (
-            last_notified is None or 
-            (pendulum.now() - pendulum.parse(last_notified)).in_months() > notification_buffer_month
+            last_notified is None
+            or (pendulum.now() - pendulum.parse(last_notified)).in_months()
+            > notification_buffer_month
         )
         if should_notify:
             log.info(
                 "User needs renewal; sending notification",
-                function='send_renewal_email',
+                function="send_renewal_email",
                 user_id=user.id,
             )
-            
+
             # Note that SendGrid doesn't have rate limits for 'send' operations
             # in the v3 API (used here), so this needs no rate consideration
             status_code = broadcast_renewal_email(user.email)
@@ -136,22 +141,26 @@ def send_renewal_email(user):
             if status_code == 202:
                 log.debug(
                     f"SendGrid call successful. last_action_notification_at updating from '{user.last_action_notification_at}'",
-                    function='send_renewal_email',
+                    function="send_renewal_email",
                     user_id=user.id,
                 )
                 user.last_action_notification_at = pendulum.now()
                 user.save()
-                cache.set(cache_key, str(pendulum.now()), timeout=3600 * 24 * 30 * notification_buffer_month)
+                cache.set(
+                    cache_key,
+                    str(pendulum.now()),
+                    timeout=3600 * 24 * 30 * notification_buffer_month,
+                )
             else:
                 log.debug(
                     f"SendGrid call failed. SendGrid status_code: '{status_code}'",
-                    function='send_renewal_email',
+                    function="send_renewal_email",
                     user_id=user.id,
                 )
         else:
             log.debug(
                 "User needs renewal but has recently been notified",
-                function='send_renewal_email',
+                function="send_renewal_email",
                 user_id=user.id,
             )
 
@@ -161,7 +170,7 @@ def send_renewal_email(user):
     else:
         log.debug(
             "User does not need renewal",
-            function='send_renewal_email',
+            function="send_renewal_email",
             user_id=user.id,
         )
 
@@ -199,7 +208,7 @@ def send_generic_email(template_str, *args):
 
     log.info(
         f"Entering function using template '{template_str}'",
-        function='send_generic_email',
+        function="send_generic_email",
     )
 
     # Determine if the template name or ID is to be used
@@ -209,12 +218,12 @@ def send_generic_email(template_str, *args):
         template_id = template_str
         log.info(
             f"'{template_str}' is not a known template name; attempting to use as ID",
-            function='send_generic_email',
+            function="send_generic_email",
         )
     else:
         log.info(
             f"'{template_str}' is a known template name",
-            function='send_generic_email',
+            function="send_generic_email",
         )
 
     # Loop through each value in *args to send the email. Since the email itself
@@ -223,12 +232,10 @@ def send_generic_email(template_str, *args):
         for eml in args:
             log.debug(
                 f"Attempting email to {eml}",
-                function='send_generic_email',
+                function="send_generic_email",
             )
-            
-            message = Mail(
-                from_email='getfoco@fcgov.com',
-                to_emails=eml)
+
+            message = Mail(from_email="getfoco@fcgov.com", to_emails=eml)
 
             message.template_id = template_id
             try:
@@ -237,8 +244,8 @@ def send_generic_email(template_str, *args):
 
             except SendGridBadRequest:
                 log.exception(
-                    f"Template likely does not exist; exiting function",
-                    function='send_generic_email',
+                    "Template likely does not exist; exiting function",
+                    function="send_generic_email",
                 )
                 # exit the loop if this exception is raised
                 break
@@ -246,12 +253,12 @@ def send_generic_email(template_str, *args):
             except SendGridHTTPError as e:
                 log.exception(
                     f"Sendgrid returned: {e}",
-                    function='send_generic_email',
+                    function="send_generic_email",
                 )
-        
-    except Exception as e:
+
+    except Exception:
         log.exception(
             "General exception raised; exiting function",
-            function='send_generic_email',
+            function="send_generic_email",
         )
         raise

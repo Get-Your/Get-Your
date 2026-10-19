@@ -16,17 +16,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 import logging
+
 import usaddress
-
-from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import logout
-
-from app.forms import AddressLookupForm
-from app.backend import tag_mapping, address_check, validate_usps
-from app.models import IQProgramRD
+from django.shortcuts import redirect, render, reverse
 from logger.wrappers import LoggerWrapper
 
+from app.backend import address_check, tag_mapping, validate_usps
+from app.forms import AddressLookupForm
+from app.models import IQProgramRD
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -38,10 +38,10 @@ def index(request, **kwargs):
         if request.method == "POST":
             log.debug(
                 "Leaving function (POST)",
-                function='index',
+                function="index",
                 user_id=request.user.id,
             )
-            
+
             form = AddressLookupForm(request.POST or None)
             if form.is_valid():
                 try:
@@ -50,8 +50,9 @@ def index(request, **kwargs):
                     # Clean the data
                     # Remove 'fort collins' - the multi-word city can confuse the
                     # parser
-                    address_str = form.cleaned_data['address'].lower().replace(
-                        'fort collins', '')
+                    address_str = (
+                        form.cleaned_data["address"].lower().replace("fort collins", "")
+                    )
 
                     raw_address_dict, address_type = usaddress.tag(
                         address_str,
@@ -60,24 +61,24 @@ def index(request, **kwargs):
 
                     # Only continue to validation, etc if a 'Street Address' is
                     # found by usaddress
-                    if address_type != 'Street Address':
+                    if address_type != "Street Address":
                         msg = "The address cannot be parsed"
                         log.error(
                             f"{msg}: {raw_address_dict}",
-                            function='index',
+                            function="index",
                             user_id=request.user.id,
                         )
                         raise NameError(msg)
 
                     # Help out parsing with educated guesses
                     # if 'state' not in raw_address_dict.keys():
-                    raw_address_dict['state'] = 'CO'
+                    raw_address_dict["state"] = "CO"
                     # if 'city' not in raw_address_dict.keys():
-                    raw_address_dict['city'] = 'Fort Collins'
+                    raw_address_dict["city"] = "Fort Collins"
 
                     log.info(
                         f"Address form submitted: {raw_address_dict}",
-                        function='index',
+                        function="index",
                         user_id=request.user.id,
                     )
 
@@ -85,7 +86,7 @@ def index(request, **kwargs):
                     validation_result = validate_usps(raw_address_dict)
 
                     # Check for IQ and Connexion (Internet Service Provider) services
-                    address_dict = validation_result['address']
+                    address_dict = validation_result["address"]
                     is_in_gma, has_isp_service = address_check(address_dict)
 
                     if not is_in_gma:
@@ -94,9 +95,9 @@ def index(request, **kwargs):
                     if is_in_gma and not has_isp_service:
                         # Connexion status unknown, but since is_in_gma==True, it
                         # will be available at some point
-                        request.session['address_dict'] = {
-                            'address': address_dict['streetAddress'],
-                            'zipCode': address_dict['ZIPCode'],
+                        request.session["address_dict"] = {
+                            "address": address_dict["streetAddress"],
+                            "zipCode": address_dict["ZIPCode"],
                         }
 
                         # TODO: This is a quick fix for Connexion availability not
@@ -114,24 +115,24 @@ def index(request, **kwargs):
         else:
             log.debug(
                 "Entering function (GET)",
-                function='index',
+                function="index",
                 user_id=request.user.id,
             )
 
             # Check if the app_status query parameter is present
             # If so, check if it is 'in_progress'
             # If it's in progress, redirect to the app:index page
-            if 'app_status' in request.GET:
-                if request.GET['app_status'] == 'in_progress':
+            if "app_status" in request.GET:
+                if request.GET["app_status"] == "in_progress":
                     # Set the app_status session variable to 'in_progress'
-                    request.session['app_status'] = 'in_progress'
+                    request.session["app_status"] = "in_progress"
                     return redirect(reverse("app:index"))
 
             # Check if the user is logged in and has the 'app_status' session var
             # set to 'in_progress'
             in_progress_app_saved = False
-            if request.user.is_authenticated and 'app_status' in request.session:
-                if request.session['app_status'] == 'in_progress':
+            if request.user.is_authenticated and "app_status" in request.session:
+                if request.session["app_status"] == "in_progress":
                     in_progress_app_saved = True
 
             # Logout only if user was previously logged in. logout() apparently
@@ -142,20 +143,20 @@ def index(request, **kwargs):
                 logout(request)
                 log.info(
                     "User logged out",
-                    function='index',
+                    function="index",
                     user_id=user_id,
                 )
 
             return render(
                 request,
-                'landing/index.html',
+                "landing/index.html",
                 {
-                    'form': AddressLookupForm(),
-                    'in_progress_app_saved': in_progress_app_saved,
-                    'iq_programs': IQProgramRD.objects.filter(is_active=True),
+                    "form": AddressLookupForm(),
+                    "in_progress_app_saved": in_progress_app_saved,
+                    "iq_programs": IQProgramRD.objects.filter(is_active=True),
                 },
             )
-        
+
     # General view-level exception catching
     except:
         try:
@@ -163,8 +164,8 @@ def index(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='index',
+            "Uncaught view-level exception",
+            function="index",
             user_id=user_id,
         )
         raise
@@ -175,7 +176,7 @@ def privacy_policy(request, **kwargs):
     try:
         log.debug(
             "Entering function",
-            function='privacy_policy',
+            function="privacy_policy",
             user_id=request.user.id,
         )
 
@@ -186,9 +187,9 @@ def privacy_policy(request, **kwargs):
 
         return render(
             request,
-            'landing/privacy_policy.html',
+            "landing/privacy_policy.html",
             {
-                'user_logged_in': user_logged_in,
+                "user_logged_in": user_logged_in,
             },
         )
 
@@ -199,8 +200,8 @@ def privacy_policy(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='privacy_policy',
+            "Uncaught view-level exception",
+            function="privacy_policy",
             user_id=user_id,
         )
         raise
@@ -211,19 +212,19 @@ def programs_info(request, **kwargs):
     try:
         log.debug(
             "Entering function",
-            function='programs_info',
+            function="programs_info",
             user_id=request.user.id,
         )
 
         return render(
             request,
-            'landing/programs_info.html',
+            "landing/programs_info.html",
             {
-                'title': "Programs List",
-                'iq_programs': IQProgramRD.objects.all(),
+                "title": "Programs List",
+                "iq_programs": IQProgramRD.objects.all(),
             },
         )
-    
+
     # General view-level exception catching
     except:
         try:
@@ -231,30 +232,30 @@ def programs_info(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='programs_info',
+            "Uncaught view-level exception",
+            function="programs_info",
             user_id=user_id,
         )
         raise
 
 
 def quick_available(request, **kwargs):
-    
+
     try:
         log.debug(
             "Entering function",
-            function='quick_available',
+            function="quick_available",
             user_id=request.user.id,
         )
 
         return render(
             request,
-            'landing/quick_available.html',
+            "landing/quick_available.html",
             {
-                'title': "Quick Connexion Available",
+                "title": "Quick Connexion Available",
             },
         )
-    
+
     # General view-level exception catching
     except:
         try:
@@ -262,8 +263,8 @@ def quick_available(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='quick_available',
+            "Uncaught view-level exception",
+            function="quick_available",
             user_id=user_id,
         )
         raise
@@ -274,18 +275,18 @@ def quick_not_available(request, **kwargs):
     try:
         log.debug(
             "Entering function",
-            function='quick_not_available',
+            function="quick_not_available",
             user_id=request.user.id,
         )
 
         return render(
             request,
-            'landing/quick_not_available.html',
+            "landing/quick_not_available.html",
             {
-                'title': "Quick Connexion Not Available",
+                "title": "Quick Connexion Not Available",
             },
         )
-    
+
     # General view-level exception catching
     except:
         try:
@@ -293,8 +294,8 @@ def quick_not_available(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='quick_not_available',
+            "Uncaught view-level exception",
+            function="quick_not_available",
             user_id=user_id,
         )
         raise
@@ -305,18 +306,18 @@ def quick_not_found(request, **kwargs):
     try:
         log.debug(
             "Entering function",
-            function='quick_not_found',
+            function="quick_not_found",
             user_id=request.user.id,
         )
 
         return render(
             request,
-            'landing/quick_not_found.html',
+            "landing/quick_not_found.html",
             {
-                'title': "Quick Connexion Not Found",
+                "title": "Quick Connexion Not Found",
             },
         )
-    
+
     # General view-level exception catching
     except:
         try:
@@ -324,8 +325,8 @@ def quick_not_found(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='quick_not_found',
+            "Uncaught view-level exception",
+            function="quick_not_found",
             user_id=user_id,
         )
         raise
@@ -336,18 +337,18 @@ def quick_coming_soon(request, **kwargs):
     try:
         log.debug(
             "Entering function",
-            function='quick_coming_soon',
+            function="quick_coming_soon",
             user_id=request.user.id,
         )
 
         return render(
             request,
-            'landing/quick_coming_soon.html',
+            "landing/quick_coming_soon.html",
             {
-                'title': "Quick Connexion Coming Soon",
+                "title": "Quick Connexion Coming Soon",
             },
         )
-    
+
     # General view-level exception catching
     except:
         try:
@@ -355,8 +356,8 @@ def quick_coming_soon(request, **kwargs):
         except Exception:
             user_id = None
         log.exception(
-            'Uncaught view-level exception',
-            function='quick_coming_soon',
+            "Uncaught view-level exception",
+            function="quick_coming_soon",
             user_id=user_id,
         )
         raise

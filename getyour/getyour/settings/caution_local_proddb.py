@@ -21,7 +21,7 @@ from getyour.settings.common import *
 from getyour.settings.common import env
 
 # Read the environment-specific secrets
-env.read_env(BASE_DIR.joinpath('.prod.env'))
+env.read_env(BASE_DIR.joinpath(".prod.env"))
 
 SECRET_KEY = env("SECRET_KEY")
 AZURE_ACCOUNT_NAME = env("AZURE_ACCOUNT_NAME")
@@ -42,23 +42,23 @@ ALLOWED_HOSTS = []
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'getyour_prod',
-        'USER': env("DB_USER"),
-        'PASSWORD': env("DB_PASS"),
-        'HOST': env("DB_HOST"),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "getyour_prod",
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASS"),
+        "HOST": env("DB_HOST"),
     },
-    'analytics': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'getyour_prod_analytics',
-        'USER': env("DB_USER"),
-        'PASSWORD': env("DB_PASS"),
-        'HOST': env("DB_HOST"),
-    }
+    "analytics": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "getyour_prod_analytics",
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASS"),
+        "HOST": env("DB_HOST"),
+    },
 }
 
 # Logging modifications - set logging level to DEBUG and overwrite DEBUG_LOGGER
 # env var for clarity
-LOGGING['loggers']['app']['level'] = 'DEBUG'
+LOGGING["loggers"]["app"]["level"] = "DEBUG"
 DEBUG_LOGGING = True
