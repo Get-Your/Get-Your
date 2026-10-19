@@ -152,5 +152,5 @@ dmypy.json
 
 # Keep the media folder, but ignore all of
 # junk that gets added to it
-/getyour/getyour/media/*
-!/getyour/getyour/media/.gitkeep
+/getyour/media/*
+!/getyour/media/.gitkeep
