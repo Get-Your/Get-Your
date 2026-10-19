@@ -259,7 +259,7 @@ Each requirement is compared with the corresponding field, then they're all chai
 
 An address is eligible for benefits under the following conditions:
 
-![Truth table for 'requires_' variables](./media/requires_truth_table.png)
+![Truth table for 'requires_' variables](./repo_reference/media/requires_truth_table.png)
 
     === ( (corresponding Boolean) OR NOT(`requires_`) )
 
