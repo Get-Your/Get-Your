@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+
+uv run python /app/manage.py collectstatic --noinput
+
+exec uv run gunicorn config.wsgi --bind 0.0.0.0:8000 --chdir=/app

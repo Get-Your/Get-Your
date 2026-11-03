@@ -64,6 +64,10 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Temporarily switch back to root for final ownership modifications
 USER root
 
+COPY --chown=django:django ./start /start
+RUN sed -i 's/\r$//g' /start
+RUN chmod +x /start
+
 # make django owner of the WORKDIR directory as well.
 RUN chown django:django ${APP_HOME}
 
