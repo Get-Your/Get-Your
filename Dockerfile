@@ -19,45 +19,47 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
 
-# Layer for uv - copy files from the official uv container (latest version)
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+# Switch to the new 'django' user
+USER django
 
-# Create project and supplemental directories and set the owner to django
-RUN mkdir -p /proj/code && chown -R django /proj
-RUN mkdir -p /opt/venv && chown -R django /opt/venv
+# Call a specific uv version
+COPY --from=ghcr.io/astral-sh/uv:0.13.6 /uv /uvx /bin/
 
-# Under django, set the working directory (for uv), and copy the uv files
-USER django:django
-WORKDIR /proj
-COPY pyproject.toml uv.lock ./
+# Install the project into `/app`
+ARG APP_HOME=/app
+WORKDIR ${APP_HOME}
 
-# Configure uv to
-#   - compile Python to bytecode (for runtime efficiency)
-#   - copy files instead of hardlinking (to avoid link issues)
-#   - not install 'dev' dependencies
-#   - use an explicitly-define PATH
-#   - use an explicitly-defined 'project environment' (used below)
-ENV UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy \
-    UV_NO_DEV=1 \
-    PATH="/opt/venv/bin:$PATH" \
-    UV_PROJECT_ENVIRONMENT="/opt/venv"
+# Enable bytecode compilation
+ENV UV_COMPILE_BYTECODE=1
 
-# Run uv sync
-RUN --mount=type=cache,target=/usr/.cache/uv uv sync --managed-python
+# Copy from the cache instead of linking since it's a mounted volume
+ENV UV_LINK_MODE=copy
 
-# Layers for the Django app
+# Omit development dependencies
+ENV UV_NO_DEV=1
 
-# Set target code directory as the working directory
-WORKDIR /proj/code
+# Ensure installed tools can be executed out of the box
+ENV UV_TOOL_BIN_DIR=/usr/local/bin
 
-# Add the files in getyour/ to the current (/proj/code/) dir
-COPY getyour/ ./
+# Install the project's dependencies using the lockfile and settings
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-dev --managed-python --no-install-project
+
+# Then, add the rest of the project source code and install it
+# Installing separately from its dependencies allows optimal layer caching
+COPY . ${APP_HOME}
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-dev --managed-python
 
 # Gather the code version from build vars. Set to '' if DNE.
 ARG CODE_VERSION=''
 # Save the code version to a runtime env var
 ENV CODE_VERSION=$CODE_VERSION
+
+# Place executables in the environment at the front of the path
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Activate uv for the following commands
 RUN source /opt/venv/bin/activate
