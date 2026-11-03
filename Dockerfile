@@ -19,6 +19,9 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
 
+# Create the supervisor logs dir
+RUN mkdir -p /var/log/supervisor
+
 # Switch to the new 'django' user
 USER django
 
@@ -53,7 +56,7 @@ COPY . ${APP_HOME}
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev --managed-python
 
-# Gather the code version from build vars. Set to '' if DNE.
+# Gather the code version from build vars, or default to '' if not specified
 ARG CODE_VERSION=''
 # Save the code version to a runtime env var
 ENV CODE_VERSION=$CODE_VERSION
