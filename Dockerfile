@@ -3,11 +3,21 @@ FROM ubuntu:26.04
 RUN groupadd --system --gid 999 django \
   && useradd --system --gid 999 --uid 999 --create-home django
 
-# Layer for libmagic1 (for python-magic), redis, and supervisor
-RUN apt-get update && apt-get install -y curl gpg && \
-    curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg && \
-    apt-get install -y redis libmagic1 supervisor && \
-    rm -rf /var/lib/apt/lists/*
+# Install apt packages
+RUN apt-get update && apt-get install --no-install-recommends -y \
+  # dependencies for building Python packages
+  build-essential \
+  # psycopg dependencies
+  libpq-dev \
+  # libmagic1 (for python-magic)
+  libmagic1 \
+  # supervisor
+  supervisor \
+  # redis
+  redis \
+  # cleaning up unused files
+  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+  && rm -rf /var/lib/apt/lists/*
 
 # Layer for uv - copy files from the official uv container (latest version)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
