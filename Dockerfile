@@ -61,11 +61,11 @@ ENV CODE_VERSION=$CODE_VERSION
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Activate uv for the following commands
-RUN source /opt/venv/bin/activate
+# Temporarily switch back to root for final ownership modifications
+USER root
 
-# Collect static files, using the uv venv python (also within activated uv env)
-RUN /opt/venv/bin/python manage.py collectstatic --noinput
+# make django owner of the WORKDIR directory as well.
+RUN chown django:django ${APP_HOME}
 
 # Copy supervisor and redis conf files to the appropriate locations
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
@@ -74,15 +74,17 @@ COPY redis.conf /etc/redis/redis.conf
 # Expose the Django app for use
 EXPOSE 8000
 
-# Temporarily switch back to root for final ownership modifications
-USER root
-RUN chown -R django /var/log/redis
-RUN chown -R django /var/lib/redis
+# Change the ownership of necessary redis and supervisor directories to 'django'
+# (same name for both user and group)
+RUN chown -R django:django /var/log/redis
+RUN chown -R django:django /var/lib/redis
 RUN chgrp -R django /etc/redis
-RUN chown -R django /var/log/supervisor
-RUN chown -R django /etc/supervisor
+RUN chown -R django:django /var/log/supervisor
+RUN chown -R django:django /etc/supervisor
 RUN chgrp -R django /etc/supervisor
-USER django:django
+
+# Use the django user to run the application
+USER django
 
 # Run supervisord, which executes Django, Redis, and Django-Q
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
