@@ -1,13 +1,7 @@
 FROM ubuntu:26.04
 
-SHELL ["/bin/bash", "-c"]
-
-RUN groupadd dj_group
-RUN useradd -m -g dj_group -s /bin/bash dj_user
-
-# Add timezone for processes using tzdata
-ENV TZ=Etc/UTC
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN groupadd --system --gid 999 django \
+  && useradd --system --gid 999 --uid 999 --create-home django
 
 # Layer for libmagic1 (for python-magic), redis, and supervisor
 RUN apt-get update && apt-get install -y curl gpg && \
@@ -18,12 +12,12 @@ RUN apt-get update && apt-get install -y curl gpg && \
 # Layer for uv - copy files from the official uv container (latest version)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Create project and supplemental directories and set the owner to dj_user
-RUN mkdir -p /proj/code && chown -R dj_user /proj
-RUN mkdir -p /opt/venv && chown -R dj_user /opt/venv
+# Create project and supplemental directories and set the owner to django
+RUN mkdir -p /proj/code && chown -R django /proj
+RUN mkdir -p /opt/venv && chown -R django /opt/venv
 
-# Under dj_user, set the working directory (for uv), and copy the uv files
-USER dj_user:dj_group
+# Under django, set the working directory (for uv), and copy the uv files
+USER django:django
 WORKDIR /proj
 COPY pyproject.toml uv.lock ./
 
@@ -70,13 +64,13 @@ EXPOSE 8000
 
 # Temporarily switch back to root for final ownership modifications
 USER root
-RUN chown -R dj_user /var/log/redis
-RUN chown -R dj_user /var/lib/redis
-RUN chgrp -R dj_group /etc/redis
-RUN chown -R dj_user /var/log/supervisor
-RUN chown -R dj_user /etc/supervisor
-RUN chgrp -R dj_group /etc/supervisor
-USER dj_user:dj_group
+RUN chown -R django /var/log/redis
+RUN chown -R django /var/lib/redis
+RUN chgrp -R django /etc/redis
+RUN chown -R django /var/log/supervisor
+RUN chown -R django /etc/supervisor
+RUN chgrp -R django /etc/supervisor
+USER django:django
 
 # Run supervisord, which executes Django, Redis, and Django-Q
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
