@@ -37,11 +37,12 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.shortcuts import reverse
+from logger.backend import LogRetry
+from logger.constants import retry_strategy
 from logger.wrappers import LoggerWrapper
 from phonenumber_field.phonenumber import PhoneNumber
 from python_http_client.exceptions import HTTPError as SendGridHTTPError
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from twilio.base.exceptions import TwilioRestException
@@ -63,9 +64,9 @@ from app.models import (
     User,
 )
 
-# Initialize logger
+# Initialize loggers
 log = LoggerWrapper(logging.getLogger(__name__))
-
+usps_log = LoggerWrapper(logging.getLogger("usps"))
 
 form_page_number = 6
 
@@ -99,22 +100,6 @@ tag_mapping = {
     "StateName": "state",
     "ZipCode": "ZIPCode",
 }
-
-# Set the API-call retry strategy
-retry_strategy = Retry(
-    # Retry up to 5 times
-    total=5,
-    # Don't retry for 'read' errors
-    read=0,
-    # Follow up to 10 redirects
-    redirect=10,
-    # Force 'bad' statuses to retry
-    status_forcelist=[502, 503, 504],
-    # The factor to 'back off' at each retry (as a multiple of the retry
-    # iteration), to a maximum overall
-    backoff_factor=0.1,
-    backoff_max=1,
-)
 
 
 class QualificationStatus(Enum):
@@ -240,11 +225,33 @@ def address_lookup(street_address, zip_code):
         "outSR": default_spatial_reference,
     }
 
+    log.debug(
+        "Getting address coordinates...",
+        function="address_lookup",
+    )
+
     # Gather response, with retries
-    with requests.Session() as s:
-        s.mount("https://", HTTPAdapter(max_retries=retry_strategy))
-        # Time out after 1 second to connect, 3 to read
-        response = s.get(url, params=payload, timeout=(1, 3))
+    try:
+        with requests.Session() as s:
+            s.mount(
+                "https://",
+                HTTPAdapter(
+                    max_retries=LogRetry(
+                        **retry_strategy,
+                    )
+                ),
+            )
+            # Time out after 1 second to connect, 3 to read
+            response = s.get(url, params=payload, timeout=(1, 3))
+
+    except requests.exceptions.ConnectionError:
+        log.error(
+            "Connection timed out after %s retries",
+            retry_strategy["total"],
+            function="address_lookup",
+        )
+        # Raise empty HTTPError (to match the API error case, below)
+        raise requests.exceptions.HTTPError()
 
     if response.status_code != requests.codes.ok:
         log.error(
@@ -291,7 +298,16 @@ def address_lookup(street_address, zip_code):
 
     # Raise an exception if coord_string remains None
     if not coord_string:
+        log.warning(
+            "Address coordinates not found",
+            function="gma_lookup",
+        )
         raise NameError("Matching address not found")
+
+    log.debug(
+        "Address coordinates found",
+        function="gma_lookup",
+    )
 
     # Return the found coordinate string and the returned 'WKID' from the lookup
     return (coord_string, outVal["spatialReference"]["wkid"])
@@ -341,11 +357,36 @@ def gma_lookup(coord_string, target_wkid):
     }
 
     try:
+        log.debug(
+            "Finding GMA for address...",
+            function="gma_lookup",
+        )
+
         # Gather response, with retries
-        with requests.Session() as s:
-            s.mount("https://", HTTPAdapter(max_retries=retry_strategy))
-            # Time out after 1 second to connect, 3 to read
-            response = s.get(url, params=payload, timeout=(1, 3))
+        try:
+            with requests.Session() as s:
+                s.mount(
+                    "https://",
+                    HTTPAdapter(
+                        max_retries=LogRetry(
+                            **retry_strategy,
+                        )
+                    ),
+                )
+                # Time out after 1 second to connect, 3 to read
+                response = s.get(url, params=payload, timeout=(1, 3))
+
+        except requests.exceptions.ConnectionError:
+            log.error(
+                "Connection timed out after %s retries",
+                retry_strategy["total"],
+                function="gma_lookup",
+            )
+            # Raise empty HTTPError (to match the API error, below)
+            raise requests.exceptions.HTTPError()
+
+        except:
+            raise
 
         if response.status_code != requests.codes.ok:
             log.error(
@@ -367,6 +408,11 @@ def gma_lookup(coord_string, target_wkid):
             )
             raise requests.exceptions.HTTPError(errDict["code"], errDict["message"])
 
+        log.debug(
+            "GMA found",
+            function="gma_lookup",
+        )
+
         if len(outVal["features"]) > 0:
             return True
         else:
@@ -377,19 +423,61 @@ def gma_lookup(coord_string, target_wkid):
 
 
 def get_usps_token():
-    """Get the bearer token for the USPS v3 API."""
+    """
+    Get the bearer token for the USPS v3 API.
+
+    The license for this API usage is available at
+    https://postalpro.usps.com/mnt/glusterfs/2026-04/Addressing_API_License_FINAL_2026.04.08.pdf .
+
+    """
+
+    usps_log.info(
+        "Getting USPS token...",
+        function="get_usps_token",
+    )
+    log.debug(
+        "Getting USPS token...",
+        function="get_usps_token",
+    )
 
     # Gather the token with the 'addresses' scope
-    response = requests.post(
-        "https://apis.usps.com/oauth2/v3/token",
-        data={
-            "grant_type": "client_credentials",
-            "scope": "addresses",
-            "client_id": settings.USPS_KEY,
-            "client_secret": settings.USPS_SECRET,
-        },
-        timeout=10,
-    )
+    try:
+        with requests.Session() as s:
+            s.mount(
+                "https://",
+                HTTPAdapter(
+                    max_retries=LogRetry(
+                        **retry_strategy,
+                        logger=usps_log,
+                        function="get_usps_token",
+                    )
+                ),
+            )
+            response = requests.post(
+                "https://apis.usps.com/oauth2/v3/token",
+                data={
+                    "grant_type": "client_credentials",
+                    "scope": "addresses",
+                    "client_id": settings.USPS_KEY,
+                    "client_secret": settings.USPS_SECRET,
+                },
+                # Time out after 1 second to connect, 3 for read
+                timeout=(1, 3),
+            )
+
+    except requests.exceptions.ConnectionError:
+        usps_log.error(
+            "Connection timed out after %s retries",
+            retry_strategy["total"],
+            function="get_usps_token",
+        )
+        log.error(
+            "Connection timed out after %s retries",
+            retry_strategy["total"],
+            function="get_usps_token",
+        )
+        # Raise empty HTTPError (to match raise_for_status(), below)
+        raise requests.exceptions.HTTPError()
 
     response_dict = response.json()
     if not response.ok or "access_token" not in response_dict:
@@ -397,11 +485,32 @@ def get_usps_token():
             response.text,
             function="get_usps_token",
         )
+        usps_log.exception(
+            response.text,
+            function="get_usps_token",
+        )
         response.raise_for_status()
+
+    usps_log.info(
+        "Token acquired",
+        function="get_usps_token",
+    )
+    log.debug(
+        "Token acquired",
+        function="get_usps_token",
+    )
+
     return response_dict["access_token"]
 
 
 def validate_usps(inobj):
+    """
+    Validate the input address against USPS services.
+
+    The license for this API usage is available at
+    https://postalpro.usps.com/mnt/glusterfs/2026-04/Addressing_API_License_FINAL_2026.04.08.pdf .
+
+    """
     if isinstance(inobj, http.request.QueryDict):
         # Define the mapper of inobj keys to arguments used in the USPS v3 API
         key_map = {
@@ -428,25 +537,55 @@ def validate_usps(inobj):
     # calling this each time)
     access_token = get_usps_token()
 
+    usps_log.info(
+        f"Calling /addresses endpoint for: {address}",
+        function="validate_usps",
+    )
+
     # Call the USPS 'addresses' API with the parsed input and retries.
     # urljoin(), urlencode(), and quote are used so that spaces are escaped with
     # '%20' instead of '+' (as requests-native functionality does)
-    with requests.Session() as s:
-        s.mount("https://", HTTPAdapter(max_retries=retry_strategy))
-        response = s.get(
-            "https://apis.usps.com/addresses/v3/address?{}".format(
-                urlencode(
-                    address,
-                    quote_via=quote,
+    try:
+        with requests.Session() as s:
+            s.mount(
+                "https://",
+                HTTPAdapter(
+                    max_retries=LogRetry(
+                        **retry_strategy,
+                        logger=usps_log,
+                        function="validate_usps",
+                    )
                 ),
-            ),
-            headers={
-                "Authorization": f"Bearer {access_token}",
-                "Accept": "application/json",
-            },
-            # Time out after 1 second to connect, 3 for read
-            timeout=(1, 3),
+            )
+            # Time out after 1 second to connect, 3 to read
+            response = s.get(
+                "https://apis.usps.com/addresses/v3/address?{}".format(
+                    urlencode(
+                        address,
+                        quote_via=quote,
+                    ),
+                ),
+                headers={
+                    "Authorization": f"Bearer {access_token}",
+                    "Accept": "application/json",
+                },
+                # Time out after 1 second to connect, 3 for read
+                timeout=(1, 3),
+            )
+
+    except requests.exceptions.ConnectionError:
+        usps_log.error(
+            "Connection timed out after %s retries",
+            retry_strategy["total"],
+            function="validate_usps",
         )
+        log.error(
+            "Connection timed out after %s retries",
+            retry_strategy["total"],
+            function="validate_usps",
+        )
+        # Raise empty HTTPError (to match raise_for_status(), below)
+        raise requests.exceptions.HTTPError()
 
     # Log then raise an error and raise if status_code != 200
     if not response.ok:
@@ -454,7 +593,16 @@ def validate_usps(inobj):
             f"Address could not be found; error {response.text}",
             function="validate_usps",
         )
+        usps_log.exception(
+            f"Error: {response.text}",
+            function="validate_usps",
+        )
         response.raise_for_status()
+
+    usps_log.info(
+        "/addresses response successful",
+        function="validate_usps",
+    )
 
     # Log and return the dictionary
     response_dict = response.json()
