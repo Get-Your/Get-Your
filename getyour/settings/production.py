@@ -37,6 +37,9 @@ env.read_env(BASE_DIR.joinpath(".prod.deploy"))
 SECRET_KEY = env("SECRET_KEY")
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = env.list("HOSTS")
+# Include 'localhost', if specified
+if env.bool("DJANGO_ALLOW_LOCALHOST", default=False):
+    ALLOWED_HOSTS += ["localhost"]
 CSRF_TRUSTED_ORIGINS = [f"https://{x}" for x in env.list("HOSTS")]
 
 # DATABASES
@@ -87,6 +90,7 @@ SESSION_COOKIE_NAME = "__Secure-sessionid"
 CSRF_COOKIE_SECURE = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-name
 CSRF_COOKIE_NAME = "__Secure-csrftoken"
+
 # Log out on browser close
 # https://docs.djangoproject.com/en/dev/ref/settings/#session-expire-at-browser-close
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True

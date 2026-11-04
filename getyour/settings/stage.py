@@ -37,6 +37,9 @@ env.read_env(BASE_DIR.joinpath(".prod.deploy"))
 SECRET_KEY = env("SECRET_KEY")
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = env.list("HOSTS")
+# Include 'localhost', if specified
+if env.bool("DJANGO_ALLOW_LOCALHOST", default=False):
+    ALLOWED_HOSTS += ["localhost"]
 CSRF_TRUSTED_ORIGINS = [f"https://{x}" for x in env.list("HOSTS")]
 
 # DATABASES
