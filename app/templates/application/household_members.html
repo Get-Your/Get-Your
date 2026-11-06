@@ -112,15 +112,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         // Listen to all of the household_member_{{ number }} class child inputs
         // If the inputs have values then show the cooresponding file-upload-btn
         $("form").on('input', '.household_member :input', function () {
-            var household_member = $(this).parent().attr("id");
+            var household_member = $(this).parent().parent().attr("id");
             showFileUploadBtn(household_member);
         });
 
         $(".file-upload-btn").click(async function () {
             // Get the nearest id_identification_path
-            var identification_path = $(this).siblings("input[id='id_identification_path']");
+            var identification_path = $(this).parent().find("input[id='id_identification_path']");
             // Get the birthdate of the household member
-            var birthdate = $(this).siblings("input[id='id_birthdate']").val();
+            var birthdate = $(this).parent().find("input[id='id_birthdate']").val();
             // Check if the birthdate is >= 18 years ago
             var is_eighteen_or_older = moment().subtract(18, 'years').isAfter(birthdate);
             var html = "";
@@ -200,7 +200,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     function showFileUploadBtn(household_member) {
         // Get the nearest name and birthday inputs for the household_member and check if they have values
-        if ($(`#${household_member} > input[name="name"]`).val() !== "" && $(`#${household_member} > input[name="birthdate"]`).val() !== "") {
+        if ($(`#${household_member} > div > input[name="name"]`).val() !== "" && $(`#${household_member} > div > input[name="birthdate"]`).val() !== "") {
             $(`#${household_member} > .file-upload-btn`).show();
         } else {
             $(`#${household_member} > .file-upload-btn`).hide();
