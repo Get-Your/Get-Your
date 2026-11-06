@@ -79,8 +79,6 @@ TIME_ZONE = "America/Denver"
 LANGUAGE_CODE = "en-us"
 # https://docs.djangoproject.com/en/dev/ref/settings/#internationalization-i18n
 USE_I18N = True
-# https://docs.djangoproject.com/en/dev/ref/settings/#localization-l10n
-USE_L10N = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
