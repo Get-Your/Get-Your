@@ -383,6 +383,7 @@ dependencies = [
     { name = "gunicorn" },
     { name = "hiredis" },
     { name = "httpagentparser" },
+    { name = "pandas" },
     { name = "pendulum" },
     { name = "psycopg2-binary" },
     { name = "python-magic" },
@@ -398,7 +399,6 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "pandas" },
     { name = "rich" },
 ]
 
@@ -414,6 +414,7 @@ requires-dist = [
     { name = "gunicorn", specifier = "~=26.2.0" },
     { name = "hiredis", specifier = "~=3.5.0" },
     { name = "httpagentparser", specifier = "~=1.9.9" },
+    { name = "pandas", specifier = "~=3.1.1" },
     { name = "pendulum", specifier = "~=3.3.0" },
     { name = "psycopg2-binary", specifier = "~=2.9.13" },
     { name = "python-magic", specifier = "~=0.4.27" },
@@ -428,10 +429,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [
-    { name = "pandas", specifier = "~=3.1.1" },
-    { name = "rich", specifier = "~=15.0.0" },
-]
+dev = [{ name = "rich", specifier = "~=15.0.0" }]
 
 [[package]]
 name = "gunicorn"
