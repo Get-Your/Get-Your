@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 import subprocess
 from pathlib import Path
+from django.core.files.storage import storages as django_storages
 
 import environ
 from django.core.files import File
@@ -206,7 +207,14 @@ EMAIL_TIMEOUT = 5
 # Ref https://stackoverflow.com/a/54767932/5438550 for details
 # Subdirectory-like prefix to the blob name
 AZURE_LOCATION = ""
-DEFAULT_FILE_STORAGE = "getyour.settings.custom_azure.AzureMediaStorage"
+STORAGES = {
+    # Override the default with AzureMediaStorage
+    "default": {
+        "BACKEND": "getyour.settings.custom_azure.AzureMediaStorage",
+    },
+    # Use the default storage for staticfiles
+    "staticfiles": django_storages.backends["staticfiles"],
+}
 
 # Define database routing other than the default
 # https://docs.djangoproject.com/en/dev/ref/settings/#database-routers
