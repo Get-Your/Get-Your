@@ -146,12 +146,19 @@ class User(AbstractUser):
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     phone_number = PhoneNumberField()
-    has_viewed_dashboard = models.BooleanField(default=False)
+    has_viewed_dashboard = models.BooleanField(
+        default=False,
+        db_default=False,
+    )
     is_archived = models.BooleanField(
         default=False,
+        db_default=False,
         help_text=_("Designates whether the user is marked as 'archived'."),
     )
-    is_updated = models.BooleanField(default=False)
+    is_updated = models.BooleanField(
+        default=False,
+        db_default=False,
+    )
     last_completed_at = models.DateTimeField(
         null=True,
         blank=True,
@@ -222,6 +229,7 @@ class AddressRD(GenericTimeStampedModel):
     address1 = models.CharField(
         max_length=200,
         default="",
+        db_default="",
         verbose_name="street address",
         help_text=_("House number and street name."),
     )
@@ -229,13 +237,18 @@ class AddressRD(GenericTimeStampedModel):
         max_length=200,
         blank=True,
         default="",
+        db_default="",
         verbose_name="apt, suite, etc.",
         help_text=_("Leave blank if not applicable."),
     )
 
     # Try to get past the things that should be the same for every applicant
     city = models.CharField(max_length=64)
-    state = models.CharField(max_length=2, default="")
+    state = models.CharField(
+        max_length=2,
+        default="",
+        db_default="",
+    )
 
     zip_code = models.DecimalField(max_digits=5, decimal_places=0)
 
@@ -249,7 +262,10 @@ class AddressRD(GenericTimeStampedModel):
         ),
     )
     has_connexion = models.BooleanField(null=True, default=None)
-    is_verified = models.BooleanField(default=False)
+    is_verified = models.BooleanField(
+        default=False,
+        db_default=False,
+    )
     address_sha1 = models.CharField(max_length=40, unique=True)
 
     class Meta:
@@ -316,7 +332,10 @@ class Address(GenericTimeStampedModel):
     )
 
     # Important: for this model, ``is_updated`` applies *only to the mailing address*
-    is_updated = models.BooleanField(default=False)
+    is_updated = models.BooleanField(
+        default=False,
+        db_default=False,
+    )
 
     class Meta:
         verbose_name = "address"
@@ -363,9 +382,13 @@ class Household(GenericTimeStampedModel):
         on_delete=models.CASCADE,
         primary_key=True,  # set this to the primary key of this model
     )
-    is_updated = models.BooleanField(default=False)
+    is_updated = models.BooleanField(
+        default=False,
+        db_default=False,
+    )
     is_income_verified = models.BooleanField(
         default=False,
+        db_default=False,
         verbose_name="income has been verified",
         help_text=_("Designates whether an applicant has had their income verified."),
     )
@@ -444,7 +467,10 @@ class HouseholdMembers(GenericTimeStampedModel):
     # Store the household info (individuals' names, birthdates, and path to an uploaded ID) as JSON for
     # quick storage and reference
     household_info = models.JSONField(null=True, blank=True)
-    is_updated = models.BooleanField(default=False)
+    is_updated = models.BooleanField(
+        default=False,
+        db_default=False,
+    )
 
     class Meta:
         verbose_name = "household member"
@@ -565,6 +591,7 @@ class IQProgramRD(GenericTimeStampedModel):
 
     is_active = models.BooleanField(
         default=True,
+        db_default=True,
         help_text=_(
             "Designates whether the program is in-use or not. "
             "Unselect this instead of deleting programs."
@@ -574,6 +601,7 @@ class IQProgramRD(GenericTimeStampedModel):
     # Enable auto-apply for the designated program
     enable_autoapply = models.BooleanField(
         default=False,
+        db_default=False,
         help_text=_(
             "Designates whether the program should automatically apply new users who are eligible."
         ),
@@ -584,12 +612,14 @@ class IQProgramRD(GenericTimeStampedModel):
     # backend.get_eligible_iq_programs() for more detail
     requires_is_in_gma = models.BooleanField(
         default=False,
+        db_default=False,
         help_text=_(
             "Designates whether the user's eligibility address is required to be in the GMA to be eligible."
         ),
     )
     requires_is_city_covered = models.BooleanField(
         default=False,
+        db_default=False,
         help_text=_(
             "Designates whether the user's eligibility address is required to be 'covered by the City' to be eligible. "
             "'City coverage' is always True for addresses within the GMA, otherwise it's determined by the Get FoCo administrators."
@@ -650,7 +680,10 @@ class IQProgram(IQProgramTimeStampedModel):
         on_delete=models.DO_NOTHING,  # don't update these values if the program is deleted
     )
 
-    is_enrolled = models.BooleanField(default=False)
+    is_enrolled = models.BooleanField(
+        default=False,
+        db_default=False,
+    )
 
     class Meta:
         verbose_name = "user IQ program"
@@ -740,6 +773,7 @@ class EligibilityProgramRD(GenericTimeStampedModel):
 
     is_active = models.BooleanField(
         default=True,
+        db_default=True,
         help_text=_(
             "Designates whether the program is in-use or not. "
             "Unselect this instead of deleting programs."
@@ -840,6 +874,7 @@ class Admin(models.Model):
 
     awaiting_user_response = models.BooleanField(
         default=False,
+        db_default=False,
         help_text=_(
             "Designates that the admin is waiting for a user to respond to a request made separate from this platform. "
             "This is used only to filter income-verification applicants."
