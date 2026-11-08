@@ -207,9 +207,8 @@ EMAIL_TIMEOUT = 5
 # Ref https://stackoverflow.com/a/54767932/5438550 for details
 # Subdirectory-like prefix to the blob name
 AZURE_LOCATION = ""
-# Define STORAGES as default, then override 'default' with AzureMediaStorage
+# Define STORAGES as default, to be overridden in the environment settings
 STORAGES = django_storages.backends
-STORAGES["default"] = {"BACKEND": "getyour.settings.custom_azure.AzureMediaStorage"}
 
 # Define database routing other than the default
 # https://docs.djangoproject.com/en/dev/ref/settings/#database-routers

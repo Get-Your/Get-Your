@@ -107,6 +107,18 @@ AZURE_CONTAINER = env("AZURE_CONTAINER")
 # ------------------------------------------------------------------------------
 IS_PROD = True
 
+# STORAGES modifications
+# Define the Azure blob storage as the default file storage
+STORAGES["default"] = {
+    "BACKEND": "storages.backends.azure_storage.AzureStorage",
+    "OPTIONS": {
+        "account_name": AZURE_ACCOUNT_NAME,
+        "account_key": AZURE_ACCOUNT_KEY,
+        "azure_container": AZURE_CONTAINER,
+        "endpoint_suffix": AZURE_ENDPOINT_SUFFIX,
+    },
+}
+
 # Logging modifications
 # This uses an Azure App Service environment var
 if DEBUG_LOGGING:

@@ -81,6 +81,19 @@ AZURE_CONTAINER = env("AZURE_CONTAINER")
 # ------------------------------------------------------------------------------
 IS_PROD = False
 
+# STORAGES modifications
+# Define the Azure blob storage as the default file storage
+STORAGES["default"] = {
+    "BACKEND": "storages.backends.azure_storage.AzureStorage",
+    "OPTIONS": {
+        "account_name": AZURE_ACCOUNT_NAME,
+        "account_key": AZURE_ACCOUNT_KEY,
+        "azure_container": AZURE_CONTAINER,
+        "endpoint_suffix": AZURE_ENDPOINT_SUFFIX,
+    },
+}
+
+
 # Logging modifications - set logging level to DEBUG and overwrite DEBUG_LOGGER
 # env var for clarity
 LOGGING["loggers"]["app"]["level"] = "DEBUG"
