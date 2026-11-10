@@ -48,13 +48,13 @@ ENV UV_TOOL_BIN_DIR=/usr/local/bin
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --locked --no-dev --managed-python --no-install-project
+    uv sync --locked --managed-python --no-install-project
 
 # Then, add the rest of the project source code and install it
 # Installing separately from its dependencies allows optimal layer caching
 COPY . ${APP_HOME}
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked --no-dev --managed-python
+    uv sync --locked --managed-python
 
 # Gather the code version from build vars, or default to '' if not specified
 ARG CODE_VERSION=''
