@@ -21,6 +21,8 @@ import logging
 from pathlib import Path
 
 import pandas as pd
+from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
 import pendulum
 from django.core.files.storage import default_storage
 from django.db.models import Count, Q
@@ -498,6 +500,7 @@ class Extract:
             .order_by("id")
         )
         affectedUpdateUsers = []
+        memfiles_list = []
         for programId, programname, friendlyname in activePrograms:
             # Initialize dbOut (there will be multiple queries) and their
             # respective 'notes' (to be combined in the extract)
@@ -731,18 +734,38 @@ class Extract:
                 # Determine output
                 outMsg = []
                 if save_file:
-                    # Write to file
-                    # TODO: write this to a buffer instead
-                    save_filepath = self.output_file_dir.joinpath(
-                        f"{pendulum.now().date()} {friendlyname} {self.filename_suffix}",
+                    # Write to a buffer
+                    save_filename = (
+                        f"{pendulum.now().date()} {friendlyname} {self.filename_suffix}"
                     )
+
+                    file_buffer = BytesIO()
                     df.to_csv(
-                        save_filepath,
+                        file_buffer,
                         index=False,
                     )
+
+                    # Convert to a Django format for the remaining steps
+
+                    # Seek to the end of the stream in order to get its length
+                    # with `file_buffer.tell()`
+                    file_buffer.seek(0, 2)
+                    mem_file = InMemoryUploadedFile(
+                        file_buffer,
+                        # Spoof a field name (this is supposed to be the name of
+                        # the form from which the file was uploaded)
+                        field_name="extract",
+                        name=save_filename,
+                        content_type="text/csv",
+                        size=file_buffer.tell(),
+                        charset="utf8",
+                    )
+
                     # Write the file to blob storage, for posterity
-                    with open(save_filepath, "rb") as fp:
-                        default_storage.save(f"extracts/{save_filepath.name}", fp)
+                    default_storage.save(f"extracts/{save_filename}", mem_file)
+
+                    # Append to memfiles_list to be returned
+                    memfiles_list.append(mem_file)
 
                     outMsg.append(f"'{programname}' extract saved")
 
@@ -792,8 +815,4 @@ class Extract:
         else:
             log.info("No 'is_updated' designations in the database were reset")
 
-        return [
-            x
-            for x in self.output_file_dir.iterdir()
-            if x.name.startswith(str(pendulum.today().year))
-        ]
+        return memfiles_list
