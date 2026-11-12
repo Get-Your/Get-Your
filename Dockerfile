@@ -67,12 +67,10 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Temporarily switch back to root for final ownership modifications
 USER root
 
+# Copy the Django start command file
 COPY --chown=django:django ./start /start
 RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
-
-# make django owner of the WORKDIR directory as well.
-RUN chown django:django ${APP_HOME}
 
 # Copy supervisor and redis conf files to the appropriate locations
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
