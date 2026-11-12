@@ -49,6 +49,12 @@ class Extract:
         except NameError:  # dev
             self.output_file_dir = Path.cwd()
 
+        # Futureproofing: As documented in v3.0.0 updates, pandas intends to
+        # consider NaN and NA as distinct values. This script uses the current
+        # (legacy) methodology (where NaN === NA); this option ensures pandas
+        # uses the same
+        pd.options.future.distinguish_nan_and_na = False
+
         self.select_framework = """
             select {fields} from public.app_user u
             left join (select * from public.app_address ia 
@@ -140,7 +146,7 @@ class Extract:
 
         # Massage the phone number value (if exists)
         try:
-            df["Phone Number"] = df[["Phone Number"]].applymap(
+            df["Phone Number"] = df[["Phone Number"]].map(
                 lambda x: (
                     f"NEW VALUE: ({x[-10:-7]}) {x[-7:-4]}-{x[-4:]}"
                     if x is not None and not x.startswith("+")
@@ -155,7 +161,7 @@ class Extract:
         # Convert the 'Individuals in Household' dictionary to pretty format
         # (if exists)
         try:
-            df["Individuals in Household"] = df[["Individuals in Household"]].applymap(
+            df["Individuals in Household"] = df[["Individuals in Household"]].map(
                 lambda x: (
                     f"{x['modifier']}"
                     + f"{len(x['persons_in_household'])} individual(s); "
