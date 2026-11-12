@@ -19,22 +19,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
 from pathlib import Path
-from typing import Union
 
 import pandas as pd
 import pendulum
-from app.models import HouseholdMembersHist, IQProgram, IQProgramRD, User
 from django.core.files.storage import default_storage
 from django.db.models import Count, Q
-from logger.wrappers import LoggerWrapper
 
 from app import models
+from app.models import HouseholdMembersHist, IQProgram, IQProgramRD, User
+from logger.wrappers import LoggerWrapper
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
 
 
-# TODO: update to use typer
 class Extract:
     def __init__(
         self,
@@ -45,10 +43,12 @@ class Extract:
         **kwargs,
     ):
 
-        self.output_file_dir = output_file_dir
         self.user_files_dir = user_files_dir
+        try:
+            self.output_file_dir = Path(__file__).parent
+        except NameError:  # dev
+            self.output_file_dir = Path.cwd()
 
-        self._initialize_vars()
         self.select_framework = """
             select {fields} from public.app_user u
             left join (select * from public.app_address ia 
@@ -92,11 +92,6 @@ class Extract:
             ),
         ]
 
-        if self.output_file_dir is None:
-            self.output_file_dir = Path(self.OUTPUT_FILES_DIR)
-        # if self.user_files_dir is None:
-        #     self.user_files_dir = Path(self.USER_FILES_SAVE_DIR)
-
         self.filename_suffix = filename_suffix
         self.interactive = interactive
 
@@ -105,9 +100,9 @@ class Extract:
 
     def _convert_extract(
         self,
-        field_list: Union[list, tuple],
-        db_output: Union[list, tuple],
-    ) -> pd.core.frame.DataFrame:
+        field_list: list | tuple,
+        db_output: list | tuple,
+    ) -> pd.DataFrame:
         """
         Convert input to pandas dataframe.
 
@@ -179,31 +174,12 @@ class Extract:
 
         return df
 
-    def _initialize_vars(self):
-        ## Initialize global vars
-        try:
-            fileDir = Path(__file__).parent
-        except NameError:  # dev
-            fileDir = Path.cwd()
-
-        self.output_file_dir = fileDir
-
-        # with open(
-        #         fileDir.parent.parent.joinpath('.env.deploy'),
-        #         'r',
-        #         encoding='utf-8',
-        #         ) as f:
-        #     secrets_dict = loads(f.read())
-
-        # for key in secrets_dict.keys():
-        #     setattr(self, key, secrets_dict[key])
-
     def _mark_updates(
         self,
         # cursor: psycopg2.extensions.cursor,
         field_list: list,
         record_list: list,
-    ) -> (list, list):
+    ) -> tuple[list, list]:
         """
         Mark each record in record_list with any updates and output all
         records.
@@ -353,7 +329,7 @@ class Extract:
                             )
                     else:
                         # Loop through each key to determine what to do with it
-                        for key in histOut.keys():
+                        for key in histOut:
                             # If any identification fields were updated, gather
                             # the old values as well
                             if (tableRef[0], key) in identifyingFields:
@@ -487,23 +463,15 @@ class Extract:
         """
 
         # Parse kwargs; start with initialized defaults
-        save_file = (
-            True if not "save_file" in self.kwargs.keys() else self.kwargs["save_file"]
-        )
+        save_file = True if not "save_file" in self.kwargs else self.kwargs["save_file"]
         reset_updates = (
-            True
-            if not "reset_updates" in self.kwargs.keys()
-            else self.kwargs["reset_updates"]
+            True if not "reset_updates" in self.kwargs else self.kwargs["reset_updates"]
         )
         ids_to_warn = (
-            []
-            if not "ids_to_warn" in self.kwargs.keys()
-            else self.kwargs["ids_to_warn"]
+            [] if not "ids_to_warn" in self.kwargs else self.kwargs["ids_to_warn"]
         )
         mark_enrolled = (
-            True
-            if not "mark_enrolled" in self.kwargs.keys()
-            else self.kwargs["mark_enrolled"]
+            True if not "mark_enrolled" in self.kwargs else self.kwargs["mark_enrolled"]
         )
 
         if reset_updates != mark_enrolled:
