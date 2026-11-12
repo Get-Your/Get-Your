@@ -593,6 +593,16 @@ class Extract:
                 .order_by("id")
             )
 
+            # Stringify PhoneNumberField (for proper comparison later), if applicable
+            if "phone_number" in valueListFields:
+                phone_number_idx = valueListFields.index("phone_number")
+                for iteridx, iterval in enumerate(newOut):
+                    newOut[iteridx] = tuple(
+                        list(iterval[:phone_number_idx])
+                        + [str(iterval[phone_number_idx])]
+                        + list(iterval[phone_number_idx + 1 :])
+                    )
+
             # Add empty 'modifier' key to 'household_info' JSON values, if
             # applicable (empty indicates 'not a modified value')
             try:
@@ -637,7 +647,7 @@ class Extract:
                 # OR each additional Q(...__is_updated=True)
                 filter_q |= Q(**{f"{x}__is_updated": True})
 
-            updateOut = (
+            updateOut = list(
                 User.objects.select_related(
                     "householdmembers",
                     "household",
@@ -656,6 +666,16 @@ class Extract:
                 .values_list(*valueListFields)
                 .order_by("id")
             )
+
+            # Stringify PhoneNumberField (for proper comparison later), if applicable
+            if "phone_number" in valueListFields:
+                phone_number_idx = valueListFields.index("phone_number")
+                for iteridx, iterval in enumerate(updateOut):
+                    updateOut[iteridx] = tuple(
+                        list(iterval[:phone_number_idx])
+                        + [str(iterval[phone_number_idx])]
+                        + list(iterval[phone_number_idx + 1 :])
+                    )
 
             # Add all updateOut users (regardless of whether an update was
             # actually found) to the list for is_updated to be reset (if
