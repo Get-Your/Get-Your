@@ -20,10 +20,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 import subprocess
 from pathlib import Path
-from django.core.files.storage import storages as django_storages
 
+import certifi
 import environ
 from django.core.files import File
+from django.core.files.storage import storages as django_storages
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # getyour/
@@ -193,6 +194,9 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#x-frame-options
 X_FRAME_OPTIONS = "DENY"
+# Add Certificate Authority location as environment var (re OpenSSL config:
+# https://docs.openssl.org/master/man7/openssl-env)
+os.environ["SSL_CERT_FILE"] = certifi.where()
 
 # EMAIL
 # ------------------------------------------------------------------------------
