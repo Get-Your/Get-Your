@@ -151,9 +151,9 @@ class Extract:
             df["Phone Number"] = df[["Phone Number"]].map(
                 lambda x: (
                     f"NEW VALUE: ({x[-10:-7]}) {x[-7:-4]}-{x[-4:]}"
-                    if x is not None and not x.startswith("+")
+                    if not pd.isna(x) and not x.startswith("+")
                     else f"({x[2:5]}) {x[5:8]}-{x[8:12]}"
-                    if x is not None
+                    if not pd.isna(x)
                     else None
                 )
             )
@@ -173,7 +173,7 @@ class Extract:
                             for y in x["persons_in_household"]
                         ]
                     )
-                    if x is not None
+                    if not pd.isna(x)
                     else None
                 )
             )
