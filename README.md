@@ -30,8 +30,8 @@ The universal income-qualified application for the City of Fort Collins, Colorad
     1. [Database Administration](#database-administration)
         1. [Connectivity](#connectivity)
         1. [Creating a Database](#creating-a-database)
-        1. [Populating the Database](#populating-the-database)
         1. [Set Up Database Users](#set-up-database-users)
+        1. [Populating the Database](#populating-the-database)
 1. [User Administration](#user-administration)
 1. [Analytics Settings](#analytics-settings)
 1. [Email Settings](#email-settings)
@@ -384,9 +384,139 @@ On a freshly-deployed Azure instance, only the admin user (assigned during serve
 
     psql --host=<hostname> --port=5432 --username=<admin_user> --dbname=postgres --command="CREATE DATABASE <database_name>;"
 
-### Populating the Database
+### Set Up Database Users
 > [!IMPORTANT]
 > [Creating a Database](#creating-a-database) must be completed before starting this section.
+
+This section details the order of steps to set up users, roles, and proper permissions. Roles are used for generic permissions so that future users can be added without having to re-grant all permissions.
+
+The admin user shouldn't be used for development or live database connections; a privileged user should instead be created for local development access and a base user created with minimal privileges for the webapp. The privileged user will be stored in each environment's `.*.env` file and the base user will be in the `.*.deploy` file (see [App Secrets](#app-secrets)).
+
+#### Configure the Primary Database
+This section should be used for the `getyour_<env>` database, for the initial configuration. It includes definitions that only need to be run once.
+
+Connect to the primary (`getyour_<env>`) database and complete the following steps:
+
+> [!IMPORTANT]
+> Unless the database was *created* with PostgreSQL version 15 or later, the steps in [Database Configuration for PostgreSQL 15 or Earlier](#database-configuration-for-postgresql-15-or-earlier) in the appendix must be completed first. This is because [PostgreSQL 15](https://www.postgresql.org/docs/release/15.0) was the first version to implement zero-trust policies out of the box, so any database created prior to version 15 (**including those that were later upgraded to version 15 or later**) will need to have zero-trust policies added manually (as laid out in the [referenced section](#database-configuration-for-postgresql-15-or-earlier)). Get-Your highly recommends using zero-trust policies.
+
+1. In the target database, create a new schema `reporting` (if it already exists, this code will just throw a harmless error). This schema will be used specifically for data reporting by the analyst user (created below), which will be given read-only permissions to this schema
+
+        CREATE SCHEMA reporting;
+
+2. Admin role
+
+    a. Create an admin user role (named `admin_role`) without login privileges
+
+        CREATE ROLE admin_role INHERIT;
+
+    b. Grant permissions: assign permissions to `admin_role` and grant this role to the PostgreSQL admin account
+
+        GRANT ALL ON SCHEMA public TO admin_role;
+        GRANT ALL ON DATABASE <database_name> TO admin_role;
+        GRANT ALL ON ALL TABLES IN SCHEMA public TO admin_role;
+        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO admin_role;
+        GRANT ALL ON DATABASE postgres TO admin_role;        
+        GRANT admin_role TO <admin_user>;
+
+3. Base role
+
+    a. Create a base role (named `base_role`, for use via Django) without login privileges
+
+        CREATE ROLE base_role INHERIT;
+
+    b. Grant permissions
+
+        GRANT CONNECT ON DATABASE <database_name> TO base_role;
+        GRANT USAGE ON SCHEMA public TO base_role;
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO base_role;
+        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO base_role;
+
+4. Privileged role
+
+    a. Create a privileged role (named `privileged_role`, for local developer use) without login privileges. Start by granting `base_role` permissions
+
+        CREATE ROLE privileged_role INHERIT;
+        GRANT base_role TO privileged_role;
+
+    b. Grant additions permissions for this privileged role
+
+        GRANT CREATE ON SCHEMA public TO privileged_role;
+
+5. Analytics role
+
+    This role is slightly different in that it gives read-only access only to the `reporting` schema (created in [Populating the Database](#populating-the-database)). It's set up so that `user_id` (and its parent `vw_app_user.id`) can be used to connect tables, but no specific names are available.
+
+    a. Create an analytics user role (named `analytics_role`, for use with reporting and analytics) without login privileges
+
+        CREATE ROLE analytics_role INHERIT;
+
+    b. Grant permissions to the `reporting` schema
+
+        GRANT CONNECT ON DATABASE <database_name> TO analytics_role;
+        GRANT USAGE ON SCHEMA reporting TO analytics_role;
+
+        -- Note that REFERENCES is necessary for table relations (and implicit in INSERT, UPDATE, and DELETE privileges)
+        GRANT SELECT, REFERENCES ON ALL TABLES IN SCHEMA reporting TO analytics_role;
+        GRANT SELECT ON ALL SEQUENCES IN SCHEMA reporting TO analytics_role;
+
+        -- Grant this role to admin user (permanently, but to no material affect) to alter default privileges
+        GRANT analytics_role TO <admin_user>;
+
+6. Create and assign users as needed (with passwords and login privileges). The following commands provide for one user for each role created above (`base_role` for Django users, `privileged_role` for local developers, `analytics_role` for analysts, respectively)
+
+        CREATE USER <username> WITH LOGIN PASSWORD '<password>' INHERIT;
+        GRANT base_role TO <username>;
+
+        CREATE USER <username> WITH LOGIN PASSWORD '<password>' INHERIT;
+        GRANT privileged_role TO <username>;
+
+        CREATE USER <username> WITH LOGIN PASSWORD '<password>' INHERIT;
+        GRANT analytics_role TO <username>;
+
+7. Grant all users to the admin user
+
+    Since superuser privileges in Azure PostgreSQL are reserved only for Azure services, performing administrator-like duties (killing user processes, etc) requires all users being granted to \<admin_user\>.
+
+        GRANT <base_user> TO <admin_user>;
+        GRANT <privileged_user> TO <admin_user>;
+        GRANT <analytics_user> TO <admin_user>;
+
+8. Alter default privileges
+
+    Once the privileged user *(not role)* is created, GRANT that user to the admin user so that the admin user can alter default privileges on behalf of the privileged user. Altering the default privileges as below will ensure `base_role` (and users within that role) has the proper privileges on any new tables and sequences within any schema created by the privileged user.
+
+    > [!TIP]
+    > The ALTER DEFAULT PRIVILEGES command is run *for* the table-creation user (privileged user) *to* `base_role`, meaning that the default privileges are being changed for `base_role` on anything created by the privileged user. Because it's specific to the privileged user and not the privileged *role*, the ALTER DEFAULT PRIVILEGES command will need to be repeated for each privileged user that will be creating objects (e.g. tables, schemas, etc).
+
+        -- Alter the default privileges for each lesser role on schemas created by <admin_user>
+        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT USAGE ON SCHEMAS TO base_role;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT CREATE ON SCHEMAS TO privileged_role;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> IN SCHEMA reporting GRANT SELECT ON TABLES TO analytics_role;  
+
+        -- Alter the default privileges for each lesser role on tables and sequences created by <privileged_user>
+        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
+        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> IN SCHEMA reporting GRANT SELECT ON TABLES TO analytics_role;  
+
+#### Configure Other Databases
+This section should be used for all other databases on the same server (such as the 'analytics' database used for logging). It relies on the roles that were created in the [previous section](#configure-the-primary-database).
+
+Connect to the target database and complete the following steps of [Configure the Primary Database](#configure-the-primary-database):
+
+> [!TIP]
+> Because the `reporting` schema will exist only in the default database, steps related to this schema will throw errors that can be disregarded.
+
+1. Step 2(b)
+1. Step 3(b)
+1. Step 4(b)
+1. Step 5(b)
+1. Step 8
+
+
+### Populating the Database
+> [!IMPORTANT]
+> [Set Up Database Users](#set-up-database-users) must be completed before starting this section.
 
 In order to execute the subsequent steps in this section, the database structure must exist (namely the `public` and `reporting` schemas). For a fresh setup, continue with the steps below; if transferring data from a different (previously-setup) database, use the [transferring database](#transferring-between-databases) subsection.
 
@@ -398,14 +528,14 @@ In order to execute the subsequent steps in this section, the database structure
 > [!NOTE]
 > The following steps are manual SQL scripts for the reporting/analytics setup. See [Reporting Data Store Setup](#reporting-data-store-setup) for details.
 
-2. In the target database, create a new schema `reporting`. This will be used specifically for data reporting by the analyst user (created below), which will be given read permissions only to this newly-created schema (in [Set Up Database Users](#set-up-database-users), below).
+2. In the target database, create a new schema `reporting` (if it already exists, this will throw a harmless error)
 
         CREATE SCHEMA reporting;
 
 3. Create the materialized views in the `reporting` schema
 
     > [!IMPORTANT]
-    > These views are created from the Get-Your v7 data model.
+    > These views are created from the Get-Your v8 data model.
 
         -- The app_user view ignores first_name, last_name, email, password, phone_number, and is_active
         -- is_active is ignored to prevent confusion; this field is a Django mechanism, so Get-Your uses is_archived to have custom 'disabled' functionality
@@ -556,128 +686,6 @@ During the setup phase, there was much experimentation of Azure instance types; 
     # Restore the structure and data to the target database
     pg_restore -v --host=<target_hostname> --port=5432 --username=<target_admin_user> --dbname=<target_database_name> <target_local_backup_file>
 
-### Set Up Database Users
-> [!IMPORTANT]
-> [Populating the Database](#populating-the-database) must be completed before starting this section.
-
-This section details the order of steps to set up users, roles, and proper permissions. Roles are used for generic permissions so that future users can be added without having to re-grant all permissions.
-
-The admin user shouldn't be used for development or live database connections; a privileged user should instead be created for local development access and a base user created with minimal privileges for the webapp. The privileged user will be stored in each environment's `.*.env` file and the base user will be in the `.*.deploy` file (see [App Secrets](#app-secrets)).
-
-#### Configure the Primary Database
-This section should be used for the `getyour_<env>` database, for the initial configuration. It includes definitions that only need to be run once.
-
-Connect to the primary (`getyour_<env>`) database and complete the following steps:
-
-> [!IMPORTANT]
-> Unless the database was *created* with PostgreSQL version 15 or later, the steps in [Database Configuration for PostgreSQL 15 or Earlier](#database-configuration-for-postgresql-15-or-earlier) in the appendix must be completed first. This is because [PostgreSQL 15](https://www.postgresql.org/docs/release/15.0) was the first version to implement zero-trust policies out of the box, so any database created prior to version 15 (**including those that were later upgraded to version 15 or later**) will need to have zero-trust policies added manually (as laid out in the [referenced section](#database-configuration-for-postgresql-15-or-earlier)). Get-Your highly recommends using zero-trust policies.
-
-1. Admin role
-
-    a. Create an admin user role (named `admin_role`) without login privileges
-
-        CREATE ROLE admin_role INHERIT;
-
-    b. Grant permissions: assign permissions to `admin_role` and grant this role to the PostgreSQL admin account
-
-        GRANT ALL ON SCHEMA public TO admin_role;
-        GRANT ALL ON DATABASE <database_name> TO admin_role;
-        GRANT ALL ON ALL TABLES IN SCHEMA public TO admin_role;
-        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO admin_role;
-        GRANT ALL ON DATABASE postgres TO admin_role;        
-        GRANT admin_role TO <admin_user>;
-
-2. Base role
-
-    a. Create a base role (named `base_role`, for use via Django) without login privileges
-
-        CREATE ROLE base_role INHERIT;
-
-    b. Grant permissions
-
-        GRANT CONNECT ON DATABASE <database_name> TO base_role;
-        GRANT USAGE ON SCHEMA public TO base_role;
-        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO base_role;
-        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO base_role;
-
-3. Privileged role
-
-    a. Create a privileged role (named `privileged_role`, for local developer use) without login privileges. Start by granting `base_role` permissions
-
-        CREATE ROLE privileged_role INHERIT;
-        GRANT base_role TO privileged_role;
-
-    b. Grant additions permissions for this privileged role
-
-        GRANT CREATE ON SCHEMA public TO privileged_role;
-
-4. Analytics role
-
-    This role is slightly different in that it gives read-only access only to the `reporting` schema (created in [Populating the Database](#populating-the-database)). It's set up so that `user_id` (and its parent `vw_app_user.id`) can be used to connect tables, but no specific names are available.
-
-    a. Create an analytics user role (named `analytics_role`, for use with reporting and analytics) without login privileges
-
-        CREATE ROLE analytics_role INHERIT;
-
-    b. Grant permissions to the `reporting` schema
-
-        GRANT CONNECT ON DATABASE <database_name> TO analytics_role;
-        GRANT USAGE ON SCHEMA reporting TO analytics_role;
-
-        -- Note that REFERENCES is necessary for table relations (and implicit in INSERT, UPDATE, and DELETE privileges)
-        GRANT SELECT, REFERENCES ON ALL TABLES IN SCHEMA reporting TO analytics_role;
-        GRANT SELECT ON ALL SEQUENCES IN SCHEMA reporting TO analytics_role;
-
-        -- Grant this role to admin user (permanently, but to no material affect) to alter default privileges
-        GRANT analytics_role TO <admin_user>;
-
-5. Create and assign users as needed (with passwords and login privileges). The following commands provide for one user for each role created above (`base_role` for Django users, `privileged_role` for local developers, `analytics_role` for analysts, respectively)
-
-        CREATE USER <username> WITH LOGIN PASSWORD '<password>' INHERIT;
-        GRANT base_role TO <username>;
-
-        CREATE USER <username> WITH LOGIN PASSWORD '<password>' INHERIT;
-        GRANT privileged_role TO <username>;
-
-        CREATE USER <username> WITH LOGIN PASSWORD '<password>' INHERIT;
-        GRANT analytics_role TO <username>;
-
-6. Grant all users to the admin user
-
-    Since superuser privileges in Azure PostgreSQL are reserved only for Azure services, performing administrator-like duties (killing user processes, etc) requires all users being granted to \<admin_user\>.
-
-        GRANT <base_user> TO <admin_user>;
-        GRANT <privileged_user> TO <admin_user>;
-        GRANT <analytics_user> TO <admin_user>;
-
-7. Alter default privileges
-
-    Once the privileged user *(not role)* is created, GRANT that user to the admin user so that the admin user can alter default privileges on behalf of the privileged user. Altering the default privileges as below will ensure `base_role` (and users within that role) has the proper privileges on any new tables and sequences within any schema created by the privileged user.
-
-    > [!TIP]
-    > The ALTER DEFAULT PRIVILEGES command is run *for* the table-creation user (privileged user) *to* `base_role`, meaning that the default privileges are being changed for `base_role` on anything created by the privileged user. Because it's specific to the privileged user and not the privileged *role*, the ALTER DEFAULT PRIVILEGES command will need to be repeated for each privileged user that will be creating objects (e.g. tables, schemas, etc).
-
-        -- Alter the default privileges for each lesser role on schemas created by <admin_user>
-        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT USAGE ON SCHEMAS TO base_role;
-        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT CREATE ON SCHEMAS TO privileged_role;
-        ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> IN SCHEMA reporting GRANT SELECT ON TABLES TO analytics_role;  
-
-        -- Alter the default privileges for each lesser role on tables and sequences created by <privileged_user>
-        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO base_role;
-        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> GRANT ALL ON SEQUENCES TO base_role;
-        ALTER DEFAULT PRIVILEGES FOR ROLE <privileged_user> IN SCHEMA reporting GRANT SELECT ON TABLES TO analytics_role;  
-
-#### Configure Other Databases
-This section should be used for all other databases on the same server (such as the 'analytics' database used for logging). It relies on the roles that were created in the [previous section](#configure-the-primary-database).
-
-Connect to the target database and complete the following steps of [Configure the Primary Database](#configure-the-primary-database):
-
-1. Step 1(b)
-1. Step 2(b)
-1. Step 3(b)
-1. Step 4(b)
-1. Step 7
-
 # User Administration
 
 The following PostgreSQL functions have been created for user administration through the IQ verification process:
@@ -689,15 +697,15 @@ For the City of Fort Collins needs, Power BI was selected for analytics and repo
 
 1. In Power BI, select 'Get Data' from the startup splash screen or on the ribbon toolbar
 
-1. In the dialog that opens, type 'postgres' in the top-left search box, then select 'Azure Database for PostgreSQL'
+2. In the dialog that opens, type 'postgres' in the top-left search box, then select 'Azure Database for PostgreSQL'
 
     ![][7]
 
-1. In the next dialog, enter the Server and Database settings. 'DirectQuery' should be selected here for efficiency, as long as Power BI will have connectivity to the database at all times
+3. In the next dialog, enter the Server and Database settings. 'DirectQuery' should be selected here for efficiency, as long as Power BI will have connectivity to the database at all times
 
     ![][8]
 
-1. For the username and password on the next dialog, use the analyst user created under `analytics_role` in the [Set up Database Users](#set-up-database-users) section
+4. For the username and password on the next dialog, use the analyst user created under `analytics_role` in the [Set up Database Users](#set-up-database-users) section
 
 # Email Settings
 SendGrid is the service used in this app to send automated email to users. Anything in this section references the `sendgrid` package, although a planned change will be to use [`django-anymail[sendgrid]`](https://anymail.dev/en/stable) instead in order to genericize the email code.
