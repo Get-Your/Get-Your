@@ -188,7 +188,8 @@ Major-version releases will likely involve updates to the database structure or 
 
 2. Drop and recreate the `public` schema in the STAGE database. This ensures a clean slate for the data transfer.
 
-    **WARNING: MAKE SURE THE CORRECT (STAGE) DATABASE IS USED OR UNEXPECTED DATA LOSS WILL OCCUR**
+> [!WARNING]
+> **Ensure the correct database (`stage`) is used or unexpected data loss will occur!**
 
         psql --host=<hostname> --port=5432 --username=<username> --dbname=<STAGE_database_name> --command="DROP SCHEMA public CASCADE;" --command="CREATE SCHEMA public;"
 
