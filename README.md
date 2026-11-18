@@ -90,8 +90,8 @@ Unless otherwise noted, the following commands must be run from the 'get_your' d
     | `.env.template` | `.env` |
     | `.dev.env.template` | `.dev.env` |
 
-    > [!TIP]
-    > For a local run, each variable only needs to be added if the app errors because it doesn't exist.
+> [!TIP]
+> For a local run, each variable only needs to be added if the app errors because it doesn't exist.
 
 3. Set your terminal to use the virtual environment that uv set up in [Dependency Installation](#dependency-installation); the Python executable should be at `.venv/Scripts/python.exe`.
 
@@ -235,8 +235,8 @@ Major-version releases will likely involve updates to the database structure or 
     See [Deploy Django for Production](#deploy-django-for-production) for steps.
 
 1. Swap the STAGE and PROD deployment slots.
-    > [!WARNING]
-    > This must be done while the site service is down because the prior-version PROD site is expecting a different database structure or data.
+> [!WARNING]
+> This must be done while the site service is down because the prior-version PROD site is expecting a different database structure or data.
 
     This is done with the 'Swap' option in the Deployment > Deployment Slots screen in the Azure Portal.
 
@@ -250,8 +250,8 @@ Major-version releases will likely involve updates to the database structure or 
 
     Refer to `/ref/uat_plan.md` for detailed verification steps.
 
-    > [!TIP]
-    > Because extended testing was completed earlier, this step can be abbreviated at the developer's discretion.
+> [!TIP]
+> Because extended testing was completed earlier, this step can be abbreviated at the developer's discretion.
 
 ### Minor or Patch Deployment
 **These steps are for releases that do not include database structure or data updates.** If database structure or data updates are included, the release is not backward-compatible; it should be a major release and **must** use the steps in [Major-Version Deployment](#major-version-deployment) instead.
@@ -284,8 +284,8 @@ Major-version releases will likely involve updates to the database structure or 
 
     Refer to `/ref/uat_plan.md` for detailed verification steps.
 
-    > [!TIP]
-    > Because extended testing was completed earlier, this step can be abbreviated at the developer's discretion.
+> [!TIP]
+> Because extended testing was completed earlier, this step can be abbreviated at the developer's discretion.
 
 ### Deploy Django for Production
 These steps deploy the Django site for production. Note that the STAGE site is always used here; as noted earlier in this section, PROD is always hot-swapped from the STAGE deployment slot.
@@ -486,8 +486,8 @@ Connect to the primary (`getyour_<env>`) database and complete the following ste
 
     Once the privileged user *(not role)* is created, GRANT that user to the admin user so that the admin user can alter default privileges on behalf of the privileged user. Altering the default privileges as below will ensure `base_role` (and users within that role) has the proper privileges on any new tables and sequences within any schema created by the privileged user.
 
-    > [!TIP]
-    > The ALTER DEFAULT PRIVILEGES command is run *for* the table-creation user (privileged user) *to* `base_role`, meaning that the default privileges are being changed for `base_role` on anything created by the privileged user. Because it's specific to the privileged user and not the privileged *role*, the ALTER DEFAULT PRIVILEGES command will need to be repeated for each privileged user that will be creating objects (e.g. tables, schemas, etc).
+> [!TIP]
+> The ALTER DEFAULT PRIVILEGES command is run *for* the table-creation user (privileged user) *to* `base_role`, meaning that the default privileges are being changed for `base_role` on anything created by the privileged user. Because it's specific to the privileged user and not the privileged *role*, the ALTER DEFAULT PRIVILEGES command will need to be repeated for each privileged user that will be creating objects (e.g. tables, schemas, etc).
 
         -- Alter the default privileges for each lesser role on schemas created by <admin_user>
         ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT USAGE ON SCHEMAS TO base_role;
@@ -520,13 +520,13 @@ Connect to the target database and complete the following steps of [Configure th
 
 In order to execute the subsequent steps in this section, the database structure must exist (namely the `public` and `reporting` schemas). For a fresh setup, continue with the steps below; if transferring data from a different (previously-setup) database, use the [transferring database](#transferring-between-databases) subsection.
 
+> [!NOTE]
+> Step 2 onward are manual SQL scripts for the reporting/analytics setup. See [Reporting Data Store Setup](#reporting-data-store-setup) for details.
+
 1. Run Django migrations against the target database, \<database_name\> (from [Creating a Database](#creating-a-database))
 
-    > [!NOTE]
-    > The migrations for each database must be run separately (using the [--database](https://docs.djangoproject.com/en/5.2/ref/django-admin/#cmdoption-migrate-database) flag).
-
 > [!NOTE]
-> The following steps are manual SQL scripts for the reporting/analytics setup. See [Reporting Data Store Setup](#reporting-data-store-setup) for details.
+> The migrations for each database must be run separately (using the [--database](https://docs.djangoproject.com/en/5.2/ref/django-admin/#cmdoption-migrate-database) flag).
 
 2. In the target database, create a new schema `reporting` (if it already exists, this will throw a harmless error)
 
@@ -534,8 +534,8 @@ In order to execute the subsequent steps in this section, the database structure
 
 3. Create the materialized views in the `reporting` schema
 
-    > [!IMPORTANT]
-    > These views are created from the Get-Your v8 data model.
+> [!CAUTION]
+> These views are created from the Get-Your v8 data model. Model changes after that may not be captured with the materialized views.
 
         -- The app_user view ignores first_name, last_name, email, password, phone_number, and is_active
         -- is_active is ignored to prevent confusion; this field is a Django mechanism, so Get-Your uses is_archived to have custom 'disabled' functionality
@@ -634,8 +634,8 @@ In order to execute the subsequent steps in this section, the database structure
 
 4. Create the standard views in the `reporting` schema
 
-    > [!TIP]
-    > These are the objects to be used with BI reporting software.
+> [!TIP]
+> These are the objects to be used with BI reporting software.
 
         CREATE VIEW vw_app_user AS (select * from matvw_app_user);
         CREATE VIEW vw_app_userhist AS (select * from matvw_app_userhist);
@@ -737,8 +737,8 @@ To reconfigure the voice forwarding function or change the target phone number, 
 
 1. Under the Developer Tools section, find 'Functions and Assets'. Select the pushpin icon to pin in to the Twilio sidebar navigation.
 
-    > [!TIP]
-    > The sidenav will likely not look like the screenshot; all that matters here is the 'Functions and Assets' section.
+> [!TIP]
+> The sidenav will likely not look like the screenshot; all that matters here is the 'Functions and Assets' section.
 
     ![Pin 'Functions and Assets' to Twilio sidebar][2]
 
@@ -758,8 +758,8 @@ To reconfigure the voice forwarding function or change the target phone number, 
 
     To edit a value, select the 'Edit' option. Ensure that the new number is input with the same format as the currently-displayed value (e.g. "+\<country_code\>..."). When finished, select the 'Update' button; the log directly below the environment variables should show 'updating' then 'saved', at which point the new number is in effect.
     
-    > [!TIP]
-    > The 'Deploy All' button at the bottom of the window is unnecessary for just changing environment variables.
+> [!TIP]
+> The 'Deploy All' button at the bottom of the window is unnecessary for just changing environment variables.
 
     ![Updating an environment variable in the forward-call function][6]
 
