@@ -42,7 +42,7 @@ The universal income-qualified application for the City of Fort Collins, Colorad
     1. [Call-Forwarding Configuration](#call-forwarding-configuration)
 1. [Request a Consultation](#request-a-consultation)
 1. [Appendix](#appendix)
-    1. [Database Configuration for PostgreSQL < Version 15](#database-configuration-for-postgresql---version-15)
+    1. [Database Configuration for PostgreSQL 15 or Earlier](#database-configuration-for-postgresql-15-or-earlier)
     1. [Database Administration Tools](#database-administration-tools)
         1. [Delete User](#delete-user)
 
@@ -52,6 +52,7 @@ This package is built on [uv](https://docs.astral.sh/uv), which installs the nec
 ## Dependency Installation
 Once uv is installed, run `uv sync` from the repo's root directory to install all dependencies.
 
+> [!NOTE]
 > The repo's root directory is the reference point for all relative directories in this document.
 
 `python-magic-bin` is only installed via `uv` on Windows and Intel Mac systems; other systems require an OS-level installation. Use one of the following methods, based on the system:
@@ -89,7 +90,8 @@ Unless otherwise noted, the following commands must be run from the 'get_your' d
     | `.env.template` | `.env` |
     | `.dev.env.template` | `.dev.env` |
 
-    > For a local run, each variable only needs to be added if the app errors because it doesn't exist
+    > [!TIP]
+    > For a local run, each variable only needs to be added if the app errors because it doesn't exist.
 
 3. Set your terminal to use the virtual environment that uv set up in [Dependency Installation](#dependency-installation); the Python executable should be at `.venv/Scripts/python.exe`.
 
@@ -98,7 +100,9 @@ If an initialization error is thrown when loading `magic`:
 - On all other platforms, or if `magic` still isn't working, follow the instructions at https://github.com/pidydx/libmagicwin64
 
 Run the following to start the app. This will create the SQLite database and populate it with the database schema and sample data (coming soon - see https://github.com/Get-Your/Get-Your/issues/63).
-> Each database migration must be run separately.
+
+> [!NOTE]
+> The migrations for each database must be run separately (using the [--database](https://docs.djangoproject.com/en/5.2/ref/django-admin/#cmdoption-migrate-database) flag).
 
     python3 manage_local.py migrate
     python3 manage_local.py migrate --database=<analytics_database>
@@ -144,11 +148,13 @@ and database operations/migrations will apply to the target remote database.
 
 The primary benefit of this is that these `*local_*.py` scripts define `DEBUG = True` so that full error messages are displayed on the webpage, rather than the minimal error messaging displayed on the live site.
 
-> Note that `DEBUG` must *always* be set to `False` when the site is viewable on the web.
+> [!CAUTION]
+> `DEBUG` must *always* be set to `False` when the site is viewable on the web.
 
 Hybrid development uses `.env` plus `.dev.env` / `.prod.env` for DEV / STAGE/PROD [app secrets](#app-secrets) (respectively).
 
-> Note that **all** migrations must be run via the Hybrid Development settings using the privileged database user (summarized in the [database setup](#database-setup-summary)).
+> [!NOTE]
+> **All** migrations must be run via the Hybrid Development settings using the privileged database user (summarized in the [database setup](#database-setup-summary)).
 
 ## Deployment
 Deployment consists of building and pushing the Docker container, then pulling into the Azure [Web App](#web-app). Get FoCo is set up for the following:
@@ -171,6 +177,7 @@ Use the following sections as guidance for deployment (additional steps may be r
 There are two options for deployment: [Major-Version Deployment](#major-version-deployment) and [Minor or Patch Deployment](#minor-or-patch-deployment). The difference is that the major-version release includes updates to the database structure and therefore requires additional steps.
 
 ### Major-Version Deployment
+> [!NOTE]
 > The single database for each environment referenced here is assumed to refer to the primary database, but these steps should be used for each database undergoing structural updates.
 
 Major-version releases will likely involve updates to the database structure or data and may involve ETL, which increase the complexity and risk of a release to the production environment. If there are changes to the database structure, continue with the steps in this section. Otherwise, skip to the [Minor or Patch Deployment](#minor-or-patch-deployment) section.
@@ -228,6 +235,7 @@ Major-version releases will likely involve updates to the database structure or 
     See [Deploy Django for Production](#deploy-django-for-production) for steps.
 
 1. Swap the STAGE and PROD deployment slots.
+    > [!WARNING]
     > This must be done while the site service is down because the prior-version PROD site is expecting a different database structure or data.
 
     This is done with the 'Swap' option in the Deployment > Deployment Slots screen in the Azure Portal.
@@ -242,7 +250,8 @@ Major-version releases will likely involve updates to the database structure or 
 
     Refer to `/ref/uat_plan.md` for detailed verification steps.
 
-    > This can be abbreviated since extended testing was completed earlier
+    > [!TIP]
+    > Because extended testing was completed earlier, this step can be abbreviated at the developer's discretion.
 
 ### Minor or Patch Deployment
 **These steps are for releases that do not include database structure or data updates.** If database structure or data updates are included, the release is not backward-compatible; it should be a major release and **must** use the steps in [Major-Version Deployment](#major-version-deployment) instead.
@@ -275,7 +284,8 @@ Major-version releases will likely involve updates to the database structure or 
 
     Refer to `/ref/uat_plan.md` for detailed verification steps.
 
-    > This can be abbreviated since extended testing was completed earlier
+    > [!TIP]
+    > Because extended testing was completed earlier, this step can be abbreviated at the developer's discretion.
 
 ### Deploy Django for Production
 These steps deploy the Django site for production. Note that the STAGE site is always used here; as noted earlier in this section, PROD is always hot-swapped from the STAGE deployment slot.
@@ -338,7 +348,7 @@ Each database is set up in an Azure Database for PostgreSQL instance (Flexible S
 In order to properly separate the DEV and STAGE/PROD databases as well as use less-expensive performance settings on the DEV database, two separate Azure Database for PostgreSQL server instances were used. DEV has its own instance and uses a database named `getyour_dev`. The PROD server instance houses both `getyour_stage` and `getyour_prod` databases, for STAGE and PROD, respectively.
 
 > [!NOTE]
-> Each database instance should be created with some form of 'PostgreSQL Authentication' (either PostgreSQL-only or combined with Entra); the 'admin user' created with the database instance is referenced in all proceeding steps as `<admin_user>`
+> Each database instance should be created with some form of 'PostgreSQL Authentication' (either PostgreSQL-only or combined with Entra); the 'admin user' created with the database instance is referenced in all proceeding steps as `<admin_user>`.
 
 ### Reporting Data Store Setup
 Having a separate data store specifically for reporting/analytics is useful for 
@@ -375,27 +385,27 @@ On a freshly-deployed Azure instance, only the admin user (assigned during serve
     psql --host=<hostname> --port=5432 --username=<admin_user> --dbname=postgres --command="CREATE DATABASE <database_name>;"
 
 ### Populating the Database
-> ![IMPORTANT]
-> [Creating a Database](#creating-a-database) must be completed before starting this section
+> [!IMPORTANT]
+> [Creating a Database](#creating-a-database) must be completed before starting this section.
 
 In order to execute the subsequent steps in this section, the database structure must exist (namely the `public` and `reporting` schemas). For a fresh setup, continue with the steps below; if transferring data from a different (previously-setup) database, use the [transferring database](#transferring-between-databases) subsection.
 
 1. Run Django migrations against the target database, \<database_name\> (from [Creating a Database](#creating-a-database))
 
-> ![NOTE]
-> The following steps are manual SQL scripts for the reporting/analytics setup. See [Reporting Data Store Setup](#reporting-data-store-setup) for details
+    > [!NOTE]
+    > The migrations for each database must be run separately (using the [--database](https://docs.djangoproject.com/en/5.2/ref/django-admin/#cmdoption-migrate-database) flag).
 
-2. In the target database, create a new schema `reporting`. This will be used specifically for data reporting by the analyst user (created below)
+> [!NOTE]
+> The following steps are manual SQL scripts for the reporting/analytics setup. See [Reporting Data Store Setup](#reporting-data-store-setup) for details.
+
+2. In the target database, create a new schema `reporting`. This will be used specifically for data reporting by the analyst user (created below), which will be given read permissions only to this newly-created schema (in [Set Up Database Users](#set-up-database-users), below).
 
         CREATE SCHEMA reporting;
-
-    > [!NOTE]
-    > The `analyst_role` will be given read permissions only to this newly-created schema (in [Set Up Database Users](#set-up-database-users), below)
 
 3. Create the materialized views in the `reporting` schema
 
     > [!IMPORTANT]
-    > These views are created from the Get-Your v7 data model
+    > These views are created from the Get-Your v7 data model.
 
         -- The app_user view ignores first_name, last_name, email, password, phone_number, and is_active
         -- is_active is ignored to prevent confusion; this field is a Django mechanism, so Get-Your uses is_archived to have custom 'disabled' functionality
@@ -494,8 +504,8 @@ In order to execute the subsequent steps in this section, the database structure
 
 4. Create the standard views in the `reporting` schema
 
-    > [!NOTE]
-    > These are the objects to be used with BI reporting software
+    > [!TIP]
+    > These are the objects to be used with BI reporting software.
 
         CREATE VIEW vw_app_user AS (select * from matvw_app_user);
         CREATE VIEW vw_app_userhist AS (select * from matvw_app_userhist);
@@ -533,7 +543,11 @@ In order to execute the subsequent steps in this section, the database structure
 #### Transferring Between Databases
 During the setup phase, there was much experimentation of Azure instance types; Azure tenant selection; and database naming conventions before settling on the final version, so transferring structure and data was necessary. The following code can be used to transfer existing data to the new database.
 
-> If the same users aren't present in the target database as there are in the source, the `pg_restore` command will throw errors. To ignore object owners specified in the backup file and instead use the input username as the owner of all objects, add the flag `--no-owner` to the `pg_restore` command. **This is not recommended because the permissions structure for Get-Your is strictly defined.**
+> [!IMPORTANT]
+> If the same users aren't present in the target database as there are in the source, the `pg_restore` command will throw errors.
+
+> [!CAUTION]
+> To ignore object owners specified in the backup file and instead use the input username as the owner of all objects, add the flag `--no-owner` to the `pg_restore` command. **This is not recommended because the permissions structure for Get-Your is strictly defined.**
 
     # Dump the database structure and data in a custom format to a local file for pg_restore
     # <target_local_backup_file> can have any extension (it will only be used by pg_restore)
@@ -543,8 +557,8 @@ During the setup phase, there was much experimentation of Azure instance types; 
     pg_restore -v --host=<target_hostname> --port=5432 --username=<target_admin_user> --dbname=<target_database_name> <target_local_backup_file>
 
 ### Set Up Database Users
-> ![IMPORTANT]
-> [Populating the Database](#populating-the-database) must be completed before starting this section
+> [!IMPORTANT]
+> [Populating the Database](#populating-the-database) must be completed before starting this section.
 
 This section details the order of steps to set up users, roles, and proper permissions. Roles are used for generic permissions so that future users can be added without having to re-grant all permissions.
 
@@ -556,8 +570,7 @@ This section should be used for the `getyour_<env>` database, for the initial co
 Connect to the primary (`getyour_<env>`) database and complete the following steps:
 
 > [!IMPORTANT]
-> Unless the database was *created* on PostgreSQL >= version 15, the steps in [Database Configuration for PostgreSQL < Version 15](#database-configuration-for-postgresql--version-15) in the appendix must be completed first
-> This is because [PostgreSQL 15](https://www.postgresql.org/docs/release/15.0) was the first version to implement zero-trust policies out of the box (Get-Your recommends using these policies regardless of database version). **Note that these policies are not in place for databases that were *upgraded* to v15+, only new databases**
+> Unless the database was *created* with PostgreSQL version 15 or later, the steps in [Database Configuration for PostgreSQL 15 or Earlier](#database-configuration-for-postgresql-15-or-earlier) in the appendix must be completed first. This is because [PostgreSQL 15](https://www.postgresql.org/docs/release/15.0) was the first version to implement zero-trust policies out of the box, so any database created prior to version 15 (**including those that were later upgraded to version 15 or later**) will need to have zero-trust policies added manually (as laid out in the [referenced section](#database-configuration-for-postgresql-15-or-earlier)). Get-Your highly recommends using zero-trust policies.
 
 1. Admin role
 
@@ -641,7 +654,8 @@ Connect to the primary (`getyour_<env>`) database and complete the following ste
 
     Once the privileged user *(not role)* is created, GRANT that user to the admin user so that the admin user can alter default privileges on behalf of the privileged user. Altering the default privileges as below will ensure `base_role` (and users within that role) has the proper privileges on any new tables and sequences within any schema created by the privileged user.
 
-    > Note that the ALTER DEFAULT PRIVILEGES command is run *for* the table-creation user (privileged user) *to* `base_role`, meaning that the default privileges are being changed for `base_role` on anything created by the privileged user. Because it's specific to the privileged user and not the privileged *role*, the ALTER DEFAULT PRIVILEGES command will need to be repeated for each privileged user that will be creating objects (e.g. tables, schemas, etc).
+    > [!TIP]
+    > The ALTER DEFAULT PRIVILEGES command is run *for* the table-creation user (privileged user) *to* `base_role`, meaning that the default privileges are being changed for `base_role` on anything created by the privileged user. Because it's specific to the privileged user and not the privileged *role*, the ALTER DEFAULT PRIVILEGES command will need to be repeated for each privileged user that will be creating objects (e.g. tables, schemas, etc).
 
         -- Alter the default privileges for each lesser role on schemas created by <admin_user>
         ALTER DEFAULT PRIVILEGES FOR ROLE <admin_user> GRANT USAGE ON SCHEMAS TO base_role;
@@ -669,8 +683,6 @@ Connect to the target database and complete the following steps of [Configure th
 The following PostgreSQL functions have been created for user administration through the IQ verification process:
 
 ...
-
-> Note that a function cannot have more that 100 arguments, so income verification is limited to 100 users at a time and program enrollment is limited to 99 users.
 
 # Analytics Settings
 For the City of Fort Collins needs, Power BI was selected for analytics and reporting. The following tutorial details connecting to the PostgreSQL database from Power BI.
@@ -717,6 +729,7 @@ To reconfigure the voice forwarding function or change the target phone number, 
 
 1. Under the Developer Tools section, find 'Functions and Assets'. Select the pushpin icon to pin in to the Twilio sidebar navigation.
 
+    > [!TIP]
     > The sidenav will likely not look like the screenshot; all that matters here is the 'Functions and Assets' section.
 
     ![Pin 'Functions and Assets' to Twilio sidebar][2]
@@ -737,6 +750,7 @@ To reconfigure the voice forwarding function or change the target phone number, 
 
     To edit a value, select the 'Edit' option. Ensure that the new number is input with the same format as the currently-displayed value (e.g. "+\<country_code\>..."). When finished, select the 'Update' button; the log directly below the environment variables should show 'updating' then 'saved', at which point the new number is in effect.
     
+    > [!TIP]
     > The 'Deploy All' button at the bottom of the window is unnecessary for just changing environment variables.
 
     ![Updating an environment variable in the forward-call function][6]
@@ -753,7 +767,7 @@ Jade Cowan (software development): `jade.cowan [at] penoptech [dot] com`
 
 # Appendix
 
-## Database Configuration for PostgreSQL < Version 15
+## Database Configuration for PostgreSQL 15 or Earlier
 
 PostgreSQL releases before Version 15 gave full access to the 'public' role by default, which is in opposition to the zero-trust policies recommended for Get-Your. Run the commands in this section for any PostgreSQL database prior to v15 (**or - crucially - if the v15+ database was upgraded from a v14- database, rather than a fresh instance**).
 
@@ -771,6 +785,7 @@ PostgreSQL releases before Version 15 gave full access to the 'public' role by d
 ### Delete User
 This is in the event a user needs to be deleted (except the original admin user, which can't be deleted). A role can be deleted using this same method, but permissions will need to be dispersed to a new user if proper access is to be maintained.
 
+> [!TIP]
 > The suffix ' CASCADE;' may be needed for some/all of the `REVOKE` commands, but these are posted without to help prevent accidental cascading removal.
 
     REVOKE analytics_role FROM <username>;
