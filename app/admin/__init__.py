@@ -18,11 +18,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import gettext
-import io
 import json
 import logging
-import os
 import zipfile
+from io import BytesIO
 
 import pendulum
 from azure.core.exceptions import ResourceNotFoundError
@@ -43,8 +42,6 @@ from django.shortcuts import render, reverse
 from django.utils.html import format_html
 from django.utils.translation import ngettext
 from django_json_widget.widgets import JSONEditorWidget
-from get_your_utils.python.run_extracts import Extract
-from logger.wrappers import LoggerWrapper
 
 from app.admin.filters import (
     AccountDisabledListFilter,
@@ -83,6 +80,8 @@ from app.models import (
 from app.models import (
     Admin as AppAdmin,
 )
+from get_your_utils.python.run_extracts import Extract
+from logger.wrappers import LoggerWrapper
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -969,20 +968,22 @@ class UserAdmin(admin.ModelAdmin):
         extractFiles = Extract().export_programs()
 
         if len(extractFiles) < 1:
-            # early return to avoid downloading an empty zip
+            # Early return to avoid downloading an empty zip
             self.message_user(
                 request, gettext.gettext("Nothing to extract."), messages.WARNING
             )
             return self.get_empty_value_display()
 
-        memoryFile = io.BytesIO()
-        with zipfile.ZipFile(memoryFile, "w") as zf:
-            for file in extractFiles:
-                zf.write(file, arcname=file.name)
-                os.remove(file)
+        # Create a ZIP inmemory file and archive each InMemoryUploadedFile from
+        # export_programs() into it
+        zip_mem_file = BytesIO()
+        with zipfile.ZipFile(zip_mem_file, "w") as zf:
+            for memfile in extractFiles:
+                # Write BytesIO.getvalue() to the file.name filename
+                zf.writestr(memfile.name, memfile.file.getvalue())
 
-        memoryFile.seek(0)
-        response = HttpResponse(memoryFile.getvalue(), content_type="application/zip")
+        zip_mem_file.seek(0)
+        response = HttpResponse(zip_mem_file.getvalue(), content_type="application/zip")
         response["Content-Disposition"] = 'attachment; filename="extracts.zip"'
 
         return response

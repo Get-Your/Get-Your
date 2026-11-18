@@ -17,23 +17,27 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from getyour.settings.common import *
-from getyour.settings.common import env
+from .common import *
+from .common import env
+from .common import INSTALLED_APPS
+from .common import MIDDLEWARE
 
 # Read the environment-specific secrets
-env.read_env(BASE_DIR.joinpath(".prod.deploy"))
+env.read_env(BASE_DIR.joinpath(".dev.env"))
 
 SECRET_KEY = env("SECRET_KEY")
 AZURE_ACCOUNT_NAME = env("AZURE_ACCOUNT_NAME")
 AZURE_ACCOUNT_KEY = env("AZURE_ACCOUNT_KEY")
-AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.usgovcloudapi.net"
+AZURE_ENDPOINT_SUFFIX = "core.usgovcloudapi.net"
 AZURE_CONTAINER = env("AZURE_CONTAINER")
-IS_PROD = True
+IS_PROD = False
 
-# DEBUG moved to Azure App Service environment var (or False, via settings.common)
+# SECURITY WARNING: don't run with debug turned on for any live site!
+DEBUG = True
 
-CSRF_TRUSTED_ORIGINS = [f"https://{x}" for x in env.list("HOSTS")]
-ALLOWED_HOSTS = env.list("HOSTS")
+# Revert to default (permissive) values when running locally
+CSRF_TRUSTED_ORIGINS = []
+ALLOWED_HOSTS = []
 
 # Application definitions (outside of settings.common)
 
@@ -41,36 +45,31 @@ ALLOWED_HOSTS = env.list("HOSTS")
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "getyour_prod",
-        "USER": env("DB_USER"),
-        "PASSWORD": env("DB_PASS"),
-        "HOST": env("DB_HOST"),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR.joinpath("getyour", "db.sqlite3"),
     },
+    # Note that a separate file is needed for proper concurrency
     "analytics": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "getyour_prod_analytics",
-        "USER": env("DB_USER"),
-        "PASSWORD": env("DB_PASS"),
-        "HOST": env("DB_HOST"),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR.joinpath("getyour", "db_analytics.sqlite3"),
     },
 }
 
-# Logging modifications
-# This uses an Azure App Service environment var
-if DEBUG_LOGGING:
-    LOGGING["loggers"]["app"]["level"] = "DEBUG"
+# Logging modifications - set logging level to DEBUG and overwrite DEBUG_LOGGER
+# env var for clarity
+LOGGING["loggers"]["app"]["level"] = "DEBUG"
 
 # Always use debug logging for USPS audit logs
 LOGGING["loggers"]["usps"]["level"] = "DEBUG"
+
+DEBUG_LOGGING = True
 
 Q_CLUSTER = {
     "name": "DJRedis",
     "workers": 4,
     "timeout": 30,
-    # Limit the number of retries
-    "max_attempts": 1,
     "bulk": 10,
     "django_redis": "default",
     "catch_up": False,
+    "sync": True,  # this is required for Windows
 }

@@ -19,22 +19,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
 from pathlib import Path
-from typing import Union
 
 import pandas as pd
+from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
 import pendulum
-from app.models import HouseholdMembersHist, IQProgram, IQProgramRD, User
 from django.core.files.storage import default_storage
 from django.db.models import Count, Q
-from logger.wrappers import LoggerWrapper
 
 from app import models
+from app.models import HouseholdMembersHist, IQProgram, IQProgramRD, User
+from logger.wrappers import LoggerWrapper
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
 
 
-# TODO: update to use typer
 class Extract:
     def __init__(
         self,
@@ -45,10 +45,18 @@ class Extract:
         **kwargs,
     ):
 
-        self.output_file_dir = output_file_dir
         self.user_files_dir = user_files_dir
+        try:
+            self.output_file_dir = Path(__file__).parent
+        except NameError:  # dev
+            self.output_file_dir = Path.cwd()
 
-        self._initialize_vars()
+        # Futureproofing: As documented in v3.0.0 updates, pandas intends to
+        # consider NaN and NA as distinct values. This script uses the current
+        # (legacy) methodology (where NaN === NA); this option ensures pandas
+        # uses the same
+        pd.options.future.distinguish_nan_and_na = False
+
         self.select_framework = """
             select {fields} from public.app_user u
             left join (select * from public.app_address ia 
@@ -92,11 +100,6 @@ class Extract:
             ),
         ]
 
-        if self.output_file_dir is None:
-            self.output_file_dir = Path(self.OUTPUT_FILES_DIR)
-        # if self.user_files_dir is None:
-        #     self.user_files_dir = Path(self.USER_FILES_SAVE_DIR)
-
         self.filename_suffix = filename_suffix
         self.interactive = interactive
 
@@ -105,9 +108,9 @@ class Extract:
 
     def _convert_extract(
         self,
-        field_list: Union[list, tuple],
-        db_output: Union[list, tuple],
-    ) -> pd.core.frame.DataFrame:
+        field_list: list | tuple,
+        db_output: list | tuple,
+    ) -> pd.DataFrame:
         """
         Convert input to pandas dataframe.
 
@@ -145,12 +148,12 @@ class Extract:
 
         # Massage the phone number value (if exists)
         try:
-            df["Phone Number"] = df[["Phone Number"]].applymap(
+            df["Phone Number"] = df[["Phone Number"]].map(
                 lambda x: (
                     f"NEW VALUE: ({x[-10:-7]}) {x[-7:-4]}-{x[-4:]}"
-                    if x is not None and not x.startswith("+")
+                    if not pd.isna(x) and not x.startswith("+")
                     else f"({x[2:5]}) {x[5:8]}-{x[8:12]}"
-                    if x is not None
+                    if not pd.isna(x)
                     else None
                 )
             )
@@ -160,7 +163,7 @@ class Extract:
         # Convert the 'Individuals in Household' dictionary to pretty format
         # (if exists)
         try:
-            df["Individuals in Household"] = df[["Individuals in Household"]].applymap(
+            df["Individuals in Household"] = df[["Individuals in Household"]].map(
                 lambda x: (
                     f"{x['modifier']}"
                     + f"{len(x['persons_in_household'])} individual(s); "
@@ -170,7 +173,7 @@ class Extract:
                             for y in x["persons_in_household"]
                         ]
                     )
-                    if x is not None
+                    if not pd.isna(x)
                     else None
                 )
             )
@@ -179,31 +182,12 @@ class Extract:
 
         return df
 
-    def _initialize_vars(self):
-        ## Initialize global vars
-        try:
-            fileDir = Path(__file__).parent
-        except NameError:  # dev
-            fileDir = Path.cwd()
-
-        self.output_file_dir = fileDir
-
-        # with open(
-        #         fileDir.parent.parent.joinpath('.env.deploy'),
-        #         'r',
-        #         encoding='utf-8',
-        #         ) as f:
-        #     secrets_dict = loads(f.read())
-
-        # for key in secrets_dict.keys():
-        #     setattr(self, key, secrets_dict[key])
-
     def _mark_updates(
         self,
         # cursor: psycopg2.extensions.cursor,
         field_list: list,
         record_list: list,
-    ) -> (list, list):
+    ) -> tuple[list, list]:
         """
         Mark each record in record_list with any updates and output all
         records.
@@ -353,7 +337,7 @@ class Extract:
                             )
                     else:
                         # Loop through each key to determine what to do with it
-                        for key in histOut.keys():
+                        for key in histOut:
                             # If any identification fields were updated, gather
                             # the old values as well
                             if (tableRef[0], key) in identifyingFields:
@@ -487,23 +471,15 @@ class Extract:
         """
 
         # Parse kwargs; start with initialized defaults
-        save_file = (
-            True if not "save_file" in self.kwargs.keys() else self.kwargs["save_file"]
-        )
+        save_file = True if not "save_file" in self.kwargs else self.kwargs["save_file"]
         reset_updates = (
-            True
-            if not "reset_updates" in self.kwargs.keys()
-            else self.kwargs["reset_updates"]
+            True if not "reset_updates" in self.kwargs else self.kwargs["reset_updates"]
         )
         ids_to_warn = (
-            []
-            if not "ids_to_warn" in self.kwargs.keys()
-            else self.kwargs["ids_to_warn"]
+            [] if not "ids_to_warn" in self.kwargs else self.kwargs["ids_to_warn"]
         )
         mark_enrolled = (
-            True
-            if not "mark_enrolled" in self.kwargs.keys()
-            else self.kwargs["mark_enrolled"]
+            True if not "mark_enrolled" in self.kwargs else self.kwargs["mark_enrolled"]
         )
 
         if reset_updates != mark_enrolled:
@@ -524,6 +500,7 @@ class Extract:
             .order_by("id")
         )
         affectedUpdateUsers = []
+        memfiles_list = []
         for programId, programname, friendlyname in activePrograms:
             # Initialize dbOut (there will be multiple queries) and their
             # respective 'notes' (to be combined in the extract)
@@ -619,6 +596,16 @@ class Extract:
                 .order_by("id")
             )
 
+            # Stringify PhoneNumberField (for proper comparison later), if applicable
+            if "phone_number" in valueListFields:
+                phone_number_idx = valueListFields.index("phone_number")
+                for iteridx, iterval in enumerate(newOut):
+                    newOut[iteridx] = tuple(
+                        list(iterval[:phone_number_idx])
+                        + [str(iterval[phone_number_idx])]
+                        + list(iterval[phone_number_idx + 1 :])
+                    )
+
             # Add empty 'modifier' key to 'household_info' JSON values, if
             # applicable (empty indicates 'not a modified value')
             try:
@@ -663,7 +650,7 @@ class Extract:
                 # OR each additional Q(...__is_updated=True)
                 filter_q |= Q(**{f"{x}__is_updated": True})
 
-            updateOut = (
+            updateOut = list(
                 User.objects.select_related(
                     "householdmembers",
                     "household",
@@ -682,6 +669,16 @@ class Extract:
                 .values_list(*valueListFields)
                 .order_by("id")
             )
+
+            # Stringify PhoneNumberField (for proper comparison later), if applicable
+            if "phone_number" in valueListFields:
+                phone_number_idx = valueListFields.index("phone_number")
+                for iteridx, iterval in enumerate(updateOut):
+                    updateOut[iteridx] = tuple(
+                        list(iterval[:phone_number_idx])
+                        + [str(iterval[phone_number_idx])]
+                        + list(iterval[phone_number_idx + 1 :])
+                    )
 
             # Add all updateOut users (regardless of whether an update was
             # actually found) to the list for is_updated to be reset (if
@@ -737,18 +734,38 @@ class Extract:
                 # Determine output
                 outMsg = []
                 if save_file:
-                    # Write to file
-                    # TODO: write this to a buffer instead
-                    save_filepath = self.output_file_dir.joinpath(
-                        f"{pendulum.now().date()} {friendlyname} {self.filename_suffix}",
+                    # Write to a buffer
+                    save_filename = (
+                        f"{pendulum.now().date()} {friendlyname} {self.filename_suffix}"
                     )
+
+                    file_buffer = BytesIO()
                     df.to_csv(
-                        save_filepath,
+                        file_buffer,
                         index=False,
                     )
+
+                    # Convert to a Django format for the remaining steps
+
+                    # Seek to the end of the stream in order to get its length
+                    # with `file_buffer.tell()`
+                    file_buffer.seek(0, 2)
+                    mem_file = InMemoryUploadedFile(
+                        file_buffer,
+                        # Spoof a field name (this is supposed to be the name of
+                        # the form from which the file was uploaded)
+                        field_name="extract",
+                        name=save_filename,
+                        content_type="text/csv",
+                        size=file_buffer.tell(),
+                        charset="utf8",
+                    )
+
                     # Write the file to blob storage, for posterity
-                    with open(save_filepath, "rb") as fp:
-                        default_storage.save(f"extracts/{save_filepath.name}", fp)
+                    default_storage.save(f"extracts/{save_filename}", mem_file)
+
+                    # Append to memfiles_list to be returned
+                    memfiles_list.append(mem_file)
 
                     outMsg.append(f"'{programname}' extract saved")
 
@@ -798,8 +815,4 @@ class Extract:
         else:
             log.info("No 'is_updated' designations in the database were reset")
 
-        return [
-            x
-            for x in self.output_file_dir.iterdir()
-            if x.name.startswith(str(pendulum.today().year))
-        ]
+        return memfiles_list

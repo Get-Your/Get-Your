@@ -6,22 +6,28 @@ from django.contrib.contenttypes.models import ContentType
 
 from app.models import HouseholdMembers
 
-admin_group, _ = Group.objects.get_or_create(name='admin_program')
 
-# Define the list of permissions (from testing)
-permissions_list = [
-    Permission.objects.get_or_create(
-        codename='change_householdmembers',
-        content_type=ContentType.objects.get_for_model(HouseholdMembers),
-    )[0],
-]
+def get_group():
+    admin_group, _ = Group.objects.get_or_create(name='admin_program')
+
+    # Define the list of permissions (from testing)
+    permissions_list = [
+        Permission.objects.get_or_create(
+            codename='change_householdmembers',
+            content_type=ContentType.objects.get_for_model(HouseholdMembers),
+        )[0],
+    ]
+
+    return (admin_group, permissions_list)
 
 
 def apply_admin_group(apps, schema_editor):
+    admin_group, permissions_list = get_group()
     # Add each permission to the 'admin_group' group
     admin_group.permissions.add(*permissions_list)
 
 def revert_admin_group(apps, schema_editor):
+    admin_group, permissions_list = get_group()
     # Remove each permission from the 'admin_group' group
     admin_group.permissions.remove(*permissions_list)
 

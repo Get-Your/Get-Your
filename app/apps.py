@@ -28,8 +28,12 @@ class AppConfig(AppConfig):
     name = "app"
 
     def ready(self):
-        # Only execute the code if we're running the server
-        if len(sys.argv) > 1 and sys.argv[1] == "runserver" and not settings.DEBUG:
+        # Implicitly connect signal handlers decorated with @receiver
+        from . import signals
+
+        # Only execute populate_cache if we're running the server (use DEBUG as
+        # a proxy)
+        if not settings.DEBUG:
             from app.signals import populate_cache
 
             populate_cache.send(sender=self.__class__)
