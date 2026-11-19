@@ -22,11 +22,11 @@ import logging
 import usaddress
 from django.contrib.auth import logout
 from django.shortcuts import redirect, render, reverse
-from logger.wrappers import LoggerWrapper
 
 from app.backend import address_check, tag_mapping, validate_usps
 from app.forms import AddressLookupForm
 from app.models import IQProgramRD
+from logger.wrappers import LoggerWrapper
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -153,7 +153,12 @@ def index(request, **kwargs):
                 {
                     "form": AddressLookupForm(),
                     "in_progress_app_saved": in_progress_app_saved,
-                    "iq_programs": IQProgramRD.objects.filter(is_active=True),
+                    # Order the IQ Programs based on the 'friendly sort order'
+                    "iq_programs": IQProgramRD.objects.filter(
+                        is_active=True
+                    ).order_by(
+                        'friendly_sort_order'
+                    ),
                 },
             )
 
@@ -221,7 +226,11 @@ def programs_info(request, **kwargs):
             "landing/programs_info.html",
             {
                 "title": "Programs List",
-                "iq_programs": IQProgramRD.objects.all(),
+                "iq_programs": IQProgramRD.objects.filter(
+                    is_active=True
+                ).order_by(
+                    'friendly_sort_order'
+                ),
             },
         )
 

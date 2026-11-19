@@ -891,6 +891,8 @@ def get_users_iq_programs(
             user_id=user_id
         ).filter(
             program__is_active=True
+        ).order_by(
+            'program__friendly_name'
         )
     )
 
@@ -997,7 +999,7 @@ def get_eligible_iq_programs(
         is_active=True,
         # If income_as_fraction_of_ami is None, set to 100% to exclude all programs
         ami_threshold__gte=user.household.income_as_fraction_of_ami or 1,
-    )
+    ).order_by('friendly_name')
 
     # Gather all `requires_` fields in the IQProgramRD model along with their
     # corresponding AddressRD Boolean

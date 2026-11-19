@@ -570,6 +570,16 @@ class IQProgramRD(GenericTimeStampedModel):
         max_length=5000,
         help_text=_("Any supplmental information to display to the user."),
     )
+    # Sort order of the programs, when used in user views EXCEPT where
+    # alphabetical order by 'friendly name' is more helpful to the user
+    friendly_sort_order = models.IntegerField(
+        null=True,
+        help_text=_(
+            "The order this program will be displayed to the user, if specified. "
+            "If no order is specified, it will be included after any ordered programs. "
+            "Note that if this value matches another program's 'sort order' value, the matching programs won't have a particular order."
+        ),
+    )
     # Hyperlink to learn more about the program
     learn_more_link = models.CharField(
         max_length=5000,
