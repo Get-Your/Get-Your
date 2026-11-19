@@ -37,9 +37,6 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.shortcuts import reverse
-from logger.backend import LogRetry
-from logger.constants import retry_strategy
-from logger.wrappers import LoggerWrapper
 from phonenumber_field.phonenumber import PhoneNumber
 from python_http_client.exceptions import HTTPError as SendGridHTTPError
 from requests.adapters import HTTPAdapter
@@ -63,6 +60,9 @@ from app.models import (
     IQProgramRD,
     User,
 )
+from logger.backend import LogRetry
+from logger.constants import retry_strategy
+from logger.wrappers import LoggerWrapper
 
 # Initialize loggers
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -882,35 +882,27 @@ def get_users_iq_programs(
     returns:
         a list of users iq programs
     """
-    # Get the IQ programs that a user has already applied to
+    # Get the active IQ programs that a user has already applied to, sorted by
+    # 'friendly name'
     users_iq_programs = list(
-        IQProgram.objects.select_related("program").filter(user_id=user_id)
+        IQProgram.objects.select_related(
+            "program"
+        ).filter(
+            user_id=user_id
+        ).filter(
+            program__is_active=True
+        )
     )
-
-    # Filter only programs that are active
-    users_iq_programs = [x for x in users_iq_programs if x.program.is_active]
 
     # Get the IQ programs a user is eligible for
-    users_iq_programs_ids = [program.program_id for program in users_iq_programs]
-    active_iq_programs = list(
-        IQProgramRD.objects.filter(
-            Q(is_active=True)
-            & Q(ami_threshold__gte=users_income_as_fraction_of_ami)
-            & ~Q(id__in=users_iq_programs_ids)
-        )
+    active_iq_programs = get_eligible_iq_programs(
+        User.objects.get(id=user_id),
+        users_eligiblity_address,
     )
 
-    # Filter out the active programs that the user is not geographically eligible for.
-    # If the IQ program's requires_is_city_covered is true, then check to make sure
-    # the user's eligibility address is_city_covered.
-    active_iq_programs = [
-        program
-        for program in active_iq_programs
-        if not (
-            program.requires_is_city_covered
-            and not users_eligiblity_address.is_city_covered
-        )
-    ]
+    # Remove the programs the user has already applied for
+    users_iq_programs_ids = [program.program_id for program in users_iq_programs]
+    active_iq_programs = [x for x in active_iq_programs if x.id not in users_iq_programs_ids]
 
     # Gather list of active programs
     programs = list(chain(users_iq_programs, active_iq_programs))
