@@ -115,7 +115,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 
             </div>
 
-            <div class="item collapsible renewal">
+            <div id="renewal-collapse" class="item collapsible">
                 {% for program in iq_programs %}
                 {% if program.status_for_user != 'PENDING' and program.status_for_user != 'ACTIVE' and program.status_for_user != '' %}
                 <div class="divider"></div>
@@ -155,7 +155,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                         style="position: absolute; bottom: 10px;right: 10px;"> </button>
             </div>
 
-            <div class="item collapsible qualifyfor">
+            <div id="qualifyfor-collapse" class="item collapsible">
                 {% for program in iq_programs %}
                 {% if program.status_for_user != 'PENDING' and program.status_for_user != 'ACTIVE' and program.status_for_user != 'RENEWAL' %}
                 <div class="divider"></div>
@@ -199,7 +199,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                         style="position: absolute; bottom: 10px;right: 10px;"> </button>
             </div>
 
-            <div class="item collapsible pending">
+            <div id="pending-collapse" class="item collapsible">
                 {% for program in iq_programs %}
                 {% if program.status_for_user == 'PENDING' %}
 
@@ -239,7 +239,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 </button>
             </div>
 
-            <div class="item collapsible active">
+            <div id="active-collapse" class="item collapsible">
                 <div id="active_programs_info">
                     <p style="font-size: 15px;">Once your information is reviewed by the Get FoCo team, you will find
                         the programs you are approved for here! Checkback as it gets closer to your application's
@@ -290,19 +290,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script>
     $(document).ready(function () {
         $("#toggle-button").click(function () {
-            $(".item.collapsible.pending").toggleClass("collapsed");
+            $("#pending-collapse").toggleClass("collapsed");
         });
 
         $("#toggle-button2").click(function () {
-            $(".item.collapsible.active").toggleClass("collapsed");
+            $("#active-collapse").toggleClass("collapsed");
         });
 
         $("#toggle-button1").click(function () {
-            $(".item.collapsible.qualifyfor").toggleClass("collapsed");
+            $("#qualifyfor-collapse").toggleClass("collapsed");
         });
 
         $("#toggle-button3").click(function () {
-            $(".item.collapsible.renewal").toggleClass("collapsed");
+            $("#renewal-collapse").toggleClass("collapsed");
         });
 
         $(".close").click(function () {
