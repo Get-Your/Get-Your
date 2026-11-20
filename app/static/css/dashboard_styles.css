@@ -206,6 +206,26 @@ td {
         overflow-x: scroll;
     }
 
+    .dashboard-container {
+        background-color: #FFFFFF;
+        padding: 10px;
+        /*border: 2px solid #CCCCCC;*/
+        width: minmax(74%, 100%);
+        margin-left: 400px;
+        display: grid;
+        /* Set 5 columns */
+        /* For the 'programs' columns, set the min width to where all artifacts are just visible/readable; set the rest of the columns as 'auto' */
+        grid-template-columns: minmax(220px, max-content) minmax(220px, max-content) minmax(220px, max-content) auto auto;
+        justify-content: flex-start;
+        align-items: flex-start;
+        overflow-x: scroll;
+    }
+
+    .dashboard-container > * {
+        margin: 0 5px;
+        flex: 1;
+    }
+
     .divider {
         border-top-style: solid;
         color: rgba(85, 161, 211, 0.3);
@@ -219,7 +239,6 @@ td {
         border-radius: 10px;
         border: 1px solid rgba(85, 161, 211, 0.3);
         height: 150px;
-        width: 31%;
         margin: 1%;
         padding: 10px;
     }
@@ -288,7 +307,6 @@ td {
         border: 1px solid rgba(85, 161, 211, 0.3);
         border-top: none;
         height: auto;
-        width: 31%;
         margin-top: -1.75%;
         padding: 10px;
     }
