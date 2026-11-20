@@ -407,7 +407,7 @@ td {
     button {
         background-color: var(--lightblue);
         border-radius: 3vh;
-        padding: 5px 40px;
+        padding: 5px 20px;
         border: none;
         outline: none;
         box-shadow: none;

@@ -104,6 +104,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <p style="font-weight: 400; padding-left: 15px;">
                         Renewal Required   
                     </p>
+                    <!-- Use a div to pad where there isn't a tooltip button -->
+                    <div style="padding: 5px 20px;"></div>
 
                     <a href="#" onclick="return false;" class="renewalModal"
                         style="text-decoration: none; text-align: center; margin-top: auto; margin-bottom: auto; padding: 2px">
@@ -154,6 +156,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     {% else %}
                     <p style="font-weight: 400; padding-left: 15px;">Program(s) Available for You</p>
                     {% endif %}
+                    <!-- Use a div to pad where there isn't a tooltip button -->
+                    <div style="padding: 5px 20px;"></div>
                     <button class="button button2" id="toggle-button1"><img src="{% static 'img/downArrow.svg' %}"
                             style="position: absolute; bottom: 10px;right: 10px;"> </button>
                 </div>
@@ -201,6 +205,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <!--CSV HERE-->
                     <hprogram style="color: var(--darkblue)"> {{pending_programs}} </hprogram>
                     <p style="font-weight: 400; padding-left: 20px;  ">Pending Approval</p>
+                    <!-- Use a div to pad where there isn't a tooltip button -->
+                    <div style="padding: 5px 20px;"></div>
                     <button class="button button2" id="toggle-button"><img src="{% static 'img/downArrow.svg' %}"
                             style="position: absolute; bottom: 10px;right: 10px;"> </button>
                 </div>
