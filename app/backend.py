@@ -1123,6 +1123,11 @@ def check_if_user_needs_to_renew(
     """
     user_profile = User.objects.get(id=user_id)
 
+    # Return False (doesn't need renewal) if the user hasn't completed their
+    # initial application
+    if user_profile.last_completed_at is None:
+        return False
+
     # If applied_programs DNE or doesn't consist of IQProgram objects, calculate
     # it here
     if applied_programs is None or not all(isinstance(x, IQProgram) for x in applied_programs):
