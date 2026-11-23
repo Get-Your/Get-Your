@@ -907,12 +907,13 @@ def get_users_iq_programs(
     users_iq_programs_ids = [program.program_id for program in users_iq_programs]
     active_iq_programs = [x for x in active_iq_programs if x.id not in users_iq_programs_ids]
 
-    # Gather list of active programs
-    programs = list(chain(users_iq_programs, active_iq_programs))
     # Determine if the user needs renewal for any program they've applied for.
     # This dictates globally whether the user needs renewal
     needs_renewal = check_if_user_needs_to_renew(user_id, users_iq_programs)
 
+    # Gather list of all (active) programs and loop through them to set the
+    # applicable attributes
+    programs = list(chain(users_iq_programs, active_iq_programs))
     for program in programs:
         program.renewal_interval_year = (
             program.program.renewal_interval_year
