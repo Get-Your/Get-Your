@@ -1069,6 +1069,9 @@ def household_members(request, **kwargs):
             else False
         )
 
+        # Initialize household_info (for error cases)
+        household_info = None
+
         if request.method == "POST":
             log.debug(
                 "Leaving function (POST)",
@@ -1110,7 +1113,8 @@ def household_members(request, **kwargs):
                                 request.user.householdmembers.household_info
                             )
                         except AttributeError:
-                            household_info = None
+                            # household_info is already None above; ignore this error
+                            pass
 
                         return render(
                             request,
@@ -1252,7 +1256,8 @@ def household_members(request, **kwargs):
             try:
                 household_info = request.user.householdmembers.household_info
             except AttributeError:
-                household_info = None
+                # household_info is already None above; ignore this error
+                pass
 
         return render(
             request,
