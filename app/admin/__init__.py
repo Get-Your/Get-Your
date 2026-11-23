@@ -1259,7 +1259,7 @@ class AddressAdmin(admin.ModelAdmin):
         else:
             queryset = [input_object]
 
-        # Loop through the queryset (or similated queryset)
+        # Loop through the queryset (or simulated queryset)
         updated_addr_count = 0
         for obj in queryset:
             # Format for address_check. All addresses in the database have been
