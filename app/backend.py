@@ -1364,7 +1364,7 @@ def enable_renew_now(user_id):
     return (
         enable_calendar_year_renewal
         and pendulum.now().year
-        == last_completed_year + shortest_applied_renewal_period
+        >= last_completed_year + shortest_applied_renewal_period
     )
 
 def get_iqprogram_requires_fields():
