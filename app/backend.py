@@ -36,6 +36,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 from django.db.models.fields.files import FieldFile
+from django.db.models.query import QuerySet
 from django.shortcuts import reverse
 from phonenumber_field.phonenumber import PhoneNumber
 from python_http_client.exceptions import HTTPError as SendGridHTTPError
@@ -910,7 +911,7 @@ def get_users_iq_programs(
     programs = list(chain(users_iq_programs, active_iq_programs))
     # Determine if the user needs renewal for any program they've applied for.
     # This dictates globally whether the user needs renewal
-    needs_renewal = check_if_user_needs_to_renew(user_id)
+    needs_renewal = check_if_user_needs_to_renew(user_id, users_iq_programs)
 
     for program in programs:
         program.renewal_interval_year = (
@@ -1100,6 +1101,7 @@ def what_page_renewal(last_renewal_action):
 
 def check_if_user_needs_to_renew(
     user_id: int,
+    applied_programs: list | tuple | QuerySet | None = None,
 ):
     """
     Check if the user needs to renew their application, based only on the
@@ -1109,6 +1111,9 @@ def check_if_user_needs_to_renew(
     ----------
     user_id : int
         The primary key (ID) of the User object.
+    applied_programs : list | tuple | QuerySet, optional
+        A number of IQProgram objects that specify programs the the user has
+        applied for.
 
     Returns
     -------
@@ -1118,13 +1123,15 @@ def check_if_user_needs_to_renew(
     """
     user_profile = User.objects.get(id=user_id)
 
-    # Calculate the programs that a user has applied for
-    applied_programs = (
-        IQProgram.objects.filter(
-            user_id=user_id,
-            program__is_active=True,
+    # If applied_programs DNE or doesn't consist of IQProgram objects, calculate
+    # it here
+    if applied_programs is None or not all(isinstance(x, IQProgram) for x in applied_programs):
+        applied_programs = (
+            IQProgram.objects.filter(
+                user_id=user_id,
+                program__is_active=True,
+            )
         )
-    )
 
     # Sort the the user's applied-for programs by renewal period (shortest
     # first), ignoring all lifetime-enrollment program (null renewal period)
