@@ -908,8 +908,8 @@ def get_users_iq_programs(
 
     # Gather list of active programs
     programs = list(chain(users_iq_programs, active_iq_programs))
-    # Determine if the user needs renewal for *any* program, and set as a user-
-    # level 'needs renewal'
+    # Determine if the user needs renewal for any program they've applied for.
+    # This dictates globally whether the user needs renewal
     needs_renewal = check_if_user_needs_to_renew(user_id)
 
     for program in programs:
@@ -1098,36 +1098,52 @@ def what_page_renewal(last_renewal_action):
     return None
 
 
-def check_if_user_needs_to_renew(user_id):
-    """Checks if the user needs to renew their application
-    Args:
-        user_id (int): The ID (primary key) of the User object
-    Returns:
-        bool: True if the user needs to renew their application, False otherwise
+def check_if_user_needs_to_renew(
+    user_id: int,
+):
+    """
+    Check if the user needs to renew their application, based only on the
+    programs they've applied for.
+
+    Parameters
+    ----------
+    user_id : int
+        The primary key (ID) of the User object.
+
+    Returns
+    -------
+    bool
+        Returns True if the user needs to renew their application; else, False.
+
     """
     user_profile = User.objects.get(id=user_id)
 
-    # Get the highest frequency renewal_interval_year from the IQProgramRD
-    # table and filter out any null renewal_interval_year
-    highest_freq_program = (
-        IQProgramRD.objects.filter(renewal_interval_year__isnull=False)
-        .order_by("renewal_interval_year")
-        .first()
+    # Calculate the programs that a user has applied for
+    applied_programs = (
+        IQProgram.objects.filter(
+            user_id=user_id,
+            program__is_active=True,
+        )
     )
 
-    # If there are no programs without lifetime enrollment (e.g. without
-    # non-null renewal_interval_year), always return False for needs_renewal
-    if highest_freq_program is None:
+    # Sort the the user's applied-for programs by renewal period (shortest
+    # first), ignoring all lifetime-enrollment program (null renewal period)
+    applied_renewal_periods = sorted(
+        [x.program.renewal_interval_year for x in applied_programs if x.program.renewal_interval_year is not None]
+    )
+
+    # If there are no programs remaining programs, return False for
+    # needs_renewal; else, return the single shortest applied renewal period
+    if len(applied_renewal_periods) == 0:
         return False
+    else:
+        shortest_applied_renewal_period = applied_renewal_periods[0]
 
-    highest_freq_renewal_interval = highest_freq_program.renewal_interval_year
-
-    # The highest_freq_renewal_interval is measured in years. We need to check
-    # if the user's next renewal date is greater than or equal to the current
-    # date.
+    # The shortest_applied_renewal_period is measured in years. Check if the
+    # user's next renewal date is greater than or equal to the current date
     needs_renewal = (
         pendulum.instance(user_profile.last_completed_at).add(
-            years=highest_freq_renewal_interval
+            years=shortest_applied_renewal_period
         )
         <= pendulum.now()
     )
@@ -1294,34 +1310,50 @@ def finalize_application(user, renewal_mode=False, update_user=True):
 
 def enable_renew_now(user_id):
     """
-    Enable the 'Renew Now' button on the dashboard pages
+    Enable the 'Renew Now' button in the dashboard sidenav. This allows the user
+    to renew their application (before being required to do so).
+
+    Parameters
+    ----------
+    user_id : int
+        The primary key (ID) of the User object.
+
+    Returns
+    -------
+    bool
+        Returns True if the user is allowed to renew their applcation; else, False.
+
     """
     # Get the year from the last_completed_at of the user
     user_profile = User.objects.get(id=user_id)
-    last_completed_at = user_profile.last_completed_at.year
+    last_completed_year = user_profile.last_completed_at.year
 
-    # Get the highest frequency renewal_interval_year from the IQProgramRD
-    # table and filter out any null renewal_interval_year
-    highest_freq_program = (
-        IQProgramRD.objects.filter(renewal_interval_year__isnull=False)
-        .order_by("renewal_interval_year")
-        .first()
+    # Gather all (active) programs the user has applied for
+    applied_programs = (
+        IQProgram.objects.filter(
+            user_id=user_id,
+            program__is_active=True,
+        )
     )
 
-    # If there are no programs without lifetime enrollment (e.g. without
-    # non-null renewal_interval_year), always return False
-    if highest_freq_program is None:
-        return False
+    # Sort the the user's applied-for programs by renewal period (shortest
+    # first), ignoring all lifetime-enrollment program (null renewal period)
+    applied_renewal_periods = sorted(
+        [x.program.renewal_interval_year for x in applied_programs if x.program.renewal_interval_year is not None]
+    )
 
-    if (
+    # If there are no programs remaining programs, return False for
+    # needs_renewal; else, return the single shortest applied renewal period
+    if len(applied_renewal_periods) == 0:
+        return False
+    else:
+        shortest_applied_renewal_period = applied_renewal_periods[0]
+
+    return (
         enable_calendar_year_renewal
         and pendulum.now().year
-        == last_completed_at + highest_freq_program.renewal_interval_year
-    ):
-        return True
-    else:
-        return False
-
+        == last_completed_year + shortest_applied_renewal_period
+    )
 
 def get_iqprogram_requires_fields():
     """
