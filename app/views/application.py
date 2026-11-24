@@ -1134,6 +1134,7 @@ def household_members(request, **kwargs):
                                 "form_page_number": form_page_number,
                                 "title": "Household Members",
                                 "update_mode": update_mode,
+                                "adult_id_href": reverse("app:accepted_adult_ids"),
                                 "form_data": json.dumps(household_info)
                                 if household_info
                                 else [],
@@ -1219,6 +1220,7 @@ def household_members(request, **kwargs):
                         "form_page_number": form_page_number,
                         "title": "Household Members",
                         "update_mode": update_mode,
+                        "adult_id_href": reverse("app:accepted_adult_ids"),
                         "form_data": json.dumps(household_info)
                         if household_info
                         else [],
@@ -1270,6 +1272,7 @@ def household_members(request, **kwargs):
                 "form_page_number": form_page_number,
                 "title": "Household Members",
                 "update_mode": update_mode,
+                "adult_id_href": reverse("app:accepted_adult_ids"),
                 "form_data": json.dumps(household_info) if household_info else [],
                 "renewal_mode": renewal_mode,
             },
@@ -1288,6 +1291,25 @@ def household_members(request, **kwargs):
         )
         raise
 
+def accepted_adult_ids(request, **kwargs):
+    """ Render a page to view the accepted identification for adults. """
+    try:
+        return render(
+            request,
+            "application/accepted_adult_ids.html",
+        )
+    # General view-level exception catching
+    except:
+        try:
+            user_id = request.user.id
+        except Exception:
+            user_id = None
+        log.exception(
+            "Uncaught view-level exception",
+            function="accepted_adult_ids",
+            user_id=user_id,
+        )
+        raise
 
 @login_required(redirect_field_name="auth_next")
 def programs(request, **kwargs):

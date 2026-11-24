@@ -95,6 +95,12 @@ urlpatterns = [
         kwargs={"allow_direct_user": False},
     ),
     path(
+        "accepted_adult_ids",
+        application.accepted_adult_ids,
+        name="accepted_adult_ids",
+        kwargs={"allow_direct_user": True},
+    ),
+    path(
         "programs",
         application.programs,
         name="programs",
