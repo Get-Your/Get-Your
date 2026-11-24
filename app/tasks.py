@@ -235,7 +235,7 @@ def send_generic_email(template_str, *args):
                 function="send_generic_email",
             )
 
-            message = Mail(from_email="getfoco@fcgov.com", to_emails=eml)
+            message = Mail(from_email=settings.CONTACT_EMAIL, to_emails=eml)
 
             message.template_id = template_id
             try:
