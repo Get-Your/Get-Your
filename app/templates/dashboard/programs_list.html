@@ -36,7 +36,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <div style="margin:0">
                 <p style="font-weight: 550; margin: 0">{{ program.title }}</p>
                 <p style="margin-top:3px;"> {{ program.subtitle }} </p>
-                <p style="margin-top:3px;">{{ program.description }}</p>
+                {# Convert all line breaks in the description to <br> tags (to make the friendly_description in the admin portal WYSIWYG) #}
+                <p style="margin-top:3px;">{{ program.description|linebreaksbr }}</p>
 
             </div>
         </div>

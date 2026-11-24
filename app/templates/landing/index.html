@@ -145,10 +145,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 </div>
                 {% for iq_program in iq_programs %}
                 <div class="exploreDivPrograms">
-                    <p class=p2><b>{{iq_program.friendly_name}}</b> <span>{{iq_program.friendly_category}}</span></p>
-                    <p class=p2>{{iq_program.friendly_description}}</p>
-                    <p class=p3>{{iq_program.friendly_supplemental_info}}</p>
-                    <a href="{{iq_program.learn_more_link}}" style="color: #F9B316;" target="_blank"> Learn More</a>
+                    <p class=p2><b>{{ iq_program.friendly_name }}</b> <span>{{ iq_program.friendly_category }}</span></p>
+                    {# Convert all line breaks in the description to <br> tags (to make the friendly_description in the admin portal WYSIWYG) #}
+                    <p class=p2>{{ iq_program.friendly_description|linebreaksbr }}</p>
+                    <p class=p3>{{ iq_program.friendly_supplemental_info }}</p>
+                    <a href="{{ iq_program.learn_more_link }}" style="color: #F9B316;" target="_blank"> Learn More</a>
                 </div>
                 {% endfor %}
             </div>
