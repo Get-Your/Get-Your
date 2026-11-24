@@ -67,6 +67,7 @@ from app.models import (
     EligibilityProgram,
     EligibilityProgramRD,
     Household,
+    HouseholdMembers,
     User,
     userfiles_path,
 )
@@ -1257,6 +1258,19 @@ def household_members(request, **kwargs):
             form = HouseholdMembersForm(request.POST or None)
             try:
                 household_info = request.user.householdmembers.household_info
+            except HouseholdMembers.DoesNotExist:
+                # If there is no related HouseholdMembers object (checked before
+                # AttributeError), fill the first form element with the
+                # accountholder's name
+                household_info = {
+                    "persons_in_household": [
+                        {
+                            "name": f"{request.user.first_name} {request.user.last_name}",
+                            "birthdate": "",
+                            "identification_path": "",
+                        }
+                    ]
+                }
             except AttributeError:
                 # household_info is already None above; ignore this error
                 pass
