@@ -138,6 +138,17 @@ class IQProgramRDForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
+        # Raise a ValidationError on the form if renewal_interval_year == 0 (it
+        # can be either blank (None) or >=1)
+        if cleaned_data.get('renewal_interval_year') == 0:
+            msg = ValidationError(
+                _(
+                    "'Renewal interval' must be either blank (for lifetime-enrollment) or >=1."
+                ),
+                code="invalid_renewal_interval",
+            )
+            self.add_error("renewal_interval_year", msg)
+
         # Raise a ValidationError on the form if there isn't at least one True
         # `requires_` field
         if not any(cleaned_data.get(x[0]) for x in get_iqprogram_requires_fields()):
@@ -145,7 +156,7 @@ class IQProgramRDForm(forms.ModelForm):
                 _(
                     "At least one 'Requires' box must be checked (otherwise any address anywhere is eligible)."
                 ),
-                code="invalid",
+                code="invalid_requires",
             )
             for fd, x in get_iqprogram_requires_fields():
                 self.add_error(fd, msg)
