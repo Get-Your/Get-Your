@@ -136,7 +136,7 @@ def document_path_parsed(obj):
     """
     # Parse the stringified list of document_path values. Dynamically
     # converting to a list would be dangerous, so this is processed manually.
-    if obj.document_path.name != "":
+    if obj.document_path.name != "" and obj.document_path.name != "[]":
         blob_list = (
             obj.document_path.name.replace("[", "")
             .replace("]", "")

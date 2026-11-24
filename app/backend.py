@@ -1054,7 +1054,9 @@ def get_in_progress_eligiblity_file_uploads(request):
     """
     users_in_progress_file_uploads = (
         EligibilityProgram.objects.filter(
-            Q(user_id=request.user.id) & Q(document_path="")
+            # The first argument is wrapped in Q() so that it can remain the
+            # initial filter (because it's the most important)
+            Q(user_id=request.user.id) & Q(Q(document_path="") | Q(document_path="[]"))
         )
         .select_related("program")
         .values("id", "program__id", "program__friendly_name")
