@@ -22,6 +22,7 @@ import logging
 import re
 from pathlib import PurePosixPath
 
+import magic
 import pendulum
 from azure.core.exceptions import ResourceNotFoundError
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
@@ -29,12 +30,12 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.storage import default_storage
 from django.shortcuts import render
-from logger.wrappers import LoggerWrapper
 
 from app.admin.forms import EligProgramAddForm, HouseholdMembersReplaceIDForm
 from app.backend import file_validation, finalize_application
 from app.constants import supported_content_types
 from app.models import EligibilityProgram, EligibilityProgramRD, HouseholdMembers, User
+from logger.wrappers import LoggerWrapper
 
 # Initialize logger
 log = LoggerWrapper(logging.getLogger(__name__))
@@ -49,11 +50,13 @@ def view_blob(request, blob_name, **kwargs):
             user_id=request.user.id,
         )
 
-        # Open the blob and extract the data
+        # Open the blob and extract the data (while also finding the filetype)
         file = default_storage.open(blob_name)
         try:
             blob_data = b""
-            for chunk in file.chunks():
+            for chunkidx, chunk in enumerate(file.chunks()):
+                if chunkidx == 0:
+                    filetype = magic.from_buffer(chunk)
                 blob_data += chunk
         except ResourceNotFoundError as e:
             log.exception(
@@ -65,9 +68,17 @@ def view_blob(request, blob_name, **kwargs):
 
         # Gather the content type from the blob_name extension
         blob_name_path = PurePosixPath(blob_name)
-        # Use the lowercase suffix (without the leading dot) as the key to the
-        # supported_content_types dict
-        content_type = supported_content_types[blob_name_path.suffix[1:].lower()]
+
+        # Check if the filetype is in the supported_content_types. This is used
+        # rather than going from the extension because there are content-types
+        # that extend the base standard and therefore have a different extension
+        # but are still the correct type (e.g. JFIF extends the JPEG standard)
+        matched_content_key = next(
+            (x for x in supported_content_types if x in filetype.lower()), None
+        )
+        # Gather the content type from supported_content_types, if applicable;
+        # else, use a (non-empty) garbage string so there won't be any matches
+        content_type = supported_content_types[matched_content_key] if matched_content_key is not None else 'not viewable'
 
         # Load only the following content type regexes (regardless of
         # constants.supported_content_types), for safety
