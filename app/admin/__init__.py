@@ -511,6 +511,7 @@ class AppAdminInline(admin.StackedInline):
 
 
 class UserAdmin(admin.ModelAdmin):
+    save_on_top = True
     search_fields = ("last_name__startswith", "first_name__startswith", "email")
     list_display = ("last_name", "first_name", "email", "last_completed_at")
     ordering = (Lower("last_name"), Lower("first_name"))  # case-insensitive
