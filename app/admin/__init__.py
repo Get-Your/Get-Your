@@ -515,7 +515,13 @@ class AppAdminInline(admin.StackedInline):
 class UserAdmin(admin.ModelAdmin):
     save_on_top = True
     search_fields = ("last_name__startswith", "first_name__startswith", "email")
-    list_display = ("last_name", "first_name", "email", "last_completed_at")
+    list_display = (
+        "last_name",
+        "first_name",
+        "email",
+        "last_login",
+        "last_completed_field",
+    )
     ordering = (Lower("last_name"), Lower("first_name"))  # case-insensitive
     list_display_links = ("email",)
     list_filter = (
@@ -547,6 +553,10 @@ class UserAdmin(admin.ModelAdmin):
         # 'last_application_parsed',
         "renewal_action_parsed",
     ]
+
+    @admin.display(description="last completed (with date filter)")
+    def last_completed_field(self, obj):
+        return obj.last_completed_at
 
     @admin.display(description="last renewal action")
     def renewal_action_parsed(self, obj):
