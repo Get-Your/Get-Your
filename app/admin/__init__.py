@@ -52,6 +52,7 @@ from app.admin.filters import (
 )
 from app.admin.forms import (
     EligibilityProgramRDForm,
+    HouseholdForm,
     IQProgramAddForm,
     IQProgramRDForm,
     ProgramChangeForm,
@@ -221,6 +222,7 @@ class AddressInline(admin.TabularInline):
 
 class HouseholdInline(admin.TabularInline):
     model = Household
+    form = HouseholdForm
 
     fk_name = "user"
 

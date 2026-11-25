@@ -19,18 +19,47 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.forms.widgets import Textarea
 from django.utils.translation import gettext_lazy as _
 
 from app.backend import get_iqprogram_requires_fields, get_users_iq_programs
 from app.models import (
     AddressRD,
+    EligibilityProgram,
     EligibilityProgramRD,
     Household,
     HouseholdMembers,
     IQProgramRD,
     User,
 )
+
+
+class HouseholdForm(forms.ModelForm):
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # Raise a ValidationError on the form if is_income_verified is being
+        # changed to True and any Eligibility Program is missing a document.
+        # Gather an EligibilityProgram objects for the user where
+        # document_path is empty ('' or '[]', to cover a known bug). Use the
+        # user ID from the initial form values (self.initial['user'])
+        if (
+            'is_income_verified' in self.changed_data and
+            cleaned_data.get('is_income_verified') and
+            EligibilityProgram.objects.filter(
+                Q(user_id=self.initial['user']) &
+                Q(Q(document_path="") | Q(document_path="[]"))
+            ).count() > 0
+        ):
+            msg = ValidationError(
+                _(
+                    "One or more User Eligibility Programs are missing documents. "
+                    "To mark 'income verified', either upload documents or delete the Eligilibility Program(s)."
+                ),
+                code="missing_eligibility_documents",
+            )
+            self.add_error("is_income_verified", msg)
 
 
 class ProgramChangeForm(forms.Form):
