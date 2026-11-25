@@ -18,47 +18,67 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from django.contrib import admin
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Q
+from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 
-from app.models import EligibilityProgram, User
+from app.models import EligibilityProgram, IQProgram, User
 
 
-def needs_income_verification_filter(queryset):
+def needs_income_verification_filter(
+    queryset: QuerySet,
+) -> QuerySet:
     """
     Filter a queryset for users that need income verification.
 
+    Parameters
+    ----------
+    queryset : QuerySet
+        The QuerySet passed to the filter. Since this is for the User
+        changelist, this will be a QuerySet of users.
+
+    Returns
+    -------
+    QuerySet
+        Returns the filtered QuerySet.
+
     """
 
-    # Gather EligibilityProgram objects for each user that are 'active'
-    selected_active_programs = EligibilityProgram.objects.filter(
+    # Gather active IQProgram objects for each user
+    applied_programs = IQProgram.objects.filter(
         user_id=OuterRef("id"),
         program__is_active=True,
     )
 
-    # Gather EligibilityProgram objects for each user that are 'active' and have
-    # an uploaded file
-    active_incomplete_programs = EligibilityProgram.objects.filter(
-        user_id=OuterRef("id"),
-        program__is_active=True,
-        document_path="",
+    # Gather active EligibilityProgram objects for each user that have an
+    # empty file upload
+    incomplete_eligibility_programs = EligibilityProgram.objects.filter(
+        Q(user_id=OuterRef("id")),
+        Q(program__is_active=True),
+        Q(Q(document_path="") | Q(document_path="[]")),
     )
 
+    # Filter the queryset. Note that keyword filters are wrapped in Q() so that
+    # the filter order can be optimized
     queryset = queryset.filter(
-        # User has at least one active eligibility program
-        Exists(selected_active_programs),
-        # User doesn't have any incomplete eligibility programs (e.g. file not
-        # uploaded)
-        ~Exists(active_incomplete_programs),
-        # User has completed the application (non-null last_completed_at)
-        last_completed_at__isnull=False,
         # User is not 'archived'
-        is_archived=False,
+        Q(is_archived=False),
+        # User has completed the application (non-null last_completed_at)
+        Q(last_completed_at__isnull=False),
+        # User is not in the middle of a renewal
+        Q(last_renewal_action__isnull=True),
         # User's household is not 'income verified'
-        household__is_income_verified=False,
+        Q(household__is_income_verified=False),
+        # User has applied for at least one program (as a proxy for the account
+        # being eligible)
+        Exists(applied_programs),
+        # Exclude users that have EligibilityProgram objects with empty documents
+        ~Exists(incomplete_eligibility_programs),
     )
 
-    # Ensure all identification is included
+    # Remove users that are missing any identification documentation.
+    # This loops through queryset so that the JSON in User.householdmembers
+    # can be parsed for each usery
     filter_ids = []
     for usr in queryset:
         if "persons_in_household" in usr.householdmembers.household_info and all(
