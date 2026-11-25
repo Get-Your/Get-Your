@@ -25,7 +25,7 @@ from django.utils.translation import gettext_lazy as _
 from app.models import EligibilityProgram, IQProgram, User
 
 
-def complete_unverified_filter(
+def complete_and_unverified_filter(
     queryset: QuerySet,
 ) -> QuerySet:
     """
@@ -69,59 +69,11 @@ def complete_unverified_filter(
     return queryset
 
 
-def needs_income_verification_filter(
-    queryset: QuerySet,
-) -> QuerySet:
-    """
-    Filter a queryset for users that need income verification.
-
-    Parameters
-    ----------
-    queryset : QuerySet
-        The QuerySet passed to the filter. Since this is for the User
-        changelist, this will be a QuerySet of users.
-
-    Returns
-    -------
-    QuerySet
-        Returns the filtered QuerySet.
-
-    """
-
-    # Gather active EligibilityProgram objects for each user that have an
-    # empty file upload
-    incomplete_eligibility_programs = EligibilityProgram.objects.filter(
-        Q(user_id=OuterRef("id")),
-        Q(program__is_active=True),
-        Q(Q(document_path="") | Q(document_path="[]")),
-    )
-
-    # Gather users with a complete application and exclude those that have
-    # EligibilityProgram objects with empty documents
-    queryset = complete_unverified_filter(queryset).exclude(
-        Exists(incomplete_eligibility_programs),
-    )
-
-    # Remove users that are missing any identification documentation.
-    # This loops through queryset so that the JSON in User.householdmembers
-    # can be parsed for each usery
-    filter_ids = []
-    for usr in queryset:
-        if "persons_in_household" in usr.householdmembers.household_info and all(
-            "identification_path" in x and x["identification_path"] is not None
-            for x in usr.householdmembers.household_info["persons_in_household"]
-        ):
-            filter_ids.append(usr.id)
-
-    # Recreate queryset with filter_ids and return
-    return User.objects.filter(id__in=filter_ids)
-
-
 def complete_except_documentation_filter(
     queryset: QuerySet,
 ) -> QuerySet:
     """
-    Filter a queryset for users that have completed their application except for
+    Filter a queryset for users that have completed their application but are
     missing documentation.
 
     Parameters
@@ -147,7 +99,7 @@ def complete_except_documentation_filter(
 
     # Gather users with a complete application and exclude those that have
     # EligibilityProgram objects with empty documents
-    queryset = complete_unverified_filter(queryset)
+    queryset = complete_and_unverified_filter(queryset)
 
     # Remove all users from `queryset` that have all their EligibilityProgram
     # documents
@@ -196,7 +148,7 @@ class NeedsVerificationListFilter(admin.SimpleListFilter):
         """
         return (
             ("new", _("New Needs Verification")),
-            ("docs", _("Needs Documentation")),
+            ("docs", _("New Needs Documentation")),
             ("hold", _("Awaiting Response")),
             ("all", _("All Needs Verification")),
             ("done", _("Has Been Verified")),
@@ -210,7 +162,7 @@ class NeedsVerificationListFilter(admin.SimpleListFilter):
         """
         # Compare the requested value to decide how to filter the queryset
         if self.value() == "new":
-            return needs_income_verification_filter(
+            return complete_and_unverified_filter(
                 queryset
             ).filter(
                 admin__awaiting_user_response=False,
@@ -224,14 +176,14 @@ class NeedsVerificationListFilter(admin.SimpleListFilter):
             )
 
         if self.value() == "hold":
-            return needs_income_verification_filter(
+            return complete_and_unverified_filter(
                 queryset
             ).filter(
                 admin__awaiting_user_response=True,
             )
 
         if self.value() == "all":
-            return needs_income_verification_filter(queryset)
+            return complete_and_unverified_filter(queryset)
 
         if self.value() == "done":
             return queryset.filter(

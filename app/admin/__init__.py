@@ -48,7 +48,7 @@ from app.admin.filters import (
     CityCoveredListFilter,
     GMAListFilter,
     NeedsVerificationListFilter,
-    needs_income_verification_filter,
+    complete_and_unverified_filter,
 )
 from app.admin.forms import (
     EligibilityProgramRDForm,
@@ -812,7 +812,7 @@ class UserAdmin(admin.ModelAdmin):
             user_id=request.user.id,
         )
 
-        check_queryset = needs_income_verification_filter(queryset)
+        check_queryset = complete_and_unverified_filter(queryset)
 
         # check_queryset is a potentially-further-filtered queryset. If their
         # lengths are the same, mark 'income verified'; else return an error msg
