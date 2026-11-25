@@ -122,11 +122,15 @@ class NeedsVerificationListFilter(admin.SimpleListFilter):
         """
         # Compare the requested value to decide how to filter the queryset
         if self.value() == "new":
-            return needs_income_verification_filter(queryset).exclude(
-                admin__awaiting_user_response=True,
+            return needs_income_verification_filter(
+                queryset
+            ).filter(
+                admin__awaiting_user_response=False,
             )
         if self.value() == "hold":
-            return needs_income_verification_filter(queryset).filter(
+            return needs_income_verification_filter(
+                queryset
+            ).filter(
                 admin__awaiting_user_response=True,
             )
         if self.value() == "all":
