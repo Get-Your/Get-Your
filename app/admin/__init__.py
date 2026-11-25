@@ -514,7 +514,7 @@ class AppAdminInline(admin.StackedInline):
 
 class UserAdmin(admin.ModelAdmin):
     save_on_top = True
-    search_fields = ("last_name__startswith", "first_name__startswith", "email")
+    search_fields = ("last_name__istartswith", "first_name__istartswith", "email")
     list_display = (
         "last_name",
         "first_name",
@@ -1166,7 +1166,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class AddressAdmin(admin.ModelAdmin):
-    search_fields = ("address1__icontains", "address2__icontains")
+    search_fields = ("address1", "address2")
     list_display = ("address1", "address2", "is_in_gma", "is_city_covered")
     ordering = list_display_links = ("address1", "address2")
     list_filter = (GMAListFilter, CityCoveredListFilter)
@@ -1409,9 +1409,9 @@ class AddressAdmin(admin.ModelAdmin):
 
 class EligibilityProgramAdmin(admin.ModelAdmin):
     search_fields = (
-        "user__last_name__startswith",
-        "user__first_name__startswith",
-        "user__email__contains",
+        "user__last_name__istartswith",
+        "user__first_name__istartswith",
+        "user__email",
     )
     list_display = (
         "user_last_name",
@@ -1753,7 +1753,7 @@ class EligibilityProgramRDAdmin(admin.ModelAdmin):
         qs = qs.order_by("friendly_name")
         return qs
 
-    search_fields = ("friendly_name__contains",)
+    search_fields = ("friendly_name",)
     list_display = ("friendly_name", "is_active", "ami_threshold")
     list_filter = ("is_active",)
     list_display_links = ("friendly_name",)
@@ -1772,7 +1772,7 @@ class IQProgramRDAdmin(admin.ModelAdmin):
         qs = qs.order_by("friendly_name")
         return qs
 
-    search_fields = ("friendly_name__contains",)
+    search_fields = ("friendly_name",)
     list_display = ("friendly_name", "is_active")
     list_filter = ("is_active",)
     list_display_links = ("friendly_name",)
@@ -1785,7 +1785,7 @@ class IQProgramRDAdmin(admin.ModelAdmin):
 
 
 class FeedbackAdmin(admin.ModelAdmin):
-    search_fields = ("feedback_comments__contains",)
+    search_fields = ("feedback_comments",)
     list_display = list_display_links = ("created", "star_rating")
     list_filter = ("star_rating",)
     ordering = ("-created",)
